@@ -1,0 +1,24 @@
+package queries
+
+import (
+	"github.com/artcodefun/heat-expansion-api/internal/core/cqrs"
+	"github.com/artcodefun/heat-expansion-api/internal/core/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-api/internal/core/ports"
+	"github.com/artcodefun/heat-expansion-api/internal/core/services"
+)
+
+type StorageQueries struct {
+	Repo   ports.StorageReadRepository
+	Access *services.AccessControlService
+}
+
+func NewStorageQueries(repo ports.StorageReadRepository, access *services.AccessControlService) *StorageQueries {
+	return &StorageQueries{Repo: repo, Access: access}
+}
+
+func (q *StorageQueries) ListPresentStorageItems(ctx cqrs.QueryContext, baseID int) ([]*readmodels.StorageItemPresent, error) {
+	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+		return nil, err
+	}
+	return q.Repo.ListPresentStorageItems(baseID)
+}

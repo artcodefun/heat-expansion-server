@@ -1,0 +1,138 @@
+package http
+
+import (
+	"github.com/artcodefun/heat-expansion-api/internal/core/cqrs"
+	"github.com/artcodefun/heat-expansion-api/internal/core/ports"
+	"github.com/artcodefun/heat-expansion-api/internal/interfaces/http/handlers"
+	"github.com/artcodefun/heat-expansion-api/internal/interfaces/http/middleware"
+	"github.com/gin-gonic/gin"
+)
+
+// Commands groups CQRS command interfaces needed by HTTP handlers.
+type Commands struct {
+	User      cqrs.UserCommands
+	Base      cqrs.BaseCommands
+	Building  cqrs.BuildingCommands
+	Army      cqrs.ArmyCommands
+	Tech      cqrs.TechCommands
+	Storage   cqrs.StorageCommands
+	Operation cqrs.OperationCommands
+}
+
+// Queries groups CQRS query interfaces needed by HTTP handlers.
+type Queries struct {
+	User      cqrs.UserQueries
+	Base      cqrs.BaseQueries
+	Building  cqrs.BuildingQueries
+	Army      cqrs.ArmyQueries
+	Tech      cqrs.TechQueries
+	Storage   cqrs.StorageQueries
+	Sector    cqrs.SectorQueries
+	Operation cqrs.OperationQueries
+	Activity  cqrs.ActivityQueries
+}
+
+// NewRouter constructs the Gin engine, registers middleware and routes.
+func NewRouter(cmd Commands, qry Queries, tokenProvider ports.TokenProvider) *gin.Engine {
+	r := gin.Default()
+
+	// Initialize handlers at the top for consistency
+	userHandler := handlers.NewUserHandler(cmd.User)
+	baseHandler := handlers.NewBaseHandler(qry.Base, cmd.Base)
+	buildingHandler := handlers.NewBuildingHandler(qry.Building, cmd.Building)
+	armyHandler := handlers.NewArmyHandler(qry.Army, cmd.Army)
+	techHandler := handlers.NewTechHandler(qry.Tech, cmd.Tech)
+	storageHandler := handlers.NewStorageHandler(qry.Storage, cmd.Storage)
+	sectorHandler := handlers.NewSectorHandler(qry.Sector)
+	operationHandler := handlers.NewOperationHandler(qry.Operation, cmd.Operation)
+	activityHandler := handlers.NewActivityHandler(qry.Activity)
+
+	// Global routes
+	r.GET("/health", HealthHandler)
+
+	// Public routes (no auth)
+	publicApi := r.Group("/api/v1")
+	{
+		publicApi.POST("/auth/register", userHandler.Register)
+		publicApi.POST("/auth/login", userHandler.Login)
+	}
+
+	// Private routes (auth required)
+	api := r.Group("/api/v1")
+	api.Use(middleware.Auth(tokenProvider))
+	{
+		// Base
+		api.GET("/bases/:baseId/status", baseHandler.GetBaseStatus)
+		api.POST("/bases", baseHandler.CreateBase)
+
+		// Buildings
+		buildings := api.Group("/bases/:baseId/buildings")
+		{
+			buildings.GET("/new", buildingHandler.ListNew)
+			buildings.GET("/pending", buildingHandler.ListPending)
+			buildings.GET("/in-production", buildingHandler.ListInProduction)
+			buildings.GET("/present", buildingHandler.ListPresent)
+			buildings.POST("/queue", buildingHandler.Queue)
+			buildings.POST("/production/:taskId/speed-up", buildingHandler.SpeedUpProduction)
+			buildings.POST("/pending/:itemId/cancel", buildingHandler.CancelPending)
+			buildings.DELETE("/present/:itemId", buildingHandler.DeletePresent)
+		}
+
+		// Army
+		army := api.Group("/bases/:baseId/army")
+		{
+			army.GET("/new", armyHandler.ListNew)
+			army.GET("/pending", armyHandler.ListPending)
+			army.GET("/in-production", armyHandler.ListInProduction)
+			army.GET("/present", armyHandler.ListPresent)
+			army.POST("/queue", armyHandler.Queue)
+			army.POST("/production/:taskId/speed-up", armyHandler.SpeedUpProduction)
+			army.POST("/pending/:itemId/cancel", armyHandler.CancelPending)
+			army.DELETE("/present/:itemId", armyHandler.DeletePresent)
+		}
+
+		// TODO: add tech, storage, sector, operation, activity routes when handlers are implemented
+		// Tech
+		tech := api.Group("/bases/:baseId/tech")
+		{
+			tech.GET("/new", techHandler.ListNew)
+			tech.GET("/in-progress", techHandler.ListInProgress)
+			tech.GET("/done", techHandler.ListDone)
+			tech.POST("/queue", techHandler.Queue)
+			tech.POST("/production/:taskId/speed-up", techHandler.SpeedUpProduction)
+		}
+
+		// Storage
+		storage := api.Group("/bases/:baseId/storage")
+		{
+			storage.GET("/present", storageHandler.ListPresent)
+			storage.DELETE("/items/:itemId", storageHandler.DeleteItem)
+			storage.POST("/items/:itemId/activate", storageHandler.ActivateBuff)
+		}
+
+		// Sectors
+		api.GET("/sectors/:x/:y", sectorHandler.GetSector)
+		api.GET("/bases/:baseId/sectors/scans/latest", sectorHandler.GetLatestScans)
+		api.GET("/bases/:baseId/sectors/scans/near", sectorHandler.GetScansNear)
+		api.GET("/map/occupied-coordinates", sectorHandler.ListOccupiedCoordinates)
+		api.GET("/map/sectors", sectorHandler.ListSectorsInRadius)
+
+		// Operations
+		operations := api.Group("/operations")
+		{
+			operations.GET("/:operationId", operationHandler.GetOperation)
+			operations.GET("/bases/:baseId", operationHandler.ListByBase)
+			operations.GET("/bases/:baseId/active", operationHandler.ListActive)
+			operations.POST("", operationHandler.Create)
+		}
+
+		// Activities
+		activities := api.Group("/bases/:baseId/activities")
+		{
+			activities.GET("", activityHandler.List)
+			activities.GET("/military", activityHandler.ListMilitary)
+		}
+	}
+
+	return r
+}

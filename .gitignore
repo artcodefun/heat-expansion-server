@@ -1,0 +1,33 @@
+# Go build and dependency files
+/bin/
+/build/
+/dist/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Dependency directories
+/vendor/
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment files
+.env
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Copilot shares
+/copilot/

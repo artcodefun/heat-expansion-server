@@ -1,0 +1,121 @@
+package bootstrap
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"os"
+	"time"
+
+	"database/sql"
+
+	_ "github.com/lib/pq"
+
+	"github.com/artcodefun/heat-expansion-api/internal/core/ports"
+	httpapi "github.com/artcodefun/heat-expansion-api/internal/interfaces/http"
+)
+
+type App struct {
+	// GameLogic *core.GameLogic
+	Port          string
+	DBURL         string
+	JWTSecret     string
+	LogLevel      string
+	ContentDir    string
+	StaticBaseURL string
+
+	DB         *sql.DB
+	Adapters   *Adapters
+	Commands   *Commands
+	Queries    *Queries
+	HTTPServer *httpapi.Server
+}
+
+func NewApp() *App {
+	// Read environment variables
+	port := os.Getenv("PORT")
+	dbURL := os.Getenv("DB_URL")
+	jwtSecret := os.Getenv("JWT_SECRET")
+	contentDir := os.Getenv("CONTENT_DIR")
+	staticBaseURL := os.Getenv("STATIC_BASE_URL")
+
+	if port == "" || dbURL == "" || jwtSecret == "" || contentDir == "" || staticBaseURL == "" {
+		log.Fatal("Missing required environment variables. Please check your .env file.")
+	}
+
+	db, err := sql.Open("postgres", dbURL)
+	if err != nil {
+		log.Fatal("Failed to connect to database:", err)
+	}
+	if err := db.Ping(); err != nil {
+		log.Fatal("Database is unreachable:", err)
+	}
+	fmt.Println("Connected to database successfully!")
+
+	adapters, err := NewAdapters(db, jwtSecret, contentDir, staticBaseURL)
+	if err != nil {
+		log.Fatal("Failed to initialize adapters:", err)
+	}
+	commands := NewCommands(adapters)
+	queries := NewQueries(adapters)
+	// Wire event subscriptions and job dispatcher for commands
+	WireCommandEvents(commands, adapters.Events)
+	WireCommandSchedulerHandler(commands, adapters.Scheduler)
+
+	httpCommands := httpapi.Commands{
+		User:      commands.User,
+		Base:      commands.Base,
+		Building:  commands.Building,
+		Army:      commands.Army,
+		Tech:      commands.Tech,
+		Storage:   commands.Storage,
+		Operation: commands.Operation,
+	}
+	httpQueries := httpapi.Queries{
+		User:      queries.User,
+		Base:      queries.Base,
+		Building:  queries.Building,
+		Army:      queries.Army,
+		Tech:      queries.Tech,
+		Storage:   queries.Storage,
+		Sector:    queries.Sector,
+		Operation: queries.Operation,
+		Activity:  queries.Activity,
+	}
+	router := httpapi.NewRouter(httpCommands, httpQueries, adapters.Tokens)
+	httpServer := httpapi.NewServer(router)
+
+	return &App{
+		// GameLogic: gameLogic,
+		Port:          port,
+		DBURL:         dbURL,
+		JWTSecret:     jwtSecret,
+		ContentDir:    contentDir,
+		StaticBaseURL: staticBaseURL,
+		DB:            db,
+		Adapters:      adapters,
+		Commands:      commands,
+		Queries:       queries,
+		HTTPServer:    httpServer,
+	}
+}
+
+func (a *App) Run() {
+	fmt.Printf("Starting server on port %s\n", a.Port)
+	fmt.Printf("Connecting to DB: %s\n", a.DBURL)
+	fmt.Println("JWT secret configured")
+	fmt.Printf("Content dir: %s\n", a.ContentDir)
+	fmt.Printf("Static base URL: %s\n", a.StaticBaseURL)
+
+	// Start scheduler loop if implementation supports Run(ctx)
+	if runner, ok := a.Adapters.Scheduler.(interface{ Run(ctx context.Context) }); ok {
+		go runner.Run(context.Background())
+	}
+	// Seed initial world generation job (after short delay)
+	_ = a.Adapters.Scheduler.Schedule(ports.SpawnNearbyLocationsJob{}, time.Now().Unix()+10)
+	addr := fmt.Sprintf(":%s", a.Port)
+	fmt.Printf("Listening on %s\n", addr)
+	if err := a.HTTPServer.Start(addr); err != nil {
+		log.Fatalf("http server exited: %v", err)
+	}
+}

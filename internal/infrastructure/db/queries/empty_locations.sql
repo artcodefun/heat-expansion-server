@@ -1,0 +1,1 @@
+-- Deprecated: empty_locations removed. No queries remain in this file.

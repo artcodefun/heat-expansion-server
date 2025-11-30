@@ -1,0 +1,51 @@
+-- Sector queries
+
+-- name: CreateSector :one
+INSERT INTO sectors (x, y, name, description, image_url)
+VALUES (@x, @y, @name, @description, @image_url)
+RETURNING id, x, y, name, description, image_url;
+
+-- name: UpdateSector :one
+UPDATE sectors
+SET name = @name,
+    description = @description,
+    image_url = @image_url
+WHERE x = @x AND y = @y
+RETURNING id, x, y, name, description, image_url;
+
+-- name: GetSectorByCoordinates :one
+SELECT id, x, y, name, description, image_url
+FROM sectors
+WHERE x = @x AND y = @y;
+
+-- name: GetSectorByCoordinatesForUpdate :one
+SELECT id, x, y, name, description, image_url
+FROM sectors
+WHERE x = @x AND y = @y
+FOR UPDATE;
+
+-- name: ListSectors :many
+SELECT id, x, y, name, description, image_url
+FROM sectors
+ORDER BY id;
+
+-- name: ListOccupiedSectorCoordinates :many
+SELECT ub.sector_x AS x, ub.sector_y AS y FROM user_bases ub
+UNION
+SELECT rl.sector_x, rl.sector_y FROM resource_locations rl
+UNION
+SELECT dl.sector_x, dl.sector_y FROM dangerous_locations dl;
+
+-- name: GetLocationTypeByCoordinates :one
+SELECT CASE
+    WHEN EXISTS (
+        SELECT 1 FROM user_bases ub WHERE ub.sector_x = @x AND ub.sector_y = @y
+    ) THEN 'BASE'
+    WHEN EXISTS (
+        SELECT 1 FROM resource_locations rl WHERE rl.sector_x = @x AND rl.sector_y = @y
+    ) THEN 'RESOURCEFUL'
+    WHEN EXISTS (
+        SELECT 1 FROM dangerous_locations dl WHERE dl.sector_x = @x AND dl.sector_y = @y
+    ) THEN 'DANGEROUS'
+    ELSE 'EMPTY'
+END AS location_type;

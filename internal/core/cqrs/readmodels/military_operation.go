@@ -1,0 +1,99 @@
+package readmodels
+
+// MilitaryOperationType represents the type of a military operation.
+type MilitaryOperationType string
+
+const (
+	MilitaryOperationTypeAttack     MilitaryOperationType = "ATTACK"
+	MilitaryOperationTypeSpy        MilitaryOperationType = "SPY"
+	MilitaryOperationTypeOccupation MilitaryOperationType = "OCCUPATION" // reserved for future use
+)
+
+// MilitaryOperationPhase represents the movement/lifecycle stage of an operation.
+type MilitaryOperationPhase string
+
+const (
+	OperationPhasePending   MilitaryOperationPhase = "PENDING"   // created, not yet departed
+	OperationPhaseOutbound  MilitaryOperationPhase = "OUTBOUND"  // traveling to target
+	OperationPhaseAtTarget  MilitaryOperationPhase = "AT_TARGET" // arrived at target
+	OperationPhaseResolving MilitaryOperationPhase = "RESOLVING" // resolving at target
+	OperationPhaseReturning MilitaryOperationPhase = "RETURNING" // traveling back to source
+	OperationPhaseCompleted MilitaryOperationPhase = "COMPLETED" // returned and finished
+)
+
+// MilitaryOperationResult represents the outcome once completed/canceled.
+type MilitaryOperationResult string
+
+const (
+	OperationResultUnknown  MilitaryOperationResult = "UNKNOWN"
+	OperationResultSuccess  MilitaryOperationResult = "SUCCESS"
+	OperationResultFailure  MilitaryOperationResult = "FAILURE"
+	OperationResultCanceled MilitaryOperationResult = "CANCELED"
+)
+
+// SpyOutcome enumerates possible results of a spy operation.
+type SpyOutcome string
+
+const (
+	SpyOutcomeBlockedByCloaking SpyOutcome = "BLOCKED_BY_CLOAKING_EMPTY_REPORT" // target cloaking >= attackers stealth; units unharmed
+	SpyOutcomeDefeatedBySpies   SpyOutcome = "DEFEATED_BY_DEFENDING_SPIES"      // attackers lost skirmish with defending spies
+	SpyOutcomeReportProduced    SpyOutcome = "REPORT_PRODUCED"                  // successful intel report created
+)
+
+// AttackOutcome enumerates possible results of an attack operation.
+type AttackOutcome string
+
+const (
+	AttackOutcomeAttackerWon  AttackOutcome = "ATTACKER_WON"
+	AttackOutcomeDefenderHeld AttackOutcome = "DEFENDER_HELD"
+)
+
+// Spy now uses SectorScanReport as the intelligence artifact.
+
+type SpyResult struct {
+	Outcome           SpyOutcome
+	AttackerRemaining []MilitaryUnit
+	DefenderRemaining []MilitaryUnit
+	// New: snapshot of defenders before resolution (for UI diffs)
+	DefendersBefore []MilitaryUnit
+}
+
+type AttackResult struct {
+	Outcome             AttackOutcome
+	AttackerRemaining   []MilitaryUnit
+	DefenderRemaining   []MilitaryUnit
+	RemainingStructures []DefenseStructure
+	Loot                PriceModel // what attackers managed to carry back; computed elsewhere
+	// New: snapshots for UI to show casualties/damage
+	DefendersBefore  []MilitaryUnit
+	StructuresBefore []DefenseStructure
+}
+
+// MilitaryOperation models an attack or spy op traveling between sectors and resolving on arrival.
+type MilitaryOperation struct {
+	ID           int
+	Type         MilitaryOperationType
+	OwnerUserID  int
+	SourceBaseID int
+
+	// Coordinates snapshot (for travel calculations)
+	SourceCoordinates Vector2i
+	TargetCoordinates Vector2i
+
+	// Timeline
+	OutboundDepartAt int64
+	OutboundArriveAt int64
+	ReturnDepartAt   int64
+	ReturnArriveAt   int64
+	CompletedAt      int64
+
+	Phase  MilitaryOperationPhase
+	Result MilitaryOperationResult
+
+	// Snapshot of attacking units
+	Units []MilitaryUnit
+
+	// Results (only one will be populated depending on Type)
+	SpyResult    *SpyResult
+	AttackResult *AttackResult
+}
