@@ -12,8 +12,11 @@ type TechReadRepo struct{ q *gen.Queries }
 
 func NewTechReadRepo(q *gen.Queries) *TechReadRepo { return &TechReadRepo{q: q} }
 
-func (r *TechReadRepo) ListNewTechItems(baseID int) ([]*readmodels.TechItemNew, error) {
-	rows, err := r.q.ListNewTechItems(context.Background(), int64(baseID))
+func (r *TechReadRepo) ListNewTechItemsByPrototypeIDs(ids []int) ([]*readmodels.TechItemNew, error) {
+	if len(ids) == 0 {
+		return []*readmodels.TechItemNew{}, nil
+	}
+	rows, err := r.q.ListTechPrototypesByIDs(context.Background(), mappers.IdsToInt64(ids))
 	if err != nil {
 		return nil, err
 	}

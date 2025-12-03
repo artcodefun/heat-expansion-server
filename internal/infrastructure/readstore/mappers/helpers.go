@@ -57,3 +57,15 @@ func jsonToNullRaw[T any](nm pqtype.NullRawMessage) *T {
 	}
 	return nil
 }
+
+// IdsToInt64 converts a slice of int to a slice of int64 for sqlc-generated queries.
+func IdsToInt64(ids []int) []int64 {
+	if len(ids) == 0 {
+		return nil
+	}
+	out := make([]int64, 0, len(ids))
+	for _, id := range ids {
+		out = append(out, int64(id))
+	}
+	return out
+}

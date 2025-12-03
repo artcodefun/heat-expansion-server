@@ -12,8 +12,11 @@ type BuildReadRepo struct{ q *gen.Queries }
 
 func NewBuildReadRepo(q *gen.Queries) *BuildReadRepo { return &BuildReadRepo{q: q} }
 
-func (r *BuildReadRepo) ListNewBuildItems(baseID int, category string) ([]*readmodels.BuildItemNew, error) {
-	rows, err := r.q.ListNewBuildItems(context.Background(), gen.ListNewBuildItemsParams{BaseID: int64(baseID), Category: category})
+func (r *BuildReadRepo) ListNewBuildItemsByPrototypeIDs(ids []int) ([]*readmodels.BuildItemNew, error) {
+	if len(ids) == 0 {
+		return []*readmodels.BuildItemNew{}, nil
+	}
+	rows, err := r.q.ListBuildPrototypesByIDs(context.Background(), mappers.IdsToInt64(ids))
 	if err != nil {
 		return nil, err
 	}

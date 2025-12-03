@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 	"github.com/sqlc-dev/pqtype"
 )
 
@@ -144,18 +145,17 @@ func (q *Queries) ListInResearchTechItems(ctx context.Context, baseID int64) ([]
 	return items, nil
 }
 
-const listNewTechItems = `-- name: ListNewTechItems :many
+const listTechPrototypesByIDs = `-- name: ListTechPrototypesByIDs :many
 
 SELECT p.id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.research_time, p.image_url, p.effects
 FROM tech_item_prototypes p
-WHERE NOT EXISTS (
-    SELECT 1 FROM base_tech_items bti WHERE bti.base_id = $1 AND bti.prototype_id = p.id
-)
+WHERE p.id = ANY($1::bigint[])
+ORDER BY p.id
 `
 
 // Technology items lifecycle queries
-func (q *Queries) ListNewTechItems(ctx context.Context, baseID int64) ([]TechItemPrototype, error) {
-	rows, err := q.query(ctx, q.listNewTechItemsStmt, listNewTechItems, baseID)
+func (q *Queries) ListTechPrototypesByIDs(ctx context.Context, dollar_1 []int64) ([]TechItemPrototype, error) {
+	rows, err := q.query(ctx, q.listTechPrototypesByIDsStmt, listTechPrototypesByIDs, pq.Array(dollar_1))
 	if err != nil {
 		return nil, err
 	}

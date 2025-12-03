@@ -22,6 +22,10 @@ type Querier interface {
 	ListActiveOperations(ctx context.Context, sourceBaseID int64) ([]MilitaryOperation, error)
 	// Activity feed queries
 	ListActivities(ctx context.Context, arg ListActivitiesParams) ([]Activity, error)
+	// Army items lifecycle queries
+	ListArmyPrototypesByIDs(ctx context.Context, dollar_1 []int64) ([]ArmyItemPrototype, error)
+	// Building items lifecycle queries
+	ListBuildPrototypesByIDs(ctx context.Context, dollar_1 []int64) ([]BuildItemPrototype, error)
 	ListDoneTechItems(ctx context.Context, baseID int64) ([]ListDoneTechItemsRow, error)
 	ListInProductionArmyItems(ctx context.Context, arg ListInProductionArmyItemsParams) ([]ListInProductionArmyItemsRow, error)
 	ListInProductionArmyItemsAll(ctx context.Context, baseID int64) ([]ListInProductionArmyItemsAllRow, error)
@@ -29,12 +33,6 @@ type Querier interface {
 	ListInProductionBuildItemsAll(ctx context.Context, baseID int64) ([]ListInProductionBuildItemsAllRow, error)
 	ListInResearchTechItems(ctx context.Context, baseID int64) ([]ListInResearchTechItemsRow, error)
 	ListMilitaryActivities(ctx context.Context, arg ListMilitaryActivitiesParams) ([]Activity, error)
-	// Army items lifecycle queries
-	ListNewArmyItems(ctx context.Context, arg ListNewArmyItemsParams) ([]ArmyItemPrototype, error)
-	// Building items lifecycle queries
-	ListNewBuildItems(ctx context.Context, arg ListNewBuildItemsParams) ([]BuildItemPrototype, error)
-	// Technology items lifecycle queries
-	ListNewTechItems(ctx context.Context, baseID int64) ([]TechItemPrototype, error)
 	ListOccupiedCoordinates(ctx context.Context) ([]ListOccupiedCoordinatesRow, error)
 	ListOperationsByBase(ctx context.Context, sourceBaseID int64) ([]MilitaryOperation, error)
 	ListPendingArmyItems(ctx context.Context, arg ListPendingArmyItemsParams) ([]ListPendingArmyItemsRow, error)
@@ -48,6 +46,8 @@ type Querier interface {
 	// Storage items queries
 	ListPresentStorageItems(ctx context.Context, baseID int64) ([]ListPresentStorageItemsRow, error)
 	ListSectorsInRadius(ctx context.Context, arg ListSectorsInRadiusParams) ([]ListSectorsInRadiusRow, error)
+	// Technology items lifecycle queries
+	ListTechPrototypesByIDs(ctx context.Context, dollar_1 []int64) ([]TechItemPrototype, error)
 }
 
 var _ Querier = (*Queries)(nil)

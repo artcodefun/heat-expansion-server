@@ -11,8 +11,57 @@ import (
 	"encoding/json"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 	"github.com/sqlc-dev/pqtype"
 )
+
+const listBuildPrototypesByIDs = `-- name: ListBuildPrototypesByIDs :many
+
+SELECT p.id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.control_data, p.resources_data, p.defense_data, p.military_data, p.intelligence_data
+FROM build_item_prototypes p
+WHERE p.id = ANY($1::bigint[])
+ORDER BY p.id
+`
+
+// Building items lifecycle queries
+func (q *Queries) ListBuildPrototypesByIDs(ctx context.Context, dollar_1 []int64) ([]BuildItemPrototype, error) {
+	rows, err := q.query(ctx, q.listBuildPrototypesByIDsStmt, listBuildPrototypesByIDs, pq.Array(dollar_1))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []BuildItemPrototype{}
+	for rows.Next() {
+		var i BuildItemPrototype
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Category,
+			&i.UnlockTechnologyID,
+			&i.ShortDescription,
+			&i.FullDescription,
+			&i.Price,
+			&i.ProductionTime,
+			&i.Space,
+			&i.ImageUrl,
+			&i.ControlData,
+			&i.ResourcesData,
+			&i.DefenseData,
+			&i.MilitaryData,
+			&i.IntelligenceData,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
 
 const listInProductionBuildItems = `-- name: ListInProductionBuildItems :many
 SELECT bbi.id, bbi.base_id, bbi.prototype_id, bbi.status, bbi.in_prod_data, p.id AS proto_id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.control_data, p.resources_data, p.defense_data, p.military_data, p.intelligence_data
@@ -141,60 +190,6 @@ func (q *Queries) ListInProductionBuildItemsAll(ctx context.Context, baseID int6
 			&i.Status,
 			&i.InProdData,
 			&i.ProtoID,
-			&i.Name,
-			&i.Category,
-			&i.UnlockTechnologyID,
-			&i.ShortDescription,
-			&i.FullDescription,
-			&i.Price,
-			&i.ProductionTime,
-			&i.Space,
-			&i.ImageUrl,
-			&i.ControlData,
-			&i.ResourcesData,
-			&i.DefenseData,
-			&i.MilitaryData,
-			&i.IntelligenceData,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listNewBuildItems = `-- name: ListNewBuildItems :many
-
-SELECT p.id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.control_data, p.resources_data, p.defense_data, p.military_data, p.intelligence_data
-FROM build_item_prototypes p
-WHERE p.category = $2 AND NOT EXISTS (
-    SELECT 1 FROM base_build_items bbi WHERE bbi.base_id = $1 AND bbi.prototype_id = p.id
-)
-`
-
-type ListNewBuildItemsParams struct {
-	BaseID   int64  `json:"base_id"`
-	Category string `json:"category"`
-}
-
-// Building items lifecycle queries
-func (q *Queries) ListNewBuildItems(ctx context.Context, arg ListNewBuildItemsParams) ([]BuildItemPrototype, error) {
-	rows, err := q.query(ctx, q.listNewBuildItemsStmt, listNewBuildItems, arg.BaseID, arg.Category)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []BuildItemPrototype{}
-	for rows.Next() {
-		var i BuildItemPrototype
-		if err := rows.Scan(
-			&i.ID,
 			&i.Name,
 			&i.Category,
 			&i.UnlockTechnologyID,

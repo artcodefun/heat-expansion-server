@@ -1,11 +1,10 @@
 -- Technology items lifecycle queries
 
--- name: ListNewTechItems :many
+-- name: ListTechPrototypesByIDs :many
 SELECT p.id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.research_time, p.image_url, p.effects
 FROM tech_item_prototypes p
-WHERE NOT EXISTS (
-    SELECT 1 FROM base_tech_items bti WHERE bti.base_id = $1 AND bti.prototype_id = p.id
-);
+WHERE p.id = ANY($1::bigint[])
+ORDER BY p.id;
 
 -- name: ListInResearchTechItems :many
 SELECT bti.id, bti.base_id, bti.prototype_id, bti.status, bti.in_progress_data, p.id AS proto_id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.research_time, p.image_url, p.effects

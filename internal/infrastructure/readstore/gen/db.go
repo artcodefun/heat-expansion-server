@@ -48,6 +48,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listActivitiesStmt, err = db.PrepareContext(ctx, listActivities); err != nil {
 		return nil, fmt.Errorf("error preparing query ListActivities: %w", err)
 	}
+	if q.listArmyPrototypesByIDsStmt, err = db.PrepareContext(ctx, listArmyPrototypesByIDs); err != nil {
+		return nil, fmt.Errorf("error preparing query ListArmyPrototypesByIDs: %w", err)
+	}
+	if q.listBuildPrototypesByIDsStmt, err = db.PrepareContext(ctx, listBuildPrototypesByIDs); err != nil {
+		return nil, fmt.Errorf("error preparing query ListBuildPrototypesByIDs: %w", err)
+	}
 	if q.listDoneTechItemsStmt, err = db.PrepareContext(ctx, listDoneTechItems); err != nil {
 		return nil, fmt.Errorf("error preparing query ListDoneTechItems: %w", err)
 	}
@@ -68,15 +74,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.listMilitaryActivitiesStmt, err = db.PrepareContext(ctx, listMilitaryActivities); err != nil {
 		return nil, fmt.Errorf("error preparing query ListMilitaryActivities: %w", err)
-	}
-	if q.listNewArmyItemsStmt, err = db.PrepareContext(ctx, listNewArmyItems); err != nil {
-		return nil, fmt.Errorf("error preparing query ListNewArmyItems: %w", err)
-	}
-	if q.listNewBuildItemsStmt, err = db.PrepareContext(ctx, listNewBuildItems); err != nil {
-		return nil, fmt.Errorf("error preparing query ListNewBuildItems: %w", err)
-	}
-	if q.listNewTechItemsStmt, err = db.PrepareContext(ctx, listNewTechItems); err != nil {
-		return nil, fmt.Errorf("error preparing query ListNewTechItems: %w", err)
 	}
 	if q.listOccupiedCoordinatesStmt, err = db.PrepareContext(ctx, listOccupiedCoordinates); err != nil {
 		return nil, fmt.Errorf("error preparing query ListOccupiedCoordinates: %w", err)
@@ -113,6 +110,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.listSectorsInRadiusStmt, err = db.PrepareContext(ctx, listSectorsInRadius); err != nil {
 		return nil, fmt.Errorf("error preparing query ListSectorsInRadius: %w", err)
+	}
+	if q.listTechPrototypesByIDsStmt, err = db.PrepareContext(ctx, listTechPrototypesByIDs); err != nil {
+		return nil, fmt.Errorf("error preparing query ListTechPrototypesByIDs: %w", err)
 	}
 	return &q, nil
 }
@@ -159,6 +159,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listActivitiesStmt: %w", cerr)
 		}
 	}
+	if q.listArmyPrototypesByIDsStmt != nil {
+		if cerr := q.listArmyPrototypesByIDsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listArmyPrototypesByIDsStmt: %w", cerr)
+		}
+	}
+	if q.listBuildPrototypesByIDsStmt != nil {
+		if cerr := q.listBuildPrototypesByIDsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listBuildPrototypesByIDsStmt: %w", cerr)
+		}
+	}
 	if q.listDoneTechItemsStmt != nil {
 		if cerr := q.listDoneTechItemsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listDoneTechItemsStmt: %w", cerr)
@@ -192,21 +202,6 @@ func (q *Queries) Close() error {
 	if q.listMilitaryActivitiesStmt != nil {
 		if cerr := q.listMilitaryActivitiesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listMilitaryActivitiesStmt: %w", cerr)
-		}
-	}
-	if q.listNewArmyItemsStmt != nil {
-		if cerr := q.listNewArmyItemsStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listNewArmyItemsStmt: %w", cerr)
-		}
-	}
-	if q.listNewBuildItemsStmt != nil {
-		if cerr := q.listNewBuildItemsStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listNewBuildItemsStmt: %w", cerr)
-		}
-	}
-	if q.listNewTechItemsStmt != nil {
-		if cerr := q.listNewTechItemsStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listNewTechItemsStmt: %w", cerr)
 		}
 	}
 	if q.listOccupiedCoordinatesStmt != nil {
@@ -269,6 +264,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listSectorsInRadiusStmt: %w", cerr)
 		}
 	}
+	if q.listTechPrototypesByIDsStmt != nil {
+		if cerr := q.listTechPrototypesByIDsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listTechPrototypesByIDsStmt: %w", cerr)
+		}
+	}
 	return err
 }
 
@@ -316,6 +316,8 @@ type Queries struct {
 	getUserProfileStmt                *sql.Stmt
 	listActiveOperationsStmt          *sql.Stmt
 	listActivitiesStmt                *sql.Stmt
+	listArmyPrototypesByIDsStmt       *sql.Stmt
+	listBuildPrototypesByIDsStmt      *sql.Stmt
 	listDoneTechItemsStmt             *sql.Stmt
 	listInProductionArmyItemsStmt     *sql.Stmt
 	listInProductionArmyItemsAllStmt  *sql.Stmt
@@ -323,9 +325,6 @@ type Queries struct {
 	listInProductionBuildItemsAllStmt *sql.Stmt
 	listInResearchTechItemsStmt       *sql.Stmt
 	listMilitaryActivitiesStmt        *sql.Stmt
-	listNewArmyItemsStmt              *sql.Stmt
-	listNewBuildItemsStmt             *sql.Stmt
-	listNewTechItemsStmt              *sql.Stmt
 	listOccupiedCoordinatesStmt       *sql.Stmt
 	listOperationsByBaseStmt          *sql.Stmt
 	listPendingArmyItemsStmt          *sql.Stmt
@@ -338,6 +337,7 @@ type Queries struct {
 	listPresentBuildItemsAllStmt      *sql.Stmt
 	listPresentStorageItemsStmt       *sql.Stmt
 	listSectorsInRadiusStmt           *sql.Stmt
+	listTechPrototypesByIDsStmt       *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
@@ -352,6 +352,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getUserProfileStmt:                q.getUserProfileStmt,
 		listActiveOperationsStmt:          q.listActiveOperationsStmt,
 		listActivitiesStmt:                q.listActivitiesStmt,
+		listArmyPrototypesByIDsStmt:       q.listArmyPrototypesByIDsStmt,
+		listBuildPrototypesByIDsStmt:      q.listBuildPrototypesByIDsStmt,
 		listDoneTechItemsStmt:             q.listDoneTechItemsStmt,
 		listInProductionArmyItemsStmt:     q.listInProductionArmyItemsStmt,
 		listInProductionArmyItemsAllStmt:  q.listInProductionArmyItemsAllStmt,
@@ -359,9 +361,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listInProductionBuildItemsAllStmt: q.listInProductionBuildItemsAllStmt,
 		listInResearchTechItemsStmt:       q.listInResearchTechItemsStmt,
 		listMilitaryActivitiesStmt:        q.listMilitaryActivitiesStmt,
-		listNewArmyItemsStmt:              q.listNewArmyItemsStmt,
-		listNewBuildItemsStmt:             q.listNewBuildItemsStmt,
-		listNewTechItemsStmt:              q.listNewTechItemsStmt,
 		listOccupiedCoordinatesStmt:       q.listOccupiedCoordinatesStmt,
 		listOperationsByBaseStmt:          q.listOperationsByBaseStmt,
 		listPendingArmyItemsStmt:          q.listPendingArmyItemsStmt,
@@ -374,5 +373,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listPresentBuildItemsAllStmt:      q.listPresentBuildItemsAllStmt,
 		listPresentStorageItemsStmt:       q.listPresentStorageItemsStmt,
 		listSectorsInRadiusStmt:           q.listSectorsInRadiusStmt,
+		listTechPrototypesByIDsStmt:       q.listTechPrototypesByIDsStmt,
 	}
 }

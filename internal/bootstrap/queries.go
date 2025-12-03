@@ -23,9 +23,9 @@ func NewQueries(a *Adapters) *Queries {
 	access := services.NewAccessControlService(a.UserBases)
 	return &Queries{
 		Base:      queries.NewBaseQueries(a.BaseRead, access),
-		Army:      queries.NewArmyQueries(a.ArmyRead, access),
-		Building:  queries.NewBuildingQueries(a.BuildingRead, access),
-		Tech:      queries.NewTechQueries(a.TechRead, access),
+		Army:      queries.NewArmyQueries(a.ArmyRead, a.ArmyPrototypes, a.UserBases, access),
+		Building:  queries.NewBuildingQueries(a.BuildingRead, a.BuildPrototypes, a.UserBases, access),
+		Tech:      queries.NewTechQueries(a.TechRead, a.TechPrototypes, a.UserBases, access),
 		Storage:   queries.NewStorageQueries(a.StorageRead, access),
 		Sector:    queries.NewSectorQueries(a.SectorRead, access),
 		Operation: queries.NewOperationQueries(a.OperationRead, access),

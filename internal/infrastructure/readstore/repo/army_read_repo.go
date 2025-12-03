@@ -12,8 +12,11 @@ type ArmyReadRepo struct{ q *gen.Queries }
 
 func NewArmyReadRepo(q *gen.Queries) *ArmyReadRepo { return &ArmyReadRepo{q: q} }
 
-func (r *ArmyReadRepo) ListNewArmyItems(baseID int, category string) ([]*readmodels.ArmyItemNew, error) {
-	rows, err := r.q.ListNewArmyItems(context.Background(), gen.ListNewArmyItemsParams{BaseID: int64(baseID), Category: category})
+func (r *ArmyReadRepo) ListNewArmyItemsByPrototypeIDs(ids []int) ([]*readmodels.ArmyItemNew, error) {
+	if len(ids) == 0 {
+		return []*readmodels.ArmyItemNew{}, nil
+	}
+	rows, err := r.q.ListArmyPrototypesByIDs(context.Background(), mappers.IdsToInt64(ids))
 	if err != nil {
 		return nil, err
 	}

@@ -11,8 +11,57 @@ import (
 	"encoding/json"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 	"github.com/sqlc-dev/pqtype"
 )
+
+const listArmyPrototypesByIDs = `-- name: ListArmyPrototypesByIDs :many
+
+SELECT p.id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.attack, p.defence, p.capacity, p.stealth, p.speed
+FROM army_item_prototypes p
+WHERE p.id = ANY($1::bigint[])
+ORDER BY p.id
+`
+
+// Army items lifecycle queries
+func (q *Queries) ListArmyPrototypesByIDs(ctx context.Context, dollar_1 []int64) ([]ArmyItemPrototype, error) {
+	rows, err := q.query(ctx, q.listArmyPrototypesByIDsStmt, listArmyPrototypesByIDs, pq.Array(dollar_1))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ArmyItemPrototype{}
+	for rows.Next() {
+		var i ArmyItemPrototype
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Category,
+			&i.UnlockTechnologyID,
+			&i.ShortDescription,
+			&i.FullDescription,
+			&i.Price,
+			&i.ProductionTime,
+			&i.Space,
+			&i.ImageUrl,
+			&i.Attack,
+			&i.Defence,
+			&i.Capacity,
+			&i.Stealth,
+			&i.Speed,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
 
 const listInProductionArmyItems = `-- name: ListInProductionArmyItems :many
 SELECT bai.id, bai.base_id, bai.prototype_id, bai.status, bai.in_prod_data, p.id AS proto_id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.attack, p.defence, p.capacity, p.stealth, p.speed
@@ -141,60 +190,6 @@ func (q *Queries) ListInProductionArmyItemsAll(ctx context.Context, baseID int64
 			&i.Status,
 			&i.InProdData,
 			&i.ProtoID,
-			&i.Name,
-			&i.Category,
-			&i.UnlockTechnologyID,
-			&i.ShortDescription,
-			&i.FullDescription,
-			&i.Price,
-			&i.ProductionTime,
-			&i.Space,
-			&i.ImageUrl,
-			&i.Attack,
-			&i.Defence,
-			&i.Capacity,
-			&i.Stealth,
-			&i.Speed,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listNewArmyItems = `-- name: ListNewArmyItems :many
-
-SELECT p.id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.attack, p.defence, p.capacity, p.stealth, p.speed
-FROM army_item_prototypes p
-WHERE p.category = $2 AND NOT EXISTS (
-    SELECT 1 FROM base_army_items bai WHERE bai.base_id = $1 AND bai.prototype_id = p.id
-)
-`
-
-type ListNewArmyItemsParams struct {
-	BaseID   int64  `json:"base_id"`
-	Category string `json:"category"`
-}
-
-// Army items lifecycle queries
-func (q *Queries) ListNewArmyItems(ctx context.Context, arg ListNewArmyItemsParams) ([]ArmyItemPrototype, error) {
-	rows, err := q.query(ctx, q.listNewArmyItemsStmt, listNewArmyItems, arg.BaseID, arg.Category)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []ArmyItemPrototype{}
-	for rows.Next() {
-		var i ArmyItemPrototype
-		if err := rows.Scan(
-			&i.ID,
 			&i.Name,
 			&i.Category,
 			&i.UnlockTechnologyID,

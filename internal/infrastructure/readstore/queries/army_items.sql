@@ -1,11 +1,10 @@
 -- Army items lifecycle queries
 
--- name: ListNewArmyItems :many
+-- name: ListArmyPrototypesByIDs :many
 SELECT p.id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.attack, p.defence, p.capacity, p.stealth, p.speed
 FROM army_item_prototypes p
-WHERE p.category = $2 AND NOT EXISTS (
-    SELECT 1 FROM base_army_items bai WHERE bai.base_id = $1 AND bai.prototype_id = p.id
-);
+WHERE p.id = ANY($1::bigint[])
+ORDER BY p.id;
 
 -- name: ListPendingArmyItems :many
 SELECT bai.id, bai.base_id, bai.prototype_id, bai.status, bai.pending_data, p.id AS proto_id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.attack, p.defence, p.capacity, p.stealth, p.speed

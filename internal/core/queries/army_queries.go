@@ -8,19 +8,40 @@ import (
 )
 
 type ArmyQueries struct {
-	Repo   ports.ArmyReadRepository
-	Access *services.AccessControlService
+	Repo      ports.ArmyReadRepository
+	ProtoRepo ports.ArmyPrototypeRepository
+	BaseRepo  ports.UserBaseRepository
+	Access    *services.AccessControlService
 }
 
-func NewArmyQueries(repo ports.ArmyReadRepository, access *services.AccessControlService) *ArmyQueries {
-	return &ArmyQueries{Repo: repo, Access: access}
+func NewArmyQueries(repo ports.ArmyReadRepository, protoRepo ports.ArmyPrototypeRepository, baseRepo ports.UserBaseRepository, access *services.AccessControlService) *ArmyQueries {
+	return &ArmyQueries{Repo: repo, ProtoRepo: protoRepo, BaseRepo: baseRepo, Access: access}
 }
 
 func (q *ArmyQueries) ListNewArmyItems(ctx cqrs.QueryContext, baseID int, category string) ([]*readmodels.ArmyItemNew, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return nil, err
 	}
-	return q.Repo.ListNewArmyItems(baseID, category)
+	// Load all army prototypes and user base aggregate
+	allProtos, err := q.ProtoRepo.FindAllPrototypes()
+	if err != nil {
+		return nil, err
+	}
+	base, err := q.BaseRepo.FindByID(baseID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Compute available prototypes using domain logic
+	available := base.AvailableArmies(allProtos)
+	// Filter by category if provided
+	ids := make([]int, 0, len(available))
+	for _, p := range available {
+		if category == "" || string(p.Category) == category {
+			ids = append(ids, p.ID)
+		}
+	}
+	return q.Repo.ListNewArmyItemsByPrototypeIDs(ids)
 }
 func (q *ArmyQueries) ListPendingArmyItems(ctx cqrs.QueryContext, baseID int, category string) ([]*readmodels.ArmyItemPending, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {

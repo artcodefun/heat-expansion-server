@@ -4,7 +4,7 @@ import "github.com/artcodefun/heat-expansion-api/internal/core/cqrs/readmodels"
 
 // BuildingReadRepository exposes lifecycle-segmented build item projections.
 type BuildingReadRepository interface {
-	ListNewBuildItems(baseID int, category string) ([]*readmodels.BuildItemNew, error)
+	ListNewBuildItemsByPrototypeIDs(ids []int) ([]*readmodels.BuildItemNew, error)
 	ListPendingBuildItems(baseID int, category string) ([]*readmodels.BuildItemPending, error)
 	ListInProductionBuildItems(baseID int, category string) ([]*readmodels.BuildItemInProduction, error)
 	ListPresentBuildItems(baseID int, category string) ([]*readmodels.BuildItemPresent, error)
@@ -23,7 +23,7 @@ type ActivityReadRepository interface {
 
 // TechReadRepository exposes technology lifecycle projections.
 type TechReadRepository interface {
-	ListNewTechItems(baseID int) ([]*readmodels.TechItemNew, error)
+	ListNewTechItemsByPrototypeIDs(ids []int) ([]*readmodels.TechItemNew, error)
 	ListInResearchTechItems(baseID int) ([]*readmodels.TechItemInProgress, error)
 	ListDoneTechItems(baseID int) ([]*readmodels.TechItemDone, error)
 }
@@ -56,7 +56,7 @@ type BaseReadRepository interface {
 
 // ArmyReadRepository exposes lifecycle-segmented army item projections.
 type ArmyReadRepository interface {
-	ListNewArmyItems(baseID int, category string) ([]*readmodels.ArmyItemNew, error)
+	ListNewArmyItemsByPrototypeIDs(ids []int) ([]*readmodels.ArmyItemNew, error)
 	ListPendingArmyItems(baseID int, category string) ([]*readmodels.ArmyItemPending, error)
 	ListInProductionArmyItems(baseID int, category string) ([]*readmodels.ArmyItemInProduction, error)
 	ListPresentArmyItems(baseID int, category string) ([]*readmodels.ArmyItemPresent, error)
