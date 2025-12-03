@@ -25,8 +25,7 @@ func (h *TechHandler) ListNew(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	items, err := h.queries.ListNewTechItems(ctx, baseID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if handleCQRS(c, err) {
 		return
 	}
 	c.JSON(http.StatusOK, dtos.TechItemsNewFromReadModels(items))
@@ -39,8 +38,7 @@ func (h *TechHandler) ListInProgress(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	items, err := h.queries.ListInResearchTechItems(ctx, baseID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if handleCQRS(c, err) {
 		return
 	}
 	c.JSON(http.StatusOK, dtos.TechItemsInProgressFromReadModels(items))
@@ -53,8 +51,7 @@ func (h *TechHandler) ListDone(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	items, err := h.queries.ListDoneTechItems(ctx, baseID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if handleCQRS(c, err) {
 		return
 	}
 	c.JSON(http.StatusOK, dtos.TechItemsDoneFromReadModels(items))
@@ -71,8 +68,7 @@ func (h *TechHandler) Queue(c *gin.Context) {
 		return
 	}
 	ctx := commandCtx(c)
-	if err := h.commands.StartTechResearch(ctx, baseID, body.PrototypeID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := h.commands.StartTechResearch(ctx, baseID, body.PrototypeID); handleCQRS(c, err) {
 		return
 	}
 	c.Status(http.StatusAccepted)
@@ -95,8 +91,7 @@ func (h *TechHandler) SpeedUpProduction(c *gin.Context) {
 		return
 	}
 	ctx := commandCtx(c)
-	if err := h.commands.SpeedUpTechResearchWithCrystals(ctx, uri.BaseID, ctx.UserID, parsed); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := h.commands.SpeedUpTechResearchWithCrystals(ctx, uri.BaseID, ctx.UserID, parsed); handleCQRS(c, err) {
 		return
 	}
 	c.Status(http.StatusOK)

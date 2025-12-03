@@ -25,7 +25,7 @@ func NewUserCommands(userRepo ports.UserRepository, hasher ports.PasswordHasher,
 func (c *UserCommands) Authenticate(ctx cqrs.CommandContext, email, password string) (string, error) {
 	user, err := c.UserRepo.FindByEmail(email)
 	if err != nil {
-		return "", err
+		return "", repoErr(err)
 	}
 	if !c.PasswordHasher.Verify(password, user.PasswordHash) {
 		return "", ErrInvalidCredentials

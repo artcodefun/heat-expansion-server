@@ -28,8 +28,7 @@ func (h *BaseHandler) GetBaseStatus(c *gin.Context) {
 	// TODO: derive user from auth middleware
 	ctx := queryCtx(c)
 	stats, err := h.queries.GetBaseStats(ctx, uri.BaseID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if handleCQRS(c, err) {
 		return
 	}
 
@@ -41,8 +40,7 @@ func (h *BaseHandler) GetBaseStatus(c *gin.Context) {
 func (h *BaseHandler) CreateBase(c *gin.Context) {
 	// TODO: derive user from auth middleware
 	ctx := commandCtx(c)
-	if err := h.commands.CreateBase(ctx, ctx.UserID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := h.commands.CreateBase(ctx, ctx.UserID); handleCQRS(c, err) {
 		return
 	}
 
@@ -53,8 +51,7 @@ func (h *BaseHandler) CreateBase(c *gin.Context) {
 func (h *BaseHandler) ListUserBases(c *gin.Context) {
 	ctx := queryCtx(c)
 	bases, err := h.queries.ListUserBases(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if handleCQRS(c, err) {
 		return
 	}
 	resp := dtos.UserBasesFromReadModels(bases)

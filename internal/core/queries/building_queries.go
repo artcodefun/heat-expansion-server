@@ -25,11 +25,11 @@ func (q *BuildingQueries) ListNewBuildItems(ctx cqrs.QueryContext, baseID int, c
 	// Orchestrate: load all prototypes and base, compute availability via domain
 	allProtos, err := q.ProtoRepo.FindAllPrototypes()
 	if err != nil {
-		return nil, err
+		return nil, repoErr(err)
 	}
 	base, err := q.BaseRepo.FindByID(baseID)
 	if err != nil {
-		return nil, err
+		return nil, repoErr(err)
 	}
 	available := base.AvailableBuildings(allProtos)
 	ids := make([]int, 0, len(available))
@@ -38,23 +38,27 @@ func (q *BuildingQueries) ListNewBuildItems(ctx cqrs.QueryContext, baseID int, c
 			ids = append(ids, p.ID)
 		}
 	}
-	return q.Repo.ListNewBuildItemsByPrototypeIDs(ids)
+	items, err := q.Repo.ListNewBuildItemsByPrototypeIDs(ids)
+	return items, repoErr(err)
 }
 func (q *BuildingQueries) ListPendingBuildItems(ctx cqrs.QueryContext, baseID int, category string) ([]*readmodels.BuildItemPending, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return nil, err
 	}
-	return q.Repo.ListPendingBuildItems(baseID, category)
+	items, err := q.Repo.ListPendingBuildItems(baseID, category)
+	return items, repoErr(err)
 }
 func (q *BuildingQueries) ListInProductionBuildItems(ctx cqrs.QueryContext, baseID int, category string) ([]*readmodels.BuildItemInProduction, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return nil, err
 	}
-	return q.Repo.ListInProductionBuildItems(baseID, category)
+	items, err := q.Repo.ListInProductionBuildItems(baseID, category)
+	return items, repoErr(err)
 }
 func (q *BuildingQueries) ListPresentBuildItems(ctx cqrs.QueryContext, baseID int, category string) ([]*readmodels.BuildItemPresent, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return nil, err
 	}
-	return q.Repo.ListPresentBuildItems(baseID, category)
+	items, err := q.Repo.ListPresentBuildItems(baseID, category)
+	return items, repoErr(err)
 }

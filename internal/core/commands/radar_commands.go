@@ -83,7 +83,7 @@ func (c *RadarCommands) HandleRadarScanJob(job ports.RadarScanJob) error {
 	err = c.TxMgr.WithTx(func(tx ports.Transaction) error {
 		srRepo := c.ScanReportRepo.Tx(tx)
 		if err := srRepo.Create(report); err != nil {
-			return nil
+			return err
 		}
 		report.EmitCreated()
 		events = append(events, report.EventProducer.PullEvents()...)

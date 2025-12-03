@@ -7,7 +7,7 @@ import (
 )
 
 // ErrNotFound is a generic sentinel for missing records.
-var ErrNotFound = errors.New("not found")
+var ErrNotFound = errors.New("record not found")
 
 // UserRepository defines the interface for user persistence.
 type UserRepository interface {

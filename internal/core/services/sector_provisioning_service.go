@@ -29,12 +29,12 @@ func (s *SectorProvisioningService) EnsureSectorExists(sRepo ports.SectorReposit
 			if locked, rerr := sRepo.FindByCoordinatesForUpdate(x, y); rerr == nil {
 				return locked, nil
 			}
-			return nil, err
+			return nil, repoErr(err)
 		}
 		return sector, nil
 	}
 	if err != nil {
-		return nil, err
+		return nil, repoErr(err)
 	}
 	return sector, nil
 }
@@ -49,18 +49,21 @@ func (s *SectorProvisioningService) CreateResourceLocationIfEmpty(sRepo ports.Se
 		return err
 	}
 	if _, err := sRepo.FindByCoordinatesForUpdate(loc.Coordinates.X, loc.Coordinates.Y); err != nil {
-		return err
+		return repoErr(err)
 	}
 	lt, err := sRepo.GetLocationTypeByCoordinates(loc.Coordinates.X, loc.Coordinates.Y)
 	if err != nil {
-		return err
+		return repoErr(err)
 	}
 	if lt != domain.LocationTypeEmpty {
 		return nil
 	}
 	gen := s.ContentGenerator.GenerateResourceLocationContent(loc)
 	loc.LocationDetails = domain.LocationDetails{Name: gen.Name, Description: gen.Description, ImageURL: gen.ImageURL}
-	return rRepo.Create(loc)
+	if err := rRepo.Create(loc); err != nil {
+		return repoErr(err)
+	}
+	return nil
 }
 
 // CreateDangerousLocationIfEmpty ensures sector exists and creates a dangerous location if the sector is empty.
@@ -73,18 +76,21 @@ func (s *SectorProvisioningService) CreateDangerousLocationIfEmpty(sRepo ports.S
 		return err
 	}
 	if _, err := sRepo.FindByCoordinatesForUpdate(loc.Coordinates.X, loc.Coordinates.Y); err != nil {
-		return err
+		return repoErr(err)
 	}
 	lt, err := sRepo.GetLocationTypeByCoordinates(loc.Coordinates.X, loc.Coordinates.Y)
 	if err != nil {
-		return err
+		return repoErr(err)
 	}
 	if lt != domain.LocationTypeEmpty {
 		return nil
 	}
 	gen := s.ContentGenerator.GenerateDangerousLocationContent(loc)
 	loc.LocationDetails = domain.LocationDetails{Name: gen.Name, Description: gen.Description, ImageURL: gen.ImageURL}
-	return dRepo.Create(loc)
+	if err := dRepo.Create(loc); err != nil {
+		return repoErr(err)
+	}
+	return nil
 }
 
 // CreateUserBaseIfEmpty ensures the sector exists, locks it, re-checks emptiness, and creates the provided base.
@@ -99,11 +105,11 @@ func (s *SectorProvisioningService) CreateUserBaseIfEmpty(sRepo ports.SectorRepo
 		return false, err
 	}
 	if _, err := sRepo.FindByCoordinatesForUpdate(x, y); err != nil {
-		return false, err
+		return false, repoErr(err)
 	}
 	lt, err := sRepo.GetLocationTypeByCoordinates(x, y)
 	if err != nil {
-		return false, err
+		return false, repoErr(err)
 	}
 	if lt != domain.LocationTypeEmpty {
 		return false, nil
@@ -113,7 +119,7 @@ func (s *SectorProvisioningService) CreateUserBaseIfEmpty(sRepo ports.SectorRepo
 	base.Description = content.Description
 	base.ImageURL = content.ImageURL
 	if err := bRepo.Create(base); err != nil {
-		return false, err
+		return false, repoErr(err)
 	}
 	return true, nil
 }

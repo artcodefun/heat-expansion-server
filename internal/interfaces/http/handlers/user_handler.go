@@ -23,8 +23,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 		return
 	}
 	ctx := commandCtx(c)
-	if err := h.commands.Create(ctx, body.Name, body.Email, body.Password); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := h.commands.Create(ctx, body.Name, body.Email, body.Password); handleCQRS(c, err) {
 		return
 	}
 	c.Status(http.StatusCreated)
@@ -42,9 +41,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 	}
 	ctx := commandCtx(c)
 	token, err := h.commands.Authenticate(ctx, body.Email, body.Password)
-	if err != nil {
-		// Treat auth failure as 401 when possible
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+	if handleCQRS(c, err) {
 		return
 	}
 	c.JSON(http.StatusOK, dtos.LoginResponse{Token: token})

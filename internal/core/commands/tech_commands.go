@@ -33,11 +33,11 @@ func (c *TechCommands) StartTechResearch(ctx cqrs.CommandContext, baseID int, pr
 		tRepo := c.TechRepo.Tx(tx)
 		base, err := bRepo.FindByIDForUpdate(baseID)
 		if err != nil {
-			return err
+			return repoErr(err)
 		}
 		proto, err := tRepo.FindPrototypeByID(prototypeID)
 		if err != nil {
-			return err
+			return repoErr(err)
 		}
 		if err := base.StartTechResearch(proto); err != nil {
 			return err
@@ -65,11 +65,11 @@ func (c *TechCommands) SpeedUpTechResearchWithCrystals(ctx cqrs.CommandContext, 
 		uRepo := c.UserRepo.Tx(tx)
 		base, err := bRepo.FindByIDForUpdate(baseID)
 		if err != nil {
-			return err
+			return repoErr(err)
 		}
 		user, err := uRepo.FindByIDForUpdate(userID)
 		if err != nil {
-			return err
+			return repoErr(err)
 		}
 		if err := c.crystalService.SpeedUpTechResearch(user, base, techItemID); err != nil {
 			return err

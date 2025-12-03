@@ -32,7 +32,7 @@ func (c *BaseCommands) CreateBase(ctx cqrs.CommandContext, userID int) error {
 		for attempt := 0; attempt < maxAttempts; attempt++ {
 			occupied, err := sRepo.ListOccupiedCoordinates()
 			if err != nil {
-				return err
+				return repoErr(err)
 			}
 			x, y := c.basePlacement.FindFreeChunkForBase(occupied)
 			base := domain.NewUserBaseModel(0, userID, domain.Vector2i{X: x, Y: y})

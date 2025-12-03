@@ -35,11 +35,11 @@ func (c *BuildingCommands) QueueBuilding(ctx cqrs.CommandContext, baseID int, pr
 		biRepo := c.BuildingRepo.Tx(tx)
 		base, err := bRepo.FindByIDForUpdate(baseID)
 		if err != nil {
-			return err
+			return repoErr(err)
 		}
 		proto, err := biRepo.FindPrototypeByID(prototypeID)
 		if err != nil {
-			return err
+			return repoErr(err)
 		}
 		if err := base.AddToBuildQueue(proto); err != nil {
 			return err
@@ -66,7 +66,7 @@ func (c *BuildingCommands) CancelPendingBuilding(ctx cqrs.CommandContext, baseID
 		bRepo := c.BaseRepo.Tx(tx)
 		base, err := bRepo.FindByIDForUpdate(baseID)
 		if err != nil {
-			return err
+			return repoErr(err)
 		}
 		if err := base.CancelPendingBuildingByID(itemID); err != nil {
 			return err
@@ -94,11 +94,11 @@ func (c *BuildingCommands) SpeedUpProductionWithCrystals(ctx cqrs.CommandContext
 		uRepo := c.UserRepo.Tx(tx)
 		base, err := bRepo.FindByIDForUpdate(baseID)
 		if err != nil {
-			return err
+			return repoErr(err)
 		}
 		user, err := uRepo.FindByIDForUpdate(userID)
 		if err != nil {
-			return err
+			return repoErr(err)
 		}
 		if err := c.crystalService.SpeedUpBuildingProduction(user, base, buildingItemID); err != nil {
 			return err
@@ -128,7 +128,7 @@ func (c *BuildingCommands) DeletePresentBuilding(ctx cqrs.CommandContext, baseID
 		bRepo := c.BaseRepo.Tx(tx)
 		base, err := bRepo.FindByIDForUpdate(baseID)
 		if err != nil {
-			return err
+			return repoErr(err)
 		}
 		if err := base.DeletePresentBuildingByID(itemID); err != nil {
 			return err

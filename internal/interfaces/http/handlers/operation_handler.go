@@ -43,8 +43,7 @@ func (h *OperationHandler) GetOperation(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	op, err := h.queries.GetOperation(ctx, uri.OperationID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if handleCQRS(c, err) {
 		return
 	}
 	c.JSON(http.StatusOK, dtos.OperationFromReadModel(op))
@@ -58,8 +57,7 @@ func (h *OperationHandler) ListByBase(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	ops, err := h.queries.ListOperationsByBase(ctx, uri.BaseID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if handleCQRS(c, err) {
 		return
 	}
 	resp := make([]dtos.MilitaryOperationDTO, 0, len(ops))
@@ -77,8 +75,7 @@ func (h *OperationHandler) ListActive(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	ops, err := h.queries.ListActiveOperations(ctx, uri.BaseID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if handleCQRS(c, err) {
 		return
 	}
 	resp := make([]dtos.MilitaryOperationDTO, 0, len(ops))
@@ -114,8 +111,7 @@ func (h *OperationHandler) Create(c *gin.Context) {
 		})
 	}
 	op, err := h.commands.CreateMilitaryOperation(ctx, opType, body.SourceBaseID, body.TargetX, body.TargetY, deployments)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if handleCQRS(c, err) {
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{"id": op.ID})

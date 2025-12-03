@@ -33,11 +33,11 @@ func (c *ArmyCommands) QueueArmy(ctx cqrs.CommandContext, baseID int, prototypeI
 		aRepo := c.ArmyRepo.Tx(tx)
 		base, err := bRepo.FindByIDForUpdate(baseID)
 		if err != nil {
-			return err
+			return repoErr(err)
 		}
 		proto, err := aRepo.FindPrototypeByID(prototypeID)
 		if err != nil {
-			return err
+			return repoErr(err)
 		}
 		if err := base.QueueArmy(proto, count); err != nil {
 			return err
@@ -64,7 +64,7 @@ func (c *ArmyCommands) CancelPendingArmy(ctx cqrs.CommandContext, baseID int, it
 		bRepo := c.BaseRepo.Tx(tx)
 		base, err := bRepo.FindByIDForUpdate(baseID)
 		if err != nil {
-			return err
+			return repoErr(err)
 		}
 		if err := base.CancelPendingArmyByID(itemID, count); err != nil {
 			return err
@@ -92,11 +92,11 @@ func (c *ArmyCommands) SpeedUpArmyProductionWithCrystals(ctx cqrs.CommandContext
 		uRepo := c.UserRepo.Tx(tx)
 		base, err := bRepo.FindByIDForUpdate(baseID)
 		if err != nil {
-			return err
+			return repoErr(err)
 		}
 		user, err := uRepo.FindByID(userID)
 		if err != nil {
-			return err
+			return repoErr(err)
 		}
 		if err := c.crystalService.SpeedUpArmyProduction(user, base, armyItemID); err != nil {
 			return err
@@ -126,7 +126,7 @@ func (c *ArmyCommands) DeletePresentArmy(ctx cqrs.CommandContext, baseID int, it
 		bRepo := c.BaseRepo.Tx(tx)
 		base, err := bRepo.FindByIDForUpdate(baseID)
 		if err != nil {
-			return err
+			return repoErr(err)
 		}
 		if err := base.DeletePresentArmyByID(itemID, count); err != nil {
 			return err

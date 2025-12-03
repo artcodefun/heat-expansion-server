@@ -20,5 +20,6 @@ func (q *StorageQueries) ListPresentStorageItems(ctx cqrs.QueryContext, baseID i
 	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return nil, err
 	}
-	return q.Repo.ListPresentStorageItems(baseID)
+	items, err := q.Repo.ListPresentStorageItems(baseID)
+	return items, repoErr(err)
 }

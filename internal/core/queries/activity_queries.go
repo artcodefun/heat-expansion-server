@@ -20,11 +20,13 @@ func (q *ActivityQueries) ListActivities(ctx cqrs.QueryContext, baseID int, limi
 	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return nil, err
 	}
-	return q.Repo.ListActivities(baseID, limit)
+	items, err := q.Repo.ListActivities(baseID, limit)
+	return items, repoErr(err)
 }
 func (q *ActivityQueries) ListMilitaryActivities(ctx cqrs.QueryContext, baseID int, limit int) ([]*readmodels.ActivityItem, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return nil, err
 	}
-	return q.Repo.ListMilitaryActivities(baseID, limit)
+	items, err := q.Repo.ListMilitaryActivities(baseID, limit)
+	return items, repoErr(err)
 }

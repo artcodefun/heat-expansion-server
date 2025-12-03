@@ -29,8 +29,7 @@ func (h *ArmyHandler) ListNew(c *gin.Context) {
 	ctx := queryCtx(c)
 
 	items, err := h.queries.ListNewArmyItems(ctx, baseID, category)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if handleCQRS(c, err) {
 		return
 	}
 
@@ -48,8 +47,7 @@ func (h *ArmyHandler) ListPending(c *gin.Context) {
 	ctx := cqrs.QueryContext{UserID: 0}
 
 	items, err := h.queries.ListPendingArmyItems(ctx, baseID, category)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if handleCQRS(c, err) {
 		return
 	}
 
@@ -67,8 +65,7 @@ func (h *ArmyHandler) ListInProduction(c *gin.Context) {
 	ctx := cqrs.QueryContext{UserID: 0}
 
 	items, err := h.queries.ListInProductionArmyItems(ctx, baseID, category)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if handleCQRS(c, err) {
 		return
 	}
 
@@ -86,8 +83,7 @@ func (h *ArmyHandler) ListPresent(c *gin.Context) {
 	ctx := cqrs.QueryContext{UserID: 0}
 
 	items, err := h.queries.ListPresentArmyItems(ctx, baseID, category)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if handleCQRS(c, err) {
 		return
 	}
 
@@ -108,8 +104,7 @@ func (h *ArmyHandler) Queue(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.QueueArmy(ctx, baseID, body.PrototypeID, body.Count); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := h.commands.QueueArmy(ctx, baseID, body.PrototypeID, body.Count); handleCQRS(c, err) {
 		return
 	}
 
@@ -135,8 +130,7 @@ func (h *ArmyHandler) SpeedUpProduction(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.SpeedUpArmyProductionWithCrystals(ctx, uri.BaseID, body.UserID, itemID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := h.commands.SpeedUpArmyProductionWithCrystals(ctx, uri.BaseID, body.UserID, itemID); handleCQRS(c, err) {
 		return
 	}
 
@@ -164,8 +158,7 @@ func (h *ArmyHandler) CancelPending(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.CancelPendingArmy(ctx, uri.BaseID, itemID, count); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := h.commands.CancelPendingArmy(ctx, uri.BaseID, itemID, count); handleCQRS(c, err) {
 		return
 	}
 
@@ -193,8 +186,7 @@ func (h *ArmyHandler) DeletePresent(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.DeletePresentArmy(ctx, uri.BaseID, itemID, count); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := h.commands.DeletePresentArmy(ctx, uri.BaseID, itemID, count); handleCQRS(c, err) {
 		return
 	}
 

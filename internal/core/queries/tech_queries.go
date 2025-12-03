@@ -24,28 +24,31 @@ func (q *TechQueries) ListNewTechItems(ctx cqrs.QueryContext, baseID int) ([]*re
 	}
 	allProtos, err := q.ProtoRepo.FindAllPrototypes()
 	if err != nil {
-		return nil, err
+		return nil, repoErr(err)
 	}
 	base, err := q.BaseRepo.FindByID(baseID)
 	if err != nil {
-		return nil, err
+		return nil, repoErr(err)
 	}
 	available := base.AvailableTechnologies(allProtos)
 	ids := make([]int, 0, len(available))
 	for _, p := range available {
 		ids = append(ids, p.ID)
 	}
-	return q.Repo.ListNewTechItemsByPrototypeIDs(ids)
+	items, err := q.Repo.ListNewTechItemsByPrototypeIDs(ids)
+	return items, repoErr(err)
 }
 func (q *TechQueries) ListInResearchTechItems(ctx cqrs.QueryContext, baseID int) ([]*readmodels.TechItemInProgress, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return nil, err
 	}
-	return q.Repo.ListInResearchTechItems(baseID)
+	items, err := q.Repo.ListInResearchTechItems(baseID)
+	return items, repoErr(err)
 }
 func (q *TechQueries) ListDoneTechItems(ctx cqrs.QueryContext, baseID int) ([]*readmodels.TechItemDone, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return nil, err
 	}
-	return q.Repo.ListDoneTechItems(baseID)
+	items, err := q.Repo.ListDoneTechItems(baseID)
+	return items, repoErr(err)
 }

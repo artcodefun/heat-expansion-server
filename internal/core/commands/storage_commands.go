@@ -29,7 +29,7 @@ func (c *StorageCommands) DeletePresentStorageItem(ctx cqrs.CommandContext, base
 		bRepo := c.BaseRepo.Tx(tx)
 		base, err := bRepo.FindByIDForUpdate(baseID)
 		if err != nil {
-			return err
+			return repoErr(err)
 		}
 		if err := base.DeletePresentStorageItemByID(itemID); err != nil {
 			return err
@@ -56,7 +56,7 @@ func (c *StorageCommands) ActivateBuff(ctx cqrs.CommandContext, baseID int, item
 		bRepo := c.BaseRepo.Tx(tx)
 		base, err := bRepo.FindByIDForUpdate(baseID)
 		if err != nil {
-			return err
+			return repoErr(err)
 		}
 		if err = base.ActivateBuffByID(itemID); err != nil {
 			return err

@@ -43,7 +43,7 @@ func (c *OperationCommands) CreateMilitaryOperation(ctx cqrs.CommandContext, opT
 		oRepo := c.OperationRepo.Tx(tx)
 		base, err := bRepo.FindByIDForUpdate(sourceBaseID)
 		if err != nil {
-			return err
+			return repoErr(err)
 		}
 		if len(deployments) == 0 {
 			return errors.New("no units provided for operation")

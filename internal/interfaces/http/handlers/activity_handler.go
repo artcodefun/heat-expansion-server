@@ -33,8 +33,7 @@ func (h *ActivityHandler) List(c *gin.Context) {
 		limit = 20
 	}
 	activities, err := h.queries.ListActivities(ctx, uri.BaseID, limit)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if handleCQRS(c, err) {
 		return
 	}
 	c.JSON(http.StatusOK, dtos.ActivityItemsFromReadModels(activities))
@@ -57,8 +56,7 @@ func (h *ActivityHandler) ListMilitary(c *gin.Context) {
 		limit = 20
 	}
 	activities, err := h.queries.ListMilitaryActivities(ctx, uri.BaseID, limit)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if handleCQRS(c, err) {
 		return
 	}
 	c.JSON(http.StatusOK, dtos.ActivityItemsFromReadModels(activities))

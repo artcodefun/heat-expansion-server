@@ -17,17 +17,20 @@ func NewOperationQueries(repo ports.OperationReadRepository, access *services.Ac
 }
 
 func (q *OperationQueries) GetOperation(_ cqrs.QueryContext, operationID int) (*readmodels.MilitaryOperation, error) {
-	return q.Repo.GetOperation(operationID)
+	op, err := q.Repo.GetOperation(operationID)
+	return op, repoErr(err)
 }
 func (q *OperationQueries) ListOperationsByBase(ctx cqrs.QueryContext, baseID int) ([]*readmodels.MilitaryOperation, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return nil, err
 	}
-	return q.Repo.ListOperationsByBase(baseID)
+	ops, err := q.Repo.ListOperationsByBase(baseID)
+	return ops, repoErr(err)
 }
 func (q *OperationQueries) ListActiveOperations(ctx cqrs.QueryContext, baseID int) ([]*readmodels.MilitaryOperation, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return nil, err
 	}
-	return q.Repo.ListActiveOperations(baseID)
+	ops, err := q.Repo.ListActiveOperations(baseID)
+	return ops, repoErr(err)
 }

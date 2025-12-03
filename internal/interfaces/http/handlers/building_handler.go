@@ -28,8 +28,7 @@ func (h *BuildingHandler) ListNew(c *gin.Context) {
 	ctx := queryCtx(c)
 
 	items, err := h.queries.ListNewBuildItems(ctx, baseID, category)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if handleCQRS(c, err) {
 		return
 	}
 
@@ -47,8 +46,7 @@ func (h *BuildingHandler) ListPending(c *gin.Context) {
 	ctx := queryCtx(c)
 
 	items, err := h.queries.ListPendingBuildItems(ctx, baseID, category)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if handleCQRS(c, err) {
 		return
 	}
 
@@ -66,8 +64,7 @@ func (h *BuildingHandler) ListInProduction(c *gin.Context) {
 	ctx := queryCtx(c)
 
 	items, err := h.queries.ListInProductionBuildItems(ctx, baseID, category)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if handleCQRS(c, err) {
 		return
 	}
 
@@ -85,8 +82,7 @@ func (h *BuildingHandler) ListPresent(c *gin.Context) {
 	ctx := queryCtx(c)
 
 	items, err := h.queries.ListPresentBuildItems(ctx, baseID, category)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if handleCQRS(c, err) {
 		return
 	}
 
@@ -107,8 +103,7 @@ func (h *BuildingHandler) Queue(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.QueueBuilding(ctx, baseID, body.PrototypeID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := h.commands.QueueBuilding(ctx, baseID, body.PrototypeID); handleCQRS(c, err) {
 		return
 	}
 
@@ -134,8 +129,7 @@ func (h *BuildingHandler) SpeedUpProduction(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.SpeedUpProductionWithCrystals(ctx, uri.BaseID, ctx.UserID, itemID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := h.commands.SpeedUpProductionWithCrystals(ctx, uri.BaseID, ctx.UserID, itemID); handleCQRS(c, err) {
 		return
 	}
 
@@ -156,8 +150,7 @@ func (h *BuildingHandler) CancelPending(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.CancelPendingBuilding(ctx, uri.BaseID, itemID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := h.commands.CancelPendingBuilding(ctx, uri.BaseID, itemID); handleCQRS(c, err) {
 		return
 	}
 
@@ -178,8 +171,7 @@ func (h *BuildingHandler) DeletePresent(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.DeletePresentBuilding(ctx, uri.BaseID, itemID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := h.commands.DeletePresentBuilding(ctx, uri.BaseID, itemID); handleCQRS(c, err) {
 		return
 	}
 

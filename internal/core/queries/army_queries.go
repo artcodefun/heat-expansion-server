@@ -25,11 +25,11 @@ func (q *ArmyQueries) ListNewArmyItems(ctx cqrs.QueryContext, baseID int, catego
 	// Load all army prototypes and user base aggregate
 	allProtos, err := q.ProtoRepo.FindAllPrototypes()
 	if err != nil {
-		return nil, err
+		return nil, repoErr(err)
 	}
 	base, err := q.BaseRepo.FindByID(baseID)
 	if err != nil {
-		return nil, err
+		return nil, repoErr(err)
 	}
 
 	// Compute available prototypes using domain logic
@@ -41,23 +41,27 @@ func (q *ArmyQueries) ListNewArmyItems(ctx cqrs.QueryContext, baseID int, catego
 			ids = append(ids, p.ID)
 		}
 	}
-	return q.Repo.ListNewArmyItemsByPrototypeIDs(ids)
+	items, err := q.Repo.ListNewArmyItemsByPrototypeIDs(ids)
+	return items, repoErr(err)
 }
 func (q *ArmyQueries) ListPendingArmyItems(ctx cqrs.QueryContext, baseID int, category string) ([]*readmodels.ArmyItemPending, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return nil, err
 	}
-	return q.Repo.ListPendingArmyItems(baseID, category)
+	items, err := q.Repo.ListPendingArmyItems(baseID, category)
+	return items, repoErr(err)
 }
 func (q *ArmyQueries) ListInProductionArmyItems(ctx cqrs.QueryContext, baseID int, category string) ([]*readmodels.ArmyItemInProduction, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return nil, err
 	}
-	return q.Repo.ListInProductionArmyItems(baseID, category)
+	items, err := q.Repo.ListInProductionArmyItems(baseID, category)
+	return items, repoErr(err)
 }
 func (q *ArmyQueries) ListPresentArmyItems(ctx cqrs.QueryContext, baseID int, category string) ([]*readmodels.ArmyItemPresent, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return nil, err
 	}
-	return q.Repo.ListPresentArmyItems(baseID, category)
+	items, err := q.Repo.ListPresentArmyItems(baseID, category)
+	return items, repoErr(err)
 }

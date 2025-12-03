@@ -20,11 +20,13 @@ func (q *BaseQueries) GetBaseStats(ctx cqrs.QueryContext, baseID int) (*readmode
 	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return nil, err
 	}
-	return q.Repo.GetBaseStats(baseID)
+	stats, err := q.Repo.GetBaseStats(baseID)
+	return stats, repoErr(err)
 }
 
 // ListUserBases returns basic info for bases owned by the authenticated user.
 func (q *BaseQueries) ListUserBases(ctx cqrs.QueryContext) ([]*readmodels.UserBaseModel, error) {
 	// Only allow requesting own bases for now; later add roles/tenant etc.
-	return q.Repo.ListUserBases(ctx.UserID)
+	bases, err := q.Repo.ListUserBases(ctx.UserID)
+	return bases, repoErr(err)
 }

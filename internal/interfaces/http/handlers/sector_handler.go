@@ -24,8 +24,7 @@ func (h *SectorHandler) GetSector(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	sector, err := h.queries.GetSector(ctx, uri.X, uri.Y)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if handleCQRS(c, err) {
 		return
 	}
 	c.JSON(http.StatusOK, dtos.SectorFromReadModel(sector))
@@ -39,8 +38,7 @@ func (h *SectorHandler) GetLatestScans(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	reports, err := h.queries.GetLatestScans(ctx, uri.BaseID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if handleCQRS(c, err) {
 		return
 	}
 	c.JSON(http.StatusOK, dtos.SectorScanReportsFromReadModels(reports))
@@ -59,8 +57,7 @@ func (h *SectorHandler) GetScansNear(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	reports, err := h.queries.GetScansNear(ctx, uri.BaseID, query.CenterX, query.CenterY, query.Radius)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if handleCQRS(c, err) {
 		return
 	}
 	c.JSON(http.StatusOK, dtos.SectorScanReportsFromReadModels(reports))
@@ -69,8 +66,7 @@ func (h *SectorHandler) GetScansNear(c *gin.Context) {
 func (h *SectorHandler) ListOccupiedCoordinates(c *gin.Context) {
 	ctx := queryCtx(c)
 	coords, err := h.queries.ListOccupiedCoordinates(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if handleCQRS(c, err) {
 		return
 	}
 	c.JSON(http.StatusOK, dtos.Vector2iListFromReadModels(coords))
@@ -84,8 +80,7 @@ func (h *SectorHandler) ListSectorsInRadius(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	sectors, err := h.queries.ListSectorsInRadius(ctx, query.CenterX, query.CenterY, query.Radius)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if handleCQRS(c, err) {
 		return
 	}
 	c.JSON(http.StatusOK, dtos.SectorModelsFromReadModels(sectors))
