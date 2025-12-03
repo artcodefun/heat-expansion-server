@@ -32,3 +32,16 @@ func (r *BaseReadRepo) GetBaseStats(baseID int) (*readmodels.UserBaseStats, erro
 	domainStats := mappers.UserBaseStatsFromDTO(dto, row.StatsCalcTimestamp)
 	return &domainStats, nil
 }
+
+func (r *BaseReadRepo) ListUserBases(userID int) ([]*readmodels.UserBaseModel, error) {
+	rows, err := r.q.ListUserBases(context.Background(), int64(userID))
+	if err != nil {
+		return nil, err
+	}
+	out := make([]*readmodels.UserBaseModel, 0, len(rows))
+	for _, row := range rows {
+		v := mappers.UserBaseFromBasicRow(row)
+		out = append(out, &v)
+	}
+	return out, nil
+}

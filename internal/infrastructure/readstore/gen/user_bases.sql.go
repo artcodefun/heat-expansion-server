@@ -7,6 +7,7 @@ package gen
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 )
 
@@ -27,4 +28,53 @@ func (q *Queries) GetBaseStats(ctx context.Context, id int64) (GetBaseStatsRow, 
 	var i GetBaseStatsRow
 	err := row.Scan(&i.Stats, &i.StatsCalcTimestamp)
 	return i, err
+}
+
+const listUserBases = `-- name: ListUserBases :many
+SELECT id, user_id, sector_x, sector_y, name, description, image_url
+FROM user_bases
+WHERE user_id = $1
+ORDER BY id
+`
+
+type ListUserBasesRow struct {
+	ID          int64          `json:"id"`
+	UserID      int64          `json:"user_id"`
+	SectorX     int32          `json:"sector_x"`
+	SectorY     int32          `json:"sector_y"`
+	Name        sql.NullString `json:"name"`
+	Description sql.NullString `json:"description"`
+	ImageUrl    sql.NullString `json:"image_url"`
+}
+
+// List user-owned bases (basic info only)
+func (q *Queries) ListUserBases(ctx context.Context, userID int64) ([]ListUserBasesRow, error) {
+	rows, err := q.query(ctx, q.listUserBasesStmt, listUserBases, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListUserBasesRow{}
+	for rows.Next() {
+		var i ListUserBasesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.SectorX,
+			&i.SectorY,
+			&i.Name,
+			&i.Description,
+			&i.ImageUrl,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

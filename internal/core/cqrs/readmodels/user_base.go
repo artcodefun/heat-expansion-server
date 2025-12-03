@@ -10,23 +10,6 @@ type UserBaseModel struct {
 	Coordinates Vector2i
 	UserID      int
 	LocationDetails
-
-	ArmiesPending      []ArmyItemPending
-	ArmiesPresent      []ArmyItemPresent
-	ArmiesInProduction []ArmyItemInProduction
-	ArmiesDeployed     []ArmyItemDeployed // deployed units grouped by operation
-
-	BuildingsPending      []BuildItemPending
-	BuildingsPresent      []BuildItemPresent
-	BuildingsInProduction []BuildItemInProduction
-
-	TechnologiesInProgress []TechItemInProgress
-	TechnologiesDone       []TechItemDone
-
-	StorageItemsPresent []StorageItemPresent
-
-	Stats UserBaseStats
-	// ...existing fields...
 }
 
 // UserBaseStats represents current properties of a base.

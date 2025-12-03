@@ -6,19 +6,19 @@ type TechCategory string
 
 type TechStatus string
 
-// TechCategory enum for DTOs
+// TechCategory enum values
 const (
-	ArmyDTO     TechCategory = "ARMY"
-	BuildDTO    TechCategory = "BUILD"
-	BaseDTO     TechCategory = "BASE"
-	PoliticsDTO TechCategory = "POLITICS"
+	Army     TechCategory = "ARMY"
+	Build    TechCategory = "BUILD"
+	Base     TechCategory = "BASE"
+	Politics TechCategory = "POLITICS"
 )
 
-// TechStatus enum for DTOs
+// TechStatus enum values
 const (
-	TechNewDTO        TechStatus = "NEW"
-	TechInProgressDTO TechStatus = "IN_PROGRESS"
-	TechDoneDTO       TechStatus = "DONE"
+	TechNew        TechStatus = "NEW"
+	TechInProgress TechStatus = "IN_PROGRESS"
+	TechDone       TechStatus = "DONE"
 )
 
 type TechItemDTO struct {

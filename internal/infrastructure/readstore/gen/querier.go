@@ -48,6 +48,8 @@ type Querier interface {
 	ListSectorsInRadius(ctx context.Context, arg ListSectorsInRadiusParams) ([]ListSectorsInRadiusRow, error)
 	// Technology items lifecycle queries
 	ListTechPrototypesByIDs(ctx context.Context, dollar_1 []int64) ([]TechItemPrototype, error)
+	// List user-owned bases (basic info only)
+	ListUserBases(ctx context.Context, userID int64) ([]ListUserBasesRow, error)
 }
 
 var _ Querier = (*Queries)(nil)

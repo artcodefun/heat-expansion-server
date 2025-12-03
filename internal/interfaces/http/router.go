@@ -61,7 +61,9 @@ func NewRouter(cmd Commands, qry Queries, tokenProvider ports.TokenProvider) *gi
 	api := r.Group("/api/v1")
 	api.Use(middleware.Auth(tokenProvider))
 	{
+
 		// Base
+		api.GET("/bases", baseHandler.ListUserBases)
 		api.GET("/bases/:baseId/status", baseHandler.GetBaseStatus)
 		api.POST("/bases", baseHandler.CreateBase)
 

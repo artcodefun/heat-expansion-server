@@ -114,6 +114,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listTechPrototypesByIDsStmt, err = db.PrepareContext(ctx, listTechPrototypesByIDs); err != nil {
 		return nil, fmt.Errorf("error preparing query ListTechPrototypesByIDs: %w", err)
 	}
+	if q.listUserBasesStmt, err = db.PrepareContext(ctx, listUserBases); err != nil {
+		return nil, fmt.Errorf("error preparing query ListUserBases: %w", err)
+	}
 	return &q, nil
 }
 
@@ -269,6 +272,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listTechPrototypesByIDsStmt: %w", cerr)
 		}
 	}
+	if q.listUserBasesStmt != nil {
+		if cerr := q.listUserBasesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listUserBasesStmt: %w", cerr)
+		}
+	}
 	return err
 }
 
@@ -338,6 +346,7 @@ type Queries struct {
 	listPresentStorageItemsStmt       *sql.Stmt
 	listSectorsInRadiusStmt           *sql.Stmt
 	listTechPrototypesByIDsStmt       *sql.Stmt
+	listUserBasesStmt                 *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
@@ -374,5 +383,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listPresentStorageItemsStmt:       q.listPresentStorageItemsStmt,
 		listSectorsInRadiusStmt:           q.listSectorsInRadiusStmt,
 		listTechPrototypesByIDsStmt:       q.listTechPrototypesByIDsStmt,
+		listUserBasesStmt:                 q.listUserBasesStmt,
 	}
 }

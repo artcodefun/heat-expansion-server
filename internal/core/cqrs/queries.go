@@ -17,6 +17,7 @@ type UserQueries interface {
 // BaseQueries: high-level base stats.
 type BaseQueries interface {
 	GetBaseStats(ctx QueryContext, baseID int) (*readmodels.UserBaseStats, error)
+	ListUserBases(ctx QueryContext) ([]*readmodels.UserBaseModel, error)
 }
 
 // BuildingQueries: segmented building item views matching client categories.

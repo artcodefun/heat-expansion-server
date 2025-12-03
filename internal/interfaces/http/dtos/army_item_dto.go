@@ -6,22 +6,22 @@ type ArmyCategory string
 
 type ArmyStatus string
 
-// ArmyCategory enum for DTOs
+// ArmyCategory enum values
 const (
-	InfantryDTO  ArmyCategory = "INFANTRY"
-	ArmoredDTO   ArmyCategory = "ARMORED"
-	ArtilleryDTO ArmyCategory = "ARTILLERY"
-	AviationDTO  ArmyCategory = "AVIATION"
-	SpyDTO       ArmyCategory = "SPY"
-	SpecialDTO   ArmyCategory = "SPECIAL"
+	Infantry  ArmyCategory = "INFANTRY"
+	Armored   ArmyCategory = "ARMORED"
+	Artillery ArmyCategory = "ARTILLERY"
+	Aviation  ArmyCategory = "AVIATION"
+	Spy       ArmyCategory = "SPY"
+	Special   ArmyCategory = "SPECIAL"
 )
 
-// ArmyStatus enum for DTOs
+// ArmyStatus enum values
 const (
-	ArmyNewDTO          ArmyStatus = "NEW"
-	ArmyPendingDTO      ArmyStatus = "PENDING"
-	ArmyInProductionDTO ArmyStatus = "IN_PRODUCTION"
-	ArmyPresentDTO      ArmyStatus = "PRESENT"
+	ArmyNew          ArmyStatus = "NEW"
+	ArmyPending      ArmyStatus = "PENDING"
+	ArmyInProduction ArmyStatus = "IN_PRODUCTION"
+	ArmyPresent      ArmyStatus = "PRESENT"
 )
 
 type ArmyItemDTO struct {

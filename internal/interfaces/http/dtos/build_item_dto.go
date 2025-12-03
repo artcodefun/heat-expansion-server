@@ -6,21 +6,21 @@ type BuildCategory string
 
 type BuildStatus string
 
-// BuildCategory enum for DTOs
+// BuildCategory enum values
 const (
-	ControlDTO      BuildCategory = "CONTROL"
-	ResourcesDTO    BuildCategory = "RESOURCES"
-	DefenseDTO      BuildCategory = "DEFENSE"
-	MilitaryDTO     BuildCategory = "MILITARY"
-	IntelligenceDTO BuildCategory = "INTELLIGENCE"
+	Control      BuildCategory = "CONTROL"
+	Resources    BuildCategory = "RESOURCES"
+	Defense      BuildCategory = "DEFENSE"
+	Military     BuildCategory = "MILITARY"
+	Intelligence BuildCategory = "INTELLIGENCE"
 )
 
-// BuildStatus enum for DTOs
+// BuildStatus enum values
 const (
-	BuildNewDTO          BuildStatus = "NEW"
-	BuildPendingDTO      BuildStatus = "PENDING"
-	BuildInProductionDTO BuildStatus = "IN_PRODUCTION"
-	BuildPresentDTO      BuildStatus = "PRESENT"
+	BuildNew          BuildStatus = "NEW"
+	BuildPending      BuildStatus = "PENDING"
+	BuildInProduction BuildStatus = "IN_PRODUCTION"
+	BuildPresent      BuildStatus = "PRESENT"
 )
 
 type BuildItemDTO struct {

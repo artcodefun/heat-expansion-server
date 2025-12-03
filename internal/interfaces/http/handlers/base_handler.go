@@ -48,3 +48,15 @@ func (h *BaseHandler) CreateBase(c *gin.Context) {
 
 	c.Status(http.StatusCreated)
 }
+
+// ListUserBases handles GET /bases (list bases owned by the authenticated user).
+func (h *BaseHandler) ListUserBases(c *gin.Context) {
+	ctx := queryCtx(c)
+	bases, err := h.queries.ListUserBases(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	resp := dtos.UserBasesFromReadModels(bases)
+	c.JSON(http.StatusOK, resp)
+}

@@ -4,15 +4,15 @@ import "github.com/artcodefun/heat-expansion-api/internal/core/cqrs/readmodels"
 
 type SectorType string
 
-// SectorType enum for DTOs
+// SectorType enum values
 const (
-	HomeDTO        SectorType = "HOME"
-	UnknownDTO     SectorType = "UNKNOWN"
-	SignalDTO      SectorType = "SIGNAL"
-	UserBaseDTO    SectorType = "BASE"
-	EmptyDTO       SectorType = "EMPTY"
-	ResourcefulDTO SectorType = "RESOURCEFUL"
-	DangerousDTO   SectorType = "DANGEROUS"
+	Home        SectorType = "HOME"
+	Unknown     SectorType = "UNKNOWN"
+	Signal      SectorType = "SIGNAL"
+	UserBase    SectorType = "BASE"
+	Empty       SectorType = "EMPTY"
+	Resourceful SectorType = "RESOURCEFUL"
+	Dangerous   SectorType = "DANGEROUS"
 )
 
 type SectorDTO struct {
@@ -54,22 +54,22 @@ func scanInfoFromReadModel(info readmodels.ScanInfo) *ScanInfoDTO {
 func sectorTypeFromLocation(loc readmodels.LocationType) SectorType {
 	switch loc {
 	case readmodels.LocationTypeUserBase:
-		return UserBaseDTO
+		return UserBase
 	case readmodels.LocationTypeResourceful:
-		return ResourcefulDTO
+		return Resourceful
 	case readmodels.LocationTypeDangerous:
-		return DangerousDTO
+		return Dangerous
 	case readmodels.LocationTypeEmpty:
-		return EmptyDTO
+		return Empty
 	default:
-		return UnknownDTO
+		return Unknown
 	}
 }
 
 func SectorFromReadModel(m *readmodels.SectorModel) SectorDTO {
 	return SectorDTO{
 		Coordinates: Vector2iFromReadModel(m.Coordinates),
-		Type:        UnknownDTO,
+		Type:        Unknown,
 		Name:        m.Details.Name,
 		Description: m.Details.Description,
 		ImageURL:    m.Details.ImageURL,
