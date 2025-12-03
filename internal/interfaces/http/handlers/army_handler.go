@@ -44,7 +44,7 @@ func (h *ArmyHandler) ListPending(c *gin.Context) {
 		return
 	}
 	category := c.Query("category")
-	ctx := cqrs.QueryContext{UserID: 0}
+	ctx := queryCtx(c)
 
 	items, err := h.queries.ListPendingArmyItems(ctx, baseID, category)
 	if handleCQRS(c, err) {
@@ -62,7 +62,7 @@ func (h *ArmyHandler) ListInProduction(c *gin.Context) {
 		return
 	}
 	category := c.Query("category")
-	ctx := cqrs.QueryContext{UserID: 0}
+	ctx := queryCtx(c)
 
 	items, err := h.queries.ListInProductionArmyItems(ctx, baseID, category)
 	if handleCQRS(c, err) {
@@ -80,7 +80,7 @@ func (h *ArmyHandler) ListPresent(c *gin.Context) {
 		return
 	}
 	category := c.Query("category")
-	ctx := cqrs.QueryContext{UserID: 0}
+	ctx := queryCtx(c)
 
 	items, err := h.queries.ListPresentArmyItems(ctx, baseID, category)
 	if handleCQRS(c, err) {
