@@ -19,15 +19,14 @@ func NewBaseHandler(queries cqrs.BaseQueries, commands cqrs.BaseCommands) *BaseH
 
 // GetBaseStatus handles GET /bases/:baseId/status.
 func (h *BaseHandler) GetBaseStatus(c *gin.Context) {
-	var uri dtos.GetBaseStatusURI
-	if err := c.ShouldBindUri(&uri); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid baseId"})
+	var req dtos.GetBaseStatusRequest
+	if !bindRequest(c, &req) {
 		return
 	}
 
 	// TODO: derive user from auth middleware
 	ctx := queryCtx(c)
-	stats, err := h.queries.GetBaseStats(ctx, uri.BaseID)
+	stats, err := h.queries.GetBaseStats(ctx, req.Uri.BaseID)
 	if handleCQRS(c, err) {
 		return
 	}

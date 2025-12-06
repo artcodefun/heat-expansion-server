@@ -6,7 +6,6 @@ import (
 	"github.com/artcodefun/heat-expansion-api/internal/core/cqrs"
 	"github.com/artcodefun/heat-expansion-api/internal/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type StorageHandler struct {
@@ -19,14 +18,12 @@ func NewStorageHandler(queries cqrs.StorageQueries, commands cqrs.StorageCommand
 }
 
 func (h *StorageHandler) ListPresent(c *gin.Context) {
-	var uri dtos.BaseURI
-	if err := c.ShouldBindUri(&uri); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid baseId"})
+	var req dtos.StorageListRequest
+	if !bindRequest(c, &req) {
 		return
 	}
-	baseID := uri.BaseID
 	ctx := queryCtx(c)
-	items, err := h.queries.ListPresentStorageItems(ctx, baseID)
+	items, err := h.queries.ListPresentStorageItems(ctx, req.Uri.BaseID)
 	if handleCQRS(c, err) {
 		return
 	}
@@ -34,36 +31,25 @@ func (h *StorageHandler) ListPresent(c *gin.Context) {
 }
 
 func (h *StorageHandler) DeleteItem(c *gin.Context) {
-	var uri dtos.StorageItemURI
-	if err := c.ShouldBindUri(&uri); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid path parameters"})
-		return
-	}
-	itemID, err := uuid.Parse(uri.ItemID)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid itemId"})
+	var req dtos.StorageItemRequest
+	if !bindRequest(c, &req) {
 		return
 	}
 	ctx := commandCtx(c)
-	if err := h.commands.DeletePresentStorageItem(ctx, uri.BaseID, itemID); handleCQRS(c, err) {
+	if err := h.commands.DeletePresentStorageItem(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCQRS(c, err) {
 		return
 	}
 	c.Status(http.StatusOK)
 }
 
 func (h *StorageHandler) ActivateBuff(c *gin.Context) {
-	var uri dtos.StorageItemURI
-	if err := c.ShouldBindUri(&uri); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid path parameters"})
+	var req dtos.StorageItemRequest
+	if !bindRequest(c, &req) {
 		return
 	}
-	itemID, err := uuid.Parse(uri.ItemID)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid itemId"})
-		return
-	}
+
 	ctx := commandCtx(c)
-	if err := h.commands.ActivateBuff(ctx, uri.BaseID, itemID); handleCQRS(c, err) {
+	if err := h.commands.ActivateBuff(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCQRS(c, err) {
 		return
 	}
 	c.Status(http.StatusOK)

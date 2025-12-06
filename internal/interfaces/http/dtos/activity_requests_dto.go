@@ -1,11 +1,9 @@
 package dtos
 
-// ActivityListURI captures baseId from the URL.
-type ActivityListURI struct {
-	BaseID int `uri:"baseId" binding:"required,min=1"`
-}
-
-// ActivityListQuery captures query params for listing activities.
-type ActivityListQuery struct {
+// activityListQuery captures query params for listing activities.
+type activityListQuery struct {
 	Limit int `form:"limit" binding:"omitempty,min=1"`
 }
+
+// ActivityListRequest bundles the URI and query params for activity listing endpoints.
+type ActivityListRequest = Request[BaseURI, activityListQuery, None]

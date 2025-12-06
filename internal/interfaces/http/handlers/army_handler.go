@@ -2,12 +2,10 @@ package handlers
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/artcodefun/heat-expansion-api/internal/core/cqrs"
 	"github.com/artcodefun/heat-expansion-api/internal/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type ArmyHandler struct {
@@ -21,14 +19,13 @@ func NewArmyHandler(queries cqrs.ArmyQueries, commands cqrs.ArmyCommands) *ArmyH
 
 // ListNew handles GET /bases/:baseId/army/new.
 func (h *ArmyHandler) ListNew(c *gin.Context) {
-	baseID, ok := baseIDFromCtx(c)
-	if !ok {
+	var req dtos.ArmyListRequest
+	if !bindRequest(c, &req) {
 		return
 	}
-	category := c.Query("category")
 	ctx := queryCtx(c)
 
-	items, err := h.queries.ListNewArmyItems(ctx, baseID, category)
+	items, err := h.queries.ListNewArmyItems(ctx, req.Uri.BaseID, req.Query.Category)
 	if handleCQRS(c, err) {
 		return
 	}
@@ -39,14 +36,13 @@ func (h *ArmyHandler) ListNew(c *gin.Context) {
 
 // ListPending handles GET /bases/:baseId/army/pending.
 func (h *ArmyHandler) ListPending(c *gin.Context) {
-	baseID, ok := baseIDFromCtx(c)
-	if !ok {
+	var req dtos.ArmyListRequest
+	if !bindRequest(c, &req) {
 		return
 	}
-	category := c.Query("category")
 	ctx := queryCtx(c)
 
-	items, err := h.queries.ListPendingArmyItems(ctx, baseID, category)
+	items, err := h.queries.ListPendingArmyItems(ctx, req.Uri.BaseID, req.Query.Category)
 	if handleCQRS(c, err) {
 		return
 	}
@@ -57,14 +53,13 @@ func (h *ArmyHandler) ListPending(c *gin.Context) {
 
 // ListInProduction handles GET /bases/:baseId/army/in-production.
 func (h *ArmyHandler) ListInProduction(c *gin.Context) {
-	baseID, ok := baseIDFromCtx(c)
-	if !ok {
+	var req dtos.ArmyListRequest
+	if !bindRequest(c, &req) {
 		return
 	}
-	category := c.Query("category")
 	ctx := queryCtx(c)
 
-	items, err := h.queries.ListInProductionArmyItems(ctx, baseID, category)
+	items, err := h.queries.ListInProductionArmyItems(ctx, req.Uri.BaseID, req.Query.Category)
 	if handleCQRS(c, err) {
 		return
 	}
@@ -75,14 +70,13 @@ func (h *ArmyHandler) ListInProduction(c *gin.Context) {
 
 // ListPresent handles GET /bases/:baseId/army/present.
 func (h *ArmyHandler) ListPresent(c *gin.Context) {
-	baseID, ok := baseIDFromCtx(c)
-	if !ok {
+	var req dtos.ArmyListRequest
+	if !bindRequest(c, &req) {
 		return
 	}
-	category := c.Query("category")
 	ctx := queryCtx(c)
 
-	items, err := h.queries.ListPresentArmyItems(ctx, baseID, category)
+	items, err := h.queries.ListPresentArmyItems(ctx, req.Uri.BaseID, req.Query.Category)
 	if handleCQRS(c, err) {
 		return
 	}
@@ -93,18 +87,13 @@ func (h *ArmyHandler) ListPresent(c *gin.Context) {
 
 // Queue handles POST /bases/:baseId/army/queue.
 func (h *ArmyHandler) Queue(c *gin.Context) {
-	baseID, ok := baseIDFromCtx(c)
-	if !ok {
-		return
-	}
-	var body dtos.QueueArmyRequest
-	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid body"})
+	var req dtos.ArmyQueueRequest
+	if !bindRequest(c, &req) {
 		return
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.QueueArmy(ctx, baseID, body.PrototypeID, body.Count); handleCQRS(c, err) {
+	if err := h.commands.QueueArmy(ctx, req.Uri.BaseID, req.Body.PrototypeID, req.Body.Count); handleCQRS(c, err) {
 		return
 	}
 
@@ -113,24 +102,13 @@ func (h *ArmyHandler) Queue(c *gin.Context) {
 
 // SpeedUpProduction handles POST /bases/:baseId/army/production/:taskId/speed-up.
 func (h *ArmyHandler) SpeedUpProduction(c *gin.Context) {
-	var uri dtos.ArmyTaskURI
-	if err := c.ShouldBindUri(&uri); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid path parameters"})
-		return
-	}
-	itemID, err := uuid.Parse(uri.TaskID)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid taskId"})
-		return
-	}
-	var body dtos.SpeedUpArmyRequest
-	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid body"})
+	var req dtos.ArmySpeedUpRequest
+	if !bindRequest(c, &req) {
 		return
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.SpeedUpArmyProductionWithCrystals(ctx, uri.BaseID, body.UserID, itemID); handleCQRS(c, err) {
+	if err := h.commands.SpeedUpArmyProductionWithCrystals(ctx, req.Uri.BaseID, req.Uri.TaskID.Uuid()); handleCQRS(c, err) {
 		return
 	}
 
@@ -139,26 +117,13 @@ func (h *ArmyHandler) SpeedUpProduction(c *gin.Context) {
 
 // CancelPending handles POST /bases/:baseId/army/pending/:itemId/cancel.
 func (h *ArmyHandler) CancelPending(c *gin.Context) {
-	var uri dtos.ArmyItemURI
-	if err := c.ShouldBindUri(&uri); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid path parameters"})
-		return
-	}
-	itemID, err := uuid.Parse(uri.ItemID)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid itemId"})
-		return
-	}
-
-	countStr := c.Query("count")
-	count, err := strconv.Atoi(countStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid count"})
+	var req dtos.ArmyCancelRequest
+	if !bindRequest(c, &req) {
 		return
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.CancelPendingArmy(ctx, uri.BaseID, itemID, count); handleCQRS(c, err) {
+	if err := h.commands.CancelPendingArmy(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid(), req.Query.Count); handleCQRS(c, err) {
 		return
 	}
 
@@ -167,26 +132,13 @@ func (h *ArmyHandler) CancelPending(c *gin.Context) {
 
 // DeletePresent handles DELETE /bases/:baseId/army/present/:itemId.
 func (h *ArmyHandler) DeletePresent(c *gin.Context) {
-	var uri dtos.ArmyItemURI
-	if err := c.ShouldBindUri(&uri); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid path parameters"})
-		return
-	}
-	itemID, err := uuid.Parse(uri.ItemID)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid itemId"})
-		return
-	}
-
-	countStr := c.Query("count")
-	count, err := strconv.Atoi(countStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid count"})
+	var req dtos.ArmyDeleteRequest
+	if !bindRequest(c, &req) {
 		return
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.DeletePresentArmy(ctx, uri.BaseID, itemID, count); handleCQRS(c, err) {
+	if err := h.commands.DeletePresentArmy(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid(), req.Query.Count); handleCQRS(c, err) {
 		return
 	}
 

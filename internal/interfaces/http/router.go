@@ -3,9 +3,12 @@ package http
 import (
 	"github.com/artcodefun/heat-expansion-api/internal/core/cqrs"
 	"github.com/artcodefun/heat-expansion-api/internal/core/ports"
+	"github.com/artcodefun/heat-expansion-api/internal/interfaces/http/dtos"
 	"github.com/artcodefun/heat-expansion-api/internal/interfaces/http/handlers"
 	"github.com/artcodefun/heat-expansion-api/internal/interfaces/http/middleware"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 )
 
 // Commands groups CQRS command interfaces needed by HTTP handlers.
@@ -35,6 +38,7 @@ type Queries struct {
 // NewRouter constructs the Gin engine, registers middleware and routes.
 func NewRouter(cmd Commands, qry Queries, tokenProvider ports.TokenProvider) *gin.Engine {
 	r := gin.Default()
+	registerCustomValidators()
 
 	// Initialize handlers at the top for consistency
 	userHandler := handlers.NewUserHandler(cmd.User)
@@ -137,4 +141,15 @@ func NewRouter(cmd Commands, qry Queries, tokenProvider ports.TokenProvider) *gi
 	}
 
 	return r
+}
+
+func registerCustomValidators() {
+	if validatorEngine, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		_ = validatorEngine.RegisterValidation("army_category", func(fl validator.FieldLevel) bool {
+			return dtos.IsValidArmyCategory(fl.Field().String())
+		})
+		_ = validatorEngine.RegisterValidation("build_category", func(fl validator.FieldLevel) bool {
+			return dtos.IsValidBuildCategory(fl.Field().String())
+		})
+	}
 }

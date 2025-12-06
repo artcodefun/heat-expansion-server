@@ -84,7 +84,7 @@ func (c *BuildingCommands) CancelPendingBuilding(ctx cqrs.CommandContext, baseID
 	return nil
 }
 
-func (c *BuildingCommands) SpeedUpProductionWithCrystals(ctx cqrs.CommandContext, baseID int, userID int, buildingItemID uuid.UUID) error {
+func (c *BuildingCommands) SpeedUpProductionWithCrystals(ctx cqrs.CommandContext, baseID int, buildingItemID uuid.UUID) error {
 	if err := c.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return err
 	}
@@ -96,7 +96,7 @@ func (c *BuildingCommands) SpeedUpProductionWithCrystals(ctx cqrs.CommandContext
 		if err != nil {
 			return repoErr(err)
 		}
-		user, err := uRepo.FindByIDForUpdate(userID)
+		user, err := uRepo.FindByIDForUpdate(ctx.UserID)
 		if err != nil {
 			return repoErr(err)
 		}

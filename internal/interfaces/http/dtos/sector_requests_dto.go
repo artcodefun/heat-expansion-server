@@ -1,19 +1,26 @@
 package dtos
 
-// SectorCoordinatesURI captures sector coordinates from the URL.
-type SectorCoordinatesURI struct {
+// sectorCoordinatesURI captures sector coordinates from the URL.
+type sectorCoordinatesURI struct {
 	X int `uri:"x" binding:"required"`
 	Y int `uri:"y" binding:"required"`
 }
 
-// SectorBaseURI captures a baseId from the URL.
-type SectorBaseURI struct {
-	BaseID int `uri:"baseId" binding:"required,min=1"`
-}
+// SectorGetRequest bundles URI params for sector lookups.
+type SectorGetRequest = Request[sectorCoordinatesURI, None, None]
 
-// SectorRadiusQuery captures common radius-based query params.
-type SectorRadiusQuery struct {
+// SectorLatestScansRequest bundles baseId URI params for sector-specific endpoints.
+type SectorLatestScansRequest = Request[BaseURI, None, None]
+
+// sectorRadiusQuery captures common radius-based query params.
+type sectorRadiusQuery struct {
 	CenterX int `form:"centerX" binding:"omitempty"`
 	CenterY int `form:"centerY" binding:"omitempty"`
 	Radius  int `form:"radius" binding:"omitempty,min=0"`
 }
+
+// SectorRadiusOnlyRequest binds only the radius query params.
+type SectorRadiusOnlyRequest = Request[None, sectorRadiusQuery, None]
+
+// SectorScansNearRequest binds both base URI and radius query params.
+type SectorScansNearRequest = Request[BaseURI, sectorRadiusQuery, None]

@@ -34,15 +34,12 @@ func parseOperationType(raw string) (domain.MilitaryOperationType, bool) {
 }
 
 func (h *OperationHandler) GetOperation(c *gin.Context) {
-	var uri struct {
-		OperationID int `uri:"operationId" binding:"required,min=1"`
-	}
-	if err := c.ShouldBindUri(&uri); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid operationId"})
+	var req dtos.OperationGetRequest
+	if !bindRequest(c, &req) {
 		return
 	}
 	ctx := queryCtx(c)
-	op, err := h.queries.GetOperation(ctx, uri.OperationID)
+	op, err := h.queries.GetOperation(ctx, req.Uri.OperationID)
 	if handleCQRS(c, err) {
 		return
 	}
@@ -50,13 +47,12 @@ func (h *OperationHandler) GetOperation(c *gin.Context) {
 }
 
 func (h *OperationHandler) ListByBase(c *gin.Context) {
-	var uri dtos.SectorBaseURI
-	if err := c.ShouldBindUri(&uri); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid baseId"})
+	var req dtos.SectorLatestScansRequest
+	if !bindRequest(c, &req) {
 		return
 	}
 	ctx := queryCtx(c)
-	ops, err := h.queries.ListOperationsByBase(ctx, uri.BaseID)
+	ops, err := h.queries.ListOperationsByBase(ctx, req.Uri.BaseID)
 	if handleCQRS(c, err) {
 		return
 	}
@@ -68,13 +64,12 @@ func (h *OperationHandler) ListByBase(c *gin.Context) {
 }
 
 func (h *OperationHandler) ListActive(c *gin.Context) {
-	var uri dtos.SectorBaseURI
-	if err := c.ShouldBindUri(&uri); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid baseId"})
+	var req dtos.SectorLatestScansRequest
+	if !bindRequest(c, &req) {
 		return
 	}
 	ctx := queryCtx(c)
-	ops, err := h.queries.ListActiveOperations(ctx, uri.BaseID)
+	ops, err := h.queries.ListActiveOperations(ctx, req.Uri.BaseID)
 	if handleCQRS(c, err) {
 		return
 	}
@@ -86,20 +81,19 @@ func (h *OperationHandler) ListActive(c *gin.Context) {
 }
 
 func (h *OperationHandler) Create(c *gin.Context) {
-	var body dtos.CreateOperationRequest
-	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid body"})
+	var req dtos.OperationCreateRequest
+	if !bindRequest(c, &req) {
 		return
 	}
-	opType, ok := parseOperationType(string(body.Type))
+	opType, ok := parseOperationType(string(req.Body.Type))
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid type"})
 		return
 	}
 	ctx := commandCtx(c)
 	// Map DTOs into domain-level deployment requests by item ID.
-	deployments := make([]domain.ArmyDeploymentRequest, 0, len(body.Deployed))
-	for _, d := range body.Deployed {
+	deployments := make([]domain.ArmyDeploymentRequest, 0, len(req.Body.Deployed))
+	for _, d := range req.Body.Deployed {
 		itemID, err := uuid.Parse(d.PresentItemID)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid itemId"})
@@ -110,7 +104,7 @@ func (h *OperationHandler) Create(c *gin.Context) {
 			Count:         d.Count,
 		})
 	}
-	op, err := h.commands.CreateMilitaryOperation(ctx, opType, body.SourceBaseID, body.TargetX, body.TargetY, deployments)
+	op, err := h.commands.CreateMilitaryOperation(ctx, opType, req.Body.SourceBaseID, req.Body.TargetX, req.Body.TargetY, deployments)
 	if handleCQRS(c, err) {
 		return
 	}

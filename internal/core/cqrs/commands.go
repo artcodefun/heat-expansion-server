@@ -27,7 +27,7 @@ type BaseCommands interface {
 type BuildingCommands interface {
 	QueueBuilding(ctx CommandContext, baseID int, prototypeID int) error
 	CancelPendingBuilding(ctx CommandContext, baseID int, itemID uuid.UUID) error
-	SpeedUpProductionWithCrystals(ctx CommandContext, baseID int, userID int, buildingItemID uuid.UUID) error
+	SpeedUpProductionWithCrystals(ctx CommandContext, baseID int, buildingItemID uuid.UUID) error
 	DeletePresentBuilding(ctx CommandContext, baseID int, itemID uuid.UUID) error
 }
 
@@ -35,14 +35,14 @@ type BuildingCommands interface {
 type ArmyCommands interface {
 	QueueArmy(ctx CommandContext, baseID int, prototypeID int, count int) error
 	CancelPendingArmy(ctx CommandContext, baseID int, itemID uuid.UUID, count int) error
-	SpeedUpArmyProductionWithCrystals(ctx CommandContext, baseID int, userID int, armyItemID uuid.UUID) error
+	SpeedUpArmyProductionWithCrystals(ctx CommandContext, baseID int, armyItemID uuid.UUID) error
 	DeletePresentArmy(ctx CommandContext, baseID int, itemID uuid.UUID, count int) error
 }
 
 // TechCommands encapsulates tech research mutations.
 type TechCommands interface {
 	StartTechResearch(ctx CommandContext, baseID int, prototypeID int) error
-	SpeedUpTechResearchWithCrystals(ctx CommandContext, baseID int, userID int, techItemID uuid.UUID) error
+	SpeedUpTechResearchWithCrystals(ctx CommandContext, baseID int, techItemID uuid.UUID) error
 }
 
 // StorageCommands encapsulates storage (buff/artifact) mutations.

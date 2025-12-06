@@ -55,7 +55,7 @@ func (c *TechCommands) StartTechResearch(ctx cqrs.CommandContext, baseID int, pr
 	return nil
 }
 
-func (c *TechCommands) SpeedUpTechResearchWithCrystals(ctx cqrs.CommandContext, baseID int, userID int, techItemID uuid.UUID) error {
+func (c *TechCommands) SpeedUpTechResearchWithCrystals(ctx cqrs.CommandContext, baseID int, techItemID uuid.UUID) error {
 	if err := c.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func (c *TechCommands) SpeedUpTechResearchWithCrystals(ctx cqrs.CommandContext, 
 		if err != nil {
 			return repoErr(err)
 		}
-		user, err := uRepo.FindByIDForUpdate(userID)
+		user, err := uRepo.FindByIDForUpdate(ctx.UserID)
 		if err != nil {
 			return repoErr(err)
 		}

@@ -6,7 +6,6 @@ import (
 	"github.com/artcodefun/heat-expansion-api/internal/core/cqrs"
 	"github.com/artcodefun/heat-expansion-api/internal/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type TechHandler struct {
@@ -19,12 +18,12 @@ func NewTechHandler(queries cqrs.TechQueries, commands cqrs.TechCommands) *TechH
 }
 
 func (h *TechHandler) ListNew(c *gin.Context) {
-	baseID, ok := baseIDFromCtx(c)
-	if !ok {
+	var req dtos.TechListRequest
+	if !bindRequest(c, &req) {
 		return
 	}
 	ctx := queryCtx(c)
-	items, err := h.queries.ListNewTechItems(ctx, baseID)
+	items, err := h.queries.ListNewTechItems(ctx, req.Uri.BaseID)
 	if handleCQRS(c, err) {
 		return
 	}
@@ -32,12 +31,12 @@ func (h *TechHandler) ListNew(c *gin.Context) {
 }
 
 func (h *TechHandler) ListInProgress(c *gin.Context) {
-	baseID, ok := baseIDFromCtx(c)
-	if !ok {
+	var req dtos.TechListRequest
+	if !bindRequest(c, &req) {
 		return
 	}
 	ctx := queryCtx(c)
-	items, err := h.queries.ListInResearchTechItems(ctx, baseID)
+	items, err := h.queries.ListInResearchTechItems(ctx, req.Uri.BaseID)
 	if handleCQRS(c, err) {
 		return
 	}
@@ -45,12 +44,12 @@ func (h *TechHandler) ListInProgress(c *gin.Context) {
 }
 
 func (h *TechHandler) ListDone(c *gin.Context) {
-	baseID, ok := baseIDFromCtx(c)
-	if !ok {
+	var req dtos.TechListRequest
+	if !bindRequest(c, &req) {
 		return
 	}
 	ctx := queryCtx(c)
-	items, err := h.queries.ListDoneTechItems(ctx, baseID)
+	items, err := h.queries.ListDoneTechItems(ctx, req.Uri.BaseID)
 	if handleCQRS(c, err) {
 		return
 	}
@@ -58,40 +57,24 @@ func (h *TechHandler) ListDone(c *gin.Context) {
 }
 
 func (h *TechHandler) Queue(c *gin.Context) {
-	baseID, ok := baseIDFromCtx(c)
-	if !ok {
-		return
-	}
-	var body dtos.QueueTechRequest
-	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid body"})
+	var req dtos.TechQueueRequest
+	if !bindRequest(c, &req) {
 		return
 	}
 	ctx := commandCtx(c)
-	if err := h.commands.StartTechResearch(ctx, baseID, body.PrototypeID); handleCQRS(c, err) {
+	if err := h.commands.StartTechResearch(ctx, req.Uri.BaseID, req.Body.PrototypeID); handleCQRS(c, err) {
 		return
 	}
 	c.Status(http.StatusAccepted)
 }
 
 func (h *TechHandler) SpeedUpProduction(c *gin.Context) {
-	var uri dtos.TechTaskURI
-	if err := c.ShouldBindUri(&uri); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid path parameters"})
-		return
-	}
-	parsed, err := uuid.Parse(uri.TaskID)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid taskId"})
-		return
-	}
-	var body dtos.SpeedUpTechRequest
-	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid body"})
+	var req dtos.TechSpeedUpRequest
+	if !bindRequest(c, &req) {
 		return
 	}
 	ctx := commandCtx(c)
-	if err := h.commands.SpeedUpTechResearchWithCrystals(ctx, uri.BaseID, ctx.UserID, parsed); handleCQRS(c, err) {
+	if err := h.commands.SpeedUpTechResearchWithCrystals(ctx, req.Uri.BaseID, req.Uri.TaskID.Uuid()); handleCQRS(c, err) {
 		return
 	}
 	c.Status(http.StatusOK)

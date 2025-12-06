@@ -82,7 +82,7 @@ func (c *ArmyCommands) CancelPendingArmy(ctx cqrs.CommandContext, baseID int, it
 	return nil
 }
 
-func (c *ArmyCommands) SpeedUpArmyProductionWithCrystals(ctx cqrs.CommandContext, baseID int, userID int, armyItemID uuid.UUID) error {
+func (c *ArmyCommands) SpeedUpArmyProductionWithCrystals(ctx cqrs.CommandContext, baseID int, armyItemID uuid.UUID) error {
 	if err := c.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return err
 	}
@@ -94,7 +94,7 @@ func (c *ArmyCommands) SpeedUpArmyProductionWithCrystals(ctx cqrs.CommandContext
 		if err != nil {
 			return repoErr(err)
 		}
-		user, err := uRepo.FindByID(userID)
+		user, err := uRepo.FindByID(ctx.UserID)
 		if err != nil {
 			return repoErr(err)
 		}

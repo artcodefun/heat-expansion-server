@@ -1,24 +1,65 @@
 package dtos
 
-// QueueArmyRequest represents the payload to queue army production.
-type QueueArmyRequest struct {
+// armyListQuery contains query params for ArmyListRequest.
+type armyListQuery struct {
+	Category string `form:"category" binding:"required,army_category"`
+}
+
+// ArmyListRequest aggregates URI and query params for army list endpoints.
+type ArmyListRequest = Request[BaseURI, armyListQuery, None]
+
+// armyQueueBody represents the JSON payload for queuing armies.
+type armyQueueBody struct {
 	PrototypeID int `json:"prototype_id" binding:"required,min=1"`
 	Count       int `json:"count" binding:"required,min=1"`
 }
 
-// SpeedUpArmyRequest represents the payload to speed up army production.
-type SpeedUpArmyRequest struct {
-	UserID int `json:"user_id" binding:"required,min=1"`
+// ArmyQueueRequest bundles URI params with the queue request body.
+type ArmyQueueRequest = Request[BaseURI, None, armyQueueBody]
+
+// armySpeedUpURI contains URI params for speeding up an army task.
+type armySpeedUpURI struct {
+	BaseURI
+	TaskID UuidStr `uri:"taskId" binding:"required,uuid"`
 }
 
-// ArmyItemURI binds /bases/:baseId/army/(pending|present)/:itemId style routes.
-type ArmyItemURI struct {
-	BaseID int    `uri:"baseId" binding:"required,min=1"`
-	ItemID string `uri:"itemId" binding:"required"`
+// ArmySpeedUpRequest bundles URI params for the speed-up endpoint.
+type ArmySpeedUpRequest = Request[armySpeedUpURI, None, None]
+
+// armyCancelURI contains the URI parts of the cancel endpoint.
+type armyCancelURI struct {
+	BaseURI
+	ItemID UuidStr `uri:"itemId" binding:"required,uuid"`
 }
 
-// ArmyTaskURI binds /bases/:baseId/army/production/:taskId routes.
-type ArmyTaskURI struct {
-	BaseID int    `uri:"baseId" binding:"required,min=1"`
-	TaskID string `uri:"taskId" binding:"required"`
+// armyCancelQuery contains query params for cancel endpoints.
+type armyCancelQuery struct {
+	Count int `form:"count" binding:"required,min=1"`
+}
+
+// ArmyCancelRequest bundles URI params with the cancel query param.
+type ArmyCancelRequest = Request[armyCancelURI, armyCancelQuery, None]
+
+// armyDeleteURI contains the URI parts of the delete endpoint.
+type armyDeleteURI struct {
+	BaseURI
+	ItemID UuidStr `uri:"itemId" binding:"required,uuid"`
+}
+
+// armyDeleteQuery contains query params for delete endpoints.
+type armyDeleteQuery struct {
+	Count int `form:"count" binding:"required,min=1"`
+}
+
+// ArmyDeleteRequest bundles URI params with the delete query param.
+type ArmyDeleteRequest = Request[armyDeleteURI, armyDeleteQuery, None]
+
+// IsValidArmyCategory returns true if value matches one of the predefined ArmyCategory constants.
+func IsValidArmyCategory(value string) bool {
+	switch ArmyCategory(value) {
+	case Infantry, Armored, Artillery, Aviation, Spy, Special:
+		return true
+	default:
+		return false
+	}
 }

@@ -17,22 +17,16 @@ func NewActivityHandler(queries cqrs.ActivityQueries) *ActivityHandler {
 }
 
 func (h *ActivityHandler) List(c *gin.Context) {
-	var uri dtos.ActivityListURI
-	if err := c.ShouldBindUri(&uri); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid baseId"})
-		return
-	}
-	var query dtos.ActivityListQuery
-	if err := c.ShouldBindQuery(&query); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid query"})
+	var req dtos.ActivityListRequest
+	if !bindRequest(c, &req) {
 		return
 	}
 	ctx := queryCtx(c)
-	limit := query.Limit
+	limit := req.Query.Limit
 	if limit <= 0 {
 		limit = 20
 	}
-	activities, err := h.queries.ListActivities(ctx, uri.BaseID, limit)
+	activities, err := h.queries.ListActivities(ctx, req.Uri.BaseID, limit)
 	if handleCQRS(c, err) {
 		return
 	}
@@ -40,22 +34,16 @@ func (h *ActivityHandler) List(c *gin.Context) {
 }
 
 func (h *ActivityHandler) ListMilitary(c *gin.Context) {
-	var uri dtos.ActivityListURI
-	if err := c.ShouldBindUri(&uri); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid baseId"})
-		return
-	}
-	var query dtos.ActivityListQuery
-	if err := c.ShouldBindQuery(&query); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid query"})
+	var req dtos.ActivityListRequest
+	if !bindRequest(c, &req) {
 		return
 	}
 	ctx := queryCtx(c)
-	limit := query.Limit
+	limit := req.Query.Limit
 	if limit <= 0 {
 		limit = 20
 	}
-	activities, err := h.queries.ListMilitaryActivities(ctx, uri.BaseID, limit)
+	activities, err := h.queries.ListMilitaryActivities(ctx, req.Uri.BaseID, limit)
 	if handleCQRS(c, err) {
 		return
 	}

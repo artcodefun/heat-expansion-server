@@ -174,6 +174,9 @@ func (ub *UserBaseModel) MoveBuildQueue() {
 			CrystalsSkipPrice: crystalsSkipPrice,
 		}
 		ub.BuildingsInProduction = append(ub.BuildingsInProduction, newProd)
+
+		// Emit event for building production started
+		ub.AddEvent(NewBuildingProductionStartedEvent(ub.ID, newProd.ID, completionDate))
 	}
 }
 

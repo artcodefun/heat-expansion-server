@@ -17,13 +17,12 @@ func NewSectorHandler(queries cqrs.SectorQueries) *SectorHandler {
 }
 
 func (h *SectorHandler) GetSector(c *gin.Context) {
-	var uri dtos.SectorCoordinatesURI
-	if err := c.ShouldBindUri(&uri); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid coordinates"})
+	var req dtos.SectorGetRequest
+	if !bindRequest(c, &req) {
 		return
 	}
 	ctx := queryCtx(c)
-	sector, err := h.queries.GetSector(ctx, uri.X, uri.Y)
+	sector, err := h.queries.GetSector(ctx, req.Uri.X, req.Uri.Y)
 	if handleCQRS(c, err) {
 		return
 	}
@@ -31,13 +30,12 @@ func (h *SectorHandler) GetSector(c *gin.Context) {
 }
 
 func (h *SectorHandler) GetLatestScans(c *gin.Context) {
-	var uri dtos.BaseURI
-	if err := c.ShouldBindUri(&uri); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid baseId"})
+	var req dtos.SectorLatestScansRequest
+	if !bindRequest(c, &req) {
 		return
 	}
 	ctx := queryCtx(c)
-	reports, err := h.queries.GetLatestScans(ctx, uri.BaseID)
+	reports, err := h.queries.GetLatestScans(ctx, req.Uri.BaseID)
 	if handleCQRS(c, err) {
 		return
 	}
@@ -45,18 +43,12 @@ func (h *SectorHandler) GetLatestScans(c *gin.Context) {
 }
 
 func (h *SectorHandler) GetScansNear(c *gin.Context) {
-	var uri dtos.BaseURI
-	if err := c.ShouldBindUri(&uri); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid baseId"})
-		return
-	}
-	var query dtos.SectorRadiusQuery
-	if err := c.ShouldBindQuery(&query); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid query"})
+	var req dtos.SectorScansNearRequest
+	if !bindRequest(c, &req) {
 		return
 	}
 	ctx := queryCtx(c)
-	reports, err := h.queries.GetScansNear(ctx, uri.BaseID, query.CenterX, query.CenterY, query.Radius)
+	reports, err := h.queries.GetScansNear(ctx, req.Uri.BaseID, req.Query.CenterX, req.Query.CenterY, req.Query.Radius)
 	if handleCQRS(c, err) {
 		return
 	}
@@ -73,13 +65,12 @@ func (h *SectorHandler) ListOccupiedCoordinates(c *gin.Context) {
 }
 
 func (h *SectorHandler) ListSectorsInRadius(c *gin.Context) {
-	var query dtos.SectorRadiusQuery
-	if err := c.ShouldBindQuery(&query); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid query"})
+	var req dtos.SectorRadiusOnlyRequest
+	if !bindRequest(c, &req) {
 		return
 	}
 	ctx := queryCtx(c)
-	sectors, err := h.queries.ListSectorsInRadius(ctx, query.CenterX, query.CenterY, query.Radius)
+	sectors, err := h.queries.ListSectorsInRadius(ctx, req.Query.CenterX, req.Query.CenterY, req.Query.Radius)
 	if handleCQRS(c, err) {
 		return
 	}

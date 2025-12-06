@@ -1,23 +1,48 @@
 package dtos
 
-// QueueBuildingRequest represents the payload to queue a building.
-type QueueBuildingRequest struct {
+// buildingListQuery contains query params for BuildingListRequest.
+type buildingListQuery struct {
+	Category string `form:"category,parser=encoding.TextUnmarshaler" binding:"required,build_category"`
+}
+
+// BuildingListRequest captures the path and query values for building list endpoints.
+type BuildingListRequest = Request[BaseURI, buildingListQuery, None]
+
+// buildingQueueBody represents the JSON payload required to queue a building.
+type buildingQueueBody struct {
 	PrototypeID int `json:"prototype_id" binding:"required,min=1"`
 }
 
-// SpeedUpBuildingRequest represents the payload to speed up building production.
-type SpeedUpBuildingRequest struct {
-	UserID int `json:"user_id" binding:"required,min=1"`
+// BuildingQueueRequest binds the path and body for enqueueing new buildings.
+type BuildingQueueRequest = Request[BaseURI, None, buildingQueueBody]
+
+// buildingSpeedUpURI contains the URI params for speeding up production.
+type buildingSpeedUpURI struct {
+	BaseURI
+	TaskID UuidStr `uri:"taskId" binding:"required,uuid"`
 }
 
-// BuildingItemURI binds /bases/:baseId/buildings/(pending|present)/:itemId style routes.
-type BuildingItemURI struct {
-	BaseID int    `uri:"baseId" binding:"required,min=1"`
-	ItemID string `uri:"itemId" binding:"required"`
+// BuildingSpeedUpRequest binds the path parameters for speeding up production.
+type BuildingSpeedUpRequest = Request[buildingSpeedUpURI, None, None]
+
+// buildingItemURI holds shared URI params for cancel/delete endpoints.
+type buildingItemURI struct {
+	BaseURI
+	ItemID UuidStr `uri:"itemId" binding:"required,uuid"`
 }
 
-// BuildingTaskURI binds /bases/:baseId/buildings/production/:taskId routes.
-type BuildingTaskURI struct {
-	BaseID int    `uri:"baseId" binding:"required,min=1"`
-	TaskID string `uri:"taskId" binding:"required"`
+// BuildingCancelRequest binds the path parameters to cancel pending buildings.
+type BuildingCancelRequest = Request[buildingItemURI, None, None]
+
+// BuildingDeleteRequest binds the path parameters for deleting present buildings.
+type BuildingDeleteRequest = Request[buildingItemURI, None, None]
+
+// IsValidBuildCategory returns true when value matches one of the known BuildCategory constants.
+func IsValidBuildCategory(value string) bool {
+	switch BuildCategory(value) {
+	case Control, Resources, Defense, Military, Intelligence:
+		return true
+	default:
+		return false
+	}
 }

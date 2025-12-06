@@ -36,6 +36,19 @@ func NewBasicEvent() BasicEvent {
 	return BasicEvent{timestamp: NowUnix()}
 }
 
+// User account creation event
+type UserAccountCreatedEvent struct {
+	BasicEvent
+	UserID int
+}
+
+func NewUserAccountCreatedEvent(userID int) UserAccountCreatedEvent {
+	return UserAccountCreatedEvent{
+		BasicEvent: NewBasicEvent(),
+		UserID:     userID,
+	}
+}
+
 // Building-related domain events
 
 type BuildingProductionStartedEvent struct {
@@ -98,20 +111,6 @@ func NewBuildingProductionSpeedupEvent(baseID int, itemID uuid.UUID) BuildingPro
 	}
 }
 
-// User account creation event
-type UserAccountCreatedEvent struct {
-	BasicEvent
-	UserID int
-}
-
-func NewUserAccountCreatedEvent(userID int) UserAccountCreatedEvent {
-	return UserAccountCreatedEvent{
-		BasicEvent: NewBasicEvent(),
-		UserID:     userID,
-	}
-}
-
-// Event for deleting a present building item
 type BuildingPresentDeletedEvent struct {
 	BasicEvent
 	BaseID int

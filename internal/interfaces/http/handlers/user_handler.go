@@ -17,30 +17,28 @@ func NewUserHandler(commands cqrs.UserCommands) *UserHandler {
 }
 
 func (h *UserHandler) Register(c *gin.Context) {
-	var body dtos.RegisterRequest
-	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid body"})
+	var req dtos.UserRegisterRequest
+	if !bindRequest(c, &req) {
 		return
 	}
 	ctx := commandCtx(c)
-	if err := h.commands.Create(ctx, body.Name, body.Email, body.Password); handleCQRS(c, err) {
+	if err := h.commands.Create(ctx, req.Body.Name, req.Body.Email, req.Body.Password); handleCQRS(c, err) {
 		return
 	}
 	c.Status(http.StatusCreated)
 }
 
 func (h *UserHandler) Login(c *gin.Context) {
-	var body dtos.LoginRequest
-	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid body"})
+	var req dtos.UserLoginRequest
+	if !bindRequest(c, &req) {
 		return
 	}
-	if body.Email == "" || body.Password == "" {
+	if req.Body.Email == "" || req.Body.Password == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "email and password are required"})
 		return
 	}
 	ctx := commandCtx(c)
-	token, err := h.commands.Authenticate(ctx, body.Email, body.Password)
+	token, err := h.commands.Authenticate(ctx, req.Body.Email, req.Body.Password)
 	if handleCQRS(c, err) {
 		return
 	}
