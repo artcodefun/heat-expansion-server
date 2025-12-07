@@ -10,7 +10,7 @@ const (
 	ArtifactDTO StorageCategory = "ARTIFACT"
 )
 
-type StorageItemDTO struct {
+type StorageItemPrototypeDTO struct {
 	ID               int             `json:"id"`
 	Name             string          `json:"name"`
 	Category         StorageCategory `json:"category"`
@@ -20,13 +20,13 @@ type StorageItemDTO struct {
 }
 
 type StorageItemPresentDTO struct {
-	StorageItemDTO
-	ItemID string        `json:"item_id"`
-	Refund PriceModelDTO `json:"refund"`
+	BaseOwnedItemDTO
+	Prototype StorageItemPrototypeDTO `json:"prototype"`
+	Refund    PriceModelDTO           `json:"refund"`
 }
 
-func mapStorageItemPrototype(proto readmodels.StorageItemPrototype) StorageItemDTO {
-	return StorageItemDTO{
+func mapStorageItemPrototype(proto readmodels.StorageItemPrototype) StorageItemPrototypeDTO {
+	return StorageItemPrototypeDTO{
 		ID:               proto.ID,
 		Name:             proto.Name,
 		Category:         StorageCategory(proto.Category),
@@ -40,9 +40,9 @@ func StorageItemsPresentFromReadModels(items []*readmodels.StorageItemPresent) [
 	out := make([]StorageItemPresentDTO, 0, len(items))
 	for _, item := range items {
 		out = append(out, StorageItemPresentDTO{
-			StorageItemDTO: mapStorageItemPrototype(item.Prototype),
-			ItemID:         item.BaseOwnedItem.ID.String(),
-			Refund:         PriceModelFromReadModel(item.Refund),
+			BaseOwnedItemDTO: BaseOwnedItemDTOFromReadModel(item.BaseOwnedItem),
+			Prototype:        mapStorageItemPrototype(item.Prototype),
+			Refund:           PriceModelFromReadModel(item.Refund),
 		})
 	}
 	return out

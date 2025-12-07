@@ -104,7 +104,7 @@ func (h *ArmyHandler) Queue(c *gin.Context) {
 	c.Status(http.StatusAccepted)
 }
 
-// SpeedUpProduction handles POST /bases/:baseId/army/production/:taskId/speed-up.
+// SpeedUpProduction handles POST /bases/:baseId/army/production/:itemId/speed-up.
 func (h *ArmyHandler) SpeedUpProduction(c *gin.Context) {
 	var req dtos.ArmySpeedUpRequest
 	if !bindRequest(c, &req) {
@@ -112,7 +112,7 @@ func (h *ArmyHandler) SpeedUpProduction(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.SpeedUpArmyProductionWithCrystals(ctx, req.Uri.BaseID, req.Uri.TaskID.Uuid()); handleCoreErr(c, err) {
+	if err := h.commands.SpeedUpArmyProductionWithCrystals(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, err) {
 		return
 	}
 

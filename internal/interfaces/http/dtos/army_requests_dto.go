@@ -19,10 +19,10 @@ type armyQueueBody struct {
 // ArmyQueueRequest bundles URI params with the queue request body.
 type ArmyQueueRequest = Request[BaseURI, None, armyQueueBody]
 
-// armySpeedUpURI contains URI params for speeding up an army task.
+// armySpeedUpURI contains URI params for speeding up an army item in production.
 type armySpeedUpURI struct {
 	BaseURI
-	TaskID UuidStr `uri:"taskId" binding:"required,uuid"`
+	ItemID UuidStr `uri:"itemId" binding:"required,uuid"`
 }
 
 // ArmySpeedUpRequest bundles URI params for the speed-up endpoint.

@@ -27,7 +27,7 @@ const (
 	BuildPresent      BuildStatus = "PRESENT"
 )
 
-type BuildItemDTO struct {
+type BuildItemPrototypeDTO struct {
 	ID               int           `json:"id"`
 	Name             string        `json:"name"`
 	Category         BuildCategory `json:"category"`
@@ -36,32 +36,34 @@ type BuildItemDTO struct {
 	Price            PriceModelDTO `json:"price"`
 	Space            int           `json:"space"`
 	ImageURL         string        `json:"image_url"`
+	ProductionTime   int           `json:"production_time"`
 }
 
 type BuildItemNewDTO struct {
-	BuildItemDTO
+	BuildItemPrototypeDTO
 }
 
 type BuildItemPendingDTO struct {
-	BuildItemDTO
+	BaseOwnedItemDTO
+	Prototype BuildItemPrototypeDTO `json:"prototype"`
 }
 
 type BuildItemInProductionDTO struct {
-	BuildItemDTO
-	TaskID            int `json:"task_id"`
-	StartDate         int `json:"start_date"`
-	CompletionDate    int `json:"completion_date"`
-	CrystalsSkipPrice int `json:"crystals_skip_price"`
+	BaseOwnedItemDTO
+	Prototype         BuildItemPrototypeDTO `json:"prototype"`
+	StartDate         int                   `json:"start_date"`
+	CompletionDate    int                   `json:"completion_date"`
+	CrystalsSkipPrice int                   `json:"crystals_skip_price"`
 }
 
 type BuildItemPresentDTO struct {
-	BuildItemDTO
-	BuildingID int           `json:"building_id"`
-	Refund     PriceModelDTO `json:"refund"`
+	BaseOwnedItemDTO
+	Prototype BuildItemPrototypeDTO `json:"prototype"`
+	Refund    PriceModelDTO         `json:"refund"`
 }
 
-func mapBuildItemPrototype(proto readmodels.BuildItemPrototype) BuildItemDTO {
-	return BuildItemDTO{
+func mapBuildItemPrototype(proto readmodels.BuildItemPrototype) BuildItemPrototypeDTO {
+	return BuildItemPrototypeDTO{
 		ID:               proto.ID,
 		Name:             proto.Name,
 		Category:         BuildCategory(proto.Category),
@@ -70,13 +72,14 @@ func mapBuildItemPrototype(proto readmodels.BuildItemPrototype) BuildItemDTO {
 		Price:            PriceModelFromReadModel(proto.Price),
 		Space:            proto.Space,
 		ImageURL:         proto.ImageURL,
+		ProductionTime:   int(proto.ProductionTime),
 	}
 }
 
 func BuildItemsNewFromReadModels(items []*readmodels.BuildItemNew) []BuildItemNewDTO {
 	out := make([]BuildItemNewDTO, 0, len(items))
 	for _, item := range items {
-		out = append(out, BuildItemNewDTO{BuildItemDTO: mapBuildItemPrototype(item.Prototype)})
+		out = append(out, BuildItemNewDTO{BuildItemPrototypeDTO: mapBuildItemPrototype(item.Prototype)})
 	}
 	return out
 }
@@ -84,7 +87,10 @@ func BuildItemsNewFromReadModels(items []*readmodels.BuildItemNew) []BuildItemNe
 func BuildItemsPendingFromReadModels(items []*readmodels.BuildItemPending) []BuildItemPendingDTO {
 	out := make([]BuildItemPendingDTO, 0, len(items))
 	for _, item := range items {
-		out = append(out, BuildItemPendingDTO{BuildItemDTO: mapBuildItemPrototype(item.Prototype)})
+		out = append(out, BuildItemPendingDTO{
+			BaseOwnedItemDTO: BaseOwnedItemDTOFromReadModel(item.BaseOwnedItem),
+			Prototype:        mapBuildItemPrototype(item.Prototype),
+		})
 	}
 	return out
 }
@@ -93,8 +99,8 @@ func BuildItemsInProductionFromReadModels(items []*readmodels.BuildItemInProduct
 	out := make([]BuildItemInProductionDTO, 0, len(items))
 	for _, item := range items {
 		out = append(out, BuildItemInProductionDTO{
-			BuildItemDTO:      mapBuildItemPrototype(item.Prototype),
-			TaskID:            0,
+			BaseOwnedItemDTO:  BaseOwnedItemDTOFromReadModel(item.BaseOwnedItem),
+			Prototype:         mapBuildItemPrototype(item.Prototype),
 			StartDate:         int(item.StartDate),
 			CompletionDate:    int(item.CompletionDate),
 			CrystalsSkipPrice: item.CrystalsSkipPrice,
@@ -107,9 +113,9 @@ func BuildItemsPresentFromReadModels(items []*readmodels.BuildItemPresent) []Bui
 	out := make([]BuildItemPresentDTO, 0, len(items))
 	for _, item := range items {
 		out = append(out, BuildItemPresentDTO{
-			BuildItemDTO: mapBuildItemPrototype(item.Prototype),
-			BuildingID:   0,
-			Refund:       PriceModelFromReadModel(item.Refund),
+			BaseOwnedItemDTO: BaseOwnedItemDTOFromReadModel(item.BaseOwnedItem),
+			Prototype:        mapBuildItemPrototype(item.Prototype),
+			Refund:           PriceModelFromReadModel(item.Refund),
 		})
 	}
 	return out

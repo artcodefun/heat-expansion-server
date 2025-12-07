@@ -21,7 +21,7 @@ type BuildingQueueRequest = Request[BaseURI, None, buildingQueueBody]
 // buildingSpeedUpURI contains the URI params for speeding up production.
 type buildingSpeedUpURI struct {
 	BaseURI
-	TaskID UuidStr `uri:"taskId" binding:"required,uuid"`
+	ItemID UuidStr `uri:"itemId" binding:"required,uuid"`
 }
 
 // BuildingSpeedUpRequest binds the path parameters for speeding up production.

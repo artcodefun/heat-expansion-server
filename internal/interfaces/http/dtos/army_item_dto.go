@@ -28,7 +28,7 @@ const (
 	ArmyPresent      ArmyStatus = "PRESENT"
 )
 
-type ArmyItemDTO struct {
+type ArmyItemPrototypeDTO struct {
 	ID               int           `json:"id"`
 	Name             string        `json:"name"`
 	Category         ArmyCategory  `json:"category"`
@@ -42,33 +42,36 @@ type ArmyItemDTO struct {
 	Capacity         int           `json:"capacity"`
 	Stealth          int           `json:"stealth"`
 	Speed            int           `json:"speed"`
+	ProductionTime   int           `json:"production_time"`
 }
 
 type ArmyItemNewDTO struct {
-	ArmyItemDTO
+	ArmyItemPrototypeDTO
 }
 
 type ArmyItemPendingDTO struct {
-	ArmyItemDTO
-	Count int `json:"count"`
+	BaseOwnedItemDTO
+	Prototype ArmyItemPrototypeDTO `json:"prototype"`
+	Count     int                  `json:"count"`
 }
 
 type ArmyItemInProductionDTO struct {
-	ArmyItemDTO
-	TaskID            int `json:"task_id"`
-	StartDate         int `json:"start_date"`
-	CompletionDate    int `json:"completion_date"`
-	CrystalsSkipPrice int `json:"crystals_skip_price"`
+	BaseOwnedItemDTO
+	Prototype         ArmyItemPrototypeDTO `json:"prototype"`
+	StartDate         int                  `json:"start_date"`
+	CompletionDate    int                  `json:"completion_date"`
+	CrystalsSkipPrice int                  `json:"crystals_skip_price"`
 }
 
 type ArmyItemPresentDTO struct {
-	ArmyItemDTO
-	Count  int           `json:"count"`
-	Refund PriceModelDTO `json:"refund"`
+	BaseOwnedItemDTO
+	Prototype ArmyItemPrototypeDTO `json:"prototype"`
+	Count     int                  `json:"count"`
+	Refund    PriceModelDTO        `json:"refund"`
 }
 
-func mapArmyPrototype(proto readmodels.ArmyItemPrototype) ArmyItemDTO {
-	return ArmyItemDTO{
+func mapArmyPrototype(proto readmodels.ArmyItemPrototype) ArmyItemPrototypeDTO {
+	return ArmyItemPrototypeDTO{
 		ID:               proto.ID,
 		Name:             proto.Name,
 		Category:         ArmyCategory(proto.Category),
@@ -82,13 +85,14 @@ func mapArmyPrototype(proto readmodels.ArmyItemPrototype) ArmyItemDTO {
 		Capacity:         proto.Capacity,
 		Stealth:          proto.Stealth,
 		Speed:            proto.Speed,
+		ProductionTime:   int(proto.ProductionTime),
 	}
 }
 
 func ArmyItemsNewFromReadModels(items []*readmodels.ArmyItemNew) []ArmyItemNewDTO {
 	out := make([]ArmyItemNewDTO, 0, len(items))
 	for _, item := range items {
-		out = append(out, ArmyItemNewDTO{ArmyItemDTO: mapArmyPrototype(item.Prototype)})
+		out = append(out, ArmyItemNewDTO{ArmyItemPrototypeDTO: mapArmyPrototype(item.Prototype)})
 	}
 	return out
 }
@@ -96,7 +100,11 @@ func ArmyItemsNewFromReadModels(items []*readmodels.ArmyItemNew) []ArmyItemNewDT
 func ArmyItemsPendingFromReadModels(items []*readmodels.ArmyItemPending) []ArmyItemPendingDTO {
 	out := make([]ArmyItemPendingDTO, 0, len(items))
 	for _, item := range items {
-		out = append(out, ArmyItemPendingDTO{ArmyItemDTO: mapArmyPrototype(item.Prototype), Count: item.Count})
+		out = append(out, ArmyItemPendingDTO{
+			BaseOwnedItemDTO: BaseOwnedItemDTOFromReadModel(item.BaseOwnedItem),
+			Prototype:        mapArmyPrototype(item.Prototype),
+			Count:            item.Count,
+		})
 	}
 	return out
 }
@@ -105,8 +113,8 @@ func ArmyItemsInProductionFromReadModels(items []*readmodels.ArmyItemInProductio
 	out := make([]ArmyItemInProductionDTO, 0, len(items))
 	for _, item := range items {
 		out = append(out, ArmyItemInProductionDTO{
-			ArmyItemDTO:       mapArmyPrototype(item.Prototype),
-			TaskID:            0,
+			BaseOwnedItemDTO:  BaseOwnedItemDTOFromReadModel(item.BaseOwnedItem),
+			Prototype:         mapArmyPrototype(item.Prototype),
 			StartDate:         int(item.StartDate),
 			CompletionDate:    int(item.CompletionDate),
 			CrystalsSkipPrice: item.CrystalsSkipPrice,
@@ -119,9 +127,10 @@ func ArmyItemsPresentFromReadModels(items []*readmodels.ArmyItemPresent) []ArmyI
 	out := make([]ArmyItemPresentDTO, 0, len(items))
 	for _, item := range items {
 		out = append(out, ArmyItemPresentDTO{
-			ArmyItemDTO: mapArmyPrototype(item.Prototype),
-			Count:       item.Count,
-			Refund:      PriceModelFromReadModel(item.Refund),
+			BaseOwnedItemDTO: BaseOwnedItemDTOFromReadModel(item.BaseOwnedItem),
+			Prototype:        mapArmyPrototype(item.Prototype),
+			Count:            item.Count,
+			Refund:           PriceModelFromReadModel(item.Refund),
 		})
 	}
 	return out

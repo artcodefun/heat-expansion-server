@@ -74,7 +74,7 @@ func (h *TechHandler) SpeedUpProduction(c *gin.Context) {
 		return
 	}
 	ctx := commandCtx(c)
-	if err := h.commands.SpeedUpTechResearchWithCrystals(ctx, req.Uri.BaseID, req.Uri.TaskID.Uuid()); handleCoreErr(c, err) {
+	if err := h.commands.SpeedUpTechResearchWithCrystals(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, err) {
 		return
 	}
 	c.Status(http.StatusOK)

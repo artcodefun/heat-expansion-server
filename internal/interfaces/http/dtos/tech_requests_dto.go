@@ -14,7 +14,7 @@ type TechQueueRequest = Request[BaseURI, None, techQueueBody]
 // techSpeedUpURI contains URI params for the tech speed-up endpoint.
 type techSpeedUpURI struct {
 	BaseURI
-	TaskID UuidStr `uri:"taskId" binding:"required,uuid"`
+	ItemID UuidStr `uri:"itemId" binding:"required,uuid"`
 }
 
 // TechSpeedUpRequest bundles URI params for the tech speed-up endpoint.

@@ -79,7 +79,7 @@ func NewRouter(cmd Commands, qry Queries, tokenProvider ports.TokenProvider) *gi
 			buildings.GET("/in-production", buildingHandler.ListInProduction)
 			buildings.GET("/present", buildingHandler.ListPresent)
 			buildings.POST("/queue", buildingHandler.Queue)
-			buildings.POST("/production/:taskId/speed-up", buildingHandler.SpeedUpProduction)
+			buildings.POST("/production/:itemId/speed-up", buildingHandler.SpeedUpProduction)
 			buildings.POST("/pending/:itemId/cancel", buildingHandler.CancelPending)
 			buildings.DELETE("/present/:itemId", buildingHandler.DeletePresent)
 		}
@@ -92,7 +92,7 @@ func NewRouter(cmd Commands, qry Queries, tokenProvider ports.TokenProvider) *gi
 			army.GET("/in-production", armyHandler.ListInProduction)
 			army.GET("/present", armyHandler.ListPresent)
 			army.POST("/queue", armyHandler.Queue)
-			army.POST("/production/:taskId/speed-up", armyHandler.SpeedUpProduction)
+			army.POST("/production/:itemId/speed-up", armyHandler.SpeedUpProduction)
 			army.POST("/pending/:itemId/cancel", armyHandler.CancelPending)
 			army.DELETE("/present/:itemId", armyHandler.DeletePresent)
 		}
@@ -105,7 +105,7 @@ func NewRouter(cmd Commands, qry Queries, tokenProvider ports.TokenProvider) *gi
 			tech.GET("/in-progress", techHandler.ListInProgress)
 			tech.GET("/done", techHandler.ListDone)
 			tech.POST("/queue", techHandler.Queue)
-			tech.POST("/production/:taskId/speed-up", techHandler.SpeedUpProduction)
+			tech.POST("/production/:itemId/speed-up", techHandler.SpeedUpProduction)
 		}
 
 		// Storage

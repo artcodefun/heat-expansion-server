@@ -21,7 +21,7 @@ const (
 	TechDone       TechStatus = "DONE"
 )
 
-type TechItemDTO struct {
+type TechItemPrototypeDTO struct {
 	ID               int           `json:"id"`
 	Name             string        `json:"name"`
 	Category         TechCategory  `json:"category"`
@@ -29,22 +29,24 @@ type TechItemDTO struct {
 	FullDescription  string        `json:"full_description"`
 	Price            PriceModelDTO `json:"price"`
 	ImageURL         string        `json:"image_url"`
+	ResearchTime     int           `json:"research_time"`
 }
 
 type TechItemNewDTO struct {
-	TechItemDTO
+	TechItemPrototypeDTO
 }
 
 type TechItemInProgressDTO struct {
-	TechItemDTO
-	TaskID            int `json:"task_id"`
-	StartDate         int `json:"start_date"`
-	CompletionDate    int `json:"completion_date"`
-	CrystalsSkipPrice int `json:"crystals_skip_price"`
+	BaseOwnedItemDTO
+	Prototype         TechItemPrototypeDTO `json:"prototype"`
+	StartDate         int                  `json:"start_date"`
+	CompletionDate    int                  `json:"completion_date"`
+	CrystalsSkipPrice int                  `json:"crystals_skip_price"`
 }
 
 type TechItemDoneDTO struct {
-	TechItemDTO
+	BaseOwnedItemDTO
+	Prototype TechItemPrototypeDTO `json:"prototype"`
 }
 
 type TechItemCombinedDTO struct {
@@ -53,8 +55,8 @@ type TechItemCombinedDTO struct {
 	Done       []TechItemDoneDTO       `json:"done"`
 }
 
-func mapTechPrototype(proto readmodels.TechItemPrototype) TechItemDTO {
-	return TechItemDTO{
+func mapTechPrototype(proto readmodels.TechItemPrototype) TechItemPrototypeDTO {
+	return TechItemPrototypeDTO{
 		ID:               proto.ID,
 		Name:             proto.Name,
 		Category:         TechCategory(proto.Category),
@@ -62,13 +64,14 @@ func mapTechPrototype(proto readmodels.TechItemPrototype) TechItemDTO {
 		FullDescription:  proto.FullDescription,
 		Price:            PriceModelFromReadModel(proto.Price),
 		ImageURL:         proto.ImageURL,
+		ResearchTime:     int(proto.ResearchTime),
 	}
 }
 
 func TechItemsNewFromReadModels(items []*readmodels.TechItemNew) []TechItemNewDTO {
 	out := make([]TechItemNewDTO, 0, len(items))
 	for _, item := range items {
-		out = append(out, TechItemNewDTO{TechItemDTO: mapTechPrototype(item.Prototype)})
+		out = append(out, TechItemNewDTO{TechItemPrototypeDTO: mapTechPrototype(item.Prototype)})
 	}
 	return out
 }
@@ -77,8 +80,8 @@ func TechItemsInProgressFromReadModels(items []*readmodels.TechItemInProgress) [
 	out := make([]TechItemInProgressDTO, 0, len(items))
 	for _, item := range items {
 		out = append(out, TechItemInProgressDTO{
-			TechItemDTO:       mapTechPrototype(item.Prototype),
-			TaskID:            0,
+			BaseOwnedItemDTO:  BaseOwnedItemDTOFromReadModel(item.BaseOwnedItem),
+			Prototype:         mapTechPrototype(item.Prototype),
 			StartDate:         int(item.StartDate),
 			CompletionDate:    int(item.CompletionDate),
 			CrystalsSkipPrice: item.CrystalsSkipPrice,
@@ -90,7 +93,10 @@ func TechItemsInProgressFromReadModels(items []*readmodels.TechItemInProgress) [
 func TechItemsDoneFromReadModels(items []*readmodels.TechItemDone) []TechItemDoneDTO {
 	out := make([]TechItemDoneDTO, 0, len(items))
 	for _, item := range items {
-		out = append(out, TechItemDoneDTO{TechItemDTO: mapTechPrototype(item.Prototype)})
+		out = append(out, TechItemDoneDTO{
+			BaseOwnedItemDTO: BaseOwnedItemDTOFromReadModel(item.BaseOwnedItem),
+			Prototype:        mapTechPrototype(item.Prototype),
+		})
 	}
 	return out
 }
