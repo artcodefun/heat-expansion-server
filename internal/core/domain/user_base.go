@@ -91,6 +91,11 @@ func (ub *UserBaseModel) GetProductionCompletionTime(id uuid.UUID) (int64, bool)
 func (ub *UserBaseModel) AddToBuildQueue(proto *BuildItemPrototype) error {
 	defer ub.recalculateStats()
 
+	// Ensure this prototype is actually available for this base
+	if len(ub.AvailableBuildings([]*BuildItemPrototype{proto})) == 0 {
+		return fmt.Errorf("this building is not available for production")
+	}
+
 	// Calculate total space after adding this building
 	totalSpace := ub.Stats.Space + proto.Space
 	if totalSpace > ub.Stats.SpaceCapacity {
@@ -286,12 +291,13 @@ func (ub *UserBaseModel) AvailableArmies(allPrototypes []*ArmyItemPrototype) []*
 
 // Queues a new army item for production (batch with count)
 func (ub *UserBaseModel) QueueArmy(proto *ArmyItemPrototype, count int) error {
+	defer ub.recalculateStats()
 	if count < 1 {
 		return fmt.Errorf("count must be at least 1")
 	}
-	// Only require at least one matching military building for category
-	if ub.countMilitaryBuildingsForCategory(proto.Category) == 0 {
-		return fmt.Errorf("no matching military building for category %s", proto.Category)
+	// Ensure this prototype is actually available for this base
+	if len(ub.AvailableArmies([]*ArmyItemPrototype{proto})) == 0 {
+		return fmt.Errorf("this army item is not available for production")
 	}
 	// Validate resources
 	totalPrice := PriceModel{
@@ -334,11 +340,7 @@ func (ub *UserBaseModel) QueueArmy(proto *ArmyItemPrototype, count int) error {
 		}
 		ub.ArmiesPending = append(ub.ArmiesPending, pending)
 	}
-	// TODO: Emit event for army queued (add event type if needed)
-	// ub.AddEvent(NewArmyProductionPendingEvent(ub.ID, proto.ID, count))
-	ub.recalculateStats()
-	// Optionally start queue processing
-	// ub.MoveArmyQueue()
+	ub.MoveArmyQueue()
 	return nil
 }
 
@@ -524,6 +526,17 @@ func (ub *UserBaseModel) AvailableTechnologies(allPrototypes []*TechItemPrototyp
 		if hasTech(ub.TechnologiesDone, proto.ID) {
 			continue
 		}
+		// Already in progress?
+		alreadyInProgress := false
+		for _, t := range ub.TechnologiesInProgress {
+			if t.Prototype.ID == proto.ID {
+				alreadyInProgress = true
+				break
+			}
+		}
+		if alreadyInProgress {
+			continue
+		}
 		// Check unlock condition (if any)
 		if proto.UnlockTechnologyID != nil && !hasTech(ub.TechnologiesDone, *proto.UnlockTechnologyID) {
 			continue
@@ -535,20 +548,12 @@ func (ub *UserBaseModel) AvailableTechnologies(allPrototypes []*TechItemPrototyp
 
 // StartTechResearch queues a technology for research
 func (ub *UserBaseModel) StartTechResearch(proto *TechItemPrototype) error {
-	// Already researched?
-	if hasTech(ub.TechnologiesDone, proto.ID) {
-		return fmt.Errorf("technology already researched")
+	defer ub.recalculateStats()
+	// Ensure this prototype is actually available for this base
+	if len(ub.AvailableTechnologies([]*TechItemPrototype{proto})) == 0 {
+		return fmt.Errorf("this technology is not available for research")
 	}
-	// Already in progress?
-	for _, t := range ub.TechnologiesInProgress {
-		if t.Prototype.ID == proto.ID {
-			return fmt.Errorf("technology already in progress")
-		}
-	}
-	// Check unlock condition (if any)
-	if proto.UnlockTechnologyID != nil && !hasTech(ub.TechnologiesDone, *proto.UnlockTechnologyID) {
-		return fmt.Errorf("missing prerequisite technology %d", *proto.UnlockTechnologyID)
-	}
+
 	// Validate resources
 	if proto.Price.Credits > ub.Stats.Credits {
 		return fmt.Errorf("not enough credits")
@@ -586,6 +591,7 @@ func (ub *UserBaseModel) StartTechResearch(proto *TechItemPrototype) error {
 
 // MoveTechQueue moves finished techs to done and starts next in-progress (if any)
 func (ub *UserBaseModel) MoveTechQueue() {
+	defer ub.recalculateStats()
 	now := NowUnix()
 	var remainingInProgress []TechItemInProgress
 	for _, tech := range ub.TechnologiesInProgress {
