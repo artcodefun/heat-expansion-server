@@ -50,7 +50,7 @@ func (c *OperationCommands) CreateMilitaryOperation(ctx cqrs.CommandContext, opT
 		}
 		readyToDeploy, err := base.GetReadyToDeployArmy(deployments)
 		if err != nil {
-			return err
+			return cqrs.NewDomainError(err)
 		}
 		units := domain.OperationUnitsFromDeployed(readyToDeploy)
 		if len(units) == 0 {
@@ -84,7 +84,7 @@ func (c *OperationCommands) CreateMilitaryOperation(ctx cqrs.CommandContext, opT
 		}
 		for _, ready := range readyToDeploy {
 			if _, err := base.AllocateArmyToOperation(domain.ArmyDeploymentRequest{PresentItemID: ready.PresentItemID, Count: ready.Count}, createdOp.ID); err != nil {
-				return err
+				return cqrs.NewDomainError(err)
 			}
 		}
 		createdOp.Start()

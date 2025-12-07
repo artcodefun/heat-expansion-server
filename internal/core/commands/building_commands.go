@@ -42,7 +42,7 @@ func (c *BuildingCommands) QueueBuilding(ctx cqrs.CommandContext, baseID int, pr
 			return repoErr(err)
 		}
 		if err := base.AddToBuildQueue(proto); err != nil {
-			return err
+			return cqrs.NewDomainError(err)
 		}
 		if err := bRepo.Update(base); err != nil {
 			return err
@@ -69,7 +69,7 @@ func (c *BuildingCommands) CancelPendingBuilding(ctx cqrs.CommandContext, baseID
 			return repoErr(err)
 		}
 		if err := base.CancelPendingBuildingByID(itemID); err != nil {
-			return err
+			return cqrs.NewDomainError(err)
 		}
 		if err := bRepo.Update(base); err != nil {
 			return err
@@ -101,7 +101,7 @@ func (c *BuildingCommands) SpeedUpProductionWithCrystals(ctx cqrs.CommandContext
 			return repoErr(err)
 		}
 		if err := c.crystalService.SpeedUpBuildingProduction(user, base, buildingItemID); err != nil {
-			return err
+			return cqrs.NewDomainError(err)
 		}
 		if err := uRepo.Update(user); err != nil {
 			return err
@@ -131,7 +131,7 @@ func (c *BuildingCommands) DeletePresentBuilding(ctx cqrs.CommandContext, baseID
 			return repoErr(err)
 		}
 		if err := base.DeletePresentBuildingByID(itemID); err != nil {
-			return err
+			return cqrs.NewDomainError(err)
 		}
 		if err := bRepo.Update(base); err != nil {
 			return err

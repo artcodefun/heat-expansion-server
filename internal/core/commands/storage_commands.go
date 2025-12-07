@@ -32,7 +32,7 @@ func (c *StorageCommands) DeletePresentStorageItem(ctx cqrs.CommandContext, base
 			return repoErr(err)
 		}
 		if err := base.DeletePresentStorageItemByID(itemID); err != nil {
-			return err
+			return cqrs.NewDomainError(err)
 		}
 		if err := bRepo.Update(base); err != nil {
 			return err
@@ -59,7 +59,7 @@ func (c *StorageCommands) ActivateBuff(ctx cqrs.CommandContext, baseID int, item
 			return repoErr(err)
 		}
 		if err = base.ActivateBuffByID(itemID); err != nil {
-			return err
+			return cqrs.NewDomainError(err)
 		}
 		if err := bRepo.Update(base); err != nil {
 			return err

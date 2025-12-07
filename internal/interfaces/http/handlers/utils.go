@@ -31,9 +31,9 @@ func handleCoreErr(c *gin.Context, err error) bool {
 	if err == nil {
 		return false
 	}
-	// Validation errors: 400 with field details when available.
-	if ve, ok := err.(cqrs.ValidationError); ok {
-		c.JSON(http.StatusBadRequest, gin.H{"error": ve.Error(), "fields": ve.Fields})
+	// Domain errors: 400 with domain-provided message.
+	if de, ok := err.(cqrs.DomainError); ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": de.Error()})
 		return true
 	}
 	// Authorization failures.

@@ -40,7 +40,7 @@ func (c *TechCommands) StartTechResearch(ctx cqrs.CommandContext, baseID int, pr
 			return repoErr(err)
 		}
 		if err := base.StartTechResearch(proto); err != nil {
-			return err
+			return cqrs.NewDomainError(err)
 		}
 		if err := bRepo.Update(base); err != nil {
 			return err
@@ -72,7 +72,7 @@ func (c *TechCommands) SpeedUpTechResearchWithCrystals(ctx cqrs.CommandContext, 
 			return repoErr(err)
 		}
 		if err := c.crystalService.SpeedUpTechResearch(user, base, techItemID); err != nil {
-			return err
+			return cqrs.NewDomainError(err)
 		}
 		if err := uRepo.Update(user); err != nil {
 			return err
