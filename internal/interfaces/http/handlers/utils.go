@@ -7,9 +7,27 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// handleCQRS handles common CQRS-layer errors and writes an appropriate HTTP response.
+func queryCtx(c *gin.Context) cqrs.QueryContext {
+	if v, ok := c.Get("userID"); ok {
+		if id, ok2 := v.(int); ok2 {
+			return cqrs.QueryContext{UserID: id}
+		}
+	}
+	return cqrs.QueryContext{UserID: 0}
+}
+
+func commandCtx(c *gin.Context) cqrs.CommandContext {
+	if v, ok := c.Get("userID"); ok {
+		if id, ok2 := v.(int); ok2 {
+			return cqrs.CommandContext{UserID: id}
+		}
+	}
+	return cqrs.CommandContext{UserID: 0}
+}
+
+// handleCoreErr handles common core layer errors and writes an appropriate HTTP response.
 // It returns true if a response was written and the caller should return.
-func handleCQRS(c *gin.Context, err error) bool {
+func handleCoreErr(c *gin.Context, err error) bool {
 	if err == nil {
 		return false
 	}

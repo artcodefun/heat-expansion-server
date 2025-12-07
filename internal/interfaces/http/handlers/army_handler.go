@@ -25,8 +25,9 @@ func (h *ArmyHandler) ListNew(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 
-	items, err := h.queries.ListNewArmyItems(ctx, req.Uri.BaseID, req.Query.Category)
-	if handleCQRS(c, err) {
+	category := dtos.ArmyCategoryFromDTO(req.Query.Category)
+	items, err := h.queries.ListNewArmyItems(ctx, req.Uri.BaseID, category)
+	if handleCoreErr(c, err) {
 		return
 	}
 
@@ -42,8 +43,9 @@ func (h *ArmyHandler) ListPending(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 
-	items, err := h.queries.ListPendingArmyItems(ctx, req.Uri.BaseID, req.Query.Category)
-	if handleCQRS(c, err) {
+	category := dtos.ArmyCategoryFromDTO(req.Query.Category)
+	items, err := h.queries.ListPendingArmyItems(ctx, req.Uri.BaseID, category)
+	if handleCoreErr(c, err) {
 		return
 	}
 
@@ -59,8 +61,9 @@ func (h *ArmyHandler) ListInProduction(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 
-	items, err := h.queries.ListInProductionArmyItems(ctx, req.Uri.BaseID, req.Query.Category)
-	if handleCQRS(c, err) {
+	category := dtos.ArmyCategoryFromDTO(req.Query.Category)
+	items, err := h.queries.ListInProductionArmyItems(ctx, req.Uri.BaseID, category)
+	if handleCoreErr(c, err) {
 		return
 	}
 
@@ -76,8 +79,9 @@ func (h *ArmyHandler) ListPresent(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 
-	items, err := h.queries.ListPresentArmyItems(ctx, req.Uri.BaseID, req.Query.Category)
-	if handleCQRS(c, err) {
+	category := dtos.ArmyCategoryFromDTO(req.Query.Category)
+	items, err := h.queries.ListPresentArmyItems(ctx, req.Uri.BaseID, category)
+	if handleCoreErr(c, err) {
 		return
 	}
 
@@ -93,7 +97,7 @@ func (h *ArmyHandler) Queue(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.QueueArmy(ctx, req.Uri.BaseID, req.Body.PrototypeID, req.Body.Count); handleCQRS(c, err) {
+	if err := h.commands.QueueArmy(ctx, req.Uri.BaseID, req.Body.PrototypeID, req.Body.Count); handleCoreErr(c, err) {
 		return
 	}
 
@@ -108,7 +112,7 @@ func (h *ArmyHandler) SpeedUpProduction(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.SpeedUpArmyProductionWithCrystals(ctx, req.Uri.BaseID, req.Uri.TaskID.Uuid()); handleCQRS(c, err) {
+	if err := h.commands.SpeedUpArmyProductionWithCrystals(ctx, req.Uri.BaseID, req.Uri.TaskID.Uuid()); handleCoreErr(c, err) {
 		return
 	}
 
@@ -123,7 +127,7 @@ func (h *ArmyHandler) CancelPending(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.CancelPendingArmy(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid(), req.Query.Count); handleCQRS(c, err) {
+	if err := h.commands.CancelPendingArmy(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid(), req.Query.Count); handleCoreErr(c, err) {
 		return
 	}
 
@@ -138,7 +142,7 @@ func (h *ArmyHandler) DeletePresent(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.DeletePresentArmy(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid(), req.Query.Count); handleCQRS(c, err) {
+	if err := h.commands.DeletePresentArmy(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid(), req.Query.Count); handleCoreErr(c, err) {
 		return
 	}
 

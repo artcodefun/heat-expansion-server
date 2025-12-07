@@ -25,8 +25,9 @@ func (h *BuildingHandler) ListNew(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 
-	items, err := h.queries.ListNewBuildItems(ctx, req.Uri.BaseID, req.Query.Category)
-	if handleCQRS(c, err) {
+	category := dtos.BuildCategoryFromDTO(req.Query.Category)
+	items, err := h.queries.ListNewBuildItems(ctx, req.Uri.BaseID, category)
+	if handleCoreErr(c, err) {
 		return
 	}
 
@@ -42,8 +43,9 @@ func (h *BuildingHandler) ListPending(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 
-	items, err := h.queries.ListPendingBuildItems(ctx, req.Uri.BaseID, req.Query.Category)
-	if handleCQRS(c, err) {
+	category := dtos.BuildCategoryFromDTO(req.Query.Category)
+	items, err := h.queries.ListPendingBuildItems(ctx, req.Uri.BaseID, category)
+	if handleCoreErr(c, err) {
 		return
 	}
 
@@ -59,8 +61,9 @@ func (h *BuildingHandler) ListInProduction(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 
-	items, err := h.queries.ListInProductionBuildItems(ctx, req.Uri.BaseID, req.Query.Category)
-	if handleCQRS(c, err) {
+	category := dtos.BuildCategoryFromDTO(req.Query.Category)
+	items, err := h.queries.ListInProductionBuildItems(ctx, req.Uri.BaseID, category)
+	if handleCoreErr(c, err) {
 		return
 	}
 
@@ -76,8 +79,9 @@ func (h *BuildingHandler) ListPresent(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 
-	items, err := h.queries.ListPresentBuildItems(ctx, req.Uri.BaseID, req.Query.Category)
-	if handleCQRS(c, err) {
+	category := dtos.BuildCategoryFromDTO(req.Query.Category)
+	items, err := h.queries.ListPresentBuildItems(ctx, req.Uri.BaseID, category)
+	if handleCoreErr(c, err) {
 		return
 	}
 
@@ -93,7 +97,7 @@ func (h *BuildingHandler) Queue(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.QueueBuilding(ctx, req.Uri.BaseID, req.Body.PrototypeID); handleCQRS(c, err) {
+	if err := h.commands.QueueBuilding(ctx, req.Uri.BaseID, req.Body.PrototypeID); handleCoreErr(c, err) {
 		return
 	}
 
@@ -108,7 +112,7 @@ func (h *BuildingHandler) SpeedUpProduction(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.SpeedUpProductionWithCrystals(ctx, req.Uri.BaseID, req.Uri.TaskID.Uuid()); handleCQRS(c, err) {
+	if err := h.commands.SpeedUpProductionWithCrystals(ctx, req.Uri.BaseID, req.Uri.TaskID.Uuid()); handleCoreErr(c, err) {
 		return
 	}
 
@@ -123,7 +127,7 @@ func (h *BuildingHandler) CancelPending(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.CancelPendingBuilding(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCQRS(c, err) {
+	if err := h.commands.CancelPendingBuilding(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, err) {
 		return
 	}
 
@@ -138,7 +142,7 @@ func (h *BuildingHandler) DeletePresent(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.DeletePresentBuilding(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCQRS(c, err) {
+	if err := h.commands.DeletePresentBuilding(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, err) {
 		return
 	}
 

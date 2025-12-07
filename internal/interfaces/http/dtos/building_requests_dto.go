@@ -1,5 +1,7 @@
 package dtos
 
+import "strings"
+
 // buildingListQuery contains query params for BuildingListRequest.
 type buildingListQuery struct {
 	Category string `form:"category,parser=encoding.TextUnmarshaler" binding:"required,build_category"`
@@ -39,7 +41,8 @@ type BuildingDeleteRequest = Request[buildingItemURI, None, None]
 
 // IsValidBuildCategory returns true when value matches one of the known BuildCategory constants.
 func IsValidBuildCategory(value string) bool {
-	switch BuildCategory(value) {
+	upper := strings.ToUpper(value)
+	switch BuildCategory(upper) {
 	case Control, Resources, Defense, Military, Intelligence:
 		return true
 	default:

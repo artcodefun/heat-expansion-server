@@ -40,7 +40,7 @@ func (h *OperationHandler) GetOperation(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	op, err := h.queries.GetOperation(ctx, req.Uri.OperationID)
-	if handleCQRS(c, err) {
+	if handleCoreErr(c, err) {
 		return
 	}
 	c.JSON(http.StatusOK, dtos.OperationFromReadModel(op))
@@ -53,7 +53,7 @@ func (h *OperationHandler) ListByBase(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	ops, err := h.queries.ListOperationsByBase(ctx, req.Uri.BaseID)
-	if handleCQRS(c, err) {
+	if handleCoreErr(c, err) {
 		return
 	}
 	resp := make([]dtos.MilitaryOperationDTO, 0, len(ops))
@@ -70,7 +70,7 @@ func (h *OperationHandler) ListActive(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	ops, err := h.queries.ListActiveOperations(ctx, req.Uri.BaseID)
-	if handleCQRS(c, err) {
+	if handleCoreErr(c, err) {
 		return
 	}
 	resp := make([]dtos.MilitaryOperationDTO, 0, len(ops))
@@ -105,7 +105,7 @@ func (h *OperationHandler) Create(c *gin.Context) {
 		})
 	}
 	op, err := h.commands.CreateMilitaryOperation(ctx, opType, req.Body.SourceBaseID, req.Body.TargetX, req.Body.TargetY, deployments)
-	if handleCQRS(c, err) {
+	if handleCoreErr(c, err) {
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{"id": op.ID})

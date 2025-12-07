@@ -24,7 +24,7 @@ func (h *StorageHandler) ListPresent(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	items, err := h.queries.ListPresentStorageItems(ctx, req.Uri.BaseID)
-	if handleCQRS(c, err) {
+	if handleCoreErr(c, err) {
 		return
 	}
 	c.JSON(http.StatusOK, dtos.StorageItemsPresentFromReadModels(items))
@@ -36,7 +36,7 @@ func (h *StorageHandler) DeleteItem(c *gin.Context) {
 		return
 	}
 	ctx := commandCtx(c)
-	if err := h.commands.DeletePresentStorageItem(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCQRS(c, err) {
+	if err := h.commands.DeletePresentStorageItem(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, err) {
 		return
 	}
 	c.Status(http.StatusOK)
@@ -49,7 +49,7 @@ func (h *StorageHandler) ActivateBuff(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.ActivateBuff(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCQRS(c, err) {
+	if err := h.commands.ActivateBuff(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, err) {
 		return
 	}
 	c.Status(http.StatusOK)

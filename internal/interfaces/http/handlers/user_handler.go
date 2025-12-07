@@ -22,7 +22,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 		return
 	}
 	ctx := commandCtx(c)
-	if err := h.commands.Create(ctx, req.Body.Name, req.Body.Email, req.Body.Password); handleCQRS(c, err) {
+	if err := h.commands.Create(ctx, req.Body.Name, req.Body.Email, req.Body.Password); handleCoreErr(c, err) {
 		return
 	}
 	c.Status(http.StatusCreated)
@@ -39,7 +39,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 	}
 	ctx := commandCtx(c)
 	token, err := h.commands.Authenticate(ctx, req.Body.Email, req.Body.Password)
-	if handleCQRS(c, err) {
+	if handleCoreErr(c, err) {
 		return
 	}
 	c.JSON(http.StatusOK, dtos.LoginResponse{Token: token})

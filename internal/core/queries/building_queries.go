@@ -18,7 +18,7 @@ func NewBuildingQueries(repo ports.BuildingReadRepository, protoRepo ports.Build
 	return &BuildingQueries{Repo: repo, ProtoRepo: protoRepo, BaseRepo: baseRepo, Access: access}
 }
 
-func (q *BuildingQueries) ListNewBuildItems(ctx cqrs.QueryContext, baseID int, category string) ([]*readmodels.BuildItemNew, error) {
+func (q *BuildingQueries) ListNewBuildItems(ctx cqrs.QueryContext, baseID int, category readmodels.BuildCategory) ([]*readmodels.BuildItemNew, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return nil, err
 	}
@@ -34,28 +34,28 @@ func (q *BuildingQueries) ListNewBuildItems(ctx cqrs.QueryContext, baseID int, c
 	available := base.AvailableBuildings(allProtos)
 	ids := make([]int, 0, len(available))
 	for _, p := range available {
-		if category == "" || string(p.Category) == category {
+		if category == "" || string(p.Category) == string(category) {
 			ids = append(ids, p.ID)
 		}
 	}
 	items, err := q.Repo.ListNewBuildItemsByPrototypeIDs(ids)
 	return items, repoErr(err)
 }
-func (q *BuildingQueries) ListPendingBuildItems(ctx cqrs.QueryContext, baseID int, category string) ([]*readmodels.BuildItemPending, error) {
+func (q *BuildingQueries) ListPendingBuildItems(ctx cqrs.QueryContext, baseID int, category readmodels.BuildCategory) ([]*readmodels.BuildItemPending, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return nil, err
 	}
 	items, err := q.Repo.ListPendingBuildItems(baseID, category)
 	return items, repoErr(err)
 }
-func (q *BuildingQueries) ListInProductionBuildItems(ctx cqrs.QueryContext, baseID int, category string) ([]*readmodels.BuildItemInProduction, error) {
+func (q *BuildingQueries) ListInProductionBuildItems(ctx cqrs.QueryContext, baseID int, category readmodels.BuildCategory) ([]*readmodels.BuildItemInProduction, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return nil, err
 	}
 	items, err := q.Repo.ListInProductionBuildItems(baseID, category)
 	return items, repoErr(err)
 }
-func (q *BuildingQueries) ListPresentBuildItems(ctx cqrs.QueryContext, baseID int, category string) ([]*readmodels.BuildItemPresent, error) {
+func (q *BuildingQueries) ListPresentBuildItems(ctx cqrs.QueryContext, baseID int, category readmodels.BuildCategory) ([]*readmodels.BuildItemPresent, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return nil, err
 	}

@@ -22,18 +22,18 @@ type BaseQueries interface {
 
 // BuildingQueries: segmented building item views matching client categories.
 type BuildingQueries interface {
-	ListNewBuildItems(ctx QueryContext, baseID int, category string) ([]*readmodels.BuildItemNew, error)
-	ListPendingBuildItems(ctx QueryContext, baseID int, category string) ([]*readmodels.BuildItemPending, error)
-	ListInProductionBuildItems(ctx QueryContext, baseID int, category string) ([]*readmodels.BuildItemInProduction, error)
-	ListPresentBuildItems(ctx QueryContext, baseID int, category string) ([]*readmodels.BuildItemPresent, error)
+	ListNewBuildItems(ctx QueryContext, baseID int, category readmodels.BuildCategory) ([]*readmodels.BuildItemNew, error)
+	ListPendingBuildItems(ctx QueryContext, baseID int, category readmodels.BuildCategory) ([]*readmodels.BuildItemPending, error)
+	ListInProductionBuildItems(ctx QueryContext, baseID int, category readmodels.BuildCategory) ([]*readmodels.BuildItemInProduction, error)
+	ListPresentBuildItems(ctx QueryContext, baseID int, category readmodels.BuildCategory) ([]*readmodels.BuildItemPresent, error)
 }
 
 // ArmyQueries: segmented army item views.
 type ArmyQueries interface {
-	ListNewArmyItems(ctx QueryContext, baseID int, category string) ([]*readmodels.ArmyItemNew, error)
-	ListPendingArmyItems(ctx QueryContext, baseID int, category string) ([]*readmodels.ArmyItemPending, error)
-	ListInProductionArmyItems(ctx QueryContext, baseID int, category string) ([]*readmodels.ArmyItemInProduction, error)
-	ListPresentArmyItems(ctx QueryContext, baseID int, category string) ([]*readmodels.ArmyItemPresent, error)
+	ListNewArmyItems(ctx QueryContext, baseID int, category readmodels.ArmyCategory) ([]*readmodels.ArmyItemNew, error)
+	ListPendingArmyItems(ctx QueryContext, baseID int, category readmodels.ArmyCategory) ([]*readmodels.ArmyItemPending, error)
+	ListInProductionArmyItems(ctx QueryContext, baseID int, category readmodels.ArmyCategory) ([]*readmodels.ArmyItemInProduction, error)
+	ListPresentArmyItems(ctx QueryContext, baseID int, category readmodels.ArmyCategory) ([]*readmodels.ArmyItemPresent, error)
 }
 
 // TechQueries: technology research lifecycle.

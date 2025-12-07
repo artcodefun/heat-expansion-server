@@ -1,6 +1,10 @@
 package dtos
 
-import "github.com/artcodefun/heat-expansion-api/internal/core/cqrs/readmodels"
+import (
+	"strings"
+
+	"github.com/artcodefun/heat-expansion-api/internal/core/cqrs/readmodels"
+)
 
 type ArmyCategory string
 
@@ -121,4 +125,9 @@ func ArmyItemsPresentFromReadModels(items []*readmodels.ArmyItemPresent) []ArmyI
 		})
 	}
 	return out
+}
+
+// ArmyCategoryFromDTO normalizes a request category string to the read-model type.
+func ArmyCategoryFromDTO(value string) readmodels.ArmyCategory {
+	return readmodels.ArmyCategory(strings.ToUpper(strings.TrimSpace(value)))
 }

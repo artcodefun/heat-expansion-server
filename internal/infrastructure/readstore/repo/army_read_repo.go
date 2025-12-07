@@ -28,8 +28,8 @@ func (r *ArmyReadRepo) ListNewArmyItemsByPrototypeIDs(ids []int) ([]*readmodels.
 	return out, nil
 }
 
-func (r *ArmyReadRepo) ListPendingArmyItems(baseID int, category string) ([]*readmodels.ArmyItemPending, error) {
-	rs, err := r.q.ListPendingArmyItems(context.Background(), gen.ListPendingArmyItemsParams{BaseID: int64(baseID), Category: category})
+func (r *ArmyReadRepo) ListPendingArmyItems(baseID int, category readmodels.ArmyCategory) ([]*readmodels.ArmyItemPending, error) {
+	rs, err := r.q.ListPendingArmyItems(context.Background(), gen.ListPendingArmyItemsParams{BaseID: int64(baseID), Category: string(category)})
 	if err != nil {
 		return nil, err
 	}
@@ -41,8 +41,8 @@ func (r *ArmyReadRepo) ListPendingArmyItems(baseID int, category string) ([]*rea
 	return out, nil
 }
 
-func (r *ArmyReadRepo) ListInProductionArmyItems(baseID int, category string) ([]*readmodels.ArmyItemInProduction, error) {
-	rows, err := r.q.ListInProductionArmyItems(context.Background(), gen.ListInProductionArmyItemsParams{BaseID: int64(baseID), Category: category})
+func (r *ArmyReadRepo) ListInProductionArmyItems(baseID int, category readmodels.ArmyCategory) ([]*readmodels.ArmyItemInProduction, error) {
+	rows, err := r.q.ListInProductionArmyItems(context.Background(), gen.ListInProductionArmyItemsParams{BaseID: int64(baseID), Category: string(category)})
 	if err != nil {
 		return nil, err
 	}
@@ -54,8 +54,8 @@ func (r *ArmyReadRepo) ListInProductionArmyItems(baseID int, category string) ([
 	return out, nil
 }
 
-func (r *ArmyReadRepo) ListPresentArmyItems(baseID int, category string) ([]*readmodels.ArmyItemPresent, error) {
-	rows, err := r.q.ListPresentArmyItems(context.Background(), gen.ListPresentArmyItemsParams{BaseID: int64(baseID), Category: category})
+func (r *ArmyReadRepo) ListPresentArmyItems(baseID int, category readmodels.ArmyCategory) ([]*readmodels.ArmyItemPresent, error) {
+	rows, err := r.q.ListPresentArmyItems(context.Background(), gen.ListPresentArmyItemsParams{BaseID: int64(baseID), Category: string(category)})
 	if err != nil {
 		return nil, err
 	}

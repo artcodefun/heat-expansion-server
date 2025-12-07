@@ -24,7 +24,7 @@ func (h *TechHandler) ListNew(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	items, err := h.queries.ListNewTechItems(ctx, req.Uri.BaseID)
-	if handleCQRS(c, err) {
+	if handleCoreErr(c, err) {
 		return
 	}
 	c.JSON(http.StatusOK, dtos.TechItemsNewFromReadModels(items))
@@ -37,7 +37,7 @@ func (h *TechHandler) ListInProgress(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	items, err := h.queries.ListInResearchTechItems(ctx, req.Uri.BaseID)
-	if handleCQRS(c, err) {
+	if handleCoreErr(c, err) {
 		return
 	}
 	c.JSON(http.StatusOK, dtos.TechItemsInProgressFromReadModels(items))
@@ -50,7 +50,7 @@ func (h *TechHandler) ListDone(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	items, err := h.queries.ListDoneTechItems(ctx, req.Uri.BaseID)
-	if handleCQRS(c, err) {
+	if handleCoreErr(c, err) {
 		return
 	}
 	c.JSON(http.StatusOK, dtos.TechItemsDoneFromReadModels(items))
@@ -62,7 +62,7 @@ func (h *TechHandler) Queue(c *gin.Context) {
 		return
 	}
 	ctx := commandCtx(c)
-	if err := h.commands.StartTechResearch(ctx, req.Uri.BaseID, req.Body.PrototypeID); handleCQRS(c, err) {
+	if err := h.commands.StartTechResearch(ctx, req.Uri.BaseID, req.Body.PrototypeID); handleCoreErr(c, err) {
 		return
 	}
 	c.Status(http.StatusAccepted)
@@ -74,7 +74,7 @@ func (h *TechHandler) SpeedUpProduction(c *gin.Context) {
 		return
 	}
 	ctx := commandCtx(c)
-	if err := h.commands.SpeedUpTechResearchWithCrystals(ctx, req.Uri.BaseID, req.Uri.TaskID.Uuid()); handleCQRS(c, err) {
+	if err := h.commands.SpeedUpTechResearchWithCrystals(ctx, req.Uri.BaseID, req.Uri.TaskID.Uuid()); handleCoreErr(c, err) {
 		return
 	}
 	c.Status(http.StatusOK)

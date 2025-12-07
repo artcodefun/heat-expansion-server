@@ -1,6 +1,10 @@
 package dtos
 
-import "github.com/artcodefun/heat-expansion-api/internal/core/cqrs/readmodels"
+import (
+	"strings"
+
+	"github.com/artcodefun/heat-expansion-api/internal/core/cqrs/readmodels"
+)
 
 type BuildCategory string
 
@@ -109,4 +113,9 @@ func BuildItemsPresentFromReadModels(items []*readmodels.BuildItemPresent) []Bui
 		})
 	}
 	return out
+}
+
+// BuildCategoryFromDTO normalizes a DTO category string to the read-model type.
+func BuildCategoryFromDTO(value string) readmodels.BuildCategory {
+	return readmodels.BuildCategory(strings.ToUpper(strings.TrimSpace(value)))
 }

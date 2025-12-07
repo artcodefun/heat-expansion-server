@@ -1,5 +1,7 @@
 package dtos
 
+import "strings"
+
 // armyListQuery contains query params for ArmyListRequest.
 type armyListQuery struct {
 	Category string `form:"category" binding:"required,army_category"`
@@ -56,7 +58,8 @@ type ArmyDeleteRequest = Request[armyDeleteURI, armyDeleteQuery, None]
 
 // IsValidArmyCategory returns true if value matches one of the predefined ArmyCategory constants.
 func IsValidArmyCategory(value string) bool {
-	switch ArmyCategory(value) {
+	upper := strings.ToUpper(value)
+	switch ArmyCategory(upper) {
 	case Infantry, Armored, Artillery, Aviation, Spy, Special:
 		return true
 	default:

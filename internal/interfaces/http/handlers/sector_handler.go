@@ -23,7 +23,7 @@ func (h *SectorHandler) GetSector(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	sector, err := h.queries.GetSector(ctx, req.Uri.X, req.Uri.Y)
-	if handleCQRS(c, err) {
+	if handleCoreErr(c, err) {
 		return
 	}
 	c.JSON(http.StatusOK, dtos.SectorFromReadModel(sector))
@@ -36,7 +36,7 @@ func (h *SectorHandler) GetLatestScans(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	reports, err := h.queries.GetLatestScans(ctx, req.Uri.BaseID)
-	if handleCQRS(c, err) {
+	if handleCoreErr(c, err) {
 		return
 	}
 	c.JSON(http.StatusOK, dtos.SectorScanReportsFromReadModels(reports))
@@ -49,7 +49,7 @@ func (h *SectorHandler) GetScansNear(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	reports, err := h.queries.GetScansNear(ctx, req.Uri.BaseID, req.Query.CenterX, req.Query.CenterY, req.Query.Radius)
-	if handleCQRS(c, err) {
+	if handleCoreErr(c, err) {
 		return
 	}
 	c.JSON(http.StatusOK, dtos.SectorScanReportsFromReadModels(reports))
@@ -58,7 +58,7 @@ func (h *SectorHandler) GetScansNear(c *gin.Context) {
 func (h *SectorHandler) ListOccupiedCoordinates(c *gin.Context) {
 	ctx := queryCtx(c)
 	coords, err := h.queries.ListOccupiedCoordinates(ctx)
-	if handleCQRS(c, err) {
+	if handleCoreErr(c, err) {
 		return
 	}
 	c.JSON(http.StatusOK, dtos.Vector2iListFromReadModels(coords))
@@ -71,7 +71,7 @@ func (h *SectorHandler) ListSectorsInRadius(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	sectors, err := h.queries.ListSectorsInRadius(ctx, req.Query.CenterX, req.Query.CenterY, req.Query.Radius)
-	if handleCQRS(c, err) {
+	if handleCoreErr(c, err) {
 		return
 	}
 	c.JSON(http.StatusOK, dtos.SectorModelsFromReadModels(sectors))
