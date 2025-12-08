@@ -17,6 +17,7 @@ func NewStorageHandler(queries cqrs.StorageQueries, commands cqrs.StorageCommand
 	return &StorageHandler{queries: queries, commands: commands}
 }
 
+// ListPresent handles GET /bases/:baseId/storage/present.
 func (h *StorageHandler) ListPresent(c *gin.Context) {
 	var req dtos.StorageListRequest
 	if !bindRequest(c, &req) {
@@ -30,6 +31,7 @@ func (h *StorageHandler) ListPresent(c *gin.Context) {
 	c.JSON(http.StatusOK, dtos.StorageItemsPresentFromReadModels(items))
 }
 
+// DeleteItem handles DELETE /bases/:baseId/storage/items/:itemId.
 func (h *StorageHandler) DeleteItem(c *gin.Context) {
 	var req dtos.StorageItemRequest
 	if !bindRequest(c, &req) {
@@ -42,6 +44,7 @@ func (h *StorageHandler) DeleteItem(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+// ActivateBuff handles POST /bases/:baseId/storage/items/:itemId/activate.
 func (h *StorageHandler) ActivateBuff(c *gin.Context) {
 	var req dtos.StorageItemRequest
 	if !bindRequest(c, &req) {

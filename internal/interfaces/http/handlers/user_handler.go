@@ -16,6 +16,7 @@ func NewUserHandler(commands cqrs.UserCommands) *UserHandler {
 	return &UserHandler{commands: commands}
 }
 
+// Register handles POST /auth/register.
 func (h *UserHandler) Register(c *gin.Context) {
 	var req dtos.UserRegisterRequest
 	if !bindRequest(c, &req) {
@@ -28,6 +29,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 	c.Status(http.StatusCreated)
 }
 
+// Login handles POST /auth/login.
 func (h *UserHandler) Login(c *gin.Context) {
 	var req dtos.UserLoginRequest
 	if !bindRequest(c, &req) {

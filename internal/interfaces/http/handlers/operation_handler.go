@@ -33,6 +33,7 @@ func parseOperationType(raw string) (domain.MilitaryOperationType, bool) {
 	}
 }
 
+// GetOperation handles GET /operations/:operationId.
 func (h *OperationHandler) GetOperation(c *gin.Context) {
 	var req dtos.OperationGetRequest
 	if !bindRequest(c, &req) {
@@ -46,6 +47,7 @@ func (h *OperationHandler) GetOperation(c *gin.Context) {
 	c.JSON(http.StatusOK, dtos.OperationFromReadModel(op))
 }
 
+// ListByBase handles GET /operations/bases/:baseId.
 func (h *OperationHandler) ListByBase(c *gin.Context) {
 	var req dtos.SectorLatestScansRequest
 	if !bindRequest(c, &req) {
@@ -63,6 +65,7 @@ func (h *OperationHandler) ListByBase(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// ListActive handles GET /operations/bases/:baseId/active.
 func (h *OperationHandler) ListActive(c *gin.Context) {
 	var req dtos.SectorLatestScansRequest
 	if !bindRequest(c, &req) {
@@ -80,6 +83,7 @@ func (h *OperationHandler) ListActive(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// Create handles POST /operations.
 func (h *OperationHandler) Create(c *gin.Context) {
 	var req dtos.OperationCreateRequest
 	if !bindRequest(c, &req) {

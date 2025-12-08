@@ -17,6 +17,7 @@ func NewTechHandler(queries cqrs.TechQueries, commands cqrs.TechCommands) *TechH
 	return &TechHandler{queries: queries, commands: commands}
 }
 
+// ListNew handles GET /bases/:baseId/tech/new.
 func (h *TechHandler) ListNew(c *gin.Context) {
 	var req dtos.TechListRequest
 	if !bindRequest(c, &req) {
@@ -30,6 +31,7 @@ func (h *TechHandler) ListNew(c *gin.Context) {
 	c.JSON(http.StatusOK, dtos.TechItemsNewFromReadModels(items))
 }
 
+// ListInProgress handles GET /bases/:baseId/tech/in-progress.
 func (h *TechHandler) ListInProgress(c *gin.Context) {
 	var req dtos.TechListRequest
 	if !bindRequest(c, &req) {
@@ -43,6 +45,7 @@ func (h *TechHandler) ListInProgress(c *gin.Context) {
 	c.JSON(http.StatusOK, dtos.TechItemsInProgressFromReadModels(items))
 }
 
+// ListDone handles GET /bases/:baseId/tech/done.
 func (h *TechHandler) ListDone(c *gin.Context) {
 	var req dtos.TechListRequest
 	if !bindRequest(c, &req) {
@@ -56,6 +59,7 @@ func (h *TechHandler) ListDone(c *gin.Context) {
 	c.JSON(http.StatusOK, dtos.TechItemsDoneFromReadModels(items))
 }
 
+// Queue handles POST /bases/:baseId/tech/queue.
 func (h *TechHandler) Queue(c *gin.Context) {
 	var req dtos.TechQueueRequest
 	if !bindRequest(c, &req) {
@@ -68,6 +72,7 @@ func (h *TechHandler) Queue(c *gin.Context) {
 	c.Status(http.StatusAccepted)
 }
 
+// SpeedUpProduction handles POST /bases/:baseId/tech/production/:itemId/speed-up.
 func (h *TechHandler) SpeedUpProduction(c *gin.Context) {
 	var req dtos.TechSpeedUpRequest
 	if !bindRequest(c, &req) {

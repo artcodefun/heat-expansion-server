@@ -16,6 +16,7 @@ func NewActivityHandler(queries cqrs.ActivityQueries) *ActivityHandler {
 	return &ActivityHandler{queries: queries}
 }
 
+// List handles GET /bases/:baseId/activities.
 func (h *ActivityHandler) List(c *gin.Context) {
 	var req dtos.ActivityListRequest
 	if !bindRequest(c, &req) {
@@ -33,6 +34,7 @@ func (h *ActivityHandler) List(c *gin.Context) {
 	c.JSON(http.StatusOK, dtos.ActivityItemsFromReadModels(activities))
 }
 
+// ListMilitary handles GET /bases/:baseId/activities/military.
 func (h *ActivityHandler) ListMilitary(c *gin.Context) {
 	var req dtos.ActivityListRequest
 	if !bindRequest(c, &req) {
