@@ -34,13 +34,13 @@ type armyCancelURI struct {
 	ItemID UuidStr `uri:"itemId" binding:"required,uuid"`
 }
 
-// armyCancelQuery contains query params for cancel endpoints.
-type armyCancelQuery struct {
-	Count int `form:"count" binding:"required,min=1"`
+// armyCancelBody represents the JSON payload for cancelling pending army items.
+type armyCancelBody struct {
+	Count int `json:"count" binding:"required,min=1"`
 }
 
-// ArmyCancelRequest bundles URI params with the cancel query param.
-type ArmyCancelRequest = Request[armyCancelURI, armyCancelQuery, None]
+// ArmyCancelRequest bundles URI params with a JSON body containing count.
+type ArmyCancelRequest = Request[armyCancelURI, None, armyCancelBody]
 
 // armyDeleteURI contains the URI parts of the delete endpoint.
 type armyDeleteURI struct {
@@ -48,13 +48,13 @@ type armyDeleteURI struct {
 	ItemID UuidStr `uri:"itemId" binding:"required,uuid"`
 }
 
-// armyDeleteQuery contains query params for delete endpoints.
-type armyDeleteQuery struct {
-	Count int `form:"count" binding:"required,min=1"`
+// armyDeleteBody represents the JSON payload for deleting present army items.
+type armyDeleteBody struct {
+	Count int `json:"count" binding:"required,min=1"`
 }
 
-// ArmyDeleteRequest bundles URI params with the delete query param.
-type ArmyDeleteRequest = Request[armyDeleteURI, armyDeleteQuery, None]
+// ArmyDeleteRequest bundles URI params with a JSON body containing count.
+type ArmyDeleteRequest = Request[armyDeleteURI, None, armyDeleteBody]
 
 // IsValidArmyCategory returns true if value matches one of the predefined ArmyCategory constants.
 func IsValidArmyCategory(value string) bool {

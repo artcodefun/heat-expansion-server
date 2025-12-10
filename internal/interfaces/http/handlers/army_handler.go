@@ -127,7 +127,7 @@ func (h *ArmyHandler) CancelPending(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.CancelPendingArmy(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid(), req.Query.Count); handleCoreErr(c, err) {
+	if err := h.commands.CancelPendingArmy(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid(), req.Body.Count); handleCoreErr(c, err) {
 		return
 	}
 
@@ -142,7 +142,7 @@ func (h *ArmyHandler) DeletePresent(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.DeletePresentArmy(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid(), req.Query.Count); handleCoreErr(c, err) {
+	if err := h.commands.DeletePresentArmy(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid(), req.Body.Count); handleCoreErr(c, err) {
 		return
 	}
 

@@ -2,39 +2,40 @@ package mappers
 
 import (
 	"github.com/artcodefun/heat-expansion-api/internal/core/domain"
+	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/db/dtos"
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/db/gen"
 )
 
 func StoragePrototypeFromDB(p gen.StorageItemPrototype) *domain.StorageItemPrototype {
 	var buff *domain.BuffStorageData
 	if p.BuffData.Valid {
-		var tmp domain.BuffStorageData
-		unmarshalIfValid(p.BuffData, &tmp)
-		buff = &tmp
+		var dto dtos.BuffStorageDataDTO
+		unmarshalIfValid(p.BuffData, &dto)
+		buff = dtos.BuffStorageDataFromDTO(&dto)
 	}
 	var mp *domain.MapStorageData
 	if p.MapData.Valid {
-		var tmp domain.MapStorageData
-		unmarshalIfValid(p.MapData, &tmp)
-		mp = &tmp
+		var dto dtos.MapStorageDataDTO
+		unmarshalIfValid(p.MapData, &dto)
+		mp = dtos.MapStorageDataFromDTO(&dto)
 	}
 	var dmg *domain.DamagedStorageData
 	if p.DamagedData.Valid {
-		var tmp domain.DamagedStorageData
-		unmarshalIfValid(p.DamagedData, &tmp)
-		dmg = &tmp
+		var dto dtos.DamagedStorageDataDTO
+		unmarshalIfValid(p.DamagedData, &dto)
+		dmg = dtos.DamagedStorageDataFromDTO(&dto)
 	}
 	var art *domain.ArtifactStorageData
 	if p.ArtifactData.Valid {
-		var tmp domain.ArtifactStorageData
-		unmarshalIfValid(p.ArtifactData, &tmp)
-		art = &tmp
+		var dto dtos.ArtifactStorageDataDTO
+		unmarshalIfValid(p.ArtifactData, &dto)
+		art = dtos.ArtifactStorageDataFromDTO(&dto)
 	}
 	var cons *domain.ConsumableStorageData
 	if p.ConsumableData.Valid {
-		var tmp domain.ConsumableStorageData
-		unmarshalIfValid(p.ConsumableData, &tmp)
-		cons = &tmp
+		var dto dtos.ConsumableStorageDataDTO
+		unmarshalIfValid(p.ConsumableData, &dto)
+		cons = dtos.ConsumableStorageDataFromDTO(&dto)
 	}
 
 	proto := &domain.StorageItemPrototype{

@@ -9,31 +9,17 @@ import (
 
 // InsertActivityParamsFromDomain maps a domain.ActivityItem into sqlc params for insert.
 func InsertActivityParamsFromDomain(a *domain.ActivityItem) gen.InsertActivityParams {
-	var op any
-	if a.Operation != nil {
-		dto := dtos.OperationActivityDTOFromDomain(*a.Operation)
-		op = dto
-	}
-
-	var scan any
-	if a.Scan != nil {
-		dto := dtos.ScanActivityDTOFromDomain(*a.Scan)
-		scan = dto
-	}
-
-	var radar any
-	if a.Radar != nil {
-		dto := dtos.RadarActivityDTOFromDomain(*a.Radar)
-		radar = dto
-	}
+	opDTO := dtos.OperationActivityDTOFromDomain(a.Operation)
+	scanDTO := dtos.ScanActivityDTOFromDomain(a.Scan)
+	radarDTO := dtos.RadarActivityDTOFromDomain(a.Radar)
 
 	return gen.InsertActivityParams{
 		Kind:          string(a.Kind),
 		CreatedAt:     a.CreatedAt,
 		BaseID:        int64(a.BaseID),
-		OperationData: toNullRawMessage(op),
-		ScanData:      toNullRawMessage(scan),
-		RadarData:     toNullRawMessage(radar),
+		OperationData: toNullRawMessage(opDTO),
+		ScanData:      toNullRawMessage(scanDTO),
+		RadarData:     toNullRawMessage(radarDTO),
 		TradeData:     pqtype.NullRawMessage{Valid: false},
 	}
 }

@@ -25,15 +25,3 @@ func TechDoneDTOFromDomain(t domain.TechItemDone) TechDoneDTO {
 func TechDoneFromDTO(d TechDoneDTO, owned domain.BaseOwnedItem, proto domain.TechItemPrototype) domain.TechItemDone {
 	return domain.TechItemDone{BaseOwnedItem: owned, Prototype: proto, ResearchedAt: d.ResearchedAt}
 }
-
-type TechnologyEffectDTO struct {
-	Type  string `json:"type"`
-	Value int    `json:"value"`
-}
-
-func TechnologyEffectDTOFromDomain(e domain.TechnologyEffect) TechnologyEffectDTO {
-	return TechnologyEffectDTO{Type: string(e.EffectType), Value: e.Value}
-}
-func TechnologyEffectFromDTO(d TechnologyEffectDTO) domain.TechnologyEffect {
-	return domain.TechnologyEffect{EffectType: domain.EffectType(d.Type), Value: d.Value}
-}

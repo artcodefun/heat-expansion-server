@@ -4,42 +4,44 @@ import (
 	"encoding/json"
 
 	"github.com/artcodefun/heat-expansion-api/internal/core/domain"
+	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/db/dtos"
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/db/gen"
 )
 
 func BuildPrototypeFromDB(p gen.BuildItemPrototype) *domain.BuildItemPrototype {
-	var price domain.PriceModel
-	_ = json.Unmarshal(p.Price, &price)
+	var priceDTO dtos.PriceDTO
+	_ = json.Unmarshal(p.Price, &priceDTO)
+	price := dtos.PriceFromDTO(priceDTO)
 
 	var ctrl *domain.ControlBuildingData
 	if p.ControlData.Valid {
-		var tmp domain.ControlBuildingData
-		unmarshalIfValid(p.ControlData, &tmp)
-		ctrl = &tmp
+		var dto dtos.ControlBuildingDataDTO
+		unmarshalIfValid(p.ControlData, &dto)
+		ctrl = dtos.ControlBuildingDataFromDTO(&dto)
 	}
 	var res *domain.ResourcesBuildingData
 	if p.ResourcesData.Valid {
-		var tmp domain.ResourcesBuildingData
-		unmarshalIfValid(p.ResourcesData, &tmp)
-		res = &tmp
+		var dto dtos.ResourcesBuildingDataDTO
+		unmarshalIfValid(p.ResourcesData, &dto)
+		res = dtos.ResourcesBuildingDataFromDTO(&dto)
 	}
 	var def *domain.DefenseBuildingData
 	if p.DefenseData.Valid {
-		var tmp domain.DefenseBuildingData
-		unmarshalIfValid(p.DefenseData, &tmp)
-		def = &tmp
+		var dto dtos.DefenseBuildingDataDTO
+		unmarshalIfValid(p.DefenseData, &dto)
+		def = dtos.DefenseBuildingDataFromDTO(&dto)
 	}
 	var mil *domain.MilitaryBuildingData
 	if p.MilitaryData.Valid {
-		var tmp domain.MilitaryBuildingData
-		unmarshalIfValid(p.MilitaryData, &tmp)
-		mil = &tmp
+		var dto dtos.MilitaryBuildingDataDTO
+		unmarshalIfValid(p.MilitaryData, &dto)
+		mil = dtos.MilitaryBuildingDataFromDTO(&dto)
 	}
 	var intel *domain.IntelligenceBuildingData
 	if p.IntelligenceData.Valid {
-		var tmp domain.IntelligenceBuildingData
-		unmarshalIfValid(p.IntelligenceData, &tmp)
-		intel = &tmp
+		var dto dtos.IntelligenceBuildingDataDTO
+		unmarshalIfValid(p.IntelligenceData, &dto)
+		intel = dtos.IntelligenceBuildingDataFromDTO(&dto)
 	}
 
 	proto := &domain.BuildItemPrototype{

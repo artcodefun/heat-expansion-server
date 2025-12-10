@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 
 	"github.com/artcodefun/heat-expansion-api/internal/core/domain"
+	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/db/dtos"
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/db/gen"
 )
 
 func ArmyPrototypeFromDB(p gen.ArmyItemPrototype) *domain.ArmyItemPrototype {
-	var price domain.PriceModel
-	_ = json.Unmarshal(p.Price, &price)
+	var priceDTO dtos.PriceDTO
+	_ = json.Unmarshal(p.Price, &priceDTO)
+	price := dtos.PriceFromDTO(priceDTO)
 
 	proto := &domain.ArmyItemPrototype{
 		ID:                 int(p.ID),

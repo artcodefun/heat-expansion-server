@@ -30,11 +30,11 @@ func buildPrototypeFromParts(id int64, name, category string, unlock sql.NullInt
 		ProductionTime:     productionTime,
 		Space:              int(space),
 		ImageURL:           nullString(imageURL),
-		ControlData:        jsonToNullRaw[readmodels.ControlBuildingData](control),
-		ResourcesData:      jsonToNullRaw[readmodels.ResourcesBuildingData](resources),
-		DefenseData:        jsonToNullRaw[readmodels.DefenseBuildingData](defense),
-		MilitaryData:       jsonToNullRaw[readmodels.MilitaryBuildingData](military),
-		IntelligenceData:   jsonToNullRaw[readmodels.IntelligenceBuildingData](intelligence),
+		ControlData:        controlBuildingDataFromJSON(control),
+		ResourcesData:      resourcesBuildingDataFromJSON(resources),
+		DefenseData:        defenseBuildingDataFromJSON(defense),
+		MilitaryData:       militaryBuildingDataFromJSON(military),
+		IntelligenceData:   intelligenceBuildingDataFromJSON(intelligence),
 	}
 }
 
@@ -62,4 +62,79 @@ func BuildItemPresentFromRow(r gen.ListPresentBuildItemsRow) readmodels.BuildIte
 	}
 	refund := readmodels.PriceModel{Credits: jd.Refund.Credits, Iron: jd.Refund.Iron, Titanium: jd.Refund.Titanium, Antimatter: jd.Refund.Antimatter}
 	return readmodels.BuildItemPresent{BaseOwnedItem: readmodels.BaseOwnedItem{ID: uuid.UUID(r.ID), UserBaseID: int(r.BaseID)}, Prototype: buildPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ProductionTime, r.Space, r.ImageUrl, r.ControlData, r.ResourcesData, r.DefenseData, r.MilitaryData, r.IntelligenceData), Refund: refund}
+}
+
+// Build prototype detail helpers: JSONB (DTO shape) -> readmodels.* data
+
+func controlBuildingDataFromJSON(nm pqtype.NullRawMessage) *readmodels.ControlBuildingData {
+	if !nm.Valid {
+		return nil
+	}
+	var d dtos.ControlBuildingDataDTO
+	if err := json.Unmarshal(nm.RawMessage, &d); err != nil {
+		return nil
+	}
+	return &readmodels.ControlBuildingData{Subtype: readmodels.ControlSubtype(d.Subtype)}
+}
+
+func resourcesBuildingDataFromJSON(nm pqtype.NullRawMessage) *readmodels.ResourcesBuildingData {
+	if !nm.Valid {
+		return nil
+	}
+	var d dtos.ResourcesBuildingDataDTO
+	if err := json.Unmarshal(nm.RawMessage, &d); err != nil {
+		return nil
+	}
+	return &readmodels.ResourcesBuildingData{
+		CreditsProduction:    d.CreditsProduction,
+		IronProduction:       d.IronProduction,
+		TitaniumProduction:   d.TitaniumProduction,
+		AntimatterProduction: d.AntimatterProduction,
+		CreditsCapacity:      d.CreditsCapacity,
+		IronCapacity:         d.IronCapacity,
+		TitaniumCapacity:     d.TitaniumCapacity,
+		AntimatterCapacity:   d.AntimatterCapacity,
+	}
+}
+
+func defenseBuildingDataFromJSON(nm pqtype.NullRawMessage) *readmodels.DefenseBuildingData {
+	if !nm.Valid {
+		return nil
+	}
+	var d dtos.DefenseBuildingDataDTO
+	if err := json.Unmarshal(nm.RawMessage, &d); err != nil {
+		return nil
+	}
+	return &readmodels.DefenseBuildingData{
+		DefenceBonus:   d.DefenceBonus,
+		ShieldStrength: d.ShieldStrength,
+	}
+}
+
+func militaryBuildingDataFromJSON(nm pqtype.NullRawMessage) *readmodels.MilitaryBuildingData {
+	if !nm.Valid {
+		return nil
+	}
+	var d dtos.MilitaryBuildingDataDTO
+	if err := json.Unmarshal(nm.RawMessage, &d); err != nil {
+		return nil
+	}
+	return &readmodels.MilitaryBuildingData{UnlockArmyCategory: readmodels.ArmyCategory(d.UnlockArmyCategory)}
+}
+
+func intelligenceBuildingDataFromJSON(nm pqtype.NullRawMessage) *readmodels.IntelligenceBuildingData {
+	if !nm.Valid {
+		return nil
+	}
+	var d dtos.IntelligenceBuildingDataDTO
+	if err := json.Unmarshal(nm.RawMessage, &d); err != nil {
+		return nil
+	}
+	return &readmodels.IntelligenceBuildingData{
+		Subtype:            readmodels.IntelligenceSubtype(d.Subtype),
+		StealthStrength:    d.StealthStrength,
+		TargetLocationType: readmodels.LocationType(d.TargetLocationType),
+		ScanRange:          d.ScanRange,
+		ScanCooldown:       d.ScanCooldown,
+	}
 }

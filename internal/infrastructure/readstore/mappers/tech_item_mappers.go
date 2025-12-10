@@ -60,3 +60,21 @@ func TechItemDoneFromRow(r gen.ListDoneTechItemsRow) readmodels.TechItemDone {
 		ResearchedAt:  jd.ResearchedAt,
 	}
 }
+
+func technologyEffectsFromJSON(b []byte) []readmodels.TechnologyEffect {
+	if len(b) == 0 {
+		return nil
+	}
+	var arrDTO []dtos.TechnologyEffectDTO
+	if err := json.Unmarshal(b, &arrDTO); err != nil {
+		return nil
+	}
+	if len(arrDTO) == 0 {
+		return nil
+	}
+	out := make([]readmodels.TechnologyEffect, 0, len(arrDTO))
+	for _, d := range arrDTO {
+		out = append(out, readmodels.TechnologyEffect{EffectType: readmodels.EffectType(d.Type), Value: d.Value})
+	}
+	return out
+}
