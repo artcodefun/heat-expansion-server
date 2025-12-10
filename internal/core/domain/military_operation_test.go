@@ -55,14 +55,21 @@ func TestOperation_Attack_EmptyLocation_PhaseAndEvents(t *testing.T) {
 		t.Fatalf("expected MilitaryOperationArrivedEvent on arrival")
 	}
 
-	// resolve against empty and start return
-	attacker := &UserBaseModel{ID: 10}
-	service := NewMilitaryOperationService(op, attacker)
-	service.ResolveAgainstEmptySector(&SectorModel{})
-	if op.Phase != OperationPhaseReturning {
-		t.Fatalf("expected returning phase after resolve, got %s", op.Phase)
+	// Resolve directly against an empty location (no defenders, no loot)
+	res := op.ResolveAttack(nil, nil, PriceModel{})
+	if res == nil {
+		t.Fatalf("expected non-nil AttackResult when resolving against empty location")
 	}
-	// Return events
+	if op.Phase != OperationPhaseResolving {
+		t.Fatalf("expected resolving phase after ResolveAttack, got %s", op.Phase)
+	}
+
+	// Start return leg from the operation itself
+	op.StartReturn()
+	if op.Phase != OperationPhaseReturning {
+		t.Fatalf("expected returning phase after StartReturn, got %s", op.Phase)
+	}
+	// Return-started event
 	returnStarted := false
 	for _, e := range op.PullEvents() {
 		if _, ok := e.(MilitaryOperationReturnStartedEvent); ok {
@@ -141,34 +148,18 @@ func TestSpy_BlockedByCloaking_OutcomeAndReturn(t *testing.T) {
 	SetTestNow(t, op.OutboundArriveAt)
 	op.UpdatePhaseBasedOnTime()
 
-	// Defender with strong cloaking (>= attacker stealth)
-	def := &UserBaseModel{ID: 99}
-	def.BuildingsPresent = []BuildItemPresent{{
-		BaseOwnedItem: NewBaseOwnedItem(def.ID),
-		Prototype: BuildItemPrototype{
-			ID:               300,
-			Category:         BuildCategoryIntelligence,
-			IntelligenceData: &IntelligenceBuildingData{Subtype: IntelligenceSubtypeCloaking, StealthStrength: 10},
-		},
-	}}
-	// Add some non-spy defenders to ensure they remain unchanged
-	def.ArmiesPresent = []ArmyItemPresent{{
-		BaseOwnedItem: NewBaseOwnedItem(def.ID),
-		Prototype:     ArmyItemPrototype{ID: 500, Category: ArmyCategoryInfantry, Attack: 5, Defence: 5},
-		Count:         3,
-	}}
-
-	svc := NewMilitaryOperationService(op, &UserBaseModel{ID: 10})
-	svc.ResolveAgainstUserBase(def)
-
-	if op.SpyResult == nil || op.SpyResult.Outcome != SpyOutcomeBlockedByCloaking {
+	// Strong cloaking at target (>= attacker stealth) should block the spy
+	res := op.ResolveSpy(10, nil)
+	if res == nil || res.Outcome != SpyOutcomeBlockedByCloaking {
 		t.Fatalf("expected spy outcome BLOCKED_BY_CLOAKING, got %+v", op.SpyResult)
 	}
 	if op.Result != OperationResultSuccess {
 		t.Fatalf("expected operation result SUCCESS, got %s", op.Result)
 	}
+
+	op.StartReturn()
 	if op.Phase != OperationPhaseReturning {
-		t.Fatalf("expected returning phase after resolve, got %s", op.Phase)
+		t.Fatalf("expected returning phase after StartReturn, got %s", op.Phase)
 	}
 	// Ensure return started event exists
 	hasResolved, hasReturnStarted := false, false
@@ -182,10 +173,6 @@ func TestSpy_BlockedByCloaking_OutcomeAndReturn(t *testing.T) {
 	}
 	if !hasResolved || !hasReturnStarted {
 		t.Fatalf("expected resolved and return-started events; got resolved=%v returnStarted=%v", hasResolved, hasReturnStarted)
-	}
-	// Non-spy defenders remain unchanged (ApplyDefenderArmyRemaining only touches spies merge)
-	if len(def.ArmiesPresent) != 1 || def.ArmiesPresent[0].Prototype.Category != ArmyCategoryInfantry || def.ArmiesPresent[0].Count != 3 {
-		t.Fatalf("unexpected defender armies state: %+v", def.ArmiesPresent)
 	}
 }
 
@@ -201,23 +188,17 @@ func TestSpy_DefeatedByDefendingSpies_ReturnImmediate(t *testing.T) {
 	op.UpdatePhaseBasedOnTime()
 
 	// Defender spies with higher defence -> attackers lose
-	def := &UserBaseModel{ID: 99}
-	def.ArmiesPresent = []ArmyItemPresent{{
-		BaseOwnedItem: NewBaseOwnedItem(def.ID),
-		Prototype:     ArmyItemPrototype{ID: 600, Category: ArmyCategorySpy, Attack: 1, Defence: 5},
-		Count:         1, // def power = 5 > atk 2
-	}}
-
-	svc := NewMilitaryOperationService(op, &UserBaseModel{ID: 10})
-	svc.ResolveAgainstUserBase(def)
-
-	if op.SpyResult == nil || op.SpyResult.Outcome != SpyOutcomeDefeatedBySpies {
+	defendingSpies := []MilitaryUnit{{PrototypeID: 600, Category: ArmyCategorySpy, Attack: 1, Defence: 5, Count: 1}}
+	res := op.ResolveSpy(0, defendingSpies)
+	if res == nil || res.Outcome != SpyOutcomeDefeatedBySpies {
 		t.Fatalf("expected spy outcome DEFEATED_BY_DEFENDING_SPIES, got %+v", op.SpyResult)
 	}
 	if op.Result != OperationResultFailure {
 		t.Fatalf("expected operation result FAILURE, got %s", op.Result)
 	}
-	// No survivors -> immediate completion
+
+	// No survivors -> StartReturn should immediately complete the operation
+	op.StartReturn()
 	if op.Phase != OperationPhaseCompleted {
 		t.Fatalf("expected completed phase due to zero survivors, got %s", op.Phase)
 	}
@@ -247,23 +228,17 @@ func TestSpy_ReportProduced_OutcomeAndReturn(t *testing.T) {
 	SetTestNow(t, op.OutboundArriveAt)
 	op.UpdatePhaseBasedOnTime()
 
-	// Defender spies weak
-	def := &UserBaseModel{ID: 99}
-	def.ArmiesPresent = []ArmyItemPresent{{
-		BaseOwnedItem: NewBaseOwnedItem(def.ID),
-		Prototype:     ArmyItemPrototype{ID: 700, Category: ArmyCategorySpy, Attack: 1, Defence: 2},
-		Count:         1, // def power=2 < atk 10 -> attackers win
-	}}
-
-	svc := NewMilitaryOperationService(op, &UserBaseModel{ID: 10})
-	svc.ResolveAgainstUserBase(def)
-
-	if op.SpyResult == nil || op.SpyResult.Outcome != SpyOutcomeReportProduced {
+	// Defender spies weak -> attackers win and produce a report
+	defendingSpies := []MilitaryUnit{{PrototypeID: 700, Category: ArmyCategorySpy, Attack: 1, Defence: 2, Count: 1}}
+	res := op.ResolveSpy(0, defendingSpies)
+	if res == nil || res.Outcome != SpyOutcomeReportProduced {
 		t.Fatalf("expected spy outcome REPORT_PRODUCED, got %+v", op.SpyResult)
 	}
 	if op.Result != OperationResultSuccess {
 		t.Fatalf("expected operation result SUCCESS, got %s", op.Result)
 	}
+
+	op.StartReturn()
 	if op.Phase != OperationPhaseReturning {
 		t.Fatalf("expected returning phase, got %s", op.Phase)
 	}
