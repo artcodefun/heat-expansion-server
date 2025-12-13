@@ -153,5 +153,8 @@ func registerCustomValidators() {
 		_ = validatorEngine.RegisterValidation("build_category", func(fl validator.FieldLevel) bool {
 			return dtos.IsValidBuildCategory(fl.Field().String())
 		})
+		_ = validatorEngine.RegisterValidation("operation_type", func(fl validator.FieldLevel) bool {
+			return dtos.IsValidOperationType(fl.Field().String())
+		})
 	}
 }
