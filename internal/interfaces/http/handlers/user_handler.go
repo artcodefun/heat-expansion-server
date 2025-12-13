@@ -10,10 +10,11 @@ import (
 
 type UserHandler struct {
 	commands cqrs.UserCommands
+	queries  cqrs.UserQueries
 }
 
-func NewUserHandler(commands cqrs.UserCommands) *UserHandler {
-	return &UserHandler{commands: commands}
+func NewUserHandler(commands cqrs.UserCommands, queries cqrs.UserQueries) *UserHandler {
+	return &UserHandler{commands: commands, queries: queries}
 }
 
 // Register handles POST /auth/register.
@@ -45,4 +46,21 @@ func (h *UserHandler) Login(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, dtos.LoginResponse{Token: token})
+}
+
+// GetCrystalBalance handles GET /user/balance and returns the authenticated user's crystal balance.
+func (h *UserHandler) GetCrystalBalance(c *gin.Context) {
+	ctx := queryCtx(c)
+	if ctx.UserID == 0 {
+		// Should not normally happen with Auth middleware, but guard just in case.
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	user, err := h.queries.GetUserProfile(ctx, ctx.UserID)
+	if handleCoreErr(c, err) {
+		return
+	}
+
+	c.JSON(http.StatusOK, dtos.UserCrystalBalanceResponse{Crystals: user.Crystals})
 }

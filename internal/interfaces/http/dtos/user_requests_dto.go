@@ -21,3 +21,8 @@ type UserLoginRequest = Request[None, None, userLoginBody]
 type LoginResponse struct {
 	Token string `json:"token"`
 }
+
+// UserCrystalBalanceResponse represents the current crystal balance for the authenticated user.
+type UserCrystalBalanceResponse struct {
+	Crystals int `json:"crystals"`
+}

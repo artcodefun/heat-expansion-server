@@ -41,7 +41,7 @@ func NewRouter(cmd Commands, qry Queries, tokenProvider ports.TokenProvider) *gi
 	registerCustomValidators()
 
 	// Initialize handlers at the top for consistency
-	userHandler := handlers.NewUserHandler(cmd.User)
+	userHandler := handlers.NewUserHandler(cmd.User, qry.User)
 	baseHandler := handlers.NewBaseHandler(qry.Base, cmd.Base)
 	buildingHandler := handlers.NewBuildingHandler(qry.Building, cmd.Building)
 	armyHandler := handlers.NewArmyHandler(qry.Army, cmd.Army)
@@ -65,6 +65,8 @@ func NewRouter(cmd Commands, qry Queries, tokenProvider ports.TokenProvider) *gi
 	api := r.Group("/api/v1")
 	api.Use(middleware.Auth(tokenProvider))
 	{
+		// User
+		api.GET("/user/balance", userHandler.GetCrystalBalance)
 
 		// Base
 		api.GET("/bases", baseHandler.ListUserBases)
