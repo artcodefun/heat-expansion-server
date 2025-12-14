@@ -17,12 +17,12 @@ type RadarCommands struct {
 	ScanReportRepo    ports.ScanReportRepository
 	SectorProvisioner *services.SectorProvisioningService
 	Scheduler         ports.Scheduler
-	EventPublisher    ports.EventPublisher
+	Outbox            ports.OutboxEventRepository
 	TxMgr             ports.TransactionManager
 }
 
-func NewRadarCommands(baseRepo ports.UserBaseRepository, sectorRepo ports.SectorRepository, resRepo ports.ResourceLocationRepository, dangerRepo ports.DangerousLocationRepository, scanRepo ports.ScanReportRepository, provisioner *services.SectorProvisioningService, scheduler ports.Scheduler, publisher ports.EventPublisher, txMgr ports.TransactionManager) *RadarCommands {
-	return &RadarCommands{BaseRepo: baseRepo, SectorRepo: sectorRepo, ResourceRepo: resRepo, DangerousRepo: dangerRepo, ScanReportRepo: scanRepo, SectorProvisioner: provisioner, Scheduler: scheduler, EventPublisher: publisher, TxMgr: txMgr}
+func NewRadarCommands(baseRepo ports.UserBaseRepository, sectorRepo ports.SectorRepository, resRepo ports.ResourceLocationRepository, dangerRepo ports.DangerousLocationRepository, scanRepo ports.ScanReportRepository, provisioner *services.SectorProvisioningService, scheduler ports.Scheduler, outbox ports.OutboxEventRepository, txMgr ports.TransactionManager) *RadarCommands {
+	return &RadarCommands{BaseRepo: baseRepo, SectorRepo: sectorRepo, ResourceRepo: resRepo, DangerousRepo: dangerRepo, ScanReportRepo: scanRepo, SectorProvisioner: provisioner, Scheduler: scheduler, Outbox: outbox, TxMgr: txMgr}
 }
 
 func (c *RadarCommands) HandleRadarScanJob(job ports.RadarScanJob) error {
@@ -79,21 +79,19 @@ func (c *RadarCommands) HandleRadarScanJob(job ports.RadarScanJob) error {
 		return nil
 	}
 	report.SourceOperationID = 0
-	var events []domain.DomainEvent
 	err = c.TxMgr.WithTx(func(tx ports.Transaction) error {
 		srRepo := c.ScanReportRepo.Tx(tx)
 		if err := srRepo.Create(report); err != nil {
 			return err
 		}
 		report.EmitCreated()
-		events = append(events, report.EventProducer.PullEvents()...)
+		if err := c.Outbox.Tx(tx).Save(report.EventProducer.PullEvents()); err != nil {
+			return err
+		}
 		return nil
 	})
-	if err == nil {
-		publishEvents(events, c.EventPublisher)
-	}
 	c.reschedule(job, periodSec)
-	return nil
+	return err
 }
 
 func (c *RadarCommands) reschedule(job ports.RadarScanJob, periodSec int64) {

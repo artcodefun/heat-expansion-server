@@ -13,7 +13,7 @@ import (
 type BuildingCommands struct {
 	BaseRepo       ports.UserBaseRepository
 	BuildingRepo   ports.BuildPrototypeRepository
-	EventPublisher ports.EventPublisher
+	Outbox         ports.OutboxEventRepository
 	Scheduler      ports.Scheduler
 	UserRepo       ports.UserRepository
 	crystalService *domain.CrystalSpendingService
@@ -21,15 +21,14 @@ type BuildingCommands struct {
 	Access         *services.AccessControlService
 }
 
-func NewBuildingCommands(baseRepo ports.UserBaseRepository, buildingRepo ports.BuildPrototypeRepository, userRepo ports.UserRepository, eventPublisher ports.EventPublisher, scheduler ports.Scheduler, txMgr ports.TransactionManager, access *services.AccessControlService) *BuildingCommands {
-	return &BuildingCommands{BaseRepo: baseRepo, BuildingRepo: buildingRepo, UserRepo: userRepo, crystalService: domain.NewCrystalSpendingService(), EventPublisher: eventPublisher, Scheduler: scheduler, TxMgr: txMgr, Access: access}
+func NewBuildingCommands(baseRepo ports.UserBaseRepository, buildingRepo ports.BuildPrototypeRepository, userRepo ports.UserRepository, outbox ports.OutboxEventRepository, scheduler ports.Scheduler, txMgr ports.TransactionManager, access *services.AccessControlService) *BuildingCommands {
+	return &BuildingCommands{BaseRepo: baseRepo, BuildingRepo: buildingRepo, UserRepo: userRepo, crystalService: domain.NewCrystalSpendingService(), Outbox: outbox, Scheduler: scheduler, TxMgr: txMgr, Access: access}
 }
 
 func (c *BuildingCommands) QueueBuilding(ctx cqrs.CommandContext, baseID int, prototypeID int) error {
 	if err := c.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return err
 	}
-	var events []domain.DomainEvent
 	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
 		bRepo := c.BaseRepo.Tx(tx)
 		biRepo := c.BuildingRepo.Tx(tx)
@@ -47,21 +46,18 @@ func (c *BuildingCommands) QueueBuilding(ctx cqrs.CommandContext, baseID int, pr
 		if err := bRepo.Update(base); err != nil {
 			return err
 		}
-		events = append(events, base.EventProducer.PullEvents()...)
+		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+			return err
+		}
 		return nil
 	})
-	if err != nil {
-		return err
-	}
-	publishEvents(events, c.EventPublisher)
-	return nil
+	return err
 }
 
 func (c *BuildingCommands) CancelPendingBuilding(ctx cqrs.CommandContext, baseID int, itemID uuid.UUID) error {
 	if err := c.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return err
 	}
-	var events []domain.DomainEvent
 	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
 		bRepo := c.BaseRepo.Tx(tx)
 		base, err := bRepo.FindByIDForUpdate(baseID)
@@ -74,21 +70,18 @@ func (c *BuildingCommands) CancelPendingBuilding(ctx cqrs.CommandContext, baseID
 		if err := bRepo.Update(base); err != nil {
 			return err
 		}
-		events = append(events, base.EventProducer.PullEvents()...)
+		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+			return err
+		}
 		return nil
 	})
-	if err != nil {
-		return err
-	}
-	publishEvents(events, c.EventPublisher)
-	return nil
+	return err
 }
 
 func (c *BuildingCommands) SpeedUpProductionWithCrystals(ctx cqrs.CommandContext, baseID int, buildingItemID uuid.UUID) error {
 	if err := c.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return err
 	}
-	var events []domain.DomainEvent
 	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
 		bRepo := c.BaseRepo.Tx(tx)
 		uRepo := c.UserRepo.Tx(tx)
@@ -109,21 +102,18 @@ func (c *BuildingCommands) SpeedUpProductionWithCrystals(ctx cqrs.CommandContext
 		if err := bRepo.Update(base); err != nil {
 			return err
 		}
-		events = append(events, base.EventProducer.PullEvents()...)
+		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+			return err
+		}
 		return nil
 	})
-	if err != nil {
-		return err
-	}
-	publishEvents(events, c.EventPublisher)
-	return nil
+	return err
 }
 
 func (c *BuildingCommands) DeletePresentBuilding(ctx cqrs.CommandContext, baseID int, itemID uuid.UUID) error {
 	if err := c.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return err
 	}
-	var events []domain.DomainEvent
 	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
 		bRepo := c.BaseRepo.Tx(tx)
 		base, err := bRepo.FindByIDForUpdate(baseID)
@@ -136,14 +126,12 @@ func (c *BuildingCommands) DeletePresentBuilding(ctx cqrs.CommandContext, baseID
 		if err := bRepo.Update(base); err != nil {
 			return err
 		}
-		events = append(events, base.EventProducer.PullEvents()...)
+		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+			return err
+		}
 		return nil
 	})
-	if err != nil {
-		return err
-	}
-	publishEvents(events, c.EventPublisher)
-	return nil
+	return err
 }
 
 func (c *BuildingCommands) HandleProductionStartedEvent(event *domain.BuildingProductionStartedEvent) error {
@@ -173,7 +161,6 @@ func (c *BuildingCommands) HandleProductionFinishedEvent(event *domain.BuildingP
 }
 
 func (c *BuildingCommands) HandleMoveBuildQueueJob(cmd ports.MoveBuildQueueJob) error {
-	var events []domain.DomainEvent
 	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
 		bRepo := c.BaseRepo.Tx(tx)
 		base, err := bRepo.FindByIDForUpdate(cmd.BaseID)
@@ -184,12 +171,10 @@ func (c *BuildingCommands) HandleMoveBuildQueueJob(cmd ports.MoveBuildQueueJob) 
 		if err := bRepo.Update(base); err != nil {
 			return err
 		}
-		events = append(events, base.EventProducer.PullEvents()...)
+		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+			return err
+		}
 		return nil
 	})
-	if err != nil {
-		return err
-	}
-	publishEvents(events, c.EventPublisher)
-	return nil
+	return err
 }

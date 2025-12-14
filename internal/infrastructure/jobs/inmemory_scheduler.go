@@ -51,7 +51,7 @@ func NewInMemoryScheduler() *InMemoryScheduler {
 }
 
 // Schedule implements ports.Scheduler.
-func (s *InMemoryScheduler) Schedule(job interface{}, executeAt int64) error {
+func (s *InMemoryScheduler) Schedule(job ports.SchadulableJob, executeAt int64) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.closed {

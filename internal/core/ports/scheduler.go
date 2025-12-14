@@ -40,8 +40,12 @@ type RadarScanJob struct {
 	BuildingID uuid.UUID
 }
 
+// SchadulableJob represents a generic job that can be scheduled for execution.
+// This type can be used to define any job or task that needs to be managed by a scheduler.
+type SchadulableJob any
+
 // Scheduler defines the interface for scheduling domain actions at a future time.
 type Scheduler interface {
 	// Schedule schedules a domain job (payload struct) to be executed at the specified Unix timestamp.
-	Schedule(job interface{}, executeAt int64) error
+	Schedule(job SchadulableJob, executeAt int64) error
 }

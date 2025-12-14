@@ -9,22 +9,21 @@ import (
 )
 
 type StorageCommands struct {
-	BaseRepo       ports.UserBaseRepository
-	EventPublisher ports.EventPublisher
-	Scheduler      ports.Scheduler
-	TxMgr          ports.TransactionManager
-	Access         *services.AccessControlService
+	BaseRepo  ports.UserBaseRepository
+	Outbox    ports.OutboxEventRepository
+	Scheduler ports.Scheduler
+	TxMgr     ports.TransactionManager
+	Access    *services.AccessControlService
 }
 
-func NewStorageCommands(baseRepo ports.UserBaseRepository, eventPublisher ports.EventPublisher, scheduler ports.Scheduler, txMgr ports.TransactionManager, access *services.AccessControlService) *StorageCommands {
-	return &StorageCommands{BaseRepo: baseRepo, EventPublisher: eventPublisher, Scheduler: scheduler, TxMgr: txMgr, Access: access}
+func NewStorageCommands(baseRepo ports.UserBaseRepository, outbox ports.OutboxEventRepository, scheduler ports.Scheduler, txMgr ports.TransactionManager, access *services.AccessControlService) *StorageCommands {
+	return &StorageCommands{BaseRepo: baseRepo, Outbox: outbox, Scheduler: scheduler, TxMgr: txMgr, Access: access}
 }
 
 func (c *StorageCommands) DeletePresentStorageItem(ctx cqrs.CommandContext, baseID int, itemID uuid.UUID) error {
 	if err := c.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return err
 	}
-	var events []domain.DomainEvent
 	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
 		bRepo := c.BaseRepo.Tx(tx)
 		base, err := bRepo.FindByIDForUpdate(baseID)
@@ -37,21 +36,18 @@ func (c *StorageCommands) DeletePresentStorageItem(ctx cqrs.CommandContext, base
 		if err := bRepo.Update(base); err != nil {
 			return err
 		}
-		events = append(events, base.EventProducer.PullEvents()...)
+		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+			return err
+		}
 		return nil
 	})
-	if err != nil {
-		return err
-	}
-	publishEvents(events, c.EventPublisher)
-	return nil
+	return err
 }
 
 func (c *StorageCommands) ActivateBuff(ctx cqrs.CommandContext, baseID int, itemID uuid.UUID) error {
 	if err := c.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return err
 	}
-	var events []domain.DomainEvent
 	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
 		bRepo := c.BaseRepo.Tx(tx)
 		base, err := bRepo.FindByIDForUpdate(baseID)
@@ -64,14 +60,12 @@ func (c *StorageCommands) ActivateBuff(ctx cqrs.CommandContext, baseID int, item
 		if err := bRepo.Update(base); err != nil {
 			return err
 		}
-		events = append(events, base.EventProducer.PullEvents()...)
+		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+			return err
+		}
 		return nil
 	})
-	if err != nil {
-		return err
-	}
-	publishEvents(events, c.EventPublisher)
-	return nil
+	return err
 }
 
 func (c *StorageCommands) HandleBuffActivatedEvent(event *domain.BuffActivatedEvent) error {
@@ -95,7 +89,6 @@ func (c *StorageCommands) HandleBuffActivatedEvent(event *domain.BuffActivatedEv
 }
 
 func (c *StorageCommands) HandleDeleteExpiredBuffJob(baseID int) (int, error) {
-	var events []domain.DomainEvent
 	var count int
 	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
 		bRepo := c.BaseRepo.Tx(tx)
@@ -107,12 +100,13 @@ func (c *StorageCommands) HandleDeleteExpiredBuffJob(baseID int) (int, error) {
 		if err := bRepo.Update(base); err != nil {
 			return err
 		}
-		events = append(events, base.EventProducer.PullEvents()...)
+		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+			return err
+		}
 		return nil
 	})
 	if err != nil {
 		return count, err
 	}
-	publishEvents(events, c.EventPublisher)
 	return count, nil
 }

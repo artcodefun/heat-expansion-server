@@ -1,9 +1,6 @@
 package bootstrap
 
-import (
-	"github.com/artcodefun/heat-expansion-api/internal/core/queries"
-	"github.com/artcodefun/heat-expansion-api/internal/core/services"
-)
+import "github.com/artcodefun/heat-expansion-api/internal/core/queries"
 
 // Queries aggregates all query facades.
 type Queries struct {
@@ -19,17 +16,17 @@ type Queries struct {
 }
 
 // NewQueries builds query facades using read repositories and shared services.
-func NewQueries(a *Adapters) *Queries {
-	access := services.NewAccessControlService(a.UserBases)
+
+func NewQueries(a *Adapters, as *AppServices) *Queries {
 	return &Queries{
-		Base:      queries.NewBaseQueries(a.BaseRead, access),
-		Army:      queries.NewArmyQueries(a.ArmyRead, a.ArmyPrototypes, a.UserBases, access),
-		Building:  queries.NewBuildingQueries(a.BuildingRead, a.BuildPrototypes, a.UserBases, access),
-		Tech:      queries.NewTechQueries(a.TechRead, a.TechPrototypes, a.UserBases, access),
-		Storage:   queries.NewStorageQueries(a.StorageRead, access),
-		Sector:    queries.NewSectorQueries(a.SectorRead, access),
-		Operation: queries.NewOperationQueries(a.OperationRead, access),
-		Activity:  queries.NewActivityQueries(a.ActivityRead, access),
+		Base:      queries.NewBaseQueries(a.BaseRead, as.Access),
+		Army:      queries.NewArmyQueries(a.ArmyRead, a.ArmyPrototypes, a.UserBases, as.Access),
+		Building:  queries.NewBuildingQueries(a.BuildingRead, a.BuildPrototypes, a.UserBases, as.Access),
+		Tech:      queries.NewTechQueries(a.TechRead, a.TechPrototypes, a.UserBases, as.Access),
+		Storage:   queries.NewStorageQueries(a.StorageRead, as.Access),
+		Sector:    queries.NewSectorQueries(a.SectorRead, as.Access),
+		Operation: queries.NewOperationQueries(a.OperationRead, as.Access),
+		Activity:  queries.NewActivityQueries(a.ActivityRead, as.Access),
 		User:      queries.NewUserQueries(a.UserRead),
 	}
 }

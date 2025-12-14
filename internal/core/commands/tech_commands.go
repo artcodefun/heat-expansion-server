@@ -11,7 +11,7 @@ import (
 type TechCommands struct {
 	BaseRepo       ports.UserBaseRepository
 	TechRepo       ports.TechPrototypeRepository
-	EventPublisher ports.EventPublisher
+	Outbox         ports.OutboxEventRepository
 	Scheduler      ports.Scheduler
 	UserRepo       ports.UserRepository
 	crystalService *domain.CrystalSpendingService
@@ -19,15 +19,14 @@ type TechCommands struct {
 	Access         *services.AccessControlService
 }
 
-func NewTechCommands(baseRepo ports.UserBaseRepository, techRepo ports.TechPrototypeRepository, userRepo ports.UserRepository, eventPublisher ports.EventPublisher, scheduler ports.Scheduler, txMgr ports.TransactionManager, access *services.AccessControlService) *TechCommands {
-	return &TechCommands{BaseRepo: baseRepo, TechRepo: techRepo, UserRepo: userRepo, crystalService: domain.NewCrystalSpendingService(), EventPublisher: eventPublisher, Scheduler: scheduler, TxMgr: txMgr, Access: access}
+func NewTechCommands(baseRepo ports.UserBaseRepository, techRepo ports.TechPrototypeRepository, userRepo ports.UserRepository, outbox ports.OutboxEventRepository, scheduler ports.Scheduler, txMgr ports.TransactionManager, access *services.AccessControlService) *TechCommands {
+	return &TechCommands{BaseRepo: baseRepo, TechRepo: techRepo, UserRepo: userRepo, crystalService: domain.NewCrystalSpendingService(), Outbox: outbox, Scheduler: scheduler, TxMgr: txMgr, Access: access}
 }
 
 func (c *TechCommands) StartTechResearch(ctx cqrs.CommandContext, baseID int, prototypeID int) error {
 	if err := c.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return err
 	}
-	var events []domain.DomainEvent
 	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
 		bRepo := c.BaseRepo.Tx(tx)
 		tRepo := c.TechRepo.Tx(tx)
@@ -45,21 +44,18 @@ func (c *TechCommands) StartTechResearch(ctx cqrs.CommandContext, baseID int, pr
 		if err := bRepo.Update(base); err != nil {
 			return err
 		}
-		events = append(events, base.EventProducer.PullEvents()...)
+		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+			return err
+		}
 		return nil
 	})
-	if err != nil {
-		return err
-	}
-	publishEvents(events, c.EventPublisher)
-	return nil
+	return err
 }
 
 func (c *TechCommands) SpeedUpTechResearchWithCrystals(ctx cqrs.CommandContext, baseID int, techItemID uuid.UUID) error {
 	if err := c.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return err
 	}
-	var events []domain.DomainEvent
 	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
 		bRepo := c.BaseRepo.Tx(tx)
 		uRepo := c.UserRepo.Tx(tx)
@@ -80,14 +76,12 @@ func (c *TechCommands) SpeedUpTechResearchWithCrystals(ctx cqrs.CommandContext, 
 		if err := bRepo.Update(base); err != nil {
 			return err
 		}
-		events = append(events, base.EventProducer.PullEvents()...)
+		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+			return err
+		}
 		return nil
 	})
-	if err != nil {
-		return err
-	}
-	publishEvents(events, c.EventPublisher)
-	return nil
+	return err
 }
 
 func (c *TechCommands) HandleTechResearchStartedEvent(event *domain.TechResearchStartedEvent) error {
@@ -96,7 +90,6 @@ func (c *TechCommands) HandleTechResearchStartedEvent(event *domain.TechResearch
 }
 
 func (c *TechCommands) HandleMoveTechQueueJob(cmd ports.MoveTechQueueJob) error {
-	var events []domain.DomainEvent
 	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
 		bRepo := c.BaseRepo.Tx(tx)
 		base, err := bRepo.FindByIDForUpdate(cmd.BaseID)
@@ -107,12 +100,10 @@ func (c *TechCommands) HandleMoveTechQueueJob(cmd ports.MoveTechQueueJob) error 
 		if err := bRepo.Update(base); err != nil {
 			return err
 		}
-		events = append(events, base.EventProducer.PullEvents()...)
+		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+			return err
+		}
 		return nil
 	})
-	if err != nil {
-		return err
-	}
-	publishEvents(events, c.EventPublisher)
-	return nil
+	return err
 }

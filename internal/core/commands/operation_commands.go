@@ -19,13 +19,13 @@ type OperationCommands struct {
 	ScanReportRepo ports.ScanReportRepository
 	Provisioner    *services.SectorProvisioningService
 	Scheduler      ports.Scheduler
-	EventPublisher ports.EventPublisher
+	Outbox         ports.OutboxEventRepository
 	TxMgr          ports.TransactionManager
 	Access         *services.AccessControlService
 }
 
-func NewOperationCommands(userBaseRepo ports.UserBaseRepository, sectorRepo ports.SectorRepository, opRepo ports.MilitaryOperationRepository, resRepo ports.ResourceLocationRepository, dangerRepo ports.DangerousLocationRepository, scanRepo ports.ScanReportRepository, provisioner *services.SectorProvisioningService, scheduler ports.Scheduler, publisher ports.EventPublisher, txMgr ports.TransactionManager, access *services.AccessControlService) *OperationCommands {
-	return &OperationCommands{UserBaseRepo: userBaseRepo, SectorRepo: sectorRepo, OperationRepo: opRepo, ResourceRepo: resRepo, DangerousRepo: dangerRepo, ScanReportRepo: scanRepo, Provisioner: provisioner, Scheduler: scheduler, EventPublisher: publisher, TxMgr: txMgr, Access: access}
+func NewOperationCommands(userBaseRepo ports.UserBaseRepository, sectorRepo ports.SectorRepository, opRepo ports.MilitaryOperationRepository, resRepo ports.ResourceLocationRepository, dangerRepo ports.DangerousLocationRepository, scanRepo ports.ScanReportRepository, provisioner *services.SectorProvisioningService, scheduler ports.Scheduler, outbox ports.OutboxEventRepository, txMgr ports.TransactionManager, access *services.AccessControlService) *OperationCommands {
+	return &OperationCommands{UserBaseRepo: userBaseRepo, SectorRepo: sectorRepo, OperationRepo: opRepo, ResourceRepo: resRepo, DangerousRepo: dangerRepo, ScanReportRepo: scanRepo, Provisioner: provisioner, Scheduler: scheduler, Outbox: outbox, TxMgr: txMgr, Access: access}
 }
 
 func (c *OperationCommands) CreateMilitaryOperation(ctx cqrs.CommandContext, opType domain.MilitaryOperationType, sourceBaseID int, targetX int, targetY int, deployments []domain.ArmyDeploymentRequest) (*domain.MilitaryOperation, error) {
@@ -36,7 +36,6 @@ func (c *OperationCommands) CreateMilitaryOperation(ctx cqrs.CommandContext, opT
 		return nil, errors.New("invalid source or target")
 	}
 	var createdOp *domain.MilitaryOperation
-	var events []domain.DomainEvent
 	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
 		bRepo := c.UserBaseRepo.Tx(tx)
 		sRepo := c.SectorRepo.Tx(tx)
@@ -91,18 +90,18 @@ func (c *OperationCommands) CreateMilitaryOperation(ctx cqrs.CommandContext, opT
 		if err := oRepo.Update(createdOp); err != nil {
 			return err
 		}
-		events = append(events, createdOp.EventProducer.PullEvents()...)
+		if err := c.Outbox.Tx(tx).Save(createdOp.EventProducer.PullEvents()); err != nil {
+			return err
+		}
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
-	publishEvents(events, c.EventPublisher)
 	return createdOp, nil
 }
 
 func (c *OperationCommands) HandleUpdateMilitaryOperationJob(cmd ports.UpdateMilitaryOperationJob) error {
-	var events []domain.DomainEvent
 	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
 		oRepo := c.OperationRepo.Tx(tx)
 		op, err := oRepo.FindByIDForUpdate(cmd.OperationID)
@@ -113,14 +112,12 @@ func (c *OperationCommands) HandleUpdateMilitaryOperationJob(cmd ports.UpdateMil
 		if err := oRepo.Update(op); err != nil {
 			return err
 		}
-		events = append(events, op.EventProducer.PullEvents()...)
+		if err := c.Outbox.Tx(tx).Save(op.EventProducer.PullEvents()); err != nil {
+			return err
+		}
 		return nil
 	})
-	if err != nil {
-		return err
-	}
-	publishEvents(events, c.EventPublisher)
-	return nil
+	return err
 }
 
 func (c *OperationCommands) HandleMilitaryOperationStartedEvent(event domain.MilitaryOperationStartedEvent) error {
@@ -128,7 +125,6 @@ func (c *OperationCommands) HandleMilitaryOperationStartedEvent(event domain.Mil
 }
 
 func (c *OperationCommands) HandleMilitaryOperationArrivedEvent(event domain.MilitaryOperationArrivedEvent) error {
-	var events []domain.DomainEvent
 	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
 		oRepo := c.OperationRepo.Tx(tx)
 		sRepo := c.SectorRepo.Tx(tx)
@@ -210,7 +206,6 @@ func (c *OperationCommands) HandleMilitaryOperationArrivedEvent(event domain.Mil
 			report.SourceOperationID = op.ID
 			if err := srRepo.Create(report); err == nil {
 				report.EmitCreated()
-				events = append(events, report.EventProducer.PullEvents()...)
 			}
 		}
 		if err := bRepo.Update(attackerBase); err != nil {
@@ -219,14 +214,17 @@ func (c *OperationCommands) HandleMilitaryOperationArrivedEvent(event domain.Mil
 		if err := oRepo.Update(op); err != nil {
 			return err
 		}
-		events = append(events, op.EventProducer.PullEvents()...)
+		var allEvents []domain.DomainEvent
+		allEvents = append(allEvents, op.EventProducer.PullEvents()...)
+		if report != nil {
+			allEvents = append(allEvents, report.EventProducer.PullEvents()...)
+		}
+		if err := c.Outbox.Tx(tx).Save(allEvents); err != nil {
+			return err
+		}
 		return nil
 	})
-	if err != nil {
-		return err
-	}
-	publishEvents(events, c.EventPublisher)
-	return nil
+	return err
 }
 
 func (c *OperationCommands) HandleMilitaryOperationReturnStartedEvent(event domain.MilitaryOperationReturnStartedEvent) error {
@@ -234,7 +232,6 @@ func (c *OperationCommands) HandleMilitaryOperationReturnStartedEvent(event doma
 }
 
 func (c *OperationCommands) HandleMilitaryOperationReturnArrivedEvent(event domain.MilitaryOperationReturnArrivedEvent) error {
-	var events []domain.DomainEvent
 	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
 		oRepo := c.OperationRepo.Tx(tx)
 		bRepo := c.UserBaseRepo.Tx(tx)
@@ -253,12 +250,10 @@ func (c *OperationCommands) HandleMilitaryOperationReturnArrivedEvent(event doma
 		if err := bRepo.Update(base); err != nil {
 			return err
 		}
-		events = append(events, base.EventProducer.PullEvents()...)
+		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+			return err
+		}
 		return nil
 	})
-	if err != nil {
-		return err
-	}
-	publishEvents(events, c.EventPublisher)
-	return nil
+	return err
 }

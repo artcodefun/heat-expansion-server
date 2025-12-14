@@ -11,6 +11,7 @@ import (
 )
 
 type Querier interface {
+	ClaimUnpublishedOutboxEvents(ctx context.Context, limit int32) ([]DomainEvent, error)
 	// User bases queries
 	CreateBase(ctx context.Context, arg CreateBaseParams) (UserBasis, error)
 	// Sector queries
@@ -64,6 +65,8 @@ type Querier interface {
 	InsertBaseTechItem(ctx context.Context, arg InsertBaseTechItemParams) (uuid.UUID, error)
 	InsertDangerousLocation(ctx context.Context, arg InsertDangerousLocationParams) (int64, error)
 	InsertMilitaryOperation(ctx context.Context, arg InsertMilitaryOperationParams) (int64, error)
+	// Outbox domain events queries
+	InsertOutboxEvent(ctx context.Context, arg InsertOutboxEventParams) (int64, error)
 	InsertResourceLocation(ctx context.Context, arg InsertResourceLocationParams) (int64, error)
 	// Scan report queries
 	InsertScanReport(ctx context.Context, arg InsertScanReportParams) (int64, error)
@@ -93,6 +96,7 @@ type Querier interface {
 	ListStoragePrototypes(ctx context.Context) ([]StorageItemPrototype, error)
 	ListTechPrototypes(ctx context.Context) ([]TechItemPrototype, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
+	MarkOutboxEventPublished(ctx context.Context, arg MarkOutboxEventPublishedParams) error
 	UpdateBase(ctx context.Context, arg UpdateBaseParams) (UserBasis, error)
 	UpdateDangerousLocation(ctx context.Context, arg UpdateDangerousLocationParams) error
 	UpdateMilitaryOperation(ctx context.Context, arg UpdateMilitaryOperationParams) error

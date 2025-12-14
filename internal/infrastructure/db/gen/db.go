@@ -24,6 +24,9 @@ func New(db DBTX) *Queries {
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
+	if q.claimUnpublishedOutboxEventsStmt, err = db.PrepareContext(ctx, claimUnpublishedOutboxEvents); err != nil {
+		return nil, fmt.Errorf("error preparing query ClaimUnpublishedOutboxEvents: %w", err)
+	}
 	if q.createBaseStmt, err = db.PrepareContext(ctx, createBase); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateBase: %w", err)
 	}
@@ -150,6 +153,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.insertMilitaryOperationStmt, err = db.PrepareContext(ctx, insertMilitaryOperation); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertMilitaryOperation: %w", err)
 	}
+	if q.insertOutboxEventStmt, err = db.PrepareContext(ctx, insertOutboxEvent); err != nil {
+		return nil, fmt.Errorf("error preparing query InsertOutboxEvent: %w", err)
+	}
 	if q.insertResourceLocationStmt, err = db.PrepareContext(ctx, insertResourceLocation); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertResourceLocation: %w", err)
 	}
@@ -219,6 +225,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listUsersStmt, err = db.PrepareContext(ctx, listUsers); err != nil {
 		return nil, fmt.Errorf("error preparing query ListUsers: %w", err)
 	}
+	if q.markOutboxEventPublishedStmt, err = db.PrepareContext(ctx, markOutboxEventPublished); err != nil {
+		return nil, fmt.Errorf("error preparing query MarkOutboxEventPublished: %w", err)
+	}
 	if q.updateBaseStmt, err = db.PrepareContext(ctx, updateBase); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateBase: %w", err)
 	}
@@ -245,6 +254,11 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 
 func (q *Queries) Close() error {
 	var err error
+	if q.claimUnpublishedOutboxEventsStmt != nil {
+		if cerr := q.claimUnpublishedOutboxEventsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing claimUnpublishedOutboxEventsStmt: %w", cerr)
+		}
+	}
 	if q.createBaseStmt != nil {
 		if cerr := q.createBaseStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createBaseStmt: %w", cerr)
@@ -455,6 +469,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing insertMilitaryOperationStmt: %w", cerr)
 		}
 	}
+	if q.insertOutboxEventStmt != nil {
+		if cerr := q.insertOutboxEventStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing insertOutboxEventStmt: %w", cerr)
+		}
+	}
 	if q.insertResourceLocationStmt != nil {
 		if cerr := q.insertResourceLocationStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing insertResourceLocationStmt: %w", cerr)
@@ -570,6 +589,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listUsersStmt: %w", cerr)
 		}
 	}
+	if q.markOutboxEventPublishedStmt != nil {
+		if cerr := q.markOutboxEventPublishedStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing markOutboxEventPublishedStmt: %w", cerr)
+		}
+	}
 	if q.updateBaseStmt != nil {
 		if cerr := q.updateBaseStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateBaseStmt: %w", cerr)
@@ -644,6 +668,7 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 type Queries struct {
 	db                                        DBTX
 	tx                                        *sql.Tx
+	claimUnpublishedOutboxEventsStmt          *sql.Stmt
 	createBaseStmt                            *sql.Stmt
 	createSectorStmt                          *sql.Stmt
 	deleteActivitiesByBaseStmt                *sql.Stmt
@@ -686,6 +711,7 @@ type Queries struct {
 	insertBaseTechItemStmt                    *sql.Stmt
 	insertDangerousLocationStmt               *sql.Stmt
 	insertMilitaryOperationStmt               *sql.Stmt
+	insertOutboxEventStmt                     *sql.Stmt
 	insertResourceLocationStmt                *sql.Stmt
 	insertScanReportStmt                      *sql.Stmt
 	insertUserStmt                            *sql.Stmt
@@ -709,6 +735,7 @@ type Queries struct {
 	listStoragePrototypesStmt                 *sql.Stmt
 	listTechPrototypesStmt                    *sql.Stmt
 	listUsersStmt                             *sql.Stmt
+	markOutboxEventPublishedStmt              *sql.Stmt
 	updateBaseStmt                            *sql.Stmt
 	updateDangerousLocationStmt               *sql.Stmt
 	updateMilitaryOperationStmt               *sql.Stmt
@@ -722,6 +749,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
 		db:                                        tx,
 		tx:                                        tx,
+		claimUnpublishedOutboxEventsStmt:          q.claimUnpublishedOutboxEventsStmt,
 		createBaseStmt:                            q.createBaseStmt,
 		createSectorStmt:                          q.createSectorStmt,
 		deleteActivitiesByBaseStmt:                q.deleteActivitiesByBaseStmt,
@@ -764,6 +792,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		insertBaseTechItemStmt:                    q.insertBaseTechItemStmt,
 		insertDangerousLocationStmt:               q.insertDangerousLocationStmt,
 		insertMilitaryOperationStmt:               q.insertMilitaryOperationStmt,
+		insertOutboxEventStmt:                     q.insertOutboxEventStmt,
 		insertResourceLocationStmt:                q.insertResourceLocationStmt,
 		insertScanReportStmt:                      q.insertScanReportStmt,
 		insertUserStmt:                            q.insertUserStmt,
@@ -787,6 +816,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listStoragePrototypesStmt:                 q.listStoragePrototypesStmt,
 		listTechPrototypesStmt:                    q.listTechPrototypesStmt,
 		listUsersStmt:                             q.listUsersStmt,
+		markOutboxEventPublishedStmt:              q.markOutboxEventPublishedStmt,
 		updateBaseStmt:                            q.updateBaseStmt,
 		updateDangerousLocationStmt:               q.updateDangerousLocationStmt,
 		updateMilitaryOperationStmt:               q.updateMilitaryOperationStmt,

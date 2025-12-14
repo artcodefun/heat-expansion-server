@@ -14,12 +14,12 @@ type UserCommands struct {
 	UserRepo       ports.UserRepository
 	PasswordHasher ports.PasswordHasher
 	TokenProvider  ports.TokenProvider
-	EventPublisher ports.EventPublisher
+	Outbox         ports.OutboxEventRepository
 	TxMgr          ports.TransactionManager
 }
 
-func NewUserCommands(userRepo ports.UserRepository, hasher ports.PasswordHasher, tokenProvider ports.TokenProvider, eventPublisher ports.EventPublisher, txMgr ports.TransactionManager) *UserCommands {
-	return &UserCommands{UserRepo: userRepo, PasswordHasher: hasher, TokenProvider: tokenProvider, EventPublisher: eventPublisher, TxMgr: txMgr}
+func NewUserCommands(userRepo ports.UserRepository, hasher ports.PasswordHasher, tokenProvider ports.TokenProvider, outbox ports.OutboxEventRepository, txMgr ports.TransactionManager) *UserCommands {
+	return &UserCommands{UserRepo: userRepo, PasswordHasher: hasher, TokenProvider: tokenProvider, Outbox: outbox, TxMgr: txMgr}
 }
 
 func (c *UserCommands) Authenticate(ctx cqrs.CommandContext, email, password string) (string, error) {
@@ -42,7 +42,6 @@ func (c *UserCommands) Create(ctx cqrs.CommandContext, name, email, password str
 	if err != nil {
 		return err
 	}
-	var events []domain.DomainEvent
 	err = c.TxMgr.WithTx(func(tx ports.Transaction) error {
 		uRepo := c.UserRepo.Tx(tx)
 		user := &domain.User{Name: name, Email: email, PasswordHash: hashed}
@@ -53,12 +52,10 @@ func (c *UserCommands) Create(ctx cqrs.CommandContext, name, email, password str
 		if err := uRepo.Update(user); err != nil {
 			return err
 		}
-		events = append(events, user.EventProducer.PullEvents()...)
+		if err := c.Outbox.Tx(tx).Save(user.EventProducer.PullEvents()); err != nil {
+			return err
+		}
 		return nil
 	})
-	if err != nil {
-		return err
-	}
-	publishEvents(events, c.EventPublisher)
-	return nil
+	return err
 }

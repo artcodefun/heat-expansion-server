@@ -26,6 +26,7 @@ type App struct {
 
 	DB         *sql.DB
 	Adapters   *Adapters
+	Services   *AppServices
 	Commands   *Commands
 	Queries    *Queries
 	HTTPServer *httpapi.Server
@@ -56,8 +57,9 @@ func NewApp() *App {
 	if err != nil {
 		log.Fatal("Failed to initialize adapters:", err)
 	}
-	commands := NewCommands(adapters)
-	queries := NewQueries(adapters)
+	services := NewAppServices(adapters)
+	commands := NewCommands(adapters, services)
+	queries := NewQueries(adapters, services)
 	// Wire event subscriptions and job dispatcher for commands
 	WireCommandEvents(commands, adapters.Events)
 	WireCommandSchedulerHandler(commands, adapters.Scheduler)
@@ -94,6 +96,7 @@ func NewApp() *App {
 		StaticBaseURL: staticBaseURL,
 		DB:            db,
 		Adapters:      adapters,
+		Services:      services,
 		Commands:      commands,
 		Queries:       queries,
 		HTTPServer:    httpServer,
@@ -111,8 +114,27 @@ func (a *App) Run() {
 	if runner, ok := a.Adapters.Scheduler.(interface{ Run(ctx context.Context) }); ok {
 		go runner.Run(context.Background())
 	}
+
+	// Start outbox dispatcher loop
+	go func() {
+		ctx := context.Background()
+		ticker := time.NewTicker(time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				if err := a.Services.Outbox.ProcessBatch(100); err != nil {
+					log.Printf("outbox dispatch error: %v", err)
+				}
+			}
+		}
+	}()
+
 	// Seed initial world generation job (after short delay)
 	_ = a.Adapters.Scheduler.Schedule(ports.SpawnNearbyLocationsJob{}, time.Now().Unix()+10)
+
 	addr := fmt.Sprintf(":%s", a.Port)
 	fmt.Printf("Listening on %s\n", addr)
 	if err := a.HTTPServer.Start(addr); err != nil {

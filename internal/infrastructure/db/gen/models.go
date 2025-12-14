@@ -116,6 +116,15 @@ type DangerousLocation struct {
 	Structures             json.RawMessage `json:"structures"`
 }
 
+type DomainEvent struct {
+	ID          int64           `json:"id"`
+	Kind        string          `json:"kind"`
+	Payload     json.RawMessage `json:"payload"`
+	CreatedAt   int64           `json:"created_at"`
+	Published   bool            `json:"published"`
+	PublishedAt sql.NullInt64   `json:"published_at"`
+}
+
 type MilitaryOperation struct {
 	ID               int64                 `json:"id"`
 	Type             string                `json:"type"`

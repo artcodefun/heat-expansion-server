@@ -1,32 +1,34 @@
 package ports
 
-// import (
-// 	"github.com/artcodefun/heat-expansion-api/internal/core/domain"
-// 	"github.com/google/uuid"
-// )
+import "github.com/artcodefun/heat-expansion-api/internal/core/domain"
 
-// // OutboxStatus represents delivery state of an outbox record.
-// type OutboxStatus string
+// OutboxEventRecord represents a persisted domain event entry used by a
+// transactional outbox. The concrete event payload is held as a typed
+// domain.DomainEvent; infrastructure is responsible for encoding/decoding it
+// when storing to the underlying database.
+//
+// All timestamps are Unix seconds.
+type OutboxEventRecord struct {
+	ID          int64
+	Event       domain.DomainEvent
+	CreatedAt   int64
+	Published   bool
+	PublishedAt int64
+}
 
-// const (
-// 	OutboxPending OutboxStatus = "PENDING"
-// 	OutboxSent    OutboxStatus = "SENT"
-// 	OutboxFailed  OutboxStatus = "FAILED"
-// )
-
-// // OutboxRecord carries a domain event to be delivered asynchronously.
-// // Serialization concerns (type strings, JSON, timestamps) are an infrastructure detail.
-// type OutboxRecord struct {
-// 	ID     uuid.UUID
-// 	Event  domain.DomainEvent
-// 	Status OutboxStatus
-// }
-
-// // OutboxRepository persists and retrieves outbox records.
-// // Implementations may assign IDs on insert if missing and must populate Event when fetching.
-// type OutboxRepository interface {
-// 	Enqueue(records []OutboxRecord) error
-// 	FetchPending(limit int) ([]OutboxRecord, error)
-// 	MarkSent(id uuid.UUID) error
-// 	MarkFailed(id uuid.UUID) error
-// }
+// OutboxEventRepository provides persistence for domain event outbox records.
+// Implementations are expected to be used within a TransactionManager.WithTx
+// scope via the Tx(tx) method.
+type OutboxEventRepository interface {
+	// Save persists a batch of domain events into the outbox. Implementations
+	// are responsible for translating typed events into concrete records.
+	Save(events []domain.DomainEvent) error
+	// ClaimUnpublished returns a batch of not-yet-published events ordered by ID
+	// up to the provided limit, using database-level locking so that multiple
+	// workers can safely process the outbox in parallel.
+	ClaimUnpublished(limit int) ([]*OutboxEventRecord, error)
+	// MarkPublished marks an event as published at the given timestamp.
+	MarkPublished(id int64, publishedAt int64) error
+	// Tx binds the repository to a concrete transaction implementation.
+	Tx(tx Transaction) OutboxEventRepository
+}

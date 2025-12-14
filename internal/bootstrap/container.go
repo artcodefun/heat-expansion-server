@@ -29,6 +29,7 @@ type Adapters struct {
 	MilitaryOps        ports.MilitaryOperationRepository
 	ScanReports        ports.ScanReportRepository
 	Activities         ports.ActivityRepository
+	OutboxEvents       ports.OutboxEventRepository
 
 	// Read Repositories (read-store / projections)
 	BaseRead      ports.BaseReadRepository
@@ -79,6 +80,7 @@ func NewAdapters(db *sql.DB, jwtSecret, contentDir, staticBaseURL string) (*Adap
 		MilitaryOps:        repo.NewMilitaryOperationRepo(q),
 		ScanReports:        repo.NewScanReportRepo(q),
 		Activities:         repo.NewActivityRepo(q),
+		OutboxEvents:       repo.NewOutboxEventRepo(q),
 		// Read side
 		BaseRead:      readrepo.NewBaseReadRepo(rq),
 		BuildingRead:  readrepo.NewBuildReadRepo(rq),
