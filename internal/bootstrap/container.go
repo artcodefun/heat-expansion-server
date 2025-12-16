@@ -59,8 +59,8 @@ func NewAdapters(db *sql.DB, jwtSecret, contentDir, staticBaseURL string) (*Adap
 	q := dbgen.New(db)
 	rq := readgen.New(db)
 
-	// In-memory publisher + DB-backed scheduler (durable jobs).
-	publisher := events.NewInMemoryPublisher()
+	// Simple in-process publisher + DB-backed scheduler (durable jobs).
+	publisher := events.NewSimplePublisher()
 	txMgr := repo.NewDBTxManager(db)
 	schedulerRepo := repo.NewScheduledJobRepo(q)
 	scheduler := jobs.NewDBScheduler(txMgr, schedulerRepo)

@@ -3,7 +3,6 @@ package jobs
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/artcodefun/heat-expansion-api/internal/core/ports"
@@ -11,15 +10,14 @@ import (
 )
 
 // DBScheduler is a durable scheduler implementation backed by the scheduled_jobs table.
-// It implements ports.Scheduler and exposes a Subscribe method compatible with
-// the existing wiring in bootstrap/command_wiring.go.
+// It implements ports.Scheduler and forwards each claimed job to a single listener
+// registered at startup. Not safe for multi-process usage by itself; safety comes
+// from the database-level locking used in the repository.
 type DBScheduler struct {
 	txMgr ports.TransactionManager
 	repo  *repo.ScheduledJobRepo
 
-	mu          sync.Mutex
-	subscribers map[int]func(ports.SchadulableJob)
-	nextSubID   int
+	listener func(ports.SchadulableJob) error
 }
 
 var _ ports.Scheduler = (*DBScheduler)(nil)
@@ -27,9 +25,8 @@ var _ ports.Scheduler = (*DBScheduler)(nil)
 // NewDBScheduler constructs a new DB-backed scheduler.
 func NewDBScheduler(txMgr ports.TransactionManager, r *repo.ScheduledJobRepo) *DBScheduler {
 	return &DBScheduler{
-		txMgr:       txMgr,
-		repo:        r,
-		subscribers: make(map[int]func(ports.SchadulableJob)),
+		txMgr: txMgr,
+		repo:  r,
 	}
 }
 
@@ -46,18 +43,12 @@ func (s *DBScheduler) Schedule(job ports.SchadulableJob, executeAt int64) error 
 	return err
 }
 
-// Subscribe registers a callback to receive job payloads as they are dispatched.
+// Listen registers a single callback to receive job payloads as they are dispatched.
 // Returns an unsubscribe function.
-func (s *DBScheduler) Subscribe(cb func(ports.SchadulableJob)) (unsubscribe func()) {
-	s.mu.Lock()
-	id := s.nextSubID
-	s.nextSubID++
-	s.subscribers[id] = cb
-	s.mu.Unlock()
+func (s *DBScheduler) Listen(cb func(ports.SchadulableJob) error) (unsubscribe func()) {
+	s.listener = cb
 	return func() {
-		s.mu.Lock()
-		delete(s.subscribers, id)
-		s.mu.Unlock()
+		s.listener = nil
 	}
 }
 
@@ -109,9 +100,11 @@ func (s *DBScheduler) processDueJobs(ctx context.Context, now int64, limit int32
 
 		nowTs := time.Now().Unix()
 		for _, row := range records {
-			// Deliver the job to subscribers before marking it as dispatched,
-			// mirroring OutboxService semantics.
-			s.notifySubscribers(row.Job)
+			// Deliver the job to listener before marking it as dispatched.
+			// If a handler fails, skip marking dispatched so it can be retried.
+			if err := s.notifyListener(row.Job); err != nil {
+				continue
+			}
 
 			if err := repoTx.MarkDispatched(ctx, row.ID, nowTs); err != nil {
 				return err
@@ -121,11 +114,10 @@ func (s *DBScheduler) processDueJobs(ctx context.Context, now int64, limit int32
 	})
 }
 
-func (s *DBScheduler) notifySubscribers(job ports.SchadulableJob) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	for _, cb := range s.subscribers {
-		cb(job)
+func (s *DBScheduler) notifyListener(job ports.SchadulableJob) error {
+	listener := s.listener
+	if listener == nil {
+		return nil
 	}
+	return listener(job)
 }
