@@ -59,9 +59,11 @@ func NewAdapters(db *sql.DB, jwtSecret, contentDir, staticBaseURL string) (*Adap
 	q := dbgen.New(db)
 	rq := readgen.New(db)
 
-	// In-memory adapters for events and jobs; replace with prod adapters as needed.
+	// In-memory publisher + DB-backed scheduler (durable jobs).
 	publisher := events.NewInMemoryPublisher()
-	scheduler := jobs.NewInMemoryScheduler()
+	txMgr := repo.NewDBTxManager(db)
+	schedulerRepo := repo.NewScheduledJobRepo(q)
+	scheduler := jobs.NewDBScheduler(txMgr, schedulerRepo)
 	// Security + content adapters (dev-friendly defaults)
 	hasher := security.NewSimpleHasher()
 	tokens := security.NewSimpleTokenProvider(jwtSecret)
@@ -91,7 +93,7 @@ func NewAdapters(db *sql.DB, jwtSecret, contentDir, staticBaseURL string) (*Adap
 		ActivityRead:  readrepo.NewActivityReadRepo(rq),
 		SectorRead:    readrepo.NewSectorReadRepo(rq),
 		UserRead:      readrepo.NewUserReadRepo(rq),
-		TxMgr:         repo.NewDBTxManager(db),
+		TxMgr:         txMgr,
 		Events:        publisher,
 		Scheduler:     scheduler,
 		Hasher:        hasher,

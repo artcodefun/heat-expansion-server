@@ -24,6 +24,9 @@ func New(db DBTX) *Queries {
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
+	if q.claimDueScheduledJobsStmt, err = db.PrepareContext(ctx, claimDueScheduledJobs); err != nil {
+		return nil, fmt.Errorf("error preparing query ClaimDueScheduledJobs: %w", err)
+	}
 	if q.claimUnpublishedOutboxEventsStmt, err = db.PrepareContext(ctx, claimUnpublishedOutboxEvents); err != nil {
 		return nil, fmt.Errorf("error preparing query ClaimUnpublishedOutboxEvents: %w", err)
 	}
@@ -102,6 +105,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getMilitaryOperationByIDForUpdateStmt, err = db.PrepareContext(ctx, getMilitaryOperationByIDForUpdate); err != nil {
 		return nil, fmt.Errorf("error preparing query GetMilitaryOperationByIDForUpdate: %w", err)
 	}
+	if q.getNextScheduledJobStmt, err = db.PrepareContext(ctx, getNextScheduledJob); err != nil {
+		return nil, fmt.Errorf("error preparing query GetNextScheduledJob: %w", err)
+	}
 	if q.getResourceLocationByIDStmt, err = db.PrepareContext(ctx, getResourceLocationByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetResourceLocationByID: %w", err)
 	}
@@ -161,6 +167,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.insertScanReportStmt, err = db.PrepareContext(ctx, insertScanReport); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertScanReport: %w", err)
+	}
+	if q.insertScheduledJobStmt, err = db.PrepareContext(ctx, insertScheduledJob); err != nil {
+		return nil, fmt.Errorf("error preparing query InsertScheduledJob: %w", err)
 	}
 	if q.insertUserStmt, err = db.PrepareContext(ctx, insertUser); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertUser: %w", err)
@@ -228,6 +237,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.markOutboxEventPublishedStmt, err = db.PrepareContext(ctx, markOutboxEventPublished); err != nil {
 		return nil, fmt.Errorf("error preparing query MarkOutboxEventPublished: %w", err)
 	}
+	if q.markScheduledJobDispatchedStmt, err = db.PrepareContext(ctx, markScheduledJobDispatched); err != nil {
+		return nil, fmt.Errorf("error preparing query MarkScheduledJobDispatched: %w", err)
+	}
 	if q.updateBaseStmt, err = db.PrepareContext(ctx, updateBase); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateBase: %w", err)
 	}
@@ -254,6 +266,11 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 
 func (q *Queries) Close() error {
 	var err error
+	if q.claimDueScheduledJobsStmt != nil {
+		if cerr := q.claimDueScheduledJobsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing claimDueScheduledJobsStmt: %w", cerr)
+		}
+	}
 	if q.claimUnpublishedOutboxEventsStmt != nil {
 		if cerr := q.claimUnpublishedOutboxEventsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing claimUnpublishedOutboxEventsStmt: %w", cerr)
@@ -384,6 +401,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getMilitaryOperationByIDForUpdateStmt: %w", cerr)
 		}
 	}
+	if q.getNextScheduledJobStmt != nil {
+		if cerr := q.getNextScheduledJobStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getNextScheduledJobStmt: %w", cerr)
+		}
+	}
 	if q.getResourceLocationByIDStmt != nil {
 		if cerr := q.getResourceLocationByIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getResourceLocationByIDStmt: %w", cerr)
@@ -482,6 +504,11 @@ func (q *Queries) Close() error {
 	if q.insertScanReportStmt != nil {
 		if cerr := q.insertScanReportStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing insertScanReportStmt: %w", cerr)
+		}
+	}
+	if q.insertScheduledJobStmt != nil {
+		if cerr := q.insertScheduledJobStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing insertScheduledJobStmt: %w", cerr)
 		}
 	}
 	if q.insertUserStmt != nil {
@@ -594,6 +621,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing markOutboxEventPublishedStmt: %w", cerr)
 		}
 	}
+	if q.markScheduledJobDispatchedStmt != nil {
+		if cerr := q.markScheduledJobDispatchedStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing markScheduledJobDispatchedStmt: %w", cerr)
+		}
+	}
 	if q.updateBaseStmt != nil {
 		if cerr := q.updateBaseStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateBaseStmt: %w", cerr)
@@ -668,6 +700,7 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 type Queries struct {
 	db                                        DBTX
 	tx                                        *sql.Tx
+	claimDueScheduledJobsStmt                 *sql.Stmt
 	claimUnpublishedOutboxEventsStmt          *sql.Stmt
 	createBaseStmt                            *sql.Stmt
 	createSectorStmt                          *sql.Stmt
@@ -694,6 +727,7 @@ type Queries struct {
 	getLocationTypeByCoordinatesStmt          *sql.Stmt
 	getMilitaryOperationByIDStmt              *sql.Stmt
 	getMilitaryOperationByIDForUpdateStmt     *sql.Stmt
+	getNextScheduledJobStmt                   *sql.Stmt
 	getResourceLocationByIDStmt               *sql.Stmt
 	getResourceLocationBySectorStmt           *sql.Stmt
 	getResourceLocationBySectorForUpdateStmt  *sql.Stmt
@@ -714,6 +748,7 @@ type Queries struct {
 	insertOutboxEventStmt                     *sql.Stmt
 	insertResourceLocationStmt                *sql.Stmt
 	insertScanReportStmt                      *sql.Stmt
+	insertScheduledJobStmt                    *sql.Stmt
 	insertUserStmt                            *sql.Stmt
 	listActivitiesByBaseStmt                  *sql.Stmt
 	listAllBasesStmt                          *sql.Stmt
@@ -736,6 +771,7 @@ type Queries struct {
 	listTechPrototypesStmt                    *sql.Stmt
 	listUsersStmt                             *sql.Stmt
 	markOutboxEventPublishedStmt              *sql.Stmt
+	markScheduledJobDispatchedStmt            *sql.Stmt
 	updateBaseStmt                            *sql.Stmt
 	updateDangerousLocationStmt               *sql.Stmt
 	updateMilitaryOperationStmt               *sql.Stmt
@@ -749,6 +785,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
 		db:                                        tx,
 		tx:                                        tx,
+		claimDueScheduledJobsStmt:                 q.claimDueScheduledJobsStmt,
 		claimUnpublishedOutboxEventsStmt:          q.claimUnpublishedOutboxEventsStmt,
 		createBaseStmt:                            q.createBaseStmt,
 		createSectorStmt:                          q.createSectorStmt,
@@ -775,6 +812,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getLocationTypeByCoordinatesStmt:          q.getLocationTypeByCoordinatesStmt,
 		getMilitaryOperationByIDStmt:              q.getMilitaryOperationByIDStmt,
 		getMilitaryOperationByIDForUpdateStmt:     q.getMilitaryOperationByIDForUpdateStmt,
+		getNextScheduledJobStmt:                   q.getNextScheduledJobStmt,
 		getResourceLocationByIDStmt:               q.getResourceLocationByIDStmt,
 		getResourceLocationBySectorStmt:           q.getResourceLocationBySectorStmt,
 		getResourceLocationBySectorForUpdateStmt:  q.getResourceLocationBySectorForUpdateStmt,
@@ -795,6 +833,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		insertOutboxEventStmt:                     q.insertOutboxEventStmt,
 		insertResourceLocationStmt:                q.insertResourceLocationStmt,
 		insertScanReportStmt:                      q.insertScanReportStmt,
+		insertScheduledJobStmt:                    q.insertScheduledJobStmt,
 		insertUserStmt:                            q.insertUserStmt,
 		listActivitiesByBaseStmt:                  q.listActivitiesByBaseStmt,
 		listAllBasesStmt:                          q.listAllBasesStmt,
@@ -817,6 +856,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listTechPrototypesStmt:                    q.listTechPrototypesStmt,
 		listUsersStmt:                             q.listUsersStmt,
 		markOutboxEventPublishedStmt:              q.markOutboxEventPublishedStmt,
+		markScheduledJobDispatchedStmt:            q.markScheduledJobDispatchedStmt,
 		updateBaseStmt:                            q.updateBaseStmt,
 		updateDangerousLocationStmt:               q.updateDangerousLocationStmt,
 		updateMilitaryOperationStmt:               q.updateMilitaryOperationStmt,

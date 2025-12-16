@@ -24,7 +24,6 @@ func (h *BaseHandler) GetBaseStatus(c *gin.Context) {
 		return
 	}
 
-	// TODO: derive user from auth middleware
 	ctx := queryCtx(c)
 	stats, err := h.queries.GetBaseStats(ctx, req.Uri.BaseID)
 	if handleCoreErr(c, err) {
@@ -37,7 +36,6 @@ func (h *BaseHandler) GetBaseStatus(c *gin.Context) {
 
 // CreateBase handles POST /bases.
 func (h *BaseHandler) CreateBase(c *gin.Context) {
-	// TODO: derive user from auth middleware
 	ctx := commandCtx(c)
 	if err := h.commands.CreateBase(ctx, ctx.UserID); handleCoreErr(c, err) {
 		return

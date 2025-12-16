@@ -176,6 +176,16 @@ type ScanReport struct {
 	Info              json.RawMessage `json:"info"`
 }
 
+type ScheduledJob struct {
+	ID           int64           `json:"id"`
+	Kind         string          `json:"kind"`
+	Payload      json.RawMessage `json:"payload"`
+	ExecuteAt    int64           `json:"execute_at"`
+	CreatedAt    int64           `json:"created_at"`
+	Dispatched   bool            `json:"dispatched"`
+	DispatchedAt sql.NullInt64   `json:"dispatched_at"`
+}
+
 type Sector struct {
 	ID          int64          `json:"id"`
 	X           int32          `json:"x"`

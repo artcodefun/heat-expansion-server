@@ -11,6 +11,7 @@ import (
 )
 
 type Querier interface {
+	ClaimDueScheduledJobs(ctx context.Context, arg ClaimDueScheduledJobsParams) ([]ScheduledJob, error)
 	ClaimUnpublishedOutboxEvents(ctx context.Context, limit int32) ([]DomainEvent, error)
 	// User bases queries
 	CreateBase(ctx context.Context, arg CreateBaseParams) (UserBasis, error)
@@ -44,6 +45,7 @@ type Querier interface {
 	// Military operations queries
 	GetMilitaryOperationByID(ctx context.Context, id int64) (MilitaryOperation, error)
 	GetMilitaryOperationByIDForUpdate(ctx context.Context, id int64) (MilitaryOperation, error)
+	GetNextScheduledJob(ctx context.Context) (ScheduledJob, error)
 	// Resource locations queries
 	GetResourceLocationByID(ctx context.Context, id int64) (ResourceLocation, error)
 	GetResourceLocationBySector(ctx context.Context, arg GetResourceLocationBySectorParams) (ResourceLocation, error)
@@ -70,6 +72,8 @@ type Querier interface {
 	InsertResourceLocation(ctx context.Context, arg InsertResourceLocationParams) (int64, error)
 	// Scan report queries
 	InsertScanReport(ctx context.Context, arg InsertScanReportParams) (int64, error)
+	// Scheduled jobs queries for durable scheduler
+	InsertScheduledJob(ctx context.Context, arg InsertScheduledJobParams) (int64, error)
 	InsertUser(ctx context.Context, arg InsertUserParams) (int64, error)
 	// Activities queries
 	ListActivitiesByBase(ctx context.Context, arg ListActivitiesByBaseParams) ([]Activity, error)
@@ -97,6 +101,7 @@ type Querier interface {
 	ListTechPrototypes(ctx context.Context) ([]TechItemPrototype, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
 	MarkOutboxEventPublished(ctx context.Context, arg MarkOutboxEventPublishedParams) error
+	MarkScheduledJobDispatched(ctx context.Context, arg MarkScheduledJobDispatchedParams) error
 	UpdateBase(ctx context.Context, arg UpdateBaseParams) (UserBasis, error)
 	UpdateDangerousLocation(ctx context.Context, arg UpdateDangerousLocationParams) error
 	UpdateMilitaryOperation(ctx context.Context, arg UpdateMilitaryOperationParams) error

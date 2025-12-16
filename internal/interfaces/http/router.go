@@ -99,7 +99,6 @@ func NewRouter(cmd Commands, qry Queries, tokenProvider ports.TokenProvider) *gi
 			army.DELETE("/present/:itemId", armyHandler.DeletePresent)
 		}
 
-		// TODO: add tech, storage, sector, operation, activity routes when handlers are implemented
 		// Tech
 		tech := api.Group("/bases/:baseId/tech")
 		{

@@ -48,12 +48,12 @@ func WireCommandEvents(c *Commands, pub ports.EventPublisher) {
 // WireCommandSchedulerHandler binds a job dispatcher to the in-memory scheduler so payloads route to command handlers.
 // It no-ops if the scheduler is not the in-memory implementation.
 func WireCommandSchedulerHandler(c *Commands, sch ports.Scheduler) {
-	s, ok := sch.(*infrajobs.InMemoryScheduler)
+	s, ok := sch.(*infrajobs.DBScheduler)
 	if !ok {
 		return
 	}
-	dispatcher := func(payload interface{}) {
-		switch job := payload.(type) {
+	s.Subscribe(func(j ports.SchadulableJob) {
+		switch job := j.(type) {
 		case ports.MoveBuildQueueJob:
 			_ = c.Building.HandleMoveBuildQueueJob(job)
 		case ports.MoveArmyQueueJob:
@@ -69,6 +69,5 @@ func WireCommandSchedulerHandler(c *Commands, sch ports.Scheduler) {
 		case ports.SpawnNearbyLocationsJob:
 			_ = c.World.HandleSpawnNearbyLocationsJob(job)
 		}
-	}
-	s.Subscribe(dispatcher)
+	})
 }

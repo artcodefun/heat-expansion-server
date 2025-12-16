@@ -11,7 +11,6 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"github.com/artcodefun/heat-expansion-api/internal/core/ports"
 	httpapi "github.com/artcodefun/heat-expansion-api/internal/interfaces/http"
 )
 
@@ -132,8 +131,9 @@ func (a *App) Run() {
 		}
 	}()
 
+	// todo: figure out initialization
 	// Seed initial world generation job (after short delay)
-	_ = a.Adapters.Scheduler.Schedule(ports.SpawnNearbyLocationsJob{}, time.Now().Unix()+10)
+	// _ = a.Adapters.Scheduler.Schedule(ports.SpawnNearbyLocationsJob{}, time.Now().Unix()+10)
 
 	addr := fmt.Sprintf(":%s", a.Port)
 	fmt.Printf("Listening on %s\n", addr)
