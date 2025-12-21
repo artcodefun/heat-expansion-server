@@ -43,6 +43,36 @@ func (s *DBScheduler) Schedule(job ports.SchadulableJob, executeAt int64) error 
 	return err
 }
 
+// EnsureScheduled ensures that there is at most one pending job with the same
+// identity (kind + payload) in the scheduled_jobs table. It uses a table-level
+// lock and is intended for rare singleton jobs such as SpawnNearbyLocationsJob
+// seeded at startup.
+func (s *DBScheduler) EnsureScheduled(job ports.SchadulableJob, executeAt int64) error {
+	if job == nil {
+		return fmt.Errorf("nil job")
+	}
+	return s.txMgr.WithTx(func(tx ports.Transaction) error {
+		now := time.Now().Unix()
+		if executeAt <= 0 {
+			executeAt = now
+		}
+		repoTx := s.repo.Tx(tx)
+		ctx := context.Background()
+		if err := repoTx.LockTable(ctx); err != nil {
+			return err
+		}
+		existing, err := repoTx.FindPendingByJobIdentity(ctx, job)
+		if err != nil {
+			return err
+		}
+		if existing != nil {
+			return nil
+		}
+		_, err = repoTx.Insert(ctx, job, executeAt, now)
+		return err
+	})
+}
+
 // Listen registers a single callback to receive job payloads as they are dispatched.
 // Returns an unsubscribe function.
 func (s *DBScheduler) Listen(cb func(ports.SchadulableJob) error) (unsubscribe func()) {

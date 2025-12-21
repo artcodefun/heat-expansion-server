@@ -80,6 +80,35 @@ func (q *Queries) GetNextScheduledJob(ctx context.Context) (ScheduledJob, error)
 	return i, err
 }
 
+const getPendingScheduledJobByKindPayload = `-- name: GetPendingScheduledJobByKindPayload :one
+SELECT id, kind, payload, execute_at, created_at, dispatched, dispatched_at
+FROM scheduled_jobs
+WHERE dispatched = FALSE
+  AND kind = $1
+  AND payload = $2
+LIMIT 1
+`
+
+type GetPendingScheduledJobByKindPayloadParams struct {
+	Kind    string          `json:"kind"`
+	Payload json.RawMessage `json:"payload"`
+}
+
+func (q *Queries) GetPendingScheduledJobByKindPayload(ctx context.Context, arg GetPendingScheduledJobByKindPayloadParams) (ScheduledJob, error) {
+	row := q.queryRow(ctx, q.getPendingScheduledJobByKindPayloadStmt, getPendingScheduledJobByKindPayload, arg.Kind, arg.Payload)
+	var i ScheduledJob
+	err := row.Scan(
+		&i.ID,
+		&i.Kind,
+		&i.Payload,
+		&i.ExecuteAt,
+		&i.CreatedAt,
+		&i.Dispatched,
+		&i.DispatchedAt,
+	)
+	return i, err
+}
+
 const insertScheduledJob = `-- name: InsertScheduledJob :one
 
 INSERT INTO scheduled_jobs (
@@ -108,6 +137,15 @@ func (q *Queries) InsertScheduledJob(ctx context.Context, arg InsertScheduledJob
 	var id int64
 	err := row.Scan(&id)
 	return id, err
+}
+
+const lockScheduledJobsTable = `-- name: LockScheduledJobsTable :exec
+LOCK TABLE scheduled_jobs IN EXCLUSIVE MODE
+`
+
+func (q *Queries) LockScheduledJobsTable(ctx context.Context) error {
+	_, err := q.exec(ctx, q.lockScheduledJobsTableStmt, lockScheduledJobsTable)
+	return err
 }
 
 const markScheduledJobDispatched = `-- name: MarkScheduledJobDispatched :exec

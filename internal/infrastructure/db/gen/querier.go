@@ -46,6 +46,7 @@ type Querier interface {
 	GetMilitaryOperationByID(ctx context.Context, id int64) (MilitaryOperation, error)
 	GetMilitaryOperationByIDForUpdate(ctx context.Context, id int64) (MilitaryOperation, error)
 	GetNextScheduledJob(ctx context.Context) (ScheduledJob, error)
+	GetPendingScheduledJobByKindPayload(ctx context.Context, arg GetPendingScheduledJobByKindPayloadParams) (ScheduledJob, error)
 	// Resource locations queries
 	GetResourceLocationByID(ctx context.Context, id int64) (ResourceLocation, error)
 	GetResourceLocationBySector(ctx context.Context, arg GetResourceLocationBySectorParams) (ResourceLocation, error)
@@ -100,6 +101,7 @@ type Querier interface {
 	ListStoragePrototypes(ctx context.Context) ([]StorageItemPrototype, error)
 	ListTechPrototypes(ctx context.Context) ([]TechItemPrototype, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
+	LockScheduledJobsTable(ctx context.Context) error
 	MarkOutboxEventPublished(ctx context.Context, arg MarkOutboxEventPublishedParams) error
 	MarkScheduledJobDispatched(ctx context.Context, arg MarkScheduledJobDispatchedParams) error
 	UpdateBase(ctx context.Context, arg UpdateBaseParams) (UserBasis, error)

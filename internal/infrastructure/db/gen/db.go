@@ -108,6 +108,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getNextScheduledJobStmt, err = db.PrepareContext(ctx, getNextScheduledJob); err != nil {
 		return nil, fmt.Errorf("error preparing query GetNextScheduledJob: %w", err)
 	}
+	if q.getPendingScheduledJobByKindPayloadStmt, err = db.PrepareContext(ctx, getPendingScheduledJobByKindPayload); err != nil {
+		return nil, fmt.Errorf("error preparing query GetPendingScheduledJobByKindPayload: %w", err)
+	}
 	if q.getResourceLocationByIDStmt, err = db.PrepareContext(ctx, getResourceLocationByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetResourceLocationByID: %w", err)
 	}
@@ -233,6 +236,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.listUsersStmt, err = db.PrepareContext(ctx, listUsers); err != nil {
 		return nil, fmt.Errorf("error preparing query ListUsers: %w", err)
+	}
+	if q.lockScheduledJobsTableStmt, err = db.PrepareContext(ctx, lockScheduledJobsTable); err != nil {
+		return nil, fmt.Errorf("error preparing query LockScheduledJobsTable: %w", err)
 	}
 	if q.markOutboxEventPublishedStmt, err = db.PrepareContext(ctx, markOutboxEventPublished); err != nil {
 		return nil, fmt.Errorf("error preparing query MarkOutboxEventPublished: %w", err)
@@ -404,6 +410,11 @@ func (q *Queries) Close() error {
 	if q.getNextScheduledJobStmt != nil {
 		if cerr := q.getNextScheduledJobStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getNextScheduledJobStmt: %w", cerr)
+		}
+	}
+	if q.getPendingScheduledJobByKindPayloadStmt != nil {
+		if cerr := q.getPendingScheduledJobByKindPayloadStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getPendingScheduledJobByKindPayloadStmt: %w", cerr)
 		}
 	}
 	if q.getResourceLocationByIDStmt != nil {
@@ -616,6 +627,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listUsersStmt: %w", cerr)
 		}
 	}
+	if q.lockScheduledJobsTableStmt != nil {
+		if cerr := q.lockScheduledJobsTableStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing lockScheduledJobsTableStmt: %w", cerr)
+		}
+	}
 	if q.markOutboxEventPublishedStmt != nil {
 		if cerr := q.markOutboxEventPublishedStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing markOutboxEventPublishedStmt: %w", cerr)
@@ -728,6 +744,7 @@ type Queries struct {
 	getMilitaryOperationByIDStmt              *sql.Stmt
 	getMilitaryOperationByIDForUpdateStmt     *sql.Stmt
 	getNextScheduledJobStmt                   *sql.Stmt
+	getPendingScheduledJobByKindPayloadStmt   *sql.Stmt
 	getResourceLocationByIDStmt               *sql.Stmt
 	getResourceLocationBySectorStmt           *sql.Stmt
 	getResourceLocationBySectorForUpdateStmt  *sql.Stmt
@@ -770,6 +787,7 @@ type Queries struct {
 	listStoragePrototypesStmt                 *sql.Stmt
 	listTechPrototypesStmt                    *sql.Stmt
 	listUsersStmt                             *sql.Stmt
+	lockScheduledJobsTableStmt                *sql.Stmt
 	markOutboxEventPublishedStmt              *sql.Stmt
 	markScheduledJobDispatchedStmt            *sql.Stmt
 	updateBaseStmt                            *sql.Stmt
@@ -813,6 +831,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getMilitaryOperationByIDStmt:              q.getMilitaryOperationByIDStmt,
 		getMilitaryOperationByIDForUpdateStmt:     q.getMilitaryOperationByIDForUpdateStmt,
 		getNextScheduledJobStmt:                   q.getNextScheduledJobStmt,
+		getPendingScheduledJobByKindPayloadStmt:   q.getPendingScheduledJobByKindPayloadStmt,
 		getResourceLocationByIDStmt:               q.getResourceLocationByIDStmt,
 		getResourceLocationBySectorStmt:           q.getResourceLocationBySectorStmt,
 		getResourceLocationBySectorForUpdateStmt:  q.getResourceLocationBySectorForUpdateStmt,
@@ -855,6 +874,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listStoragePrototypesStmt:                 q.listStoragePrototypesStmt,
 		listTechPrototypesStmt:                    q.listTechPrototypesStmt,
 		listUsersStmt:                             q.listUsersStmt,
+		lockScheduledJobsTableStmt:                q.lockScheduledJobsTableStmt,
 		markOutboxEventPublishedStmt:              q.markOutboxEventPublishedStmt,
 		markScheduledJobDispatchedStmt:            q.markScheduledJobDispatchedStmt,
 		updateBaseStmt:                            q.updateBaseStmt,

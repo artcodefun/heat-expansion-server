@@ -41,6 +41,49 @@ func (r *ScheduledJobRepo) Tx(tx ports.Transaction) *ScheduledJobRepo {
 	return r
 }
 
+// LockTable acquires an EXCLUSIVE MODE lock on scheduled_jobs. It must be called
+// on a repository already bound to a transaction via Tx(tx).
+func (r *ScheduledJobRepo) LockTable(ctx context.Context) error {
+	return r.q.LockScheduledJobsTable(ctx)
+}
+
+// FindPendingByJobIdentity returns an undispatched job matching the given job's
+// identity (kind + payload), or nil if none exists.
+func (r *ScheduledJobRepo) FindPendingByJobIdentity(ctx context.Context, job ports.SchadulableJob) (*ScheduledJobRecord, error) {
+	kind, payload, err := mappers.EncodeJob(job)
+	if err != nil {
+		return nil, err
+	}
+
+	row, err := r.q.GetPendingScheduledJobByKindPayload(ctx, gen.GetPendingScheduledJobByKindPayloadParams{
+		Kind:    kind,
+		Payload: payload,
+	})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	decodedJob, err := mappers.DecodeJob(row.Kind, row.Payload)
+	if err != nil {
+		return nil, err
+	}
+
+	rec := &ScheduledJobRecord{
+		ID:         row.ID,
+		Job:        decodedJob,
+		ExecuteAt:  row.ExecuteAt,
+		CreatedAt:  row.CreatedAt,
+		Dispatched: row.Dispatched,
+	}
+	if row.DispatchedAt.Valid {
+		rec.DispatchedAt = row.DispatchedAt.Int64
+	}
+	return rec, nil
+}
+
 // Insert stores a new scheduled job row for the given typed job.
 func (r *ScheduledJobRepo) Insert(ctx context.Context, job ports.SchadulableJob, executeAt, createdAt int64) (int64, error) {
 	if createdAt == 0 {

@@ -11,6 +11,8 @@ import (
 
 	_ "github.com/lib/pq"
 
+	"github.com/artcodefun/heat-expansion-api/internal/core/ports"
+	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/jobs"
 	httpapi "github.com/artcodefun/heat-expansion-api/internal/interfaces/http"
 )
 
@@ -109,8 +111,8 @@ func (a *App) Run() {
 	fmt.Printf("Content dir: %s\n", a.ContentDir)
 	fmt.Printf("Static base URL: %s\n", a.StaticBaseURL)
 
-	// Start scheduler loop if implementation supports Run(ctx)
-	if runner, ok := a.Adapters.Scheduler.(interface{ Run(ctx context.Context) }); ok {
+	// Start scheduler loop
+	if runner, ok := a.Adapters.Scheduler.(*jobs.DBScheduler); ok {
 		go runner.Run(context.Background())
 	}
 
@@ -131,9 +133,10 @@ func (a *App) Run() {
 		}
 	}()
 
-	// todo: figure out initialization
-	// Seed initial world generation job (after short delay)
-	// _ = a.Adapters.Scheduler.Schedule(ports.SpawnNearbyLocationsJob{}, time.Now().Unix()+10)
+	// Seed initial world generation job (after short delay) if not already present.
+	if s, ok := a.Adapters.Scheduler.(*jobs.DBScheduler); ok {
+		_ = s.EnsureScheduled(ports.SpawnNearbyLocationsJob{}, time.Now().Unix()+10)
+	}
 
 	addr := fmt.Sprintf(":%s", a.Port)
 	fmt.Printf("Listening on %s\n", addr)
