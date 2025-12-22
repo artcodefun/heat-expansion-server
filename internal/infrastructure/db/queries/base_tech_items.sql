@@ -13,11 +13,11 @@ DELETE FROM base_tech_items WHERE base_id = @base_id;
 
 -- name: InsertBaseTechItem :one
 INSERT INTO base_tech_items (
-    base_id, prototype_id, status,
+    id, base_id, prototype_id, status,
     in_progress_data, done_data,
     created_at
 ) VALUES (
-    @base_id, @prototype_id, @status,
+    @id, @base_id, @prototype_id, @status,
     @in_progress_data, @done_data,
     @created_at
 )

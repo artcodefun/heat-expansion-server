@@ -2,6 +2,18 @@ package dtos
 
 import "github.com/artcodefun/heat-expansion-api/internal/core/domain"
 
+// Pending build items (currently carry no extra payload beyond ownership/prototype).
+// DTO exists for symmetry and future-proofing of pending_data JSON.
+type BuildPendingDTO struct{}
+
+func BuildPendingDTOFromDomain(b domain.BuildItemPending) BuildPendingDTO {
+	return BuildPendingDTO{}
+}
+
+func BuildPendingFromDTO(d BuildPendingDTO, owned domain.BaseOwnedItem, proto domain.BuildItemPrototype) domain.BuildItemPending {
+	return domain.BuildItemPending{BaseOwnedItem: owned, Prototype: proto}
+}
+
 type BuildInProdDTO struct {
 	StartDate         int64 `json:"start_date"`
 	CompletionDate    int64 `json:"completion_date"`

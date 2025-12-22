@@ -24,16 +24,17 @@ func (q *Queries) DeleteBaseStorageItemsByBase(ctx context.Context, baseID int64
 
 const insertBaseStorageItem = `-- name: InsertBaseStorageItem :one
 INSERT INTO base_storage_items (
-    base_id, prototype_id, status,
+    id, base_id, prototype_id, status,
     present_data, state, created_at
 ) VALUES (
-    $1, $2, $3,
-    $4, $5, $6
+    $1, $2, $3, $4,
+    $5, $6, $7
 )
 RETURNING id
 `
 
 type InsertBaseStorageItemParams struct {
+	ID          uuid.UUID             `json:"id"`
 	BaseID      int64                 `json:"base_id"`
 	PrototypeID int64                 `json:"prototype_id"`
 	Status      string                `json:"status"`
@@ -44,6 +45,7 @@ type InsertBaseStorageItemParams struct {
 
 func (q *Queries) InsertBaseStorageItem(ctx context.Context, arg InsertBaseStorageItemParams) (uuid.UUID, error) {
 	row := q.queryRow(ctx, q.insertBaseStorageItemStmt, insertBaseStorageItem,
+		arg.ID,
 		arg.BaseID,
 		arg.PrototypeID,
 		arg.Status,

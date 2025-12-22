@@ -3,14 +3,12 @@ package repo
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
 
 	"github.com/artcodefun/heat-expansion-api/internal/core/domain"
 	"github.com/artcodefun/heat-expansion-api/internal/core/ports"
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/db/gen"
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/db/mappers"
-	"github.com/sqlc-dev/pqtype"
 )
 
 type UserBaseRepo struct {
@@ -158,7 +156,6 @@ func (r *UserBaseRepo) GetOwnerID(baseID int) (int, error) {
 
 // PersistAggregate updates the base stats row and fully replaces all item rows with the current aggregate collections.
 // This is a bulk-replacement write path keeping persistence logic simple and avoiding per-row diffing.
-// ...PersistAggregate removed; logic now lives in Update...
 
 // --- Internal per-table persistence helpers ---
 
@@ -167,71 +164,9 @@ func (r *UserBaseRepo) persistArmyItems(base *domain.UserBaseModel) error {
 	if err := r.q.DeleteBaseArmyItemsByBase(ctx, int64(base.ID)); err != nil {
 		return err
 	}
-	// Pending
-	for _, it := range base.ArmiesPending {
-		pRaw := mappers.BuildArmyPendingRaw(it)
-		params := gen.InsertBaseArmyItemParams{
-			BaseID:       int64(base.ID),
-			PrototypeID:  int64(it.Prototype.ID),
-			Status:       string(domain.ArmyStatusPending),
-			PendingData:  pRaw,
-			InProdData:   pqtype.NullRawMessage{Valid: false},
-			PresentData:  pqtype.NullRawMessage{Valid: false},
-			DeployedData: pqtype.NullRawMessage{Valid: false},
-			CreatedAt:    domain.NowUnix(),
-		}
-		if _, err := r.q.InsertBaseArmyItem(ctx, params); err != nil {
-			return err
-		}
-	}
-	// In Production
-	for _, it := range base.ArmiesInProduction {
-		prodRaw := mappers.BuildArmyInProdRaw(it)
-		params := gen.InsertBaseArmyItemParams{
-			BaseID:       int64(base.ID),
-			PrototypeID:  int64(it.Prototype.ID),
-			Status:       string(domain.ArmyStatusInProduction),
-			PendingData:  pqtype.NullRawMessage{Valid: false},
-			InProdData:   prodRaw,
-			PresentData:  pqtype.NullRawMessage{Valid: false},
-			DeployedData: pqtype.NullRawMessage{Valid: false},
-			CreatedAt:    domain.NowUnix(),
-		}
-		if _, err := r.q.InsertBaseArmyItem(ctx, params); err != nil {
-			return err
-		}
-	}
-	// Present
-	for _, it := range base.ArmiesPresent {
-		presentRaw := mappers.BuildArmyPresentRaw(it)
-		params := gen.InsertBaseArmyItemParams{
-			BaseID:       int64(base.ID),
-			PrototypeID:  int64(it.Prototype.ID),
-			Status:       string(domain.ArmyStatusPresent),
-			PendingData:  pqtype.NullRawMessage{Valid: false},
-			InProdData:   pqtype.NullRawMessage{Valid: false},
-			PresentData:  presentRaw,
-			DeployedData: pqtype.NullRawMessage{Valid: false},
-			CreatedAt:    domain.NowUnix(),
-		}
-		if _, err := r.q.InsertBaseArmyItem(ctx, params); err != nil {
-			return err
-		}
-	}
-	// Deployed
-	for _, it := range base.ArmiesDeployed {
-		depRaw := mappers.BuildArmyDeployedRaw(it)
-		params := gen.InsertBaseArmyItemParams{
-			BaseID:       int64(base.ID),
-			PrototypeID:  int64(it.Prototype.ID),
-			Status:       string(domain.ArmyStatusDeployed),
-			PendingData:  pqtype.NullRawMessage{Valid: false},
-			InProdData:   pqtype.NullRawMessage{Valid: false},
-			PresentData:  pqtype.NullRawMessage{Valid: false},
-			DeployedData: depRaw,
-			CreatedAt:    domain.NowUnix(),
-		}
-		if _, err := r.q.InsertBaseArmyItem(ctx, params); err != nil {
+	params := mappers.DehydrateArmyItems(base)
+	for _, p := range params {
+		if _, err := r.q.InsertBaseArmyItem(ctx, p); err != nil {
 			return err
 		}
 	}
@@ -243,51 +178,9 @@ func (r *UserBaseRepo) persistBuildItems(base *domain.UserBaseModel) error {
 	if err := r.q.DeleteBaseBuildItemsByBase(ctx, int64(base.ID)); err != nil {
 		return err
 	}
-	// Pending (store empty JSON object to satisfy constraint)
-	for _, it := range base.BuildingsPending {
-		pendingRaw := raw(struct{}{})
-		params := gen.InsertBaseBuildItemParams{
-			BaseID:      int64(base.ID),
-			PrototypeID: int64(it.Prototype.ID),
-			Status:      string(domain.BuildStatusPending),
-			PendingData: pendingRaw,
-			InProdData:  pqtype.NullRawMessage{Valid: false},
-			PresentData: pqtype.NullRawMessage{Valid: false},
-			CreatedAt:   domain.NowUnix(),
-		}
-		if _, err := r.q.InsertBaseBuildItem(ctx, params); err != nil {
-			return err
-		}
-	}
-	// In Production
-	for _, it := range base.BuildingsInProduction {
-		prodRaw := mappers.BuildBuildInProdRaw(it)
-		params := gen.InsertBaseBuildItemParams{
-			BaseID:      int64(base.ID),
-			PrototypeID: int64(it.Prototype.ID),
-			Status:      string(domain.BuildStatusInProduction),
-			PendingData: pqtype.NullRawMessage{Valid: false},
-			InProdData:  prodRaw,
-			PresentData: pqtype.NullRawMessage{Valid: false},
-			CreatedAt:   domain.NowUnix(),
-		}
-		if _, err := r.q.InsertBaseBuildItem(ctx, params); err != nil {
-			return err
-		}
-	}
-	// Present
-	for _, it := range base.BuildingsPresent {
-		presentRaw := mappers.BuildBuildPresentRaw(it)
-		params := gen.InsertBaseBuildItemParams{
-			BaseID:      int64(base.ID),
-			PrototypeID: int64(it.Prototype.ID),
-			Status:      string(domain.BuildStatusPresent),
-			PendingData: pqtype.NullRawMessage{Valid: false},
-			InProdData:  pqtype.NullRawMessage{Valid: false},
-			PresentData: presentRaw,
-			CreatedAt:   domain.NowUnix(),
-		}
-		if _, err := r.q.InsertBaseBuildItem(ctx, params); err != nil {
+	params := mappers.DehydrateBuildItems(base)
+	for _, p := range params {
+		if _, err := r.q.InsertBaseBuildItem(ctx, p); err != nil {
 			return err
 		}
 	}
@@ -299,33 +192,9 @@ func (r *UserBaseRepo) persistTechItems(base *domain.UserBaseModel) error {
 	if err := r.q.DeleteBaseTechItemsByBase(ctx, int64(base.ID)); err != nil {
 		return err
 	}
-	// In Progress
-	for _, it := range base.TechnologiesInProgress {
-		progressRaw := mappers.BuildTechInProgressRaw(it)
-		params := gen.InsertBaseTechItemParams{
-			BaseID:         int64(base.ID),
-			PrototypeID:    int64(it.Prototype.ID),
-			Status:         string(domain.TechStatusInProgress),
-			InProgressData: progressRaw,
-			DoneData:       pqtype.NullRawMessage{Valid: false},
-			CreatedAt:      domain.NowUnix(),
-		}
-		if _, err := r.q.InsertBaseTechItem(ctx, params); err != nil {
-			return err
-		}
-	}
-	// Done
-	for _, it := range base.TechnologiesDone {
-		doneRaw := mappers.BuildTechDoneRaw(it)
-		params := gen.InsertBaseTechItemParams{
-			BaseID:         int64(base.ID),
-			PrototypeID:    int64(it.Prototype.ID),
-			Status:         string(domain.TechStatusDone),
-			InProgressData: pqtype.NullRawMessage{Valid: false},
-			DoneData:       doneRaw,
-			CreatedAt:      domain.NowUnix(),
-		}
-		if _, err := r.q.InsertBaseTechItem(ctx, params); err != nil {
+	params := mappers.DehydrateTechItems(base)
+	for _, p := range params {
+		if _, err := r.q.InsertBaseTechItem(ctx, p); err != nil {
 			return err
 		}
 	}
@@ -337,18 +206,9 @@ func (r *UserBaseRepo) persistStorageItems(base *domain.UserBaseModel) error {
 	if err := r.q.DeleteBaseStorageItemsByBase(ctx, int64(base.ID)); err != nil {
 		return err
 	}
-	for _, it := range base.StorageItemsPresent {
-		presentRaw := mappers.BuildStoragePresentRaw(it)
-		stateJSON, _ := json.Marshal(map[string]any{}) // placeholder empty state
-		params := gen.InsertBaseStorageItemParams{
-			BaseID:      int64(base.ID),
-			PrototypeID: int64(it.Prototype.ID),
-			Status:      "PRESENT",
-			PresentData: presentRaw,
-			State:       stateJSON,
-			CreatedAt:   domain.NowUnix(),
-		}
-		if _, err := r.q.InsertBaseStorageItem(ctx, params); err != nil {
+	params := mappers.DehydrateStorageItems(base)
+	for _, p := range params {
+		if _, err := r.q.InsertBaseStorageItem(ctx, p); err != nil {
 			return err
 		}
 	}
@@ -424,13 +284,4 @@ func (r *UserBaseRepo) hydrateBase(base *domain.UserBaseModel) error {
 	mappers.HydrateStorageItems(base, storageRows, storageMap)
 
 	return nil
-}
-
-// raw builds a pqtype.NullRawMessage from any value (nil -> invalid).
-func raw(v any) pqtype.NullRawMessage {
-	if v == nil {
-		return pqtype.NullRawMessage{Valid: false}
-	}
-	b, _ := json.Marshal(v)
-	return pqtype.NullRawMessage{RawMessage: b, Valid: true}
 }

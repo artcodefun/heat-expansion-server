@@ -4,6 +4,7 @@ import (
 	"github.com/artcodefun/heat-expansion-api/internal/core/domain"
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/db/dtos"
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/db/gen"
+	"github.com/sqlc-dev/pqtype"
 )
 
 func HydrateArmyItems(base *domain.UserBaseModel, rows []gen.BaseArmyItem, proto map[int]*domain.ArmyItemPrototype) {
@@ -32,4 +33,74 @@ func HydrateArmyItems(base *domain.UserBaseModel, rows []gen.BaseArmyItem, proto
 			base.ArmiesDeployed = append(base.ArmiesDeployed, dtos.ArmyDeployedFromDTO(d, owned, *p))
 		}
 	}
+}
+
+// DehydrateArmyItems converts the in-memory aggregate collections into insert params
+// for the base_army_items table. This keeps persistence logic thin in the repo.
+func DehydrateArmyItems(base *domain.UserBaseModel) []gen.InsertBaseArmyItemParams {
+	now := domain.NowUnix()
+	out := make([]gen.InsertBaseArmyItemParams, 0,
+		len(base.ArmiesPending)+len(base.ArmiesInProduction)+len(base.ArmiesPresent)+len(base.ArmiesDeployed))
+
+	// Pending
+	for _, it := range base.ArmiesPending {
+		pRaw := BuildArmyPendingRaw(it)
+		out = append(out, gen.InsertBaseArmyItemParams{
+			ID:           it.ID,
+			BaseID:       int64(base.ID),
+			PrototypeID:  int64(it.Prototype.ID),
+			Status:       string(domain.ArmyStatusPending),
+			PendingData:  pRaw,
+			InProdData:   pqtype.NullRawMessage{Valid: false},
+			PresentData:  pqtype.NullRawMessage{Valid: false},
+			DeployedData: pqtype.NullRawMessage{Valid: false},
+			CreatedAt:    now,
+		})
+	}
+	// In Production
+	for _, it := range base.ArmiesInProduction {
+		prodRaw := BuildArmyInProdRaw(it)
+		out = append(out, gen.InsertBaseArmyItemParams{
+			ID:           it.ID,
+			BaseID:       int64(base.ID),
+			PrototypeID:  int64(it.Prototype.ID),
+			Status:       string(domain.ArmyStatusInProduction),
+			PendingData:  pqtype.NullRawMessage{Valid: false},
+			InProdData:   prodRaw,
+			PresentData:  pqtype.NullRawMessage{Valid: false},
+			DeployedData: pqtype.NullRawMessage{Valid: false},
+			CreatedAt:    now,
+		})
+	}
+	// Present
+	for _, it := range base.ArmiesPresent {
+		presentRaw := BuildArmyPresentRaw(it)
+		out = append(out, gen.InsertBaseArmyItemParams{
+			ID:           it.ID,
+			BaseID:       int64(base.ID),
+			PrototypeID:  int64(it.Prototype.ID),
+			Status:       string(domain.ArmyStatusPresent),
+			PendingData:  pqtype.NullRawMessage{Valid: false},
+			InProdData:   pqtype.NullRawMessage{Valid: false},
+			PresentData:  presentRaw,
+			DeployedData: pqtype.NullRawMessage{Valid: false},
+			CreatedAt:    now,
+		})
+	}
+	// Deployed
+	for _, it := range base.ArmiesDeployed {
+		depRaw := BuildArmyDeployedRaw(it)
+		out = append(out, gen.InsertBaseArmyItemParams{
+			ID:           it.ID,
+			BaseID:       int64(base.ID),
+			PrototypeID:  int64(it.Prototype.ID),
+			Status:       string(domain.ArmyStatusDeployed),
+			PendingData:  pqtype.NullRawMessage{Valid: false},
+			InProdData:   pqtype.NullRawMessage{Valid: false},
+			PresentData:  pqtype.NullRawMessage{Valid: false},
+			DeployedData: depRaw,
+			CreatedAt:    now,
+		})
+	}
+	return out
 }

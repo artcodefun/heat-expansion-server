@@ -34,6 +34,12 @@ func BuildArmyDeployedRaw(it domain.ArmyItemDeployed) pqtype.NullRawMessage {
 }
 
 // Build payloads
+func BuildBuildPendingRaw(it domain.BuildItemPending) pqtype.NullRawMessage {
+	dto := dtos.BuildPendingDTOFromDomain(it)
+	b, _ := json.Marshal(dto)
+	return pqtype.NullRawMessage{RawMessage: b, Valid: true}
+}
+
 func BuildBuildInProdRaw(it domain.BuildItemInProduction) pqtype.NullRawMessage {
 	dto := dtos.BuildInProdDTO{StartDate: it.StartDate, CompletionDate: it.CompletionDate, CrystalsSkipPrice: it.CrystalsSkipPrice}
 	b, _ := json.Marshal(dto)

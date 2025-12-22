@@ -23,18 +23,19 @@ func (q *Queries) DeleteBaseBuildItemsByBase(ctx context.Context, baseID int64) 
 
 const insertBaseBuildItem = `-- name: InsertBaseBuildItem :one
 INSERT INTO base_build_items (
-    base_id, prototype_id, status,
+    id, base_id, prototype_id, status,
     pending_data, in_prod_data, present_data,
     created_at
 ) VALUES (
-    $1, $2, $3,
-    $4, $5, $6,
-    $7
+    $1, $2, $3, $4,
+    $5, $6, $7,
+    $8
 )
 RETURNING id
 `
 
 type InsertBaseBuildItemParams struct {
+	ID          uuid.UUID             `json:"id"`
 	BaseID      int64                 `json:"base_id"`
 	PrototypeID int64                 `json:"prototype_id"`
 	Status      string                `json:"status"`
@@ -46,6 +47,7 @@ type InsertBaseBuildItemParams struct {
 
 func (q *Queries) InsertBaseBuildItem(ctx context.Context, arg InsertBaseBuildItemParams) (uuid.UUID, error) {
 	row := q.queryRow(ctx, q.insertBaseBuildItemStmt, insertBaseBuildItem,
+		arg.ID,
 		arg.BaseID,
 		arg.PrototypeID,
 		arg.Status,

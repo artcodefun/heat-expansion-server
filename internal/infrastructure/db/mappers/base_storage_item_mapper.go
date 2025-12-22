@@ -1,6 +1,8 @@
 package mappers
 
 import (
+	"encoding/json"
+
 	"github.com/artcodefun/heat-expansion-api/internal/core/domain"
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/db/dtos"
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/db/gen"
@@ -18,4 +20,26 @@ func HydrateStorageItems(base *domain.UserBaseModel, rows []gen.BaseStorageItem,
 		unmarshalIfValid(r.PresentData, &d)
 		base.StorageItemsPresent = append(base.StorageItemsPresent, dtos.StoragePresentFromDTO(d, owned, *p))
 	}
+}
+
+// DehydrateStorageItems converts present storage items into insert params
+// for the base_storage_items table.
+func DehydrateStorageItems(base *domain.UserBaseModel) []gen.InsertBaseStorageItemParams {
+	now := domain.NowUnix()
+	out := make([]gen.InsertBaseStorageItemParams, 0, len(base.StorageItemsPresent))
+
+	for _, it := range base.StorageItemsPresent {
+		presentRaw := BuildStoragePresentRaw(it)
+		stateJSON, _ := json.Marshal(map[string]any{}) // placeholder empty state
+		out = append(out, gen.InsertBaseStorageItemParams{
+			ID:          it.ID,
+			BaseID:      int64(base.ID),
+			PrototypeID: int64(it.Prototype.ID),
+			Status:      "PRESENT",
+			PresentData: presentRaw,
+			State:       stateJSON,
+			CreatedAt:   now,
+		})
+	}
+	return out
 }
