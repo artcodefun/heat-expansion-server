@@ -29,7 +29,9 @@ func unmarshalIfValid[T any](raw pqtype.NullRawMessage, out *T) {
 	_ = json.Unmarshal(raw.RawMessage, out)
 }
 
-func toNullRawMessage(v any) pqtype.NullRawMessage {
+// toNullRawMessage serializes a pointer to JSONB, treating a nil pointer as SQL NULL.
+// Using a generic pointer type avoids the "typed nil in interface" pitfall.
+func toNullRawMessage[T any](v *T) pqtype.NullRawMessage {
 	if v == nil {
 		return pqtype.NullRawMessage{Valid: false}
 	}
