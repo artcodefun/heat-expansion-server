@@ -292,13 +292,24 @@ func (ub *UserBaseModel) AvailableArmies(allPrototypes []*ArmyItemPrototype) []*
 // Queues a new army item for production (batch with count)
 func (ub *UserBaseModel) QueueArmy(proto *ArmyItemPrototype, count int) error {
 	defer ub.recalculateStats()
+
 	if count < 1 {
 		return fmt.Errorf("count must be at least 1")
 	}
+
 	// Ensure this prototype is actually available for this base
 	if len(ub.AvailableArmies([]*ArmyItemPrototype{proto})) == 0 {
 		return fmt.Errorf("this army item is not available for production")
 	}
+
+	// Validate available space (armies in queue and production should reserve space
+	// just like buildings do).
+	requiredSpace := proto.Space * count
+	totalSpace := ub.Stats.Space + requiredSpace
+	if totalSpace > ub.Stats.SpaceCapacity {
+		return fmt.Errorf("not enough space to queue army: required %d, available %d", totalSpace, ub.Stats.SpaceCapacity)
+	}
+
 	// Validate resources
 	totalPrice := PriceModel{
 		Credits:    proto.Price.Credits * count,
@@ -1057,6 +1068,16 @@ func (ub *UserBaseModel) recalculateStats() {
 	// Include space from armies deployed (still occupy capacity)
 	for _, d := range ub.ArmiesDeployed {
 		stats.Space += d.Prototype.Space * d.Count
+	}
+
+	// Include space from armies in production
+	for _, a := range ub.ArmiesInProduction {
+		stats.Space += a.Prototype.Space
+	}
+
+	// Include space from armies pending
+	for _, a := range ub.ArmiesPending {
+		stats.Space += a.Prototype.Space * a.Count
 	}
 
 	// Aggregate power from present armies

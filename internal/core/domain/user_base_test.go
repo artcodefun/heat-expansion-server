@@ -185,6 +185,10 @@ func TestArmy_MoveAndSpeedUp_EmitsEvents(t *testing.T) {
 	if err := base.QueueArmy(army, 1); err != nil {
 		t.Fatalf("QueueArmy error: %v", err)
 	}
+	// After queueing but before starting production, pending armies should reserve space.
+	if base.Stats.Space != army.Space {
+		t.Fatalf("expected space=%d after queueing army, got %d", army.Space, base.Stats.Space)
+	}
 	// start production
 	base.MoveArmyQueue()
 	if len(base.ArmiesInProduction) != 1 {
@@ -220,6 +224,49 @@ func TestArmy_MoveAndSpeedUp_EmitsEvents(t *testing.T) {
 	}
 	if !gotFinished || !gotSpeedup {
 		t.Fatalf("expected army finished and speedup events, got finished=%v speedup=%v", gotFinished, gotSpeedup)
+	}
+}
+
+func TestArmy_QueueArmy_NotEnoughSpace(t *testing.T) {
+	SetTestNow(t, 5_100)
+	base := newBaseWithDefaults(3)
+	// artificially restrict space capacity to simulate a nearly full base
+	base.Stats.SpaceCapacity = 1
+
+	// Unlock infantry via present military building
+	base.BuildingsPresent = []BuildItemPresent{{
+		BaseOwnedItem: NewBaseOwnedItem(base.ID),
+		Prototype: BuildItemPrototype{
+			ID:       12,
+			Name:     "Barracks",
+			Category: BuildCategoryMilitary,
+			MilitaryData: &MilitaryBuildingData{
+				UnlockArmyCategory: ArmyCategoryInfantry,
+			},
+		},
+	}}
+
+	army := &ArmyItemPrototype{
+		ID:             105,
+		Name:           "Heavy Infantry",
+		Category:       ArmyCategoryInfantry,
+		Price:          PriceModel{Credits: 100},
+		ProductionTime: 60,
+		Space:          2, // exceeds capacity
+	}
+
+	if err := base.QueueArmy(army, 1); err == nil {
+		t.Fatalf("expected error when queueing army without enough space")
+	}
+	// no items should be queued or in production and resources must be unchanged
+	if len(base.ArmiesPending) != 0 || len(base.ArmiesInProduction) != 0 {
+		t.Fatalf("expected no armies queued or in production after space error")
+	}
+	if base.Stats.Credits != 10_000 {
+		t.Fatalf("expected credits to remain unchanged after army space error, got %+v", base.Stats)
+	}
+	if events := base.PullEvents(); len(events) != 0 {
+		t.Fatalf("expected no events after failed QueueArmy due to space, got %v", events)
 	}
 }
 
