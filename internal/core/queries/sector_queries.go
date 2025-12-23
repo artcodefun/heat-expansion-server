@@ -15,18 +15,6 @@ type SectorQueries struct {
 func NewSectorQueries(repo ports.SectorReadRepository, access *services.AccessControlService) *SectorQueries {
 	return &SectorQueries{Repo: repo, Access: access}
 }
-
-func (q *SectorQueries) GetSector(_ cqrs.QueryContext, x, y int) (*readmodels.SectorModel, error) {
-	sector, err := q.Repo.GetSector(x, y)
-	return sector, repoErr(err)
-}
-func (q *SectorQueries) GetLatestScans(ctx cqrs.QueryContext, baseID int) ([]*readmodels.SectorScanReport, error) {
-	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
-		return nil, err
-	}
-	reports, err := q.Repo.GetLatestScans(baseID)
-	return reports, repoErr(err)
-}
 func (q *SectorQueries) GetScansNear(ctx cqrs.QueryContext, baseID int, centerX, centerY, radius int) ([]*readmodels.SectorScanReport, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return nil, err
@@ -35,11 +23,13 @@ func (q *SectorQueries) GetScansNear(ctx cqrs.QueryContext, baseID int, centerX,
 	return reports, repoErr(err)
 }
 
-func (q *SectorQueries) ListOccupiedCoordinates(_ cqrs.QueryContext) ([]readmodels.Vector2i, error) {
-	coords, err := q.Repo.ListOccupiedCoordinates()
-	return coords, repoErr(err)
-}
-func (q *SectorQueries) ListSectorsInRadius(_ cqrs.QueryContext, centerX, centerY, radius int) ([]*readmodels.SectorModel, error) {
-	sectors, err := q.Repo.ListSectorsInRadius(centerX, centerY, radius)
-	return sectors, repoErr(err)
+func (q *SectorQueries) GetScanReportByID(ctx cqrs.QueryContext, baseID, id int) (*readmodels.SectorScanReport, error) {
+	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+		return nil, err
+	}
+	report, err := q.Repo.GetScanReportByID(baseID, id)
+	if err != nil {
+		return nil, repoErr(err)
+	}
+	return report, nil
 }

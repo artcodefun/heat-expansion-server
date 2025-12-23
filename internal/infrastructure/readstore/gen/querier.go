@@ -11,12 +11,11 @@ import (
 type Querier interface {
 	// Base stats only (read repository no longer hydrates full overview)
 	GetBaseStats(ctx context.Context, id int64) (GetBaseStatsRow, error)
-	GetLatestScans(ctx context.Context, baseID int64) ([]ScanReport, error)
 	// Military operations queries
 	GetOperation(ctx context.Context, id int64) (MilitaryOperation, error)
+	GetScanReportByID(ctx context.Context, arg GetScanReportByIDParams) (ScanReport, error)
+	// Sector scan report queries
 	GetScansNear(ctx context.Context, arg GetScansNearParams) ([]ScanReport, error)
-	// Sector and scan reports queries
-	GetSector(ctx context.Context, arg GetSectorParams) (GetSectorRow, error)
 	// Readstore user profile queries
 	GetUserProfile(ctx context.Context, id int64) (User, error)
 	ListActiveOperations(ctx context.Context, sourceBaseID int64) ([]MilitaryOperation, error)
@@ -33,7 +32,6 @@ type Querier interface {
 	ListInProductionBuildItemsAll(ctx context.Context, baseID int64) ([]ListInProductionBuildItemsAllRow, error)
 	ListInResearchTechItems(ctx context.Context, baseID int64) ([]ListInResearchTechItemsRow, error)
 	ListMilitaryActivities(ctx context.Context, arg ListMilitaryActivitiesParams) ([]Activity, error)
-	ListOccupiedCoordinates(ctx context.Context) ([]ListOccupiedCoordinatesRow, error)
 	ListOperationsByBase(ctx context.Context, sourceBaseID int64) ([]MilitaryOperation, error)
 	ListPendingArmyItems(ctx context.Context, arg ListPendingArmyItemsParams) ([]ListPendingArmyItemsRow, error)
 	ListPendingArmyItemsAll(ctx context.Context, baseID int64) ([]ListPendingArmyItemsAllRow, error)
@@ -45,7 +43,6 @@ type Querier interface {
 	ListPresentBuildItemsAll(ctx context.Context, baseID int64) ([]ListPresentBuildItemsAllRow, error)
 	// Storage items queries
 	ListPresentStorageItems(ctx context.Context, baseID int64) ([]ListPresentStorageItemsRow, error)
-	ListSectorsInRadius(ctx context.Context, arg ListSectorsInRadiusParams) ([]ListSectorsInRadiusRow, error)
 	// Technology items lifecycle queries
 	ListTechPrototypesByIDs(ctx context.Context, dollar_1 []int64) ([]TechItemPrototype, error)
 	// List user-owned bases (basic info only)

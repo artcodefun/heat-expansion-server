@@ -86,6 +86,9 @@ func (c *OperationCommands) CreateMilitaryOperation(ctx cqrs.CommandContext, opT
 				return cqrs.NewDomainError(err)
 			}
 		}
+		if err := bRepo.Update(base); err != nil {
+			return err
+		}
 		createdOp.Start()
 		if err := oRepo.Update(createdOp); err != nil {
 			return err

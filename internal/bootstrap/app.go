@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"time"
 
@@ -127,7 +128,7 @@ func (a *App) Run() {
 				return
 			case <-ticker.C:
 				if err := a.Services.Outbox.ProcessBatch(100); err != nil {
-					log.Printf("outbox dispatch error: %v", err)
+					slog.Error("outbox dispatch failed", "error", err.Error())
 				}
 			}
 		}

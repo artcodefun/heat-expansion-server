@@ -8,22 +8,10 @@ import (
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/readstore/gen"
 )
 
-func SectorModelFromRow(r gen.GetSectorRow) readmodels.SectorModel {
-	return readmodels.SectorModel{Coordinates: readmodels.Vector2i{X: int(r.X), Y: int(r.Y)}, Details: readmodels.LocationDetails{Name: nullString(r.Name), Description: nullString(r.Description), ImageURL: nullString(r.ImageUrl)}}
-}
-
-// SectorScanReportFromModel converts a generic scan report row returned by multiple queries
+// SectorScanReportFromModel converts a generic scan report row returned by scan-report queries.
 func SectorScanReportFromModel(r gen.ScanReport) readmodels.SectorScanReport {
 	info := parseScanInfo(r.Info)
 	return readmodels.SectorScanReport{ID: int(r.ID), BaseID: int(r.BaseID), Coordinates: readmodels.Vector2i{X: int(r.SectorX), Y: int(r.SectorY)}, CreatedAt: r.CreatedAt, Details: readmodels.LocationDetails{Name: nullString(r.Name), Description: nullString(r.Description), ImageURL: nullString(r.ImageUrl)}, Type: readmodels.LocationType(r.Type), Info: info, IsCloaked: r.IsCloaked, SourceOperationID: int(nullInt64(r.SourceOperationID))}
-}
-
-func Vector2iFromOccupiedRow(r gen.ListOccupiedCoordinatesRow) readmodels.Vector2i {
-	return readmodels.Vector2i{X: int(r.X), Y: int(r.Y)}
-}
-
-func SectorModelFromRadiusRow(r gen.ListSectorsInRadiusRow) readmodels.SectorModel {
-	return readmodels.SectorModel{Coordinates: readmodels.Vector2i{X: int(r.X), Y: int(r.Y)}, Details: readmodels.LocationDetails{Name: nullString(r.Name), Description: nullString(r.Description), ImageURL: nullString(r.ImageUrl)}}
 }
 
 // Helpers local to sector mapping

@@ -2,7 +2,7 @@ package dtos
 
 // activityListQuery captures query params for listing activities.
 type activityListQuery struct {
-	Limit int `form:"limit" binding:"omitempty,min=1"`
+	Limit int `form:"limit,default=10" binding:"omitempty,min=1"`
 }
 
 // ActivityListRequest bundles the URI and query params for activity listing endpoints.

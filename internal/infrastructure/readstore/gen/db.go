@@ -27,17 +27,14 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getBaseStatsStmt, err = db.PrepareContext(ctx, getBaseStats); err != nil {
 		return nil, fmt.Errorf("error preparing query GetBaseStats: %w", err)
 	}
-	if q.getLatestScansStmt, err = db.PrepareContext(ctx, getLatestScans); err != nil {
-		return nil, fmt.Errorf("error preparing query GetLatestScans: %w", err)
-	}
 	if q.getOperationStmt, err = db.PrepareContext(ctx, getOperation); err != nil {
 		return nil, fmt.Errorf("error preparing query GetOperation: %w", err)
 	}
+	if q.getScanReportByIDStmt, err = db.PrepareContext(ctx, getScanReportByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetScanReportByID: %w", err)
+	}
 	if q.getScansNearStmt, err = db.PrepareContext(ctx, getScansNear); err != nil {
 		return nil, fmt.Errorf("error preparing query GetScansNear: %w", err)
-	}
-	if q.getSectorStmt, err = db.PrepareContext(ctx, getSector); err != nil {
-		return nil, fmt.Errorf("error preparing query GetSector: %w", err)
 	}
 	if q.getUserProfileStmt, err = db.PrepareContext(ctx, getUserProfile); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserProfile: %w", err)
@@ -75,9 +72,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listMilitaryActivitiesStmt, err = db.PrepareContext(ctx, listMilitaryActivities); err != nil {
 		return nil, fmt.Errorf("error preparing query ListMilitaryActivities: %w", err)
 	}
-	if q.listOccupiedCoordinatesStmt, err = db.PrepareContext(ctx, listOccupiedCoordinates); err != nil {
-		return nil, fmt.Errorf("error preparing query ListOccupiedCoordinates: %w", err)
-	}
 	if q.listOperationsByBaseStmt, err = db.PrepareContext(ctx, listOperationsByBase); err != nil {
 		return nil, fmt.Errorf("error preparing query ListOperationsByBase: %w", err)
 	}
@@ -108,9 +102,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listPresentStorageItemsStmt, err = db.PrepareContext(ctx, listPresentStorageItems); err != nil {
 		return nil, fmt.Errorf("error preparing query ListPresentStorageItems: %w", err)
 	}
-	if q.listSectorsInRadiusStmt, err = db.PrepareContext(ctx, listSectorsInRadius); err != nil {
-		return nil, fmt.Errorf("error preparing query ListSectorsInRadius: %w", err)
-	}
 	if q.listTechPrototypesByIDsStmt, err = db.PrepareContext(ctx, listTechPrototypesByIDs); err != nil {
 		return nil, fmt.Errorf("error preparing query ListTechPrototypesByIDs: %w", err)
 	}
@@ -127,24 +118,19 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getBaseStatsStmt: %w", cerr)
 		}
 	}
-	if q.getLatestScansStmt != nil {
-		if cerr := q.getLatestScansStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getLatestScansStmt: %w", cerr)
-		}
-	}
 	if q.getOperationStmt != nil {
 		if cerr := q.getOperationStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getOperationStmt: %w", cerr)
 		}
 	}
+	if q.getScanReportByIDStmt != nil {
+		if cerr := q.getScanReportByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getScanReportByIDStmt: %w", cerr)
+		}
+	}
 	if q.getScansNearStmt != nil {
 		if cerr := q.getScansNearStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getScansNearStmt: %w", cerr)
-		}
-	}
-	if q.getSectorStmt != nil {
-		if cerr := q.getSectorStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getSectorStmt: %w", cerr)
 		}
 	}
 	if q.getUserProfileStmt != nil {
@@ -207,11 +193,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listMilitaryActivitiesStmt: %w", cerr)
 		}
 	}
-	if q.listOccupiedCoordinatesStmt != nil {
-		if cerr := q.listOccupiedCoordinatesStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listOccupiedCoordinatesStmt: %w", cerr)
-		}
-	}
 	if q.listOperationsByBaseStmt != nil {
 		if cerr := q.listOperationsByBaseStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listOperationsByBaseStmt: %w", cerr)
@@ -260,11 +241,6 @@ func (q *Queries) Close() error {
 	if q.listPresentStorageItemsStmt != nil {
 		if cerr := q.listPresentStorageItemsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listPresentStorageItemsStmt: %w", cerr)
-		}
-	}
-	if q.listSectorsInRadiusStmt != nil {
-		if cerr := q.listSectorsInRadiusStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listSectorsInRadiusStmt: %w", cerr)
 		}
 	}
 	if q.listTechPrototypesByIDsStmt != nil {
@@ -317,10 +293,9 @@ type Queries struct {
 	db                                DBTX
 	tx                                *sql.Tx
 	getBaseStatsStmt                  *sql.Stmt
-	getLatestScansStmt                *sql.Stmt
 	getOperationStmt                  *sql.Stmt
+	getScanReportByIDStmt             *sql.Stmt
 	getScansNearStmt                  *sql.Stmt
-	getSectorStmt                     *sql.Stmt
 	getUserProfileStmt                *sql.Stmt
 	listActiveOperationsStmt          *sql.Stmt
 	listActivitiesStmt                *sql.Stmt
@@ -333,7 +308,6 @@ type Queries struct {
 	listInProductionBuildItemsAllStmt *sql.Stmt
 	listInResearchTechItemsStmt       *sql.Stmt
 	listMilitaryActivitiesStmt        *sql.Stmt
-	listOccupiedCoordinatesStmt       *sql.Stmt
 	listOperationsByBaseStmt          *sql.Stmt
 	listPendingArmyItemsStmt          *sql.Stmt
 	listPendingArmyItemsAllStmt       *sql.Stmt
@@ -344,7 +318,6 @@ type Queries struct {
 	listPresentBuildItemsStmt         *sql.Stmt
 	listPresentBuildItemsAllStmt      *sql.Stmt
 	listPresentStorageItemsStmt       *sql.Stmt
-	listSectorsInRadiusStmt           *sql.Stmt
 	listTechPrototypesByIDsStmt       *sql.Stmt
 	listUserBasesStmt                 *sql.Stmt
 }
@@ -354,10 +327,9 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		db:                                tx,
 		tx:                                tx,
 		getBaseStatsStmt:                  q.getBaseStatsStmt,
-		getLatestScansStmt:                q.getLatestScansStmt,
 		getOperationStmt:                  q.getOperationStmt,
+		getScanReportByIDStmt:             q.getScanReportByIDStmt,
 		getScansNearStmt:                  q.getScansNearStmt,
-		getSectorStmt:                     q.getSectorStmt,
 		getUserProfileStmt:                q.getUserProfileStmt,
 		listActiveOperationsStmt:          q.listActiveOperationsStmt,
 		listActivitiesStmt:                q.listActivitiesStmt,
@@ -370,7 +342,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listInProductionBuildItemsAllStmt: q.listInProductionBuildItemsAllStmt,
 		listInResearchTechItemsStmt:       q.listInResearchTechItemsStmt,
 		listMilitaryActivitiesStmt:        q.listMilitaryActivitiesStmt,
-		listOccupiedCoordinatesStmt:       q.listOccupiedCoordinatesStmt,
 		listOperationsByBaseStmt:          q.listOperationsByBaseStmt,
 		listPendingArmyItemsStmt:          q.listPendingArmyItemsStmt,
 		listPendingArmyItemsAllStmt:       q.listPendingArmyItemsAllStmt,
@@ -381,7 +352,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listPresentBuildItemsStmt:         q.listPresentBuildItemsStmt,
 		listPresentBuildItemsAllStmt:      q.listPresentBuildItemsAllStmt,
 		listPresentStorageItemsStmt:       q.listPresentStorageItemsStmt,
-		listSectorsInRadiusStmt:           q.listSectorsInRadiusStmt,
 		listTechPrototypesByIDsStmt:       q.listTechPrototypesByIDsStmt,
 		listUserBasesStmt:                 q.listUserBasesStmt,
 	}

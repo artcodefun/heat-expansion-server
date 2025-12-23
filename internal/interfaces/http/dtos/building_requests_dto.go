@@ -4,7 +4,7 @@ import "strings"
 
 // buildingListQuery contains query params for BuildingListRequest.
 type buildingListQuery struct {
-	Category string `form:"category,parser=encoding.TextUnmarshaler" binding:"required,build_category"`
+	Category string `form:"category" binding:"required,build_category"`
 }
 
 // BuildingListRequest captures the path and query values for building list endpoints.

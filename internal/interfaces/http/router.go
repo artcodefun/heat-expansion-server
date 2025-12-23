@@ -117,12 +117,9 @@ func NewRouter(cmd Commands, qry Queries, tokenProvider ports.TokenProvider) *gi
 			storage.POST("/items/:itemId/activate", storageHandler.ActivateBuff)
 		}
 
-		// Sectors
-		api.GET("/sectors/:x/:y", sectorHandler.GetSector)
-		api.GET("/bases/:baseId/sectors/scans/latest", sectorHandler.GetLatestScans)
+		// Sector scan reports
 		api.GET("/bases/:baseId/sectors/scans/near", sectorHandler.GetScansNear)
-		api.GET("/map/occupied-coordinates", sectorHandler.ListOccupiedCoordinates)
-		api.GET("/map/sectors", sectorHandler.ListSectorsInRadius)
+		api.GET("/bases/:baseId/sectors/scans/:id", sectorHandler.GetScanByID)
 
 		// Operations
 		operations := api.Group("/operations")

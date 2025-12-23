@@ -37,9 +37,6 @@ type ScanInfoDTO struct {
 }
 
 func scanInfoFromReadModel(info readmodels.ScanInfo) *ScanInfoDTO {
-	if info == (readmodels.ScanInfo{}) {
-		return nil
-	}
 	return &ScanInfoDTO{
 		Credits:    info.Credits,
 		Iron:       info.Iron,

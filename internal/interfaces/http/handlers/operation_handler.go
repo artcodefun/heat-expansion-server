@@ -49,7 +49,7 @@ func (h *OperationHandler) GetOperation(c *gin.Context) {
 
 // ListByBase handles GET /operations/bases/:baseId.
 func (h *OperationHandler) ListByBase(c *gin.Context) {
-	var req dtos.SectorLatestScansRequest
+	var req dtos.OperationByBaseRequest
 	if !bindRequest(c, &req) {
 		return
 	}
@@ -67,7 +67,7 @@ func (h *OperationHandler) ListByBase(c *gin.Context) {
 
 // ListActive handles GET /operations/bases/:baseId/active.
 func (h *OperationHandler) ListActive(c *gin.Context) {
-	var req dtos.SectorLatestScansRequest
+	var req dtos.OperationActiveByBaseRequest
 	if !bindRequest(c, &req) {
 		return
 	}

@@ -49,14 +49,10 @@ type StorageQueries interface {
 	// Buffs may be represented via storage prototypes with BuffData activated; adjust as needed.
 }
 
-// SectorQueries: sector intelligence & scans.
+// SectorQueries: sector scan reports only.
 type SectorQueries interface {
-	GetSector(ctx QueryContext, x, y int) (*readmodels.SectorModel, error)
-	GetLatestScans(ctx QueryContext, baseID int) ([]*readmodels.SectorScanReport, error)
 	GetScansNear(ctx QueryContext, baseID int, centerX, centerY, radius int) ([]*readmodels.SectorScanReport, error)
-	// Map-related spatial summaries merged from MapQueries
-	ListOccupiedCoordinates(ctx QueryContext) ([]readmodels.Vector2i, error)
-	ListSectorsInRadius(ctx QueryContext, centerX, centerY, radius int) ([]*readmodels.SectorModel, error)
+	GetScanReportByID(ctx QueryContext, baseID, id int) (*readmodels.SectorScanReport, error)
 }
 
 // ActivityQueries: activity feed filtering.

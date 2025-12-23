@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log/slog"
 	"net/http"
 
 	"github.com/artcodefun/heat-expansion-api/internal/core/cqrs"
@@ -48,5 +49,6 @@ func handleCoreErr(c *gin.Context, err error) bool {
 	}
 	// Fallback: 500 with generic message.
 	c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+	slog.Error("internal error occured", "request", c.Request, "error", err.Error())
 	return true
 }

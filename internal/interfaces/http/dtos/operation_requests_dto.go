@@ -9,6 +9,14 @@ type operationURI struct {
 // OperationGetRequest binds the operation ID path parameter.
 type OperationGetRequest = Request[operationURI, None, None]
 
+// OperationByBaseRequest binds a baseId path parameter for listing operations.
+// Used for GET /operations/bases/:baseId.
+type OperationByBaseRequest = Request[BaseURI, None, None]
+
+// OperationActiveByBaseRequest binds a baseId path parameter for listing active operations.
+// Used for GET /operations/bases/:baseId/active.
+type OperationActiveByBaseRequest = Request[BaseURI, None, None]
+
 // ArmyDeploymentRequestDTO represents a deployed unit in the create operation payload.
 // It references an existing present army stack by its ID and a count to send.
 type ArmyDeploymentRequestDTO struct {

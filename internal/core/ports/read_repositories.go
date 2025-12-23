@@ -35,13 +35,10 @@ type OperationReadRepository interface {
 	ListActiveOperations(baseID int) ([]*readmodels.MilitaryOperation, error)
 }
 
-// SectorReadRepository provides sector and scan report projections.
+// SectorReadRepository provides sector scan report projections.
 type SectorReadRepository interface {
-	GetSector(x, y int) (*readmodels.SectorModel, error)
-	GetLatestScans(baseID int) ([]*readmodels.SectorScanReport, error)
 	GetScansNear(baseID int, centerX, centerY, radius int) ([]*readmodels.SectorScanReport, error)
-	ListOccupiedCoordinates() ([]readmodels.Vector2i, error)
-	ListSectorsInRadius(centerX, centerY, radius int) ([]*readmodels.SectorModel, error)
+	GetScanReportByID(baseID, id int) (*readmodels.SectorScanReport, error)
 }
 
 // StorageReadRepository exposes storage item / buff projections.
