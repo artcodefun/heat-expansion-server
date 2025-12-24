@@ -734,6 +734,9 @@ type DeploymentReadyItem struct {
 // and returns a list of DeploymentReadyItems that can be safely used to build operation units
 // before the actual allocation mutates the base state.
 func (ub *UserBaseModel) GetReadyToDeployArmy(requests []ArmyDeploymentRequest) ([]DeploymentReadyItem, error) {
+	if len(requests) == 0 {
+		return nil, fmt.Errorf("no units provided for deployment")
+	}
 	readyToDeploy := []DeploymentReadyItem{}
 	for _, request := range requests {
 

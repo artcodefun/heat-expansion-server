@@ -8,8 +8,6 @@ import (
 	"github.com/artcodefun/heat-expansion-api/internal/core/ports"
 )
 
-var ErrInvalidCredentials = errors.New("invalid credentials")
-
 type UserCommands struct {
 	UserRepo       ports.UserRepository
 	PasswordHasher ports.PasswordHasher
@@ -28,7 +26,7 @@ func (c *UserCommands) Authenticate(ctx cqrs.CommandContext, email, password str
 		return "", repoErr(err)
 	}
 	if !c.PasswordHasher.Verify(password, user.PasswordHash) {
-		return "", ErrInvalidCredentials
+		return "", errors.New("invalid credentials")
 	}
 	token, err := c.TokenProvider.Generate(user.ID)
 	if err != nil {

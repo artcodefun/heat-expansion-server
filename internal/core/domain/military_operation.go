@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 )
@@ -105,8 +106,12 @@ type MilitaryOperation struct {
 }
 
 // NewAttackOperation creates an ATTACK operation in transit.
-func NewAttackOperation(ownerUserID, sourceBaseID int, source, target Vector2i, units []MilitaryUnit) *MilitaryOperation {
-	return &MilitaryOperation{
+// It validates that at least one unit is provided.
+func NewAttackOperation(ownerUserID, sourceBaseID int, source, target Vector2i, units []MilitaryUnit) (*MilitaryOperation, error) {
+	if len(units) == 0 {
+		return nil, fmt.Errorf("no units provided for attack operation")
+	}
+	op := &MilitaryOperation{
 		Type:              MilitaryOperationTypeAttack,
 		OwnerUserID:       ownerUserID,
 		SourceBaseID:      sourceBaseID,
@@ -118,11 +123,21 @@ func NewAttackOperation(ownerUserID, sourceBaseID int, source, target Vector2i, 
 		Result:            OperationResultUnknown,
 		Units:             cloneUnits(units),
 	}
+	return op, nil
 }
 
 // NewSpyOperation creates a SPY operation in transit.
-func NewSpyOperation(ownerUserID, sourceBaseID int, source, target Vector2i, spies []MilitaryUnit) *MilitaryOperation {
-	return &MilitaryOperation{
+// It validates that at least one unit is provided and that all units are of spy category.
+func NewSpyOperation(ownerUserID, sourceBaseID int, source, target Vector2i, spies []MilitaryUnit) (*MilitaryOperation, error) {
+	if len(spies) == 0 {
+		return nil, fmt.Errorf("no units provided for spy operation")
+	}
+	for _, u := range spies {
+		if u.Category != ArmyCategorySpy {
+			return nil, fmt.Errorf("spy operations require only spy units")
+		}
+	}
+	op := &MilitaryOperation{
 		Type:              MilitaryOperationTypeSpy,
 		OwnerUserID:       ownerUserID,
 		SourceBaseID:      sourceBaseID,
@@ -134,6 +149,7 @@ func NewSpyOperation(ownerUserID, sourceBaseID int, source, target Vector2i, spi
 		Result:            OperationResultUnknown,
 		Units:             cloneUnits(spies),
 	}
+	return op, nil
 }
 
 // Start begins the operation's outbound travel if it is currently pending.

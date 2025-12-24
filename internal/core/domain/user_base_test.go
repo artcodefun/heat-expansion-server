@@ -482,6 +482,28 @@ func TestArmy_GetReadyToDeployArmy_InvalidCountErrorsAndDoesNotMutate(t *testing
 	}
 }
 
+func TestArmy_GetReadyToDeployArmy_EmptyRequestsErrors(t *testing.T) {
+	base := newBaseWithDefaults(33)
+	base.ArmiesPresent = []ArmyItemPresent{ // some present units
+		{
+			BaseOwnedItem: NewBaseOwnedItem(base.ID),
+			Prototype:     ArmyItemPrototype{ID: 230, Category: ArmyCategoryInfantry, Space: 1},
+			Count:         3,
+		},
+	}
+
+	ready, err := base.GetReadyToDeployArmy(nil)
+	if err == nil {
+		t.Fatalf("expected error for empty deployment requests, got ready=%+v", ready)
+	}
+	if len(ready) != 0 {
+		t.Fatalf("expected no ready items on error, got %+v", ready)
+	}
+	if base.ArmiesPresent[0].Count != 3 {
+		t.Fatalf("expected ArmiesPresent count unchanged on error, got %+v", base.ArmiesPresent[0])
+	}
+}
+
 func TestArmy_AllocateArmyToOperation_RemovesFromPresentAndMergesDeployed(t *testing.T) {
 	base := newBaseWithDefaults(32)
 	proto := ArmyItemPrototype{ID: 220, Category: ArmyCategoryInfantry, Space: 1}

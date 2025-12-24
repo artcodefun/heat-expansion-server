@@ -9,7 +9,10 @@ func TestOperation_Attack_EmptyLocation_PhaseAndEvents(t *testing.T) {
 	}
 	source := Vector2i{X: 0, Y: 0}
 	target := Vector2i{X: 3, Y: 4} // Euclidean distance 5 -> scaled 5000
-	op := NewAttackOperation(1, 10, source, target, units)
+	op, err := NewAttackOperation(1, 10, source, target, units)
+	if err != nil {
+		t.Fatalf("unexpected error from NewAttackOperation: %v", err)
+	}
 	if op.Phase != OperationPhasePending {
 		t.Fatalf("expected pending phase")
 	}
@@ -103,7 +106,10 @@ func TestOperation_Attack_UserBase_LootAndDeduction(t *testing.T) {
 	units := []MilitaryUnit{
 		{PrototypeID: 2, Category: ArmyCategoryInfantry, Attack: 10, Defence: 5, Capacity: 5, Stealth: 0, Speed: 200, Count: 1},
 	}
-	op := NewAttackOperation(1, 10, Vector2i{0, 0}, Vector2i{1, 0}, units)
+	op, err := NewAttackOperation(1, 10, Vector2i{0, 0}, Vector2i{1, 0}, units)
+	if err != nil {
+		t.Fatalf("unexpected error from NewAttackOperation: %v", err)
+	}
 	op.Start()
 	// arrive immediately for simplicity
 	SetTestNow(t, op.OutboundArriveAt)
@@ -143,7 +149,10 @@ func TestSpy_BlockedByCloaking_OutcomeAndReturn(t *testing.T) {
 	spies := []MilitaryUnit{
 		{PrototypeID: 7, Category: ArmyCategorySpy, Attack: 2, Defence: 1, Capacity: 0, Stealth: 4, Speed: 120, Count: 2}, // stealth sum = 8
 	}
-	op := NewSpyOperation(1, 10, Vector2i{0, 0}, Vector2i{1, 1}, spies)
+	op, err := NewSpyOperation(1, 10, Vector2i{0, 0}, Vector2i{1, 1}, spies)
+	if err != nil {
+		t.Fatalf("unexpected error from NewSpyOperation: %v", err)
+	}
 	op.Start()
 	SetTestNow(t, op.OutboundArriveAt)
 	op.UpdatePhaseBasedOnTime()
@@ -182,7 +191,10 @@ func TestSpy_DefeatedByDefendingSpies_ReturnImmediate(t *testing.T) {
 	spies := []MilitaryUnit{
 		{PrototypeID: 8, Category: ArmyCategorySpy, Attack: 1, Defence: 1, Capacity: 0, Stealth: 1, Speed: 100, Count: 2}, // atk power=2
 	}
-	op := NewSpyOperation(1, 10, Vector2i{0, 0}, Vector2i{1, 0}, spies)
+	op, err := NewSpyOperation(1, 10, Vector2i{0, 0}, Vector2i{1, 0}, spies)
+	if err != nil {
+		t.Fatalf("unexpected error from NewSpyOperation: %v", err)
+	}
 	op.Start()
 	SetTestNow(t, op.OutboundArriveAt)
 	op.UpdatePhaseBasedOnTime()
@@ -223,7 +235,12 @@ func TestSpy_ReportProduced_OutcomeAndReturn(t *testing.T) {
 	spies := []MilitaryUnit{
 		{PrototypeID: 9, Category: ArmyCategorySpy, Attack: 10, Defence: 1, Capacity: 0, Stealth: 2, Speed: 100, Count: 1},
 	}
-	op := NewSpyOperation(1, 10, Vector2i{0, 0}, Vector2i{2, 0}, spies)
+	op, err := NewSpyOperation(1, 10, Vector2i{0, 0}, Vector2i{2, 0}, spies)
+	if err != nil {
+		t.Fatalf("unexpected error from NewSpyOperation: %v", err)
+	}
+
+	// existing test continues
 	op.Start()
 	SetTestNow(t, op.OutboundArriveAt)
 	op.UpdatePhaseBasedOnTime()
@@ -254,5 +271,27 @@ func TestSpy_ReportProduced_OutcomeAndReturn(t *testing.T) {
 	}
 	if !hasResolved || !hasReturnStarted {
 		t.Fatalf("expected resolved and return-started events; got resolved=%v returnStarted=%v", hasResolved, hasReturnStarted)
+	}
+}
+
+func TestNewAttackOperation_RejectsNoUnits(t *testing.T) {
+	_, err := NewAttackOperation(1, 10, Vector2i{0, 0}, Vector2i{1, 0}, nil)
+	if err == nil {
+		t.Fatalf("expected error when creating attack operation with no units")
+	}
+}
+
+func TestNewSpyOperation_RejectsNoUnits(t *testing.T) {
+	_, err := NewSpyOperation(1, 10, Vector2i{0, 0}, Vector2i{1, 0}, nil)
+	if err == nil {
+		t.Fatalf("expected error when creating spy operation with no units")
+	}
+}
+
+func TestNewSpyOperation_RejectsNonSpyUnits(t *testing.T) {
+	units := []MilitaryUnit{{PrototypeID: 1, Category: ArmyCategoryInfantry, Count: 1}}
+	_, err := NewSpyOperation(1, 10, Vector2i{0, 0}, Vector2i{1, 0}, units)
+	if err == nil {
+		t.Fatalf("expected error when creating spy operation with non-spy units")
 	}
 }
