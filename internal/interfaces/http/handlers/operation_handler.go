@@ -8,7 +8,6 @@ import (
 	"github.com/artcodefun/heat-expansion-api/internal/core/domain"
 	"github.com/artcodefun/heat-expansion-api/internal/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type OperationHandler struct {
@@ -98,13 +97,8 @@ func (h *OperationHandler) Create(c *gin.Context) {
 	// Map DTOs into domain-level deployment requests by item ID.
 	deployments := make([]domain.ArmyDeploymentRequest, 0, len(req.Body.Deployed))
 	for _, d := range req.Body.Deployed {
-		itemID, err := uuid.Parse(d.PresentItemID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid itemId"})
-			return
-		}
 		deployments = append(deployments, domain.ArmyDeploymentRequest{
-			PresentItemID: itemID,
+			PresentItemID: d.PresentItemID.Uuid(),
 			Count:         d.Count,
 		})
 	}

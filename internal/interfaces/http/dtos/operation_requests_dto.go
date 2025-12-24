@@ -20,8 +20,8 @@ type OperationActiveByBaseRequest = Request[BaseURI, None, None]
 // ArmyDeploymentRequestDTO represents a deployed unit in the create operation payload.
 // It references an existing present army stack by its ID and a count to send.
 type ArmyDeploymentRequestDTO struct {
-	PresentItemID string `json:"present_item_id" binding:"required,uuid4"`
-	Count         int    `json:"count" binding:"required,min=1"`
+	PresentItemID UuidStr `json:"present_item_id" binding:"required,uuid"`
+	Count         int     `json:"count" binding:"required,min=1"`
 }
 
 // operationCreateBody is the JSON payload for creating a military operation.
