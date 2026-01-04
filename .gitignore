@@ -30,4 +30,4 @@ Thumbs.db
 *.log
 
 # Copilot shares
-/copilot/
+.copilot/
