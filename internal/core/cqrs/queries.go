@@ -58,7 +58,7 @@ type SectorQueries interface {
 // ActivityQueries: activity feed filtering.
 type ActivityQueries interface {
 	ListActivities(ctx QueryContext, baseID int, limit int) ([]*readmodels.ActivityItem, error)
-	ListMilitaryActivities(ctx QueryContext, baseID int, limit int) ([]*readmodels.ActivityItem, error)
+	ListActivitiesByKind(ctx QueryContext, baseID int, kind readmodels.ActivityKind, limit int) ([]*readmodels.ActivityItem, error)
 }
 
 // OperationQueries: operation state listings.

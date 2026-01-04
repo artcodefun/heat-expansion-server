@@ -36,8 +36,8 @@ func (r *ActivityReadRepo) ListActivities(baseID int, limit int) ([]*readmodels.
 	return out, nil
 }
 
-func (r *ActivityReadRepo) ListMilitaryActivities(baseID int, limit int) ([]*readmodels.ActivityItem, error) {
-	rows, err := r.q.ListMilitaryActivities(context.Background(), gen.ListMilitaryActivitiesParams{BaseID: int64(baseID), Limit: int32(limit)})
+func (r *ActivityReadRepo) ListActivitiesByKind(baseID int, kind readmodels.ActivityKind, limit int) ([]*readmodels.ActivityItem, error) {
+	rows, err := r.q.ListActivitiesByKind(context.Background(), gen.ListActivitiesByKindParams{BaseID: int64(baseID), Kind: string(kind), Limit: int32(limit)})
 	if err != nil {
 		return nil, err
 	}

@@ -56,21 +56,22 @@ func (q *Queries) ListActivities(ctx context.Context, arg ListActivitiesParams) 
 	return items, nil
 }
 
-const listMilitaryActivities = `-- name: ListMilitaryActivities :many
+const listActivitiesByKind = `-- name: ListActivitiesByKind :many
 SELECT id, kind, created_at, base_id, operation_data, scan_data, radar_data, trade_data
 FROM activities
-WHERE base_id = $1 AND kind = 'MILITARY'
+WHERE base_id = $1 AND kind = $2
 ORDER BY created_at DESC
-LIMIT $2
+LIMIT $3
 `
 
-type ListMilitaryActivitiesParams struct {
-	BaseID int64 `json:"base_id"`
-	Limit  int32 `json:"limit"`
+type ListActivitiesByKindParams struct {
+	BaseID int64  `json:"base_id"`
+	Kind   string `json:"kind"`
+	Limit  int32  `json:"limit"`
 }
 
-func (q *Queries) ListMilitaryActivities(ctx context.Context, arg ListMilitaryActivitiesParams) ([]Activity, error) {
-	rows, err := q.query(ctx, q.listMilitaryActivitiesStmt, listMilitaryActivities, arg.BaseID, arg.Limit)
+func (q *Queries) ListActivitiesByKind(ctx context.Context, arg ListActivitiesByKindParams) ([]Activity, error) {
+	rows, err := q.query(ctx, q.listActivitiesByKindStmt, listActivitiesByKind, arg.BaseID, arg.Kind, arg.Limit)
 	if err != nil {
 		return nil, err
 	}

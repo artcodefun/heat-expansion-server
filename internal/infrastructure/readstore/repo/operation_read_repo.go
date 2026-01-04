@@ -69,22 +69,6 @@ func (r *OperationReadRepo) ListActiveOperations(baseID int) ([]*readmodels.Mili
 	return out, nil
 }
 
-func (r *OperationReadRepo) ListRadarDetectedOperations(baseID int) ([]readmodels.RadarActivity, error) {
-	// Derived from activities; fetch and filter radar activities
-	acts, err := r.q.ListMilitaryActivities(context.Background(), gen.ListMilitaryActivitiesParams{BaseID: int64(baseID), Limit: 100})
-	if err != nil {
-		return nil, err
-	}
-	out := []readmodels.RadarActivity{}
-	for _, a := range acts {
-		item := mappers.ActivityItemFromModel(a)
-		if item.Radar != nil {
-			out = append(out, *item.Radar)
-		}
-	}
-	return out, nil
-}
-
 // enrichOperationWithPrototypes loads prototype maps and enriches a single operation.
 // loadPrototypeMaps fetches all army/build prototypes for read-store and indexes them by ID.
 func (r *OperationReadRepo) loadPrototypeMaps() (map[int]mappers.ArmyPrototypeSnapshot, map[int]mappers.BuildPrototypeSnapshot, error) {

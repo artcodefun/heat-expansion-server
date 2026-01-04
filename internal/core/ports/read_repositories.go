@@ -18,7 +18,7 @@ type UserReadRepository interface {
 // ActivityReadRepository provides activity feed projections.
 type ActivityReadRepository interface {
 	ListActivities(baseID int, limit int) ([]*readmodels.ActivityItem, error)
-	ListMilitaryActivities(baseID int, limit int) ([]*readmodels.ActivityItem, error)
+	ListActivitiesByKind(baseID int, kind readmodels.ActivityKind, limit int) ([]*readmodels.ActivityItem, error)
 }
 
 // TechReadRepository exposes technology lifecycle projections.

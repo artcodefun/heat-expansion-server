@@ -21,6 +21,7 @@ type Querier interface {
 	ListActiveOperations(ctx context.Context, sourceBaseID int64) ([]MilitaryOperation, error)
 	// Activity feed queries
 	ListActivities(ctx context.Context, arg ListActivitiesParams) ([]Activity, error)
+	ListActivitiesByKind(ctx context.Context, arg ListActivitiesByKindParams) ([]Activity, error)
 	// Prototypes queries for read-store
 	ListArmyPrototypes(ctx context.Context) ([]ArmyItemPrototype, error)
 	// Army items lifecycle queries
@@ -34,7 +35,6 @@ type Querier interface {
 	ListInProductionBuildItems(ctx context.Context, arg ListInProductionBuildItemsParams) ([]ListInProductionBuildItemsRow, error)
 	ListInProductionBuildItemsAll(ctx context.Context, baseID int64) ([]ListInProductionBuildItemsAllRow, error)
 	ListInResearchTechItems(ctx context.Context, baseID int64) ([]ListInResearchTechItemsRow, error)
-	ListMilitaryActivities(ctx context.Context, arg ListMilitaryActivitiesParams) ([]Activity, error)
 	ListOperationsByBase(ctx context.Context, sourceBaseID int64) ([]MilitaryOperation, error)
 	ListPendingArmyItems(ctx context.Context, arg ListPendingArmyItemsParams) ([]ListPendingArmyItemsRow, error)
 	ListPendingArmyItemsAll(ctx context.Context, baseID int64) ([]ListPendingArmyItemsAllRow, error)
