@@ -44,61 +44,28 @@ type ActivityItemDTO struct {
 	Radar     *RadarActivityDTO     `json:"radar,omitempty"`
 }
 
-// OperationActivityDTO presents an operation in the activities list.
+// OperationActivityDTO mirrors readmodels.OperationActivity, embedding the full operation readmodel.
 type OperationActivityDTO struct {
-	OpID       int                     `json:"opId"`
-	OpType     string                  `json:"opType"`
-	Subtype    MilitaryActivitySubtype `json:"subtype"`
-	Role       OperationRole           `json:"role"`
-	Phase      string                  `json:"phase"`
-	Result     string                  `json:"result"`
-	Source     SectorRef               `json:"source"`
-	Target     SectorRef               `json:"target"`
-	Timestamps OperationTimestamps     `json:"timestamps"`
-	Outcome    *OperationOutcomeDTO    `json:"outcome,omitempty"`
+	OpID      int                     `json:"opId"`
+	Subtype   MilitaryActivitySubtype `json:"subtype"`
+	Role      OperationRole           `json:"role"`
+	Operation *MilitaryOperationDTO   `json:"operation,omitempty"`
 }
 
-type SectorRef struct {
-	Coordinates Vector2iDTO `json:"coordinates"`
-}
-
-type OperationTimestamps struct {
-	OutboundDepartAt int64 `json:"outboundDepartAt"`
-	OutboundArriveAt int64 `json:"outboundArriveAt"`
-	ReturnDepartAt   int64 `json:"returnDepartAt"`
-	ReturnArriveAt   int64 `json:"returnArriveAt"`
-	CompletedAt      int64 `json:"completedAt"`
-}
-
-// OperationOutcomeDTO summarizes post-resolution results useful for the UI.
-type OperationOutcomeDTO struct {
-	Loot          PriceModelDTO `json:"loot"`
-	UnitsSent     int           `json:"unitsSent"`
-	UnitsSurvived int           `json:"unitsSurvived"`
-	// Defender-side details when viewing defence outcome
-	ResourcesLost  PriceModelDTO      `json:"resourcesLost"`
-	UnitsLost      []UnitLossDTO      `json:"unitsLost"`
-	StructuresLost []StructureLossDTO `json:"structuresLost"`
-}
-
-// ScanActivityDTO presents a scan report.
+// ScanActivityDTO mirrors readmodels.ScanActivity, embedding the full scan report readmodel.
 type ScanActivityDTO struct {
-	ReportID          int         `json:"reportId"`
-	Coordinates       Vector2iDTO `json:"coordinates"`
-	SectorType        string      `json:"sectorType"`
-	IsCloaked         bool        `json:"isCloaked"`
-	Info              ScanInfoDTO `json:"info"`
-	SourceOperationID int         `json:"sourceOperationId"`
+	ReportID int        `json:"reportId"`
+	Report   *SectorDTO `json:"report,omitempty"`
 }
 
 // RadarActivityDTO presents a detected incoming hostility (placeholder for future wiring).
 type RadarActivityDTO struct {
-	OpID       int       `json:"opId"`
-	DetectedAt int64     `json:"detectedAt"`
-	EtaAtBase  int64     `json:"etaAtBase"`
-	Source     SectorRef `json:"source"`
-	Target     SectorRef `json:"target"`
-	Threat     ThreatDTO `json:"threat"`
+	OpID       int         `json:"opId"`
+	DetectedAt int64       `json:"detectedAt"`
+	EtaAtBase  int64       `json:"etaAtBase"`
+	Source     Vector2iDTO `json:"source"`
+	Target     Vector2iDTO `json:"target"`
+	Threat     ThreatDTO   `json:"threat"`
 }
 
 type ThreatDTO struct {
@@ -106,40 +73,32 @@ type ThreatDTO struct {
 	Defence int `json:"defence"`
 }
 
-// Note: defence reports are now embedded into OperationActivityDTO.Outcome
-
-type UnitLossDTO struct {
-	PrototypeID int    `json:"prototypeId"`
-	Name        string `json:"name"`
-	Lost        int    `json:"lost"`
-	Remaining   int    `json:"remaining"`
-}
-
-type StructureLossDTO struct {
-	PrototypeID int    `json:"prototypeId"`
-	Name        string `json:"name"`
-	Destroyed   int    `json:"destroyed"`
-	Remaining   int    `json:"remaining"`
-}
-
 func operationActivityFromReadModel(op *readmodels.OperationActivity) *OperationActivityDTO {
 	if op == nil {
 		return nil
 	}
-	return &OperationActivityDTO{
+	dto := &OperationActivityDTO{
 		OpID:    op.OpID,
 		Subtype: MilitaryActivitySubtype(op.Subtype),
 		Role:    OperationRole(op.Role),
 	}
+	if op.Operation != nil {
+		m := OperationFromReadModel(op.Operation)
+		dto.Operation = &m
+	}
+	return dto
 }
 
 func scanActivityFromReadModel(scan *readmodels.ScanActivity) *ScanActivityDTO {
 	if scan == nil {
 		return nil
 	}
-	return &ScanActivityDTO{
-		ReportID: scan.ReportID,
+	dto := &ScanActivityDTO{ReportID: scan.ReportID}
+	if scan.Report != nil {
+		report := SectorScanReportFromReadModel(scan.Report)
+		dto.Report = &report
 	}
+	return dto
 }
 
 func radarActivityFromReadModel(radar *readmodels.RadarActivity) *RadarActivityDTO {
@@ -150,8 +109,8 @@ func radarActivityFromReadModel(radar *readmodels.RadarActivity) *RadarActivityD
 		OpID:       radar.OpID,
 		DetectedAt: radar.DetectedAt,
 		EtaAtBase:  radar.EtaAtBase,
-		Source:     SectorRef{Coordinates: Vector2iFromReadModel(radar.SourceCoordinates)},
-		Target:     SectorRef{Coordinates: Vector2iFromReadModel(radar.TargetCoordinates)},
+		Source:     Vector2iFromReadModel(radar.SourceCoordinates),
+		Target:     Vector2iFromReadModel(radar.TargetCoordinates),
 		Threat:     ThreatDTO{Attack: radar.Threat.Attack, Defence: radar.Threat.Defence},
 	}
 }

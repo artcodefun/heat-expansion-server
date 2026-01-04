@@ -44,11 +44,15 @@ type OperationActivity struct {
 	OpID    int
 	Subtype MilitaryActivitySubtype
 	Role    OperationRole
+
+	Operation *MilitaryOperation
 }
 
 // ScanActivity wraps a SectorScanReport into the activity stream.
 type ScanActivity struct {
 	ReportID int
+
+	Report *SectorScanReport
 }
 
 // RadarActivity represents a detected incoming hostility (future wiring).
