@@ -21,8 +21,11 @@ type Querier interface {
 	ListActiveOperations(ctx context.Context, sourceBaseID int64) ([]MilitaryOperation, error)
 	// Activity feed queries
 	ListActivities(ctx context.Context, arg ListActivitiesParams) ([]Activity, error)
+	// Prototypes queries for read-store
+	ListArmyPrototypes(ctx context.Context) ([]ArmyItemPrototype, error)
 	// Army items lifecycle queries
 	ListArmyPrototypesByIDs(ctx context.Context, dollar_1 []int64) ([]ArmyItemPrototype, error)
+	ListBuildPrototypes(ctx context.Context) ([]BuildItemPrototype, error)
 	// Building items lifecycle queries
 	ListBuildPrototypesByIDs(ctx context.Context, dollar_1 []int64) ([]BuildItemPrototype, error)
 	ListDoneTechItems(ctx context.Context, baseID int64) ([]ListDoneTechItemsRow, error)
@@ -43,6 +46,8 @@ type Querier interface {
 	ListPresentBuildItemsAll(ctx context.Context, baseID int64) ([]ListPresentBuildItemsAllRow, error)
 	// Storage items queries
 	ListPresentStorageItems(ctx context.Context, baseID int64) ([]ListPresentStorageItemsRow, error)
+	ListStoragePrototypes(ctx context.Context) ([]StorageItemPrototype, error)
+	ListTechPrototypes(ctx context.Context) ([]TechItemPrototype, error)
 	// Technology items lifecycle queries
 	ListTechPrototypesByIDs(ctx context.Context, dollar_1 []int64) ([]TechItemPrototype, error)
 	// List user-owned bases (basic info only)

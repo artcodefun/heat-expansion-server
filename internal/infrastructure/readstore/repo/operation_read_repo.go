@@ -11,9 +11,13 @@ import (
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/readstore/mappers"
 )
 
-type OperationReadRepo struct{ q *gen.Queries }
+type OperationReadRepo struct {
+	q *gen.Queries
+}
 
-func NewOperationReadRepo(q *gen.Queries) *OperationReadRepo { return &OperationReadRepo{q: q} }
+func NewOperationReadRepo(rq *gen.Queries) *OperationReadRepo {
+	return &OperationReadRepo{q: rq}
+}
 
 func (r *OperationReadRepo) GetOperation(opID int) (*readmodels.MilitaryOperation, error) {
 	row, err := r.q.GetOperation(context.Background(), int64(opID))
@@ -23,7 +27,11 @@ func (r *OperationReadRepo) GetOperation(opID int) (*readmodels.MilitaryOperatio
 		}
 		return nil, err
 	}
-	m := mappers.OperationFromModel(row)
+	armyMap, buildMap, err := r.loadPrototypeMaps()
+	if err != nil {
+		return nil, err
+	}
+	m := mappers.OperationFromModelWithPrototypes(row, armyMap, buildMap)
 	return &m, nil
 }
 
@@ -32,9 +40,13 @@ func (r *OperationReadRepo) ListOperationsByBase(baseID int) ([]*readmodels.Mili
 	if err != nil {
 		return nil, err
 	}
+	armyMap, buildMap, err := r.loadPrototypeMaps()
+	if err != nil {
+		return nil, err
+	}
 	out := make([]*readmodels.MilitaryOperation, 0, len(rows))
 	for _, row := range rows {
-		v := mappers.OperationFromModel(row)
+		v := mappers.OperationFromModelWithPrototypes(row, armyMap, buildMap)
 		out = append(out, &v)
 	}
 	return out, nil
@@ -45,9 +57,13 @@ func (r *OperationReadRepo) ListActiveOperations(baseID int) ([]*readmodels.Mili
 	if err != nil {
 		return nil, err
 	}
+	armyMap, buildMap, err := r.loadPrototypeMaps()
+	if err != nil {
+		return nil, err
+	}
 	out := make([]*readmodels.MilitaryOperation, 0, len(rows))
 	for _, row := range rows {
-		v := mappers.OperationFromModel(row)
+		v := mappers.OperationFromModelWithPrototypes(row, armyMap, buildMap)
 		out = append(out, &v)
 	}
 	return out, nil
@@ -67,4 +83,36 @@ func (r *OperationReadRepo) ListRadarDetectedOperations(baseID int) ([]readmodel
 		}
 	}
 	return out, nil
+}
+
+// enrichOperationWithPrototypes loads prototype maps and enriches a single operation.
+// loadPrototypeMaps fetches all army/build prototypes for read-store and indexes them by ID.
+func (r *OperationReadRepo) loadPrototypeMaps() (map[int]mappers.ArmyPrototypeSnapshot, map[int]mappers.BuildPrototypeSnapshot, error) {
+	armyRows, err := r.q.ListArmyPrototypes(context.Background())
+	if err != nil {
+		return nil, nil, err
+	}
+	buildRows, err := r.q.ListBuildPrototypes(context.Background())
+	if err != nil {
+		return nil, nil, err
+	}
+	armyMap := make(map[int]mappers.ArmyPrototypeSnapshot, len(armyRows))
+	for _, p := range armyRows {
+		name := p.Name
+		imageURL := ""
+		if p.ImageUrl.Valid {
+			imageURL = p.ImageUrl.String
+		}
+		armyMap[int(p.ID)] = mappers.ArmyPrototypeSnapshot{Name: name, ImageURL: imageURL}
+	}
+	buildMap := make(map[int]mappers.BuildPrototypeSnapshot, len(buildRows))
+	for _, p := range buildRows {
+		name := p.Name
+		imageURL := ""
+		if p.ImageUrl.Valid {
+			imageURL = p.ImageUrl.String
+		}
+		buildMap[int(p.ID)] = mappers.BuildPrototypeSnapshot{Name: name, ImageURL: imageURL}
+	}
+	return armyMap, buildMap, nil
 }

@@ -36,6 +36,8 @@ const (
 // MilitaryUnitDTO serializes military unit snapshots.
 type MilitaryUnitDTO struct {
 	PrototypeID int          `json:"prototype_id"`
+	Name        string       `json:"name"`
+	ImageURL    string       `json:"image_url"`
 	Category    ArmyCategory `json:"category"`
 	Attack      int          `json:"attack"`
 	Defence     int          `json:"defence"`
@@ -47,9 +49,11 @@ type MilitaryUnitDTO struct {
 
 // DefenseStructureDTO represents defensive structure snapshots.
 type DefenseStructureDTO struct {
-	PrototypeID int `json:"prototype_id"`
-	Defence     int `json:"defence"`
-	Count       int `json:"count"`
+	PrototypeID int    `json:"prototype_id"`
+	Name        string `json:"name"`
+	ImageURL    string `json:"image_url"`
+	Defence     int    `json:"defence"`
+	Count       int    `json:"count"`
 }
 
 // SpyResultDTO reports spy resolution outcomes.
@@ -95,6 +99,8 @@ func militaryUnitsFromReadModel(units []readmodels.MilitaryUnit) []MilitaryUnitD
 	for _, unit := range units {
 		out = append(out, MilitaryUnitDTO{
 			PrototypeID: unit.PrototypeID,
+			Name:        unit.Name,
+			ImageURL:    unit.ImageURL,
 			Category:    ArmyCategory(unit.Category),
 			Attack:      unit.Attack,
 			Defence:     unit.Defence,
@@ -112,6 +118,8 @@ func defenseStructuresFromReadModel(structs []readmodels.DefenseStructure) []Def
 	for _, s := range structs {
 		out = append(out, DefenseStructureDTO{
 			PrototypeID: s.PrototypeID,
+			Name:        s.Name,
+			ImageURL:    s.ImageURL,
 			Defence:     s.Defence,
 			Count:       s.Count,
 		})

@@ -4,6 +4,8 @@ package readmodels
 // Using a snapshot decouples battle resolution from prototype changes over time.
 type MilitaryUnit struct {
 	PrototypeID int
+	Name        string
+	ImageURL    string
 	Category    ArmyCategory
 	Attack      int
 	Defence     int
@@ -17,6 +19,8 @@ type MilitaryUnit struct {
 // This provides a lightweight input for attack resolution without coupling to build prototypes.
 type DefenseStructure struct {
 	PrototypeID int
+	Name        string
+	ImageURL    string
 	Defence     int
 	Count       int
 }

@@ -45,8 +45,14 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listActivitiesStmt, err = db.PrepareContext(ctx, listActivities); err != nil {
 		return nil, fmt.Errorf("error preparing query ListActivities: %w", err)
 	}
+	if q.listArmyPrototypesStmt, err = db.PrepareContext(ctx, listArmyPrototypes); err != nil {
+		return nil, fmt.Errorf("error preparing query ListArmyPrototypes: %w", err)
+	}
 	if q.listArmyPrototypesByIDsStmt, err = db.PrepareContext(ctx, listArmyPrototypesByIDs); err != nil {
 		return nil, fmt.Errorf("error preparing query ListArmyPrototypesByIDs: %w", err)
+	}
+	if q.listBuildPrototypesStmt, err = db.PrepareContext(ctx, listBuildPrototypes); err != nil {
+		return nil, fmt.Errorf("error preparing query ListBuildPrototypes: %w", err)
 	}
 	if q.listBuildPrototypesByIDsStmt, err = db.PrepareContext(ctx, listBuildPrototypesByIDs); err != nil {
 		return nil, fmt.Errorf("error preparing query ListBuildPrototypesByIDs: %w", err)
@@ -102,6 +108,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listPresentStorageItemsStmt, err = db.PrepareContext(ctx, listPresentStorageItems); err != nil {
 		return nil, fmt.Errorf("error preparing query ListPresentStorageItems: %w", err)
 	}
+	if q.listStoragePrototypesStmt, err = db.PrepareContext(ctx, listStoragePrototypes); err != nil {
+		return nil, fmt.Errorf("error preparing query ListStoragePrototypes: %w", err)
+	}
+	if q.listTechPrototypesStmt, err = db.PrepareContext(ctx, listTechPrototypes); err != nil {
+		return nil, fmt.Errorf("error preparing query ListTechPrototypes: %w", err)
+	}
 	if q.listTechPrototypesByIDsStmt, err = db.PrepareContext(ctx, listTechPrototypesByIDs); err != nil {
 		return nil, fmt.Errorf("error preparing query ListTechPrototypesByIDs: %w", err)
 	}
@@ -148,9 +160,19 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listActivitiesStmt: %w", cerr)
 		}
 	}
+	if q.listArmyPrototypesStmt != nil {
+		if cerr := q.listArmyPrototypesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listArmyPrototypesStmt: %w", cerr)
+		}
+	}
 	if q.listArmyPrototypesByIDsStmt != nil {
 		if cerr := q.listArmyPrototypesByIDsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listArmyPrototypesByIDsStmt: %w", cerr)
+		}
+	}
+	if q.listBuildPrototypesStmt != nil {
+		if cerr := q.listBuildPrototypesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listBuildPrototypesStmt: %w", cerr)
 		}
 	}
 	if q.listBuildPrototypesByIDsStmt != nil {
@@ -243,6 +265,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listPresentStorageItemsStmt: %w", cerr)
 		}
 	}
+	if q.listStoragePrototypesStmt != nil {
+		if cerr := q.listStoragePrototypesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listStoragePrototypesStmt: %w", cerr)
+		}
+	}
+	if q.listTechPrototypesStmt != nil {
+		if cerr := q.listTechPrototypesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listTechPrototypesStmt: %w", cerr)
+		}
+	}
 	if q.listTechPrototypesByIDsStmt != nil {
 		if cerr := q.listTechPrototypesByIDsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listTechPrototypesByIDsStmt: %w", cerr)
@@ -299,7 +331,9 @@ type Queries struct {
 	getUserProfileStmt                *sql.Stmt
 	listActiveOperationsStmt          *sql.Stmt
 	listActivitiesStmt                *sql.Stmt
+	listArmyPrototypesStmt            *sql.Stmt
 	listArmyPrototypesByIDsStmt       *sql.Stmt
+	listBuildPrototypesStmt           *sql.Stmt
 	listBuildPrototypesByIDsStmt      *sql.Stmt
 	listDoneTechItemsStmt             *sql.Stmt
 	listInProductionArmyItemsStmt     *sql.Stmt
@@ -318,6 +352,8 @@ type Queries struct {
 	listPresentBuildItemsStmt         *sql.Stmt
 	listPresentBuildItemsAllStmt      *sql.Stmt
 	listPresentStorageItemsStmt       *sql.Stmt
+	listStoragePrototypesStmt         *sql.Stmt
+	listTechPrototypesStmt            *sql.Stmt
 	listTechPrototypesByIDsStmt       *sql.Stmt
 	listUserBasesStmt                 *sql.Stmt
 }
@@ -333,7 +369,9 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getUserProfileStmt:                q.getUserProfileStmt,
 		listActiveOperationsStmt:          q.listActiveOperationsStmt,
 		listActivitiesStmt:                q.listActivitiesStmt,
+		listArmyPrototypesStmt:            q.listArmyPrototypesStmt,
 		listArmyPrototypesByIDsStmt:       q.listArmyPrototypesByIDsStmt,
+		listBuildPrototypesStmt:           q.listBuildPrototypesStmt,
 		listBuildPrototypesByIDsStmt:      q.listBuildPrototypesByIDsStmt,
 		listDoneTechItemsStmt:             q.listDoneTechItemsStmt,
 		listInProductionArmyItemsStmt:     q.listInProductionArmyItemsStmt,
@@ -352,6 +390,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listPresentBuildItemsStmt:         q.listPresentBuildItemsStmt,
 		listPresentBuildItemsAllStmt:      q.listPresentBuildItemsAllStmt,
 		listPresentStorageItemsStmt:       q.listPresentStorageItemsStmt,
+		listStoragePrototypesStmt:         q.listStoragePrototypesStmt,
+		listTechPrototypesStmt:            q.listTechPrototypesStmt,
 		listTechPrototypesByIDsStmt:       q.listTechPrototypesByIDsStmt,
 		listUserBasesStmt:                 q.listUserBasesStmt,
 	}

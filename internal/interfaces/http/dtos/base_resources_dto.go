@@ -18,7 +18,6 @@ type BaseResourcesDTO struct {
 	Attack             int     `json:"attack"`
 	Space              int     `json:"space"`
 	SpaceCapacity      int     `json:"space_capacity"`
-	Crystals           int     `json:"crystals"`
 }
 
 // BaseResourcesFromReadModel maps a readmodel.UserBaseStats to BaseResourcesDTO.

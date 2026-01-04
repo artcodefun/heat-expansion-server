@@ -9,6 +9,18 @@ import (
 	"github.com/sqlc-dev/pqtype"
 )
 
+// ArmyPrototypeSnapshot and BuildPrototypeSnapshot are lightweight views used to enrich readmodels
+// with display-only prototype data like name and image URL.
+type ArmyPrototypeSnapshot struct {
+	Name     string
+	ImageURL string
+}
+
+type BuildPrototypeSnapshot struct {
+	Name     string
+	ImageURL string
+}
+
 func OperationFromModel(m gen.MilitaryOperation) readmodels.MilitaryOperation {
 	return readmodels.MilitaryOperation{
 		ID:                int(m.ID),
@@ -28,6 +40,14 @@ func OperationFromModel(m gen.MilitaryOperation) readmodels.MilitaryOperation {
 		SpyResult:         spyResultFromJSON(m.SpyResult),
 		AttackResult:      attackResultFromJSON(m.AttackResult),
 	}
+}
+
+// OperationFromModelWithPrototypes builds a MilitaryOperation readmodel and enriches its
+// units/structures with prototype-derived name and image data.
+func OperationFromModelWithPrototypes(m gen.MilitaryOperation, army map[int]ArmyPrototypeSnapshot, build map[int]BuildPrototypeSnapshot) readmodels.MilitaryOperation {
+	op := OperationFromModel(m)
+	enrichOperationUnitsAndStructures(&op, army, build)
+	return op
 }
 
 // JSON helpers: DTO shape -> readmodels.*
@@ -151,4 +171,67 @@ func attackResultFromJSON(nm pqtype.NullRawMessage) *readmodels.AttackResult {
 		}
 	}
 	return res
+}
+
+// enrichOperationUnitsAndStructures fills in Name and ImageURL fields for units and structures
+// using the provided prototype maps. Missing prototypes are ignored gracefully.
+func enrichOperationUnitsAndStructures(op *readmodels.MilitaryOperation, armyMap map[int]ArmyPrototypeSnapshot, buildMap map[int]BuildPrototypeSnapshot) {
+	for i := range op.Units {
+		if proto, ok := armyMap[op.Units[i].PrototypeID]; ok {
+			op.Units[i].Name = proto.Name
+			op.Units[i].ImageURL = proto.ImageURL
+		}
+	}
+	if op.SpyResult != nil {
+		for i := range op.SpyResult.AttackerRemaining {
+			if proto, ok := armyMap[op.SpyResult.AttackerRemaining[i].PrototypeID]; ok {
+				op.SpyResult.AttackerRemaining[i].Name = proto.Name
+				op.SpyResult.AttackerRemaining[i].ImageURL = proto.ImageURL
+			}
+		}
+		for i := range op.SpyResult.DefenderRemaining {
+			if proto, ok := armyMap[op.SpyResult.DefenderRemaining[i].PrototypeID]; ok {
+				op.SpyResult.DefenderRemaining[i].Name = proto.Name
+				op.SpyResult.DefenderRemaining[i].ImageURL = proto.ImageURL
+			}
+		}
+		for i := range op.SpyResult.DefendersBefore {
+			if proto, ok := armyMap[op.SpyResult.DefendersBefore[i].PrototypeID]; ok {
+				op.SpyResult.DefendersBefore[i].Name = proto.Name
+				op.SpyResult.DefendersBefore[i].ImageURL = proto.ImageURL
+			}
+		}
+	}
+	if op.AttackResult != nil {
+		for i := range op.AttackResult.AttackerRemaining {
+			if proto, ok := armyMap[op.AttackResult.AttackerRemaining[i].PrototypeID]; ok {
+				op.AttackResult.AttackerRemaining[i].Name = proto.Name
+				op.AttackResult.AttackerRemaining[i].ImageURL = proto.ImageURL
+			}
+		}
+		for i := range op.AttackResult.DefenderRemaining {
+			if proto, ok := armyMap[op.AttackResult.DefenderRemaining[i].PrototypeID]; ok {
+				op.AttackResult.DefenderRemaining[i].Name = proto.Name
+				op.AttackResult.DefenderRemaining[i].ImageURL = proto.ImageURL
+			}
+		}
+		for i := range op.AttackResult.RemainingStructures {
+			if proto, ok := buildMap[op.AttackResult.RemainingStructures[i].PrototypeID]; ok {
+				op.AttackResult.RemainingStructures[i].Name = proto.Name
+				op.AttackResult.RemainingStructures[i].ImageURL = proto.ImageURL
+			}
+		}
+		for i := range op.AttackResult.DefendersBefore {
+			if proto, ok := armyMap[op.AttackResult.DefendersBefore[i].PrototypeID]; ok {
+				op.AttackResult.DefendersBefore[i].Name = proto.Name
+				op.AttackResult.DefendersBefore[i].ImageURL = proto.ImageURL
+			}
+		}
+		for i := range op.AttackResult.StructuresBefore {
+			if proto, ok := buildMap[op.AttackResult.StructuresBefore[i].PrototypeID]; ok {
+				op.AttackResult.StructuresBefore[i].Name = proto.Name
+				op.AttackResult.StructuresBefore[i].ImageURL = proto.ImageURL
+			}
+		}
+	}
 }
