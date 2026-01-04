@@ -118,8 +118,12 @@ func NewRouter(cmd Commands, qry Queries, tokenProvider ports.TokenProvider) *gi
 		}
 
 		// Sector scan reports
-		api.GET("/bases/:baseId/sectors/scans/near", sectorHandler.GetScansNear)
-		api.GET("/bases/:baseId/sectors/scans/:id", sectorHandler.GetScanByID)
+		sectors := api.Group("/bases/:baseId/sectors")
+		{
+			sectors.GET("/scans/near", sectorHandler.GetScansNear)
+			sectors.GET("/scans/:id", sectorHandler.GetScanByID)
+			sectors.GET("/scans/before", sectorHandler.GetLatestScanBefore)
+		}
 
 		// Operations
 		operations := api.Group("/operations")

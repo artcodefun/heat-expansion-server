@@ -39,6 +39,7 @@ type OperationReadRepository interface {
 type SectorReadRepository interface {
 	GetScansNear(baseID int, centerX, centerY, radius int) ([]*readmodels.SectorScanReport, error)
 	GetScanReportByID(baseID, id int) (*readmodels.SectorScanReport, error)
+	GetLatestScanBefore(baseID, x, y int, before int64) (*readmodels.SectorScanReport, error)
 }
 
 // StorageReadRepository exposes storage item / buff projections.

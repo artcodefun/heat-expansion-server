@@ -33,6 +33,23 @@ const (
 	OperationResultCanceled OperationResult = "CANCELED"
 )
 
+// SpyOutcome represents possible results of a spy operation at the DTO level.
+type SpyOutcome string
+
+const (
+	SpyOutcomeBlockedByCloaking SpyOutcome = "BLOCKED_BY_CLOAKING_EMPTY_REPORT"
+	SpyOutcomeDefeatedBySpies   SpyOutcome = "DEFEATED_BY_DEFENDING_SPIES"
+	SpyOutcomeReportProduced    SpyOutcome = "REPORT_PRODUCED"
+)
+
+// AttackOutcome represents possible results of an attack operation at the DTO level.
+type AttackOutcome string
+
+const (
+	AttackOutcomeAttackerWon  AttackOutcome = "ATTACKER_WON"
+	AttackOutcomeDefenderHeld AttackOutcome = "DEFENDER_HELD"
+)
+
 // MilitaryUnitDTO serializes military unit snapshots.
 type MilitaryUnitDTO struct {
 	PrototypeID int          `json:"prototype_id"`
@@ -58,7 +75,7 @@ type DefenseStructureDTO struct {
 
 // SpyResultDTO reports spy resolution outcomes.
 type SpyResultDTO struct {
-	Outcome           OperationResult   `json:"outcome"`
+	Outcome           SpyOutcome        `json:"outcome"`
 	AttackerRemaining []MilitaryUnitDTO `json:"attacker_remaining"`
 	DefenderRemaining []MilitaryUnitDTO `json:"defender_remaining"`
 	DefendersBefore   []MilitaryUnitDTO `json:"defenders_before"`
@@ -66,7 +83,7 @@ type SpyResultDTO struct {
 
 // AttackResultDTO reports attack outcomes.
 type AttackResultDTO struct {
-	Outcome             OperationResult       `json:"outcome"`
+	Outcome             AttackOutcome         `json:"outcome"`
 	AttackerRemaining   []MilitaryUnitDTO     `json:"attacker_remaining"`
 	DefenderRemaining   []MilitaryUnitDTO     `json:"defender_remaining"`
 	RemainingStructures []DefenseStructureDTO `json:"remaining_structures"`
@@ -132,7 +149,7 @@ func spyResultFromReadModel(res *readmodels.SpyResult) *SpyResultDTO {
 		return nil
 	}
 	return &SpyResultDTO{
-		Outcome:           OperationResult(res.Outcome),
+		Outcome:           SpyOutcome(res.Outcome),
 		AttackerRemaining: militaryUnitsFromReadModel(res.AttackerRemaining),
 		DefenderRemaining: militaryUnitsFromReadModel(res.DefenderRemaining),
 		DefendersBefore:   militaryUnitsFromReadModel(res.DefendersBefore),
@@ -144,7 +161,7 @@ func attackResultFromReadModel(res *readmodels.AttackResult) *AttackResultDTO {
 		return nil
 	}
 	return &AttackResultDTO{
-		Outcome:             OperationResult(res.Outcome),
+		Outcome:             AttackOutcome(res.Outcome),
 		AttackerRemaining:   militaryUnitsFromReadModel(res.AttackerRemaining),
 		DefenderRemaining:   militaryUnitsFromReadModel(res.DefenderRemaining),
 		RemainingStructures: defenseStructuresFromReadModel(res.RemainingStructures),

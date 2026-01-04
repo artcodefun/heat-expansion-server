@@ -43,3 +43,17 @@ func (h *SectorHandler) GetScanByID(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, dtos.SectorScanReportFromReadModel(report))
 }
+
+// GetLatestScanBefore handles GET /bases/:baseId/sectors/scans/before.
+func (h *SectorHandler) GetLatestScanBefore(c *gin.Context) {
+	var req dtos.SectorScanBeforeRequest
+	if !bindRequest(c, &req) {
+		return
+	}
+	ctx := queryCtx(c)
+	report, err := h.queries.GetLatestScanBefore(ctx, req.Uri.BaseID, req.Query.X, req.Query.Y, req.Query.Before)
+	if handleCoreErr(c, err) {
+		return
+	}
+	c.JSON(http.StatusOK, dtos.SectorScanReportFromReadModel(report))
+}

@@ -11,6 +11,7 @@ import (
 type Querier interface {
 	// Base stats only (read repository no longer hydrates full overview)
 	GetBaseStats(ctx context.Context, id int64) (GetBaseStatsRow, error)
+	GetLatestScanBefore(ctx context.Context, arg GetLatestScanBeforeParams) (ScanReport, error)
 	// Military operations queries
 	GetOperation(ctx context.Context, id int64) (MilitaryOperation, error)
 	GetScanReportByID(ctx context.Context, arg GetScanReportByIDParams) (ScanReport, error)

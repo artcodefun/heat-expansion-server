@@ -33,3 +33,14 @@ func (q *SectorQueries) GetScanReportByID(ctx cqrs.QueryContext, baseID, id int)
 	}
 	return report, nil
 }
+
+func (q *SectorQueries) GetLatestScanBefore(ctx cqrs.QueryContext, baseID, x, y int, before int64) (*readmodels.SectorScanReport, error) {
+	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+		return nil, err
+	}
+	report, err := q.Repo.GetLatestScanBefore(baseID, x, y, before)
+	if err != nil {
+		return nil, repoErr(err)
+	}
+	return report, nil
+}

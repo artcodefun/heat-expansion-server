@@ -20,3 +20,14 @@ type sectorScanIDURI struct {
 // SectorScanGetRequest bundles URI params for fetching a scan report by ID.
 // Used for GET /bases/:baseId/sectors/scans/:id.
 type SectorScanGetRequest = Request[sectorScanIDURI, None, None]
+
+// sectorScanBeforeQuery captures query params for latest-before queries.
+type sectorScanBeforeQuery struct {
+	X      int   `form:"x" binding:"omitempty"`
+	Y      int   `form:"y" binding:"omitempty"`
+	Before int64 `form:"date" binding:"required"`
+}
+
+// SectorScanBeforeRequest bundles URI and query params for latest-before lookups.
+// Used for GET /bases/:baseId/sectors/scans/before.
+type SectorScanBeforeRequest = Request[BaseURI, sectorScanBeforeQuery, None]

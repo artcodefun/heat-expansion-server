@@ -39,3 +39,15 @@ func (r *SectorReadRepo) GetScanReportByID(baseID, id int) (*readmodels.SectorSc
 	v := mappers.SectorScanReportFromModel(row)
 	return &v, nil
 }
+
+func (r *SectorReadRepo) GetLatestScanBefore(baseID, x, y int, before int64) (*readmodels.SectorScanReport, error) {
+	row, err := r.q.GetLatestScanBefore(context.Background(), gen.GetLatestScanBeforeParams{BaseID: int64(baseID), SectorX: int32(x), SectorY: int32(y), CreatedAt: before})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ports.ErrNotFound
+		}
+		return nil, err
+	}
+	v := mappers.SectorScanReportFromModel(row)
+	return &v, nil
+}

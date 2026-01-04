@@ -53,6 +53,7 @@ type StorageQueries interface {
 type SectorQueries interface {
 	GetScansNear(ctx QueryContext, baseID int, centerX, centerY, radius int) ([]*readmodels.SectorScanReport, error)
 	GetScanReportByID(ctx QueryContext, baseID, id int) (*readmodels.SectorScanReport, error)
+	GetLatestScanBefore(ctx QueryContext, baseID, x, y int, before int64) (*readmodels.SectorScanReport, error)
 }
 
 // ActivityQueries: activity feed filtering.

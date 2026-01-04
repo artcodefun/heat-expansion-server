@@ -9,6 +9,50 @@ import (
 	"context"
 )
 
+const getLatestScanBefore = `-- name: GetLatestScanBefore :one
+SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked, source_operation_id,
+       name, description, image_url, info
+FROM scan_reports
+WHERE base_id = $1
+  AND sector_x = $2
+  AND sector_y = $3
+  AND created_at <= $4
+ORDER BY created_at DESC
+LIMIT 1
+`
+
+type GetLatestScanBeforeParams struct {
+	BaseID    int64 `json:"base_id"`
+	SectorX   int32 `json:"sector_x"`
+	SectorY   int32 `json:"sector_y"`
+	CreatedAt int64 `json:"created_at"`
+}
+
+func (q *Queries) GetLatestScanBefore(ctx context.Context, arg GetLatestScanBeforeParams) (ScanReport, error) {
+	row := q.queryRow(ctx, q.getLatestScanBeforeStmt, getLatestScanBefore,
+		arg.BaseID,
+		arg.SectorX,
+		arg.SectorY,
+		arg.CreatedAt,
+	)
+	var i ScanReport
+	err := row.Scan(
+		&i.ID,
+		&i.BaseID,
+		&i.SectorX,
+		&i.SectorY,
+		&i.CreatedAt,
+		&i.Type,
+		&i.IsCloaked,
+		&i.SourceOperationID,
+		&i.Name,
+		&i.Description,
+		&i.ImageUrl,
+		&i.Info,
+	)
+	return i, err
+}
+
 const getScanReportByID = `-- name: GetScanReportByID :one
 SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked, source_operation_id,
        name, description, image_url, info
