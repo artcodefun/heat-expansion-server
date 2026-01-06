@@ -45,7 +45,8 @@ type OperationActivity struct {
 	Subtype MilitaryActivitySubtype
 	Role    OperationRole
 
-	Operation *MilitaryOperation
+	Operation         *MilitaryOperation
+	PriorOpponentScan *SectorScanReport
 }
 
 // ScanActivity wraps a SectorScanReport into the activity stream.

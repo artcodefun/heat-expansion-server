@@ -46,10 +46,11 @@ type ActivityItemDTO struct {
 
 // OperationActivityDTO mirrors readmodels.OperationActivity, embedding the full operation readmodel.
 type OperationActivityDTO struct {
-	OpID      int                     `json:"opId"`
-	Subtype   MilitaryActivitySubtype `json:"subtype"`
-	Role      OperationRole           `json:"role"`
-	Operation *MilitaryOperationDTO   `json:"operation,omitempty"`
+	OpID              int                     `json:"opId"`
+	Subtype           MilitaryActivitySubtype `json:"subtype"`
+	Role              OperationRole           `json:"role"`
+	Operation         *MilitaryOperationDTO   `json:"operation,omitempty"`
+	PriorOpponentScan *SectorDTO              `json:"priorOpponentScan,omitempty"`
 }
 
 // ScanActivityDTO mirrors readmodels.ScanActivity, embedding the full scan report readmodel.
@@ -85,6 +86,10 @@ func operationActivityFromReadModel(op *readmodels.OperationActivity) *Operation
 	if op.Operation != nil {
 		m := OperationFromReadModel(op.Operation)
 		dto.Operation = &m
+	}
+	if op.PriorOpponentScan != nil {
+		report := SectorScanReportFromReadModel(op.PriorOpponentScan)
+		dto.PriorOpponentScan = &report
 	}
 	return dto
 }

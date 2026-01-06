@@ -60,6 +60,23 @@ func (r *ActivityReadRepo) enrichActivity(v *readmodels.ActivityItem) error {
 		}
 		if err == nil {
 			v.Operation.Operation = op
+			// Enrich with prior opponent scan if coordinates and timeline are available.
+			var target readmodels.Vector2i
+			switch v.Operation.Role {
+			case readmodels.OperationRoleAttacker:
+				target = op.TargetCoordinates
+			case readmodels.OperationRoleDefender:
+				target = op.SourceCoordinates
+			}
+			if target != (readmodels.Vector2i{}) && op.OutboundDepartAt > 0 {
+				report, err := r.sectors.GetLatestScanBefore(v.BaseID, target.X, target.Y, op.OutboundDepartAt)
+				if err != nil && !errors.Is(err, ports.ErrNotFound) {
+					return err
+				}
+				if err == nil {
+					v.Operation.PriorOpponentScan = report
+				}
+			}
 		}
 	}
 	if v.Scan != nil {
