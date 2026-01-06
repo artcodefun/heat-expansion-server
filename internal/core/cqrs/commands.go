@@ -54,4 +54,5 @@ type StorageCommands interface {
 // OperationCommands encapsulates military operation life-cycle mutations.
 type OperationCommands interface {
 	CreateMilitaryOperation(ctx CommandContext, opType domain.MilitaryOperationType, sourceBaseID int, targetX int, targetY int, deployments []domain.ArmyDeploymentRequest) (*domain.MilitaryOperation, error)
+	SpeedUpOperationWithCrystals(ctx CommandContext, operationID int) error
 }

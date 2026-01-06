@@ -126,24 +126,25 @@ type DomainEvent struct {
 }
 
 type MilitaryOperation struct {
-	ID               int64                 `json:"id"`
-	Type             string                `json:"type"`
-	OwnerUserID      int64                 `json:"owner_user_id"`
-	SourceBaseID     int64                 `json:"source_base_id"`
-	SourceX          int32                 `json:"source_x"`
-	SourceY          int32                 `json:"source_y"`
-	TargetX          int32                 `json:"target_x"`
-	TargetY          int32                 `json:"target_y"`
-	OutboundDepartAt int64                 `json:"outbound_depart_at"`
-	OutboundArriveAt int64                 `json:"outbound_arrive_at"`
-	ReturnDepartAt   int64                 `json:"return_depart_at"`
-	ReturnArriveAt   int64                 `json:"return_arrive_at"`
-	CompletedAt      int64                 `json:"completed_at"`
-	Phase            string                `json:"phase"`
-	Result           string                `json:"result"`
-	Units            json.RawMessage       `json:"units"`
-	SpyResult        pqtype.NullRawMessage `json:"spy_result"`
-	AttackResult     pqtype.NullRawMessage `json:"attack_result"`
+	ID                int64                 `json:"id"`
+	Type              string                `json:"type"`
+	OwnerUserID       int64                 `json:"owner_user_id"`
+	SourceBaseID      int64                 `json:"source_base_id"`
+	SourceX           int32                 `json:"source_x"`
+	SourceY           int32                 `json:"source_y"`
+	TargetX           int32                 `json:"target_x"`
+	TargetY           int32                 `json:"target_y"`
+	OutboundDepartAt  int64                 `json:"outbound_depart_at"`
+	OutboundArriveAt  int64                 `json:"outbound_arrive_at"`
+	ReturnDepartAt    int64                 `json:"return_depart_at"`
+	ReturnArriveAt    int64                 `json:"return_arrive_at"`
+	CompletedAt       int64                 `json:"completed_at"`
+	Phase             string                `json:"phase"`
+	Result            string                `json:"result"`
+	Units             json.RawMessage       `json:"units"`
+	SpyResult         pqtype.NullRawMessage `json:"spy_result"`
+	AttackResult      pqtype.NullRawMessage `json:"attack_result"`
+	CrystalsSkipPrice int32                 `json:"crystals_skip_price"`
 }
 
 type ResourceLocation struct {

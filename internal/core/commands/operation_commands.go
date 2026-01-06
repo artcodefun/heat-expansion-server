@@ -12,6 +12,7 @@ import (
 
 type OperationCommands struct {
 	UserBaseRepo   ports.UserBaseRepository
+	UserRepo       ports.UserRepository
 	SectorRepo     ports.SectorRepository
 	OperationRepo  ports.MilitaryOperationRepository
 	ResourceRepo   ports.ResourceLocationRepository
@@ -22,10 +23,25 @@ type OperationCommands struct {
 	Outbox         ports.OutboxEventRepository
 	TxMgr          ports.TransactionManager
 	Access         *services.AccessControlService
+	crystalService *domain.CrystalSpendingService
 }
 
-func NewOperationCommands(userBaseRepo ports.UserBaseRepository, sectorRepo ports.SectorRepository, opRepo ports.MilitaryOperationRepository, resRepo ports.ResourceLocationRepository, dangerRepo ports.DangerousLocationRepository, scanRepo ports.ScanReportRepository, provisioner *services.SectorProvisioningService, scheduler ports.Scheduler, outbox ports.OutboxEventRepository, txMgr ports.TransactionManager, access *services.AccessControlService) *OperationCommands {
-	return &OperationCommands{UserBaseRepo: userBaseRepo, SectorRepo: sectorRepo, OperationRepo: opRepo, ResourceRepo: resRepo, DangerousRepo: dangerRepo, ScanReportRepo: scanRepo, Provisioner: provisioner, Scheduler: scheduler, Outbox: outbox, TxMgr: txMgr, Access: access}
+func NewOperationCommands(userBaseRepo ports.UserBaseRepository, userRepo ports.UserRepository, sectorRepo ports.SectorRepository, opRepo ports.MilitaryOperationRepository, resRepo ports.ResourceLocationRepository, dangerRepo ports.DangerousLocationRepository, scanRepo ports.ScanReportRepository, provisioner *services.SectorProvisioningService, scheduler ports.Scheduler, outbox ports.OutboxEventRepository, txMgr ports.TransactionManager, access *services.AccessControlService) *OperationCommands {
+	return &OperationCommands{
+		UserBaseRepo:   userBaseRepo,
+		UserRepo:       userRepo,
+		SectorRepo:     sectorRepo,
+		OperationRepo:  opRepo,
+		ResourceRepo:   resRepo,
+		DangerousRepo:  dangerRepo,
+		ScanReportRepo: scanRepo,
+		Provisioner:    provisioner,
+		Scheduler:      scheduler,
+		Outbox:         outbox,
+		TxMgr:          txMgr,
+		Access:         access,
+		crystalService: domain.NewCrystalSpendingService(),
+	}
 }
 
 func (c *OperationCommands) CreateMilitaryOperation(ctx cqrs.CommandContext, opType domain.MilitaryOperationType, sourceBaseID int, targetX int, targetY int, deployments []domain.ArmyDeploymentRequest) (*domain.MilitaryOperation, error) {
@@ -263,6 +279,46 @@ func (c *OperationCommands) HandleMilitaryOperationReturnArrivedEvent(event doma
 			return err
 		}
 		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
+}
+
+// SpeedUpOperationWithCrystals allows a user to spend crystals to fast-forward
+// an in-flight military operation (outbound or returning) to its arrival.
+func (c *OperationCommands) SpeedUpOperationWithCrystals(ctx cqrs.CommandContext, operationID int) error {
+	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
+		oRepo := c.OperationRepo.Tx(tx)
+		uRepo := c.UserRepo.Tx(tx)
+
+		op, err := oRepo.FindByIDForUpdate(operationID)
+		if err != nil {
+			return repoErr(err)
+		}
+
+		// Ensure the caller owns the source base for this operation.
+		if err := c.Access.EnsureBaseOwnership(ctx.UserID, op.SourceBaseID); err != nil {
+			return err
+		}
+
+		user, err := uRepo.FindByIDForUpdate(ctx.UserID)
+		if err != nil {
+			return repoErr(err)
+		}
+
+		if err := c.crystalService.SpeedUpOperation(user, op); err != nil {
+			return cqrs.NewDomainError(err)
+		}
+
+		if err := uRepo.Update(user); err != nil {
+			return err
+		}
+		if err := oRepo.Update(op); err != nil {
+			return err
+		}
+		if err := c.Outbox.Tx(tx).Save(op.EventProducer.PullEvents()); err != nil {
 			return err
 		}
 		return nil

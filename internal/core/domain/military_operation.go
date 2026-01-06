@@ -94,6 +94,10 @@ type MilitaryOperation struct {
 	ReturnArriveAt   int64
 	CompletedAt      int64
 
+	// CrystalsSkipPrice is the base crystal cost to skip the current travel leg.
+	// It is recomputed whenever the operation starts outbound or return travel.
+	CrystalsSkipPrice int
+
 	Phase  MilitaryOperationPhase
 	Result MilitaryOperationResult
 
@@ -162,6 +166,8 @@ func (op *MilitaryOperation) Start() {
 	travelSeconds := computeTravelSecondsBetween(op.SourceCoordinates, op.TargetCoordinates, op.Units)
 	op.OutboundDepartAt = now
 	op.OutboundArriveAt = now + travelSeconds
+	// Base skip price proportional to total travel time (similar to production queues)
+	op.CrystalsSkipPrice = int(travelSeconds / 60)
 	op.Phase = OperationPhaseOutbound
 	op.AddEvent(NewMilitaryOperationStartedEvent(op.ID, op.OutboundArriveAt))
 }
@@ -494,6 +500,8 @@ func (op *MilitaryOperation) StartReturn() {
 	travelSeconds := computeTravelSecondsBetween(op.TargetCoordinates, op.SourceCoordinates, returningUnits)
 	op.ReturnDepartAt = now
 	op.ReturnArriveAt = now + travelSeconds
+	// Recompute skip price for the return leg
+	op.CrystalsSkipPrice = int(travelSeconds / 60)
 	op.Phase = OperationPhaseReturning
 	op.AddEvent(NewMilitaryOperationReturnStartedEvent(op.ID, op.ReturnArriveAt))
 }

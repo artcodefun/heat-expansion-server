@@ -25,7 +25,7 @@ func NewCommands(a *Adapters, as *AppServices) *Commands {
 		Building:  commands.NewBuildingCommands(a.UserBases, a.BuildPrototypes, a.Users, a.OutboxEvents, a.Scheduler, a.TxMgr, as.Access),
 		Tech:      commands.NewTechCommands(a.UserBases, a.TechPrototypes, a.Users, a.OutboxEvents, a.Scheduler, a.TxMgr, as.Access),
 		Storage:   commands.NewStorageCommands(a.UserBases, a.OutboxEvents, a.Scheduler, a.TxMgr, as.Access),
-		Operation: commands.NewOperationCommands(a.UserBases, a.Sectors, a.MilitaryOps, a.ResourceLocations, a.DangerousLocations, a.ScanReports, as.Provisioner, a.Scheduler, a.OutboxEvents, a.TxMgr, as.Access),
+		Operation: commands.NewOperationCommands(a.UserBases, a.Users, a.Sectors, a.MilitaryOps, a.ResourceLocations, a.DangerousLocations, a.ScanReports, as.Provisioner, a.Scheduler, a.OutboxEvents, a.TxMgr, as.Access),
 		Radar:     commands.NewRadarCommands(a.UserBases, a.Sectors, a.ResourceLocations, a.DangerousLocations, a.ScanReports, as.Provisioner, a.Scheduler, a.OutboxEvents, a.TxMgr),
 		User:      commands.NewUserCommands(a.Users, a.Hasher, a.Tokens, a.OutboxEvents, a.TxMgr),
 		Activity:  commands.NewActivityCommands(a.Activities, a.MilitaryOps, a.Sectors, a.UserBases, a.ScanReports),

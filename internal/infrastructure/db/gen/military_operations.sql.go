@@ -28,7 +28,8 @@ SELECT id, type, owner_user_id, source_base_id,
         outbound_depart_at, outbound_arrive_at,
         return_depart_at, return_arrive_at,
         completed_at, phase, result,
-        units, spy_result, attack_result
+        units, spy_result, attack_result,
+        crystals_skip_price
 FROM military_operations
 WHERE id = $1
 `
@@ -56,6 +57,7 @@ func (q *Queries) GetMilitaryOperationByID(ctx context.Context, id int64) (Milit
 		&i.Units,
 		&i.SpyResult,
 		&i.AttackResult,
+		&i.CrystalsSkipPrice,
 	)
 	return i, err
 }
@@ -66,7 +68,8 @@ SELECT id, type, owner_user_id, source_base_id,
         outbound_depart_at, outbound_arrive_at,
         return_depart_at, return_arrive_at,
         completed_at, phase, result,
-        units, spy_result, attack_result
+        units, spy_result, attack_result,
+        crystals_skip_price
 FROM military_operations
 WHERE id = $1
 FOR UPDATE
@@ -94,6 +97,7 @@ func (q *Queries) GetMilitaryOperationByIDForUpdate(ctx context.Context, id int6
 		&i.Units,
 		&i.SpyResult,
 		&i.AttackResult,
+		&i.CrystalsSkipPrice,
 	)
 	return i, err
 }
@@ -104,37 +108,40 @@ INSERT INTO military_operations (
     source_x, source_y, target_x, target_y,
     outbound_depart_at, outbound_arrive_at,
     return_depart_at, return_arrive_at,
-    completed_at, phase, result,
-    units, spy_result, attack_result
+        completed_at, phase, result,
+        units, spy_result, attack_result,
+        crystals_skip_price
 ) VALUES (
         $1, $2, $3,
     $4, $5, $6, $7,
     $8, $9,
     $10, $11,
-    $12, $13, $14,
-    $15, $16, $17
+        $12, $13, $14,
+        $15, $16, $17,
+        $18
 )
 RETURNING id
 `
 
 type InsertMilitaryOperationParams struct {
-	Type             string                `json:"type"`
-	OwnerUserID      int64                 `json:"owner_user_id"`
-	SourceBaseID     int64                 `json:"source_base_id"`
-	SourceX          int32                 `json:"source_x"`
-	SourceY          int32                 `json:"source_y"`
-	TargetX          int32                 `json:"target_x"`
-	TargetY          int32                 `json:"target_y"`
-	OutboundDepartAt int64                 `json:"outbound_depart_at"`
-	OutboundArriveAt int64                 `json:"outbound_arrive_at"`
-	ReturnDepartAt   int64                 `json:"return_depart_at"`
-	ReturnArriveAt   int64                 `json:"return_arrive_at"`
-	CompletedAt      int64                 `json:"completed_at"`
-	Phase            string                `json:"phase"`
-	Result           string                `json:"result"`
-	Units            json.RawMessage       `json:"units"`
-	SpyResult        pqtype.NullRawMessage `json:"spy_result"`
-	AttackResult     pqtype.NullRawMessage `json:"attack_result"`
+	Type              string                `json:"type"`
+	OwnerUserID       int64                 `json:"owner_user_id"`
+	SourceBaseID      int64                 `json:"source_base_id"`
+	SourceX           int32                 `json:"source_x"`
+	SourceY           int32                 `json:"source_y"`
+	TargetX           int32                 `json:"target_x"`
+	TargetY           int32                 `json:"target_y"`
+	OutboundDepartAt  int64                 `json:"outbound_depart_at"`
+	OutboundArriveAt  int64                 `json:"outbound_arrive_at"`
+	ReturnDepartAt    int64                 `json:"return_depart_at"`
+	ReturnArriveAt    int64                 `json:"return_arrive_at"`
+	CompletedAt       int64                 `json:"completed_at"`
+	Phase             string                `json:"phase"`
+	Result            string                `json:"result"`
+	Units             json.RawMessage       `json:"units"`
+	SpyResult         pqtype.NullRawMessage `json:"spy_result"`
+	AttackResult      pqtype.NullRawMessage `json:"attack_result"`
+	CrystalsSkipPrice int32                 `json:"crystals_skip_price"`
 }
 
 func (q *Queries) InsertMilitaryOperation(ctx context.Context, arg InsertMilitaryOperationParams) (int64, error) {
@@ -156,6 +163,7 @@ func (q *Queries) InsertMilitaryOperation(ctx context.Context, arg InsertMilitar
 		arg.Units,
 		arg.SpyResult,
 		arg.AttackResult,
+		arg.CrystalsSkipPrice,
 	)
 	var id int64
 	err := row.Scan(&id)
@@ -168,7 +176,8 @@ SELECT id, type, owner_user_id, source_base_id,
         outbound_depart_at, outbound_arrive_at,
         return_depart_at, return_arrive_at,
         completed_at, phase, result,
-        units, spy_result, attack_result
+        units, spy_result, attack_result,
+        crystals_skip_price
 FROM military_operations
 WHERE source_base_id = $3
 ORDER BY id DESC
@@ -209,6 +218,7 @@ func (q *Queries) ListOpsBySourceBase(ctx context.Context, arg ListOpsBySourceBa
 			&i.Units,
 			&i.SpyResult,
 			&i.AttackResult,
+			&i.CrystalsSkipPrice,
 		); err != nil {
 			return nil, err
 		}
@@ -229,7 +239,8 @@ SELECT id, type, owner_user_id, source_base_id,
         outbound_depart_at, outbound_arrive_at,
         return_depart_at, return_arrive_at,
         completed_at, phase, result,
-        units, spy_result, attack_result
+        units, spy_result, attack_result,
+        crystals_skip_price
 FROM military_operations
 WHERE target_x = $3 AND target_y = $4
 ORDER BY id DESC
@@ -276,6 +287,7 @@ func (q *Queries) ListOpsByTargetCoordinates(ctx context.Context, arg ListOpsByT
 			&i.Units,
 			&i.SpyResult,
 			&i.AttackResult,
+			&i.CrystalsSkipPrice,
 		); err != nil {
 			return nil, err
 		}
@@ -308,29 +320,31 @@ SET type = $1,
         result = $14,
         units = $15,
         spy_result = $16,
-        attack_result = $17
-WHERE id = $18
+        attack_result = $17,
+        crystals_skip_price = $18
+WHERE id = $19
 `
 
 type UpdateMilitaryOperationParams struct {
-	Type             string                `json:"type"`
-	OwnerUserID      int64                 `json:"owner_user_id"`
-	SourceBaseID     int64                 `json:"source_base_id"`
-	SourceX          int32                 `json:"source_x"`
-	SourceY          int32                 `json:"source_y"`
-	TargetX          int32                 `json:"target_x"`
-	TargetY          int32                 `json:"target_y"`
-	OutboundDepartAt int64                 `json:"outbound_depart_at"`
-	OutboundArriveAt int64                 `json:"outbound_arrive_at"`
-	ReturnDepartAt   int64                 `json:"return_depart_at"`
-	ReturnArriveAt   int64                 `json:"return_arrive_at"`
-	CompletedAt      int64                 `json:"completed_at"`
-	Phase            string                `json:"phase"`
-	Result           string                `json:"result"`
-	Units            json.RawMessage       `json:"units"`
-	SpyResult        pqtype.NullRawMessage `json:"spy_result"`
-	AttackResult     pqtype.NullRawMessage `json:"attack_result"`
-	ID               int64                 `json:"id"`
+	Type              string                `json:"type"`
+	OwnerUserID       int64                 `json:"owner_user_id"`
+	SourceBaseID      int64                 `json:"source_base_id"`
+	SourceX           int32                 `json:"source_x"`
+	SourceY           int32                 `json:"source_y"`
+	TargetX           int32                 `json:"target_x"`
+	TargetY           int32                 `json:"target_y"`
+	OutboundDepartAt  int64                 `json:"outbound_depart_at"`
+	OutboundArriveAt  int64                 `json:"outbound_arrive_at"`
+	ReturnDepartAt    int64                 `json:"return_depart_at"`
+	ReturnArriveAt    int64                 `json:"return_arrive_at"`
+	CompletedAt       int64                 `json:"completed_at"`
+	Phase             string                `json:"phase"`
+	Result            string                `json:"result"`
+	Units             json.RawMessage       `json:"units"`
+	SpyResult         pqtype.NullRawMessage `json:"spy_result"`
+	AttackResult      pqtype.NullRawMessage `json:"attack_result"`
+	CrystalsSkipPrice int32                 `json:"crystals_skip_price"`
+	ID                int64                 `json:"id"`
 }
 
 func (q *Queries) UpdateMilitaryOperation(ctx context.Context, arg UpdateMilitaryOperationParams) error {
@@ -352,23 +366,8 @@ func (q *Queries) UpdateMilitaryOperation(ctx context.Context, arg UpdateMilitar
 		arg.Units,
 		arg.SpyResult,
 		arg.AttackResult,
+		arg.CrystalsSkipPrice,
 		arg.ID,
 	)
-	return err
-}
-
-const updateMilitaryOperationUnits = `-- name: UpdateMilitaryOperationUnits :exec
-UPDATE military_operations
-SET units = $1
-WHERE id = $2
-`
-
-type UpdateMilitaryOperationUnitsParams struct {
-	Units json.RawMessage `json:"units"`
-	ID    int64           `json:"id"`
-}
-
-func (q *Queries) UpdateMilitaryOperationUnits(ctx context.Context, arg UpdateMilitaryOperationUnitsParams) error {
-	_, err := q.exec(ctx, q.updateMilitaryOperationUnitsStmt, updateMilitaryOperationUnits, arg.Units, arg.ID)
 	return err
 }

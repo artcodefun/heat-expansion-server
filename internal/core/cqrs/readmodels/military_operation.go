@@ -87,6 +87,8 @@ type MilitaryOperation struct {
 	ReturnArriveAt   int64
 	CompletedAt      int64
 
+	CrystalsSkipPrice int
+
 	Phase  MilitaryOperationPhase
 	Result MilitaryOperationResult
 

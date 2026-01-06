@@ -82,6 +82,19 @@ func (h *OperationHandler) ListActive(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// SpeedUp handles POST /operations/:operationId/speed-up.
+func (h *OperationHandler) SpeedUp(c *gin.Context) {
+	var req dtos.OperationSpeedUpRequest
+	if !bindRequest(c, &req) {
+		return
+	}
+	ctx := commandCtx(c)
+	if err := h.commands.SpeedUpOperationWithCrystals(ctx, req.Uri.OperationID); handleCoreErr(c, err) {
+		return
+	}
+	c.Status(http.StatusOK)
+}
+
 // Create handles POST /operations.
 func (h *OperationHandler) Create(c *gin.Context) {
 	var req dtos.OperationCreateRequest

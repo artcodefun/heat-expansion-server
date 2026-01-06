@@ -255,9 +255,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateMilitaryOperationStmt, err = db.PrepareContext(ctx, updateMilitaryOperation); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateMilitaryOperation: %w", err)
 	}
-	if q.updateMilitaryOperationUnitsStmt, err = db.PrepareContext(ctx, updateMilitaryOperationUnits); err != nil {
-		return nil, fmt.Errorf("error preparing query UpdateMilitaryOperationUnits: %w", err)
-	}
 	if q.updateResourceLocationStmt, err = db.PrepareContext(ctx, updateResourceLocation); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateResourceLocation: %w", err)
 	}
@@ -657,11 +654,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateMilitaryOperationStmt: %w", cerr)
 		}
 	}
-	if q.updateMilitaryOperationUnitsStmt != nil {
-		if cerr := q.updateMilitaryOperationUnitsStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing updateMilitaryOperationUnitsStmt: %w", cerr)
-		}
-	}
 	if q.updateResourceLocationStmt != nil {
 		if cerr := q.updateResourceLocationStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateResourceLocationStmt: %w", cerr)
@@ -793,7 +785,6 @@ type Queries struct {
 	updateBaseStmt                            *sql.Stmt
 	updateDangerousLocationStmt               *sql.Stmt
 	updateMilitaryOperationStmt               *sql.Stmt
-	updateMilitaryOperationUnitsStmt          *sql.Stmt
 	updateResourceLocationStmt                *sql.Stmt
 	updateSectorStmt                          *sql.Stmt
 	updateUserStmt                            *sql.Stmt
@@ -880,7 +871,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		updateBaseStmt:                            q.updateBaseStmt,
 		updateDangerousLocationStmt:               q.updateDangerousLocationStmt,
 		updateMilitaryOperationStmt:               q.updateMilitaryOperationStmt,
-		updateMilitaryOperationUnitsStmt:          q.updateMilitaryOperationUnitsStmt,
 		updateResourceLocationStmt:                q.updateResourceLocationStmt,
 		updateSectorStmt:                          q.updateSectorStmt,
 		updateUserStmt:                            q.updateUserStmt,

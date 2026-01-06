@@ -106,6 +106,7 @@ type MilitaryOperationDTO struct {
 	ReturnDepartAt    int64             `json:"return_depart_at"`
 	ReturnArriveAt    int64             `json:"return_arrive_at"`
 	CompletedAt       int64             `json:"completed_at"`
+	CrystalsSkipPrice int               `json:"crystals_skip_price"`
 	Units             []MilitaryUnitDTO `json:"units"`
 	SpyResult         *SpyResultDTO     `json:"spy_result,omitempty"`
 	AttackResult      *AttackResultDTO  `json:"attack_result,omitempty"`
@@ -185,6 +186,7 @@ func OperationFromReadModel(m *readmodels.MilitaryOperation) MilitaryOperationDT
 		ReturnDepartAt:    m.ReturnDepartAt,
 		ReturnArriveAt:    m.ReturnArriveAt,
 		CompletedAt:       m.CompletedAt,
+		CrystalsSkipPrice: m.CrystalsSkipPrice,
 		Units:             militaryUnitsFromReadModel(m.Units),
 		SpyResult:         spyResultFromReadModel(m.SpyResult),
 		AttackResult:      attackResultFromReadModel(m.AttackResult),

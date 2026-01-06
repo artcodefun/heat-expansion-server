@@ -34,6 +34,7 @@ func OperationFromModel(m gen.MilitaryOperation) readmodels.MilitaryOperation {
 		ReturnDepartAt:    m.ReturnDepartAt,
 		ReturnArriveAt:    m.ReturnArriveAt,
 		CompletedAt:       m.CompletedAt,
+		CrystalsSkipPrice: int(m.CrystalsSkipPrice),
 		Phase:             readmodels.MilitaryOperationPhase(m.Phase),
 		Result:            readmodels.MilitaryOperationResult(m.Result),
 		Units:             militaryUnitsFromJSON(m.Units),

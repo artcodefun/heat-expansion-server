@@ -131,6 +131,7 @@ func NewRouter(cmd Commands, qry Queries, tokenProvider ports.TokenProvider) *gi
 			operations.GET("/:operationId", operationHandler.GetOperation)
 			operations.GET("/bases/:baseId", operationHandler.ListByBase)
 			operations.GET("/bases/:baseId/active", operationHandler.ListActive)
+			operations.POST("/:operationId/speed-up", operationHandler.SpeedUp)
 			operations.POST("", operationHandler.Create)
 		}
 

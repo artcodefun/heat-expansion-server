@@ -107,7 +107,6 @@ type Querier interface {
 	UpdateBase(ctx context.Context, arg UpdateBaseParams) (UserBasis, error)
 	UpdateDangerousLocation(ctx context.Context, arg UpdateDangerousLocationParams) error
 	UpdateMilitaryOperation(ctx context.Context, arg UpdateMilitaryOperationParams) error
-	UpdateMilitaryOperationUnits(ctx context.Context, arg UpdateMilitaryOperationUnitsParams) error
 	UpdateResourceLocation(ctx context.Context, arg UpdateResourceLocationParams) error
 	UpdateSector(ctx context.Context, arg UpdateSectorParams) (Sector, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
