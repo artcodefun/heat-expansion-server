@@ -6,6 +6,7 @@ package gen
 
 import (
 	"context"
+	"database/sql"
 )
 
 type Querier interface {
@@ -15,6 +16,7 @@ type Querier interface {
 	// Military operations queries
 	GetOperation(ctx context.Context, id int64) (MilitaryOperation, error)
 	GetScanReportByID(ctx context.Context, arg GetScanReportByIDParams) (ScanReport, error)
+	GetScanReportByOperationID(ctx context.Context, sourceOperationID sql.NullInt64) (ScanReport, error)
 	// Sector scan report queries
 	GetScansNear(ctx context.Context, arg GetScansNearParams) ([]ScanReport, error)
 	// Readstore user profile queries

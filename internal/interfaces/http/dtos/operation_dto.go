@@ -94,22 +94,23 @@ type AttackResultDTO struct {
 
 // MilitaryOperationDTO serializes military operations for HTTP responses.
 type MilitaryOperationDTO struct {
-	ID                int               `json:"id"`
-	Type              OperationType     `json:"type"`
-	Phase             OperationPhase    `json:"phase"`
-	Result            OperationResult   `json:"result"`
-	SourceBaseID      int               `json:"source_base_id"`
-	SourceCoordinates Vector2iDTO       `json:"source_coordinates"`
-	TargetCoordinates Vector2iDTO       `json:"target_coordinates"`
-	OutboundDepartAt  int64             `json:"outbound_depart_at"`
-	OutboundArriveAt  int64             `json:"outbound_arrive_at"`
-	ReturnDepartAt    int64             `json:"return_depart_at"`
-	ReturnArriveAt    int64             `json:"return_arrive_at"`
-	CompletedAt       int64             `json:"completed_at"`
-	CrystalsSkipPrice int               `json:"crystals_skip_price"`
-	Units             []MilitaryUnitDTO `json:"units"`
-	SpyResult         *SpyResultDTO     `json:"spy_result,omitempty"`
-	AttackResult      *AttackResultDTO  `json:"attack_result,omitempty"`
+	ID                 int               `json:"id"`
+	Type               OperationType     `json:"type"`
+	Phase              OperationPhase    `json:"phase"`
+	Result             OperationResult   `json:"result"`
+	SourceBaseID       int               `json:"source_base_id"`
+	SourceCoordinates  Vector2iDTO       `json:"source_coordinates"`
+	TargetCoordinates  Vector2iDTO       `json:"target_coordinates"`
+	OutboundDepartAt   int64             `json:"outbound_depart_at"`
+	OutboundArriveAt   int64             `json:"outbound_arrive_at"`
+	ReturnDepartAt     int64             `json:"return_depart_at"`
+	ReturnArriveAt     int64             `json:"return_arrive_at"`
+	CompletedAt        int64             `json:"completed_at"`
+	CrystalsSkipPrice  int               `json:"crystals_skip_price"`
+	Units              []MilitaryUnitDTO `json:"units"`
+	SpyResult          *SpyResultDTO     `json:"spy_result,omitempty"`
+	AttackResult       *AttackResultDTO  `json:"attack_result,omitempty"`
+	ProducedScanReport *SectorDTO        `json:"produced_scan_report,omitempty"`
 }
 
 func militaryUnitsFromReadModel(units []readmodels.MilitaryUnit) []MilitaryUnitDTO {
@@ -173,7 +174,7 @@ func attackResultFromReadModel(res *readmodels.AttackResult) *AttackResultDTO {
 }
 
 func OperationFromReadModel(m *readmodels.MilitaryOperation) MilitaryOperationDTO {
-	return MilitaryOperationDTO{
+	dto := MilitaryOperationDTO{
 		ID:                m.ID,
 		Type:              OperationType(m.Type),
 		Phase:             OperationPhase(m.Phase),
@@ -191,4 +192,9 @@ func OperationFromReadModel(m *readmodels.MilitaryOperation) MilitaryOperationDT
 		SpyResult:         spyResultFromReadModel(m.SpyResult),
 		AttackResult:      attackResultFromReadModel(m.AttackResult),
 	}
+	if m.ProducedScanReport != nil {
+		report := SectorScanReportFromReadModel(m.ProducedScanReport)
+		dto.ProducedScanReport = &report
+	}
+	return dto
 }

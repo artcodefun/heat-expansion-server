@@ -36,6 +36,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getScanReportByIDStmt, err = db.PrepareContext(ctx, getScanReportByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetScanReportByID: %w", err)
 	}
+	if q.getScanReportByOperationIDStmt, err = db.PrepareContext(ctx, getScanReportByOperationID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetScanReportByOperationID: %w", err)
+	}
 	if q.getScansNearStmt, err = db.PrepareContext(ctx, getScansNear); err != nil {
 		return nil, fmt.Errorf("error preparing query GetScansNear: %w", err)
 	}
@@ -146,6 +149,11 @@ func (q *Queries) Close() error {
 	if q.getScanReportByIDStmt != nil {
 		if cerr := q.getScanReportByIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getScanReportByIDStmt: %w", cerr)
+		}
+	}
+	if q.getScanReportByOperationIDStmt != nil {
+		if cerr := q.getScanReportByOperationIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getScanReportByOperationIDStmt: %w", cerr)
 		}
 	}
 	if q.getScansNearStmt != nil {
@@ -336,6 +344,7 @@ type Queries struct {
 	getLatestScanBeforeStmt           *sql.Stmt
 	getOperationStmt                  *sql.Stmt
 	getScanReportByIDStmt             *sql.Stmt
+	getScanReportByOperationIDStmt    *sql.Stmt
 	getScansNearStmt                  *sql.Stmt
 	getUserProfileStmt                *sql.Stmt
 	listActiveOperationsStmt          *sql.Stmt
@@ -375,6 +384,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getLatestScanBeforeStmt:           q.getLatestScanBeforeStmt,
 		getOperationStmt:                  q.getOperationStmt,
 		getScanReportByIDStmt:             q.getScanReportByIDStmt,
+		getScanReportByOperationIDStmt:    q.getScanReportByOperationIDStmt,
 		getScansNearStmt:                  q.getScansNearStmt,
 		getUserProfileStmt:                q.getUserProfileStmt,
 		listActiveOperationsStmt:          q.listActiveOperationsStmt,

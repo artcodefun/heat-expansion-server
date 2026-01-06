@@ -7,6 +7,7 @@ package gen
 
 import (
 	"context"
+	"database/sql"
 )
 
 const getLatestScanBefore = `-- name: GetLatestScanBefore :one
@@ -67,6 +68,33 @@ type GetScanReportByIDParams struct {
 
 func (q *Queries) GetScanReportByID(ctx context.Context, arg GetScanReportByIDParams) (ScanReport, error) {
 	row := q.queryRow(ctx, q.getScanReportByIDStmt, getScanReportByID, arg.ID, arg.BaseID)
+	var i ScanReport
+	err := row.Scan(
+		&i.ID,
+		&i.BaseID,
+		&i.SectorX,
+		&i.SectorY,
+		&i.CreatedAt,
+		&i.Type,
+		&i.IsCloaked,
+		&i.SourceOperationID,
+		&i.Name,
+		&i.Description,
+		&i.ImageUrl,
+		&i.Info,
+	)
+	return i, err
+}
+
+const getScanReportByOperationID = `-- name: GetScanReportByOperationID :one
+SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked, source_operation_id,
+       name, description, image_url, info
+FROM scan_reports
+WHERE source_operation_id = $1
+`
+
+func (q *Queries) GetScanReportByOperationID(ctx context.Context, sourceOperationID sql.NullInt64) (ScanReport, error) {
+	row := q.queryRow(ctx, q.getScanReportByOperationIDStmt, getScanReportByOperationID, sourceOperationID)
 	var i ScanReport
 	err := row.Scan(
 		&i.ID,

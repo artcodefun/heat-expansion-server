@@ -23,32 +23,25 @@ type BuildPrototypeSnapshot struct {
 
 func OperationFromModel(m gen.MilitaryOperation) readmodels.MilitaryOperation {
 	return readmodels.MilitaryOperation{
-		ID:                int(m.ID),
-		Type:              readmodels.MilitaryOperationType(m.Type),
-		OwnerUserID:       int(m.OwnerUserID),
-		SourceBaseID:      int(m.SourceBaseID),
-		SourceCoordinates: readmodels.Vector2i{X: int(m.SourceX), Y: int(m.SourceY)},
-		TargetCoordinates: readmodels.Vector2i{X: int(m.TargetX), Y: int(m.TargetY)},
-		OutboundDepartAt:  m.OutboundDepartAt,
-		OutboundArriveAt:  m.OutboundArriveAt,
-		ReturnDepartAt:    m.ReturnDepartAt,
-		ReturnArriveAt:    m.ReturnArriveAt,
-		CompletedAt:       m.CompletedAt,
-		CrystalsSkipPrice: int(m.CrystalsSkipPrice),
-		Phase:             readmodels.MilitaryOperationPhase(m.Phase),
-		Result:            readmodels.MilitaryOperationResult(m.Result),
-		Units:             militaryUnitsFromJSON(m.Units),
-		SpyResult:         spyResultFromJSON(m.SpyResult),
-		AttackResult:      attackResultFromJSON(m.AttackResult),
+		ID:                 int(m.ID),
+		Type:               readmodels.MilitaryOperationType(m.Type),
+		OwnerUserID:        int(m.OwnerUserID),
+		SourceBaseID:       int(m.SourceBaseID),
+		SourceCoordinates:  readmodels.Vector2i{X: int(m.SourceX), Y: int(m.SourceY)},
+		TargetCoordinates:  readmodels.Vector2i{X: int(m.TargetX), Y: int(m.TargetY)},
+		OutboundDepartAt:   m.OutboundDepartAt,
+		OutboundArriveAt:   m.OutboundArriveAt,
+		ReturnDepartAt:     m.ReturnDepartAt,
+		ReturnArriveAt:     m.ReturnArriveAt,
+		CompletedAt:        m.CompletedAt,
+		CrystalsSkipPrice:  int(m.CrystalsSkipPrice),
+		Phase:              readmodels.MilitaryOperationPhase(m.Phase),
+		Result:             readmodels.MilitaryOperationResult(m.Result),
+		Units:              militaryUnitsFromJSON(m.Units),
+		SpyResult:          spyResultFromJSON(m.SpyResult),
+		AttackResult:       attackResultFromJSON(m.AttackResult),
+		ProducedScanReport: nil,
 	}
-}
-
-// OperationFromModelWithPrototypes builds a MilitaryOperation readmodel and enriches its
-// units/structures with prototype-derived name and image data.
-func OperationFromModelWithPrototypes(m gen.MilitaryOperation, army map[int]ArmyPrototypeSnapshot, build map[int]BuildPrototypeSnapshot) readmodels.MilitaryOperation {
-	op := OperationFromModel(m)
-	enrichOperationUnitsAndStructures(&op, army, build)
-	return op
 }
 
 // JSON helpers: DTO shape -> readmodels.*
@@ -174,9 +167,9 @@ func attackResultFromJSON(nm pqtype.NullRawMessage) *readmodels.AttackResult {
 	return res
 }
 
-// enrichOperationUnitsAndStructures fills in Name and ImageURL fields for units and structures
-// using the provided prototype maps. Missing prototypes are ignored gracefully.
-func enrichOperationUnitsAndStructures(op *readmodels.MilitaryOperation, armyMap map[int]ArmyPrototypeSnapshot, buildMap map[int]BuildPrototypeSnapshot) {
+// EnrichOperationUnitsAndStructures builds a MilitaryOperation readmodel and enriches its
+// units/structures with prototype-derived name and image data.
+func EnrichOperationUnitsAndStructures(op *readmodels.MilitaryOperation, armyMap map[int]ArmyPrototypeSnapshot, buildMap map[int]BuildPrototypeSnapshot) {
 	for i := range op.Units {
 		if proto, ok := armyMap[op.Units[i].PrototypeID]; ok {
 			op.Units[i].Name = proto.Name

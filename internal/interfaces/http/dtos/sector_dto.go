@@ -63,16 +63,6 @@ func sectorTypeFromLocation(loc readmodels.LocationType) SectorType {
 	}
 }
 
-func SectorFromReadModel(m *readmodels.SectorModel) SectorDTO {
-	return SectorDTO{
-		Coordinates: Vector2iFromReadModel(m.Coordinates),
-		Type:        Unknown,
-		Name:        m.Details.Name,
-		Description: m.Details.Description,
-		ImageURL:    m.Details.ImageURL,
-	}
-}
-
 func SectorScanReportFromReadModel(r *readmodels.SectorScanReport) SectorDTO {
 	return SectorDTO{
 		Coordinates:  Vector2iFromReadModel(r.Coordinates),
@@ -90,14 +80,6 @@ func SectorScanReportsFromReadModels(reports []*readmodels.SectorScanReport) []S
 	out := make([]SectorDTO, 0, len(reports))
 	for _, r := range reports {
 		out = append(out, SectorScanReportFromReadModel(r))
-	}
-	return out
-}
-
-func SectorModelsFromReadModels(models []*readmodels.SectorModel) []SectorDTO {
-	out := make([]SectorDTO, 0, len(models))
-	for _, m := range models {
-		out = append(out, SectorFromReadModel(m))
 	}
 	return out
 }

@@ -27,3 +27,9 @@ WHERE base_id = $1
   AND created_at <= $4
 ORDER BY created_at DESC
 LIMIT 1;
+
+-- name: GetScanReportByOperationID :one
+SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked, source_operation_id,
+       name, description, image_url, info
+FROM scan_reports
+WHERE source_operation_id = $1;

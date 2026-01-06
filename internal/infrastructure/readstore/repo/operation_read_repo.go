@@ -27,12 +27,11 @@ func (r *OperationReadRepo) GetOperation(opID int) (*readmodels.MilitaryOperatio
 		}
 		return nil, err
 	}
-	armyMap, buildMap, err := r.loadPrototypeMaps()
-	if err != nil {
+	v := mappers.OperationFromModel(row)
+	if err := r.enrichOperation(&v, nil, nil); err != nil {
 		return nil, err
 	}
-	m := mappers.OperationFromModelWithPrototypes(row, armyMap, buildMap)
-	return &m, nil
+	return &v, nil
 }
 
 func (r *OperationReadRepo) ListOperationsByBase(baseID int) ([]*readmodels.MilitaryOperation, error) {
@@ -46,7 +45,10 @@ func (r *OperationReadRepo) ListOperationsByBase(baseID int) ([]*readmodels.Mili
 	}
 	out := make([]*readmodels.MilitaryOperation, 0, len(rows))
 	for _, row := range rows {
-		v := mappers.OperationFromModelWithPrototypes(row, armyMap, buildMap)
+		v := mappers.OperationFromModel(row)
+		if err := r.enrichOperation(&v, armyMap, buildMap); err != nil {
+			return nil, err
+		}
 		out = append(out, &v)
 	}
 	return out, nil
@@ -63,13 +65,42 @@ func (r *OperationReadRepo) ListActiveOperations(baseID int) ([]*readmodels.Mili
 	}
 	out := make([]*readmodels.MilitaryOperation, 0, len(rows))
 	for _, row := range rows {
-		v := mappers.OperationFromModelWithPrototypes(row, armyMap, buildMap)
+		v := mappers.OperationFromModel(row)
+		if err := r.enrichOperation(&v, armyMap, buildMap); err != nil {
+			return nil, err
+		}
 		out = append(out, &v)
 	}
 	return out, nil
 }
 
-// enrichOperationWithPrototypes loads prototype maps and enriches a single operation.
+// enrichOperation enriches a single operation.
+func (r *OperationReadRepo) enrichOperation(v *readmodels.MilitaryOperation, army map[int]mappers.ArmyPrototypeSnapshot, build map[int]mappers.BuildPrototypeSnapshot) error {
+	// 1. Resolve prototypes if not provided
+	if army == nil || build == nil {
+		var err error
+		army, build, err = r.loadPrototypeMaps()
+		if err != nil {
+			return err
+		}
+	}
+
+	// 2. Enrich with prototypes
+	mappers.EnrichOperationUnitsAndStructures(v, army, build)
+
+	// 3. Fetch produced scan report if any
+	reportRow, err := r.q.GetScanReportByOperationID(context.Background(), sql.NullInt64{Int64: int64(v.ID), Valid: true})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		}
+		return err
+	}
+	report := mappers.SectorScanReportFromModel(reportRow)
+	v.ProducedScanReport = &report
+	return nil
+}
+
 // loadPrototypeMaps fetches all army/build prototypes for read-store and indexes them by ID.
 func (r *OperationReadRepo) loadPrototypeMaps() (map[int]mappers.ArmyPrototypeSnapshot, map[int]mappers.BuildPrototypeSnapshot, error) {
 	armyRows, err := r.q.ListArmyPrototypes(context.Background())
