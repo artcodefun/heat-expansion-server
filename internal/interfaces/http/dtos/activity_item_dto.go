@@ -6,27 +6,27 @@ import "github.com/artcodefun/heat-expansion-api/internal/core/cqrs/readmodels"
 type ActivityKind string
 
 const (
-	ActivityKindMilitary ActivityKind = "MILITARY"
-	ActivityKindScan     ActivityKind = "SCAN"
-	ActivityKindRadar    ActivityKind = "RADAR"
-	ActivityKindTrade    ActivityKind = "TRADE"
+	ActivityKindOffense ActivityKind = "OFFENSE"
+	ActivityKindDefense ActivityKind = "DEFENSE"
+	ActivityKindScan    ActivityKind = "SCAN"
+	ActivityKindRadar   ActivityKind = "RADAR"
+	ActivityKindTrade   ActivityKind = "TRADE"
 )
 
-// MilitaryActivitySubtype mirrors readmodels.MilitaryActivitySubtype.
-type MilitaryActivitySubtype string
+// OffenseActivitySubtype mirrors readmodels.OffenseActivitySubtype.
+type OffenseActivitySubtype string
 
 const (
-	MilitaryActivitySubtypeAttack  MilitaryActivitySubtype = "ATTACK"
-	MilitaryActivitySubtypeSpy     MilitaryActivitySubtype = "SPY"
-	MilitaryActivitySubtypeDefense MilitaryActivitySubtype = "DEFENSE"
+	OffenseActivitySubtypeAttack OffenseActivitySubtype = "ATTACK"
+	OffenseActivitySubtypeSpy    OffenseActivitySubtype = "SPY"
 )
 
-// OperationRole mirrors readmodels.OperationRole.
-type OperationRole string
+// DefenseActivitySubtype mirrors readmodels.DefenseActivitySubtype.
+type DefenseActivitySubtype string
 
 const (
-	OperationRoleAttacker OperationRole = "ATTACKER"
-	OperationRoleDefender OperationRole = "DEFENDER"
+	DefenseActivitySubtypeAttack DefenseActivitySubtype = "ATTACK"
+	DefenseActivitySubtypeSpy    DefenseActivitySubtype = "SPY"
 )
 
 // ActivityItemDTO is a unified envelope for different activity kinds.
@@ -36,21 +36,26 @@ type ActivityItemDTO struct {
 	CreatedAt int64        `json:"createdAt"`
 	BaseID    int          `json:"baseId"`
 
-	// New: UI routing helpers
-	// Category removed; Kind + Subtype are sufficient for UI routing.
-
-	Operation *OperationActivityDTO `json:"operation,omitempty"`
-	Scan      *ScanActivityDTO      `json:"scan,omitempty"`
-	Radar     *RadarActivityDTO     `json:"radar,omitempty"`
+	Offense *OffenseActivityDTO `json:"offense,omitempty"`
+	Defense *DefenseActivityDTO `json:"defense,omitempty"`
+	Scan    *ScanActivityDTO    `json:"scan,omitempty"`
+	Radar   *RadarActivityDTO   `json:"radar,omitempty"`
 }
 
-// OperationActivityDTO mirrors readmodels.OperationActivity, embedding the full operation readmodel.
-type OperationActivityDTO struct {
-	OpID              int                     `json:"opId"`
-	Subtype           MilitaryActivitySubtype `json:"subtype"`
-	Role              OperationRole           `json:"role"`
-	Operation         *MilitaryOperationDTO   `json:"operation,omitempty"`
-	PriorOpponentScan *SectorDTO              `json:"priorOpponentScan,omitempty"`
+// OffenseActivityDTO mirrors readmodels.OffenseActivity.
+type OffenseActivityDTO struct {
+	OpID              int                    `json:"opId"`
+	Subtype           OffenseActivitySubtype `json:"subtype"`
+	Operation         *MilitaryOperationDTO  `json:"operation,omitempty"`
+	PriorOpponentScan *SectorDTO             `json:"priorOpponentScan,omitempty"`
+}
+
+// DefenseActivityDTO mirrors readmodels.DefenseActivity.
+type DefenseActivityDTO struct {
+	OpID              int                    `json:"opId"`
+	Subtype           DefenseActivitySubtype `json:"subtype"`
+	Operation         *MilitaryOperationDTO  `json:"operation,omitempty"`
+	PriorOpponentScan *SectorDTO             `json:"priorOpponentScan,omitempty"`
 }
 
 // ScanActivityDTO mirrors readmodels.ScanActivity, embedding the full scan report readmodel.
@@ -74,21 +79,39 @@ type ThreatDTO struct {
 	Defence int `json:"defence"`
 }
 
-func operationActivityFromReadModel(op *readmodels.OperationActivity) *OperationActivityDTO {
-	if op == nil {
+func offenseActivityFromReadModel(offense *readmodels.OffenseActivity) *OffenseActivityDTO {
+	if offense == nil {
 		return nil
 	}
-	dto := &OperationActivityDTO{
-		OpID:    op.OpID,
-		Subtype: MilitaryActivitySubtype(op.Subtype),
-		Role:    OperationRole(op.Role),
+	dto := &OffenseActivityDTO{
+		OpID:    offense.OpID,
+		Subtype: OffenseActivitySubtype(offense.Subtype),
 	}
-	if op.Operation != nil {
-		m := OperationFromReadModel(op.Operation)
+	if offense.Operation != nil {
+		m := OperationFromReadModel(offense.Operation)
 		dto.Operation = &m
 	}
-	if op.PriorOpponentScan != nil {
-		report := SectorScanReportFromReadModel(op.PriorOpponentScan)
+	if offense.PriorOpponentScan != nil {
+		report := SectorScanReportFromReadModel(offense.PriorOpponentScan)
+		dto.PriorOpponentScan = &report
+	}
+	return dto
+}
+
+func defenseActivityFromReadModel(defense *readmodels.DefenseActivity) *DefenseActivityDTO {
+	if defense == nil {
+		return nil
+	}
+	dto := &DefenseActivityDTO{
+		OpID:    defense.OpID,
+		Subtype: DefenseActivitySubtype(defense.Subtype),
+	}
+	if defense.Operation != nil {
+		m := OperationFromReadModel(defense.Operation)
+		dto.Operation = &m
+	}
+	if defense.PriorOpponentScan != nil {
+		report := SectorScanReportFromReadModel(defense.PriorOpponentScan)
 		dto.PriorOpponentScan = &report
 	}
 	return dto
@@ -126,7 +149,8 @@ func ActivityItemDTOFromReadModel(a *readmodels.ActivityItem) ActivityItemDTO {
 		Kind:      ActivityKind(a.Kind),
 		CreatedAt: a.CreatedAt,
 		BaseID:    a.BaseID,
-		Operation: operationActivityFromReadModel(a.Operation),
+		Offense:   offenseActivityFromReadModel(a.Offense),
+		Defense:   defenseActivityFromReadModel(a.Defense),
 		Scan:      scanActivityFromReadModel(a.Scan),
 		Radar:     radarActivityFromReadModel(a.Radar),
 	}

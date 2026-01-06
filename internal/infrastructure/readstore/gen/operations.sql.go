@@ -11,9 +11,7 @@ import (
 
 const getOperation = `-- name: GetOperation :one
 
-SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y,
-    outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at,
-    phase, result, units, spy_result, attack_result, crystals_skip_price
+SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, phase, result, crystals_skip_price, units, spy_result, attack_result
 FROM military_operations
 WHERE id = $1
 `
@@ -38,18 +36,16 @@ func (q *Queries) GetOperation(ctx context.Context, id int64) (MilitaryOperation
 		&i.CompletedAt,
 		&i.Phase,
 		&i.Result,
+		&i.CrystalsSkipPrice,
 		&i.Units,
 		&i.SpyResult,
 		&i.AttackResult,
-		&i.CrystalsSkipPrice,
 	)
 	return i, err
 }
 
 const listActiveOperations = `-- name: ListActiveOperations :many
-SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y,
-    outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at,
-    phase, result, units, spy_result, attack_result, crystals_skip_price
+SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, phase, result, crystals_skip_price, units, spy_result, attack_result
 FROM military_operations
 WHERE source_base_id = $1 AND phase <> 'COMPLETED'
 ORDER BY outbound_depart_at DESC
@@ -80,10 +76,10 @@ func (q *Queries) ListActiveOperations(ctx context.Context, sourceBaseID int64) 
 			&i.CompletedAt,
 			&i.Phase,
 			&i.Result,
+			&i.CrystalsSkipPrice,
 			&i.Units,
 			&i.SpyResult,
 			&i.AttackResult,
-			&i.CrystalsSkipPrice,
 		); err != nil {
 			return nil, err
 		}
@@ -99,9 +95,7 @@ func (q *Queries) ListActiveOperations(ctx context.Context, sourceBaseID int64) 
 }
 
 const listOperationsByBase = `-- name: ListOperationsByBase :many
-SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y,
-    outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at,
-    phase, result, units, spy_result, attack_result, crystals_skip_price
+SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, phase, result, crystals_skip_price, units, spy_result, attack_result
 FROM military_operations
 WHERE source_base_id = $1
 ORDER BY outbound_depart_at DESC
@@ -132,10 +126,10 @@ func (q *Queries) ListOperationsByBase(ctx context.Context, sourceBaseID int64) 
 			&i.CompletedAt,
 			&i.Phase,
 			&i.Result,
+			&i.CrystalsSkipPrice,
 			&i.Units,
 			&i.SpyResult,
 			&i.AttackResult,
-			&i.CrystalsSkipPrice,
 		); err != nil {
 			return nil, err
 		}

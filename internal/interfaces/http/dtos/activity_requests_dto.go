@@ -1,34 +1,31 @@
 package dtos
 
 import (
-	"strings"
-
 	"github.com/artcodefun/heat-expansion-api/internal/core/cqrs/readmodels"
 )
 
-// activityListQuery captures query params for listing activities.
-type activityListQuery struct {
-	Limit int    `form:"limit,default=10" binding:"omitempty,min=1"`
-	Kind  string `form:"kind" binding:"omitempty,activity_kind"`
+// ListActivitiesQuery is the base query for activity listing.
+type ListActivitiesQuery struct {
+	Limit int `form:"limit,default=20" binding:"omitempty,min=1"`
+}
+
+// OffenseActivityListQuery adds subtype filtering for offensive activities.
+type OffenseActivityListQuery struct {
+	Limit   int                               `form:"limit,default=20" binding:"omitempty,min=1"`
+	Subtype readmodels.OffenseActivitySubtype `form:"subtype" binding:"omitempty,oneof=ATTACK SPY"`
+}
+
+// DefenseActivityListQuery adds subtype filtering for defensive activities.
+type DefenseActivityListQuery struct {
+	Limit   int                               `form:"limit,default=20" binding:"omitempty,min=1"`
+	Subtype readmodels.DefenseActivitySubtype `form:"subtype" binding:"omitempty,oneof=ATTACK SPY"`
 }
 
 // ActivityListRequest bundles the URI and query params for activity listing endpoints.
-type ActivityListRequest = Request[BaseURI, activityListQuery, None]
+type ActivityListRequest = Request[BaseURI, ListActivitiesQuery, None]
 
-// ActivityKindFromDTO normalizes a request kind string to the read-model type.
-func ActivityKindFromDTO(value string) readmodels.ActivityKind {
-	return readmodels.ActivityKind(strings.ToUpper(strings.TrimSpace(value)))
-}
+// OffenseActivityListRequest bundles the URI and query params for offensive activity listing.
+type OffenseActivityListRequest = Request[BaseURI, OffenseActivityListQuery, None]
 
-// IsValidActivityKind returns true if value matches one of the predefined ActivityKind constants.
-func IsValidActivityKind(value string) bool {
-	upper := strings.ToUpper(strings.TrimSpace(value))
-	switch readmodels.ActivityKind(upper) {
-	case readmodels.ActivityKindMilitary, readmodels.ActivityKindScan, readmodels.ActivityKindRadar, readmodels.ActivityKindTrade:
-		return true
-	case "":
-		return true
-	default:
-		return false
-	}
-}
+// DefenseActivityListRequest bundles the URI and query params for defensive activity listing.
+type DefenseActivityListRequest = Request[BaseURI, DefenseActivityListQuery, None]

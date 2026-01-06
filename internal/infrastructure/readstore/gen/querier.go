@@ -22,9 +22,6 @@ type Querier interface {
 	// Readstore user profile queries
 	GetUserProfile(ctx context.Context, id int64) (User, error)
 	ListActiveOperations(ctx context.Context, sourceBaseID int64) ([]MilitaryOperation, error)
-	// Activity feed queries
-	ListActivities(ctx context.Context, arg ListActivitiesParams) ([]Activity, error)
-	ListActivitiesByKind(ctx context.Context, arg ListActivitiesByKindParams) ([]Activity, error)
 	// Prototypes queries for read-store
 	ListArmyPrototypes(ctx context.Context) ([]ArmyItemPrototype, error)
 	// Army items lifecycle queries
@@ -32,12 +29,14 @@ type Querier interface {
 	ListBuildPrototypes(ctx context.Context) ([]BuildItemPrototype, error)
 	// Building items lifecycle queries
 	ListBuildPrototypesByIDs(ctx context.Context, dollar_1 []int64) ([]BuildItemPrototype, error)
+	ListDefenseActivities(ctx context.Context, arg ListDefenseActivitiesParams) ([]Activity, error)
 	ListDoneTechItems(ctx context.Context, baseID int64) ([]ListDoneTechItemsRow, error)
 	ListInProductionArmyItems(ctx context.Context, arg ListInProductionArmyItemsParams) ([]ListInProductionArmyItemsRow, error)
 	ListInProductionArmyItemsAll(ctx context.Context, baseID int64) ([]ListInProductionArmyItemsAllRow, error)
 	ListInProductionBuildItems(ctx context.Context, arg ListInProductionBuildItemsParams) ([]ListInProductionBuildItemsRow, error)
 	ListInProductionBuildItemsAll(ctx context.Context, baseID int64) ([]ListInProductionBuildItemsAllRow, error)
 	ListInResearchTechItems(ctx context.Context, baseID int64) ([]ListInResearchTechItemsRow, error)
+	ListOffenseActivities(ctx context.Context, arg ListOffenseActivitiesParams) ([]Activity, error)
 	ListOperationsByBase(ctx context.Context, sourceBaseID int64) ([]MilitaryOperation, error)
 	ListPendingArmyItems(ctx context.Context, arg ListPendingArmyItemsParams) ([]ListPendingArmyItemsRow, error)
 	ListPendingArmyItemsAll(ctx context.Context, baseID int64) ([]ListPendingArmyItemsAllRow, error)
@@ -49,10 +48,13 @@ type Querier interface {
 	ListPresentBuildItemsAll(ctx context.Context, baseID int64) ([]ListPresentBuildItemsAllRow, error)
 	// Storage items queries
 	ListPresentStorageItems(ctx context.Context, baseID int64) ([]ListPresentStorageItemsRow, error)
+	ListRadarActivities(ctx context.Context, arg ListRadarActivitiesParams) ([]Activity, error)
+	ListScanActivities(ctx context.Context, arg ListScanActivitiesParams) ([]Activity, error)
 	ListStoragePrototypes(ctx context.Context) ([]StorageItemPrototype, error)
 	ListTechPrototypes(ctx context.Context) ([]TechItemPrototype, error)
 	// Technology items lifecycle queries
 	ListTechPrototypesByIDs(ctx context.Context, dollar_1 []int64) ([]TechItemPrototype, error)
+	ListTradeActivities(ctx context.Context, arg ListTradeActivitiesParams) ([]Activity, error)
 	// List user-owned bases (basic info only)
 	ListUserBases(ctx context.Context, userID int64) ([]ListUserBasesRow, error)
 }

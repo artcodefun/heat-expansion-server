@@ -56,6 +56,7 @@ CREATE TABLE military_operations (
     completed_at       BIGINT  NOT NULL DEFAULT 0,
     phase              TEXT    NOT NULL,
     result             TEXT    NOT NULL,
+    crystals_skip_price INTEGER NOT NULL DEFAULT 0,
     -- Attacking units stored as JSONB array: [{"prototype_id": bigint, "count": int}]
     units              JSONB  NOT NULL DEFAULT '[]'::jsonb,
     spy_result         JSONB,
@@ -141,16 +142,18 @@ CREATE TABLE activities (
     created_at  BIGINT NOT NULL,
     base_id     BIGINT NOT NULL REFERENCES user_bases(id) ON DELETE CASCADE,
     -- Per-kind payloads as JSONB (only one is non-NULL according to kind)
-    operation_data   JSONB,
+    offense_data     JSONB,
+    defense_data     JSONB,
     scan_data        JSONB,
     radar_data       JSONB,
     trade_data       JSONB,
-    CONSTRAINT chk_activity_kind CHECK (kind IN ('MILITARY','SCAN','RADAR','TRADE')),
+    CONSTRAINT chk_activity_kind CHECK (kind IN ('OFFENSE','DEFENSE','SCAN','RADAR','TRADE')),
     CONSTRAINT chk_activity_payload_by_kind CHECK (
-        (kind = 'MILITARY' AND operation_data IS NOT NULL AND scan_data IS NULL AND radar_data IS NULL AND trade_data IS NULL) OR
-        (kind = 'SCAN'     AND operation_data IS NULL AND scan_data IS NOT NULL AND radar_data IS NULL AND trade_data IS NULL) OR
-        (kind = 'RADAR'    AND operation_data IS NULL AND scan_data IS NULL AND radar_data IS NOT NULL AND trade_data IS NULL) OR
-        (kind = 'TRADE'    AND operation_data IS NULL AND scan_data IS NULL AND radar_data IS NULL AND trade_data IS NOT NULL)
+        (kind = 'OFFENSE' AND offense_data IS NOT NULL AND defense_data IS NULL AND scan_data IS NULL AND radar_data IS NULL AND trade_data IS NULL) OR
+        (kind = 'DEFENSE' AND offense_data IS NULL AND defense_data IS NOT NULL AND scan_data IS NULL AND radar_data IS NULL AND trade_data IS NULL) OR
+        (kind = 'SCAN'     AND offense_data IS NULL AND defense_data IS NULL AND scan_data IS NOT NULL AND radar_data IS NULL AND trade_data IS NULL) OR
+        (kind = 'RADAR'    AND offense_data IS NULL AND defense_data IS NULL AND scan_data IS NULL AND radar_data IS NOT NULL AND trade_data IS NULL) OR
+        (kind = 'TRADE'    AND offense_data IS NULL AND defense_data IS NULL AND scan_data IS NULL AND radar_data IS NULL AND trade_data IS NOT NULL)
     )
 );
 CREATE INDEX idx_activities_base_created_at ON activities(base_id, created_at DESC);

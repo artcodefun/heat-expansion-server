@@ -22,7 +22,8 @@ func (c *ActivityCommands) HandleMilitaryOperationStartedEvent(event domain.Mili
 	if err != nil {
 		return err
 	}
-	item := domain.NewActivityFromOperation(op.SourceBaseID, op, domain.OperationRoleAttacker)
+
+	item := domain.NewActivityFromOffenseOperation(op.SourceBaseID, op)
 	return c.ActivityRepo.Create(&item)
 }
 
@@ -39,7 +40,7 @@ func (c *ActivityCommands) HandleMilitaryOperationResolvedEvent(event domain.Mil
 	if err != nil {
 		return err
 	}
-	item := domain.NewActivityFromDefense(base.ID, op)
+	item := domain.NewActivityFromDefenseOperation(base.ID, op)
 	if ts := event.OccurredAt(); ts != 0 {
 		item.CreatedAt = ts
 	}

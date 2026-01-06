@@ -13,14 +13,15 @@ import (
 )
 
 type Activity struct {
-	ID            int64                 `json:"id"`
-	Kind          string                `json:"kind"`
-	CreatedAt     int64                 `json:"created_at"`
-	BaseID        int64                 `json:"base_id"`
-	OperationData pqtype.NullRawMessage `json:"operation_data"`
-	ScanData      pqtype.NullRawMessage `json:"scan_data"`
-	RadarData     pqtype.NullRawMessage `json:"radar_data"`
-	TradeData     pqtype.NullRawMessage `json:"trade_data"`
+	ID          int64                 `json:"id"`
+	Kind        string                `json:"kind"`
+	CreatedAt   int64                 `json:"created_at"`
+	BaseID      int64                 `json:"base_id"`
+	OffenseData pqtype.NullRawMessage `json:"offense_data"`
+	DefenseData pqtype.NullRawMessage `json:"defense_data"`
+	ScanData    pqtype.NullRawMessage `json:"scan_data"`
+	RadarData   pqtype.NullRawMessage `json:"radar_data"`
+	TradeData   pqtype.NullRawMessage `json:"trade_data"`
 }
 
 type ArmyItemPrototype struct {
@@ -141,10 +142,10 @@ type MilitaryOperation struct {
 	CompletedAt       int64                 `json:"completed_at"`
 	Phase             string                `json:"phase"`
 	Result            string                `json:"result"`
+	CrystalsSkipPrice int32                 `json:"crystals_skip_price"`
 	Units             json.RawMessage       `json:"units"`
 	SpyResult         pqtype.NullRawMessage `json:"spy_result"`
 	AttackResult      pqtype.NullRawMessage `json:"attack_result"`
-	CrystalsSkipPrice int32                 `json:"crystals_skip_price"`
 }
 
 type ResourceLocation struct {

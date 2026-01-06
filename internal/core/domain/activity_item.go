@@ -4,10 +4,11 @@ package domain
 type ActivityKind string
 
 const (
-	ActivityKindMilitary ActivityKind = "MILITARY"
-	ActivityKindScan     ActivityKind = "SCAN"
-	ActivityKindRadar    ActivityKind = "RADAR"
-	ActivityKindTrade    ActivityKind = "TRADE"
+	ActivityKindOffense ActivityKind = "OFFENSE"
+	ActivityKindDefense ActivityKind = "DEFENSE"
+	ActivityKindScan    ActivityKind = "SCAN"
+	ActivityKindRadar   ActivityKind = "RADAR"
+	ActivityKindTrade   ActivityKind = "TRADE"
 )
 
 // ActivityItem is a domain projection used by the Activities use case.
@@ -17,33 +18,38 @@ type ActivityItem struct {
 	CreatedAt int64
 	BaseID    int
 
-	Operation *OperationActivity
-	Scan      *ScanActivity
-	Radar     *RadarActivity
+	Offense *OffenseActivity
+	Defense *DefenseActivity
+	Scan    *ScanActivity
+	Radar   *RadarActivity
 }
 
-// MilitaryActivitySubtype specifies the subtype within the MILITARY kind.
-type MilitaryActivitySubtype string
+// OffenseActivitySubtype specifies the subtype of an offensive activity.
+type OffenseActivitySubtype string
 
 const (
-	MilitaryActivitySubtypeAttack  MilitaryActivitySubtype = "ATTACK"
-	MilitaryActivitySubtypeSpy     MilitaryActivitySubtype = "SPY"
-	MilitaryActivitySubtypeDefense MilitaryActivitySubtype = "DEFENSE"
+	OffenseActivitySubtypeAttack OffenseActivitySubtype = "ATTACK"
+	OffenseActivitySubtypeSpy    OffenseActivitySubtype = "SPY"
 )
 
-// OperationRole indicates the viewer's role relative to an operation.
-type OperationRole string
-
-const (
-	OperationRoleAttacker OperationRole = "ATTACKER"
-	OperationRoleDefender OperationRole = "DEFENDER"
-)
-
-// OperationActivity summarizes an operation for activities list.
-type OperationActivity struct {
+// OffenseActivity summarizes an offensive mission.
+type OffenseActivity struct {
 	OpID    int
-	Subtype MilitaryActivitySubtype
-	Role    OperationRole
+	Subtype OffenseActivitySubtype
+}
+
+// DefenseActivitySubtype specifies the subtype of a defensive activity.
+type DefenseActivitySubtype string
+
+const (
+	DefenseActivitySubtypeAttack DefenseActivitySubtype = "ATTACK"
+	DefenseActivitySubtypeSpy    DefenseActivitySubtype = "SPY"
+)
+
+// DefenseActivity summarizes a defensive engagement.
+type DefenseActivity struct {
+	OpID    int
+	Subtype DefenseActivitySubtype
 }
 
 // ScanActivity wraps a SectorScanReport into the activity stream.
@@ -70,25 +76,40 @@ type Threat struct {
 
 // Helpers to build ActivityItem from domain entities
 
-func NewActivityFromOperation(baseID int, op *MilitaryOperation, role OperationRole) ActivityItem {
-	item := ActivityItem{
-		ID:        0, // assigned by persistence layer
-		Kind:      ActivityKindMilitary,
+func NewActivityFromOffenseOperation(baseID int, op *MilitaryOperation) ActivityItem {
+	return ActivityItem{
+		ID:        0,
+		Kind:      ActivityKindOffense,
 		CreatedAt: NowUnix(),
 		BaseID:    baseID,
-		// Category removed
-		Operation: &OperationActivity{
+		Offense: &OffenseActivity{
 			OpID: op.ID,
-			Subtype: func() MilitaryActivitySubtype {
+			Subtype: func() OffenseActivitySubtype {
 				if op.Type == MilitaryOperationTypeSpy {
-					return MilitaryActivitySubtypeSpy
+					return OffenseActivitySubtypeSpy
 				}
-				return MilitaryActivitySubtypeAttack
+				return OffenseActivitySubtypeAttack
 			}(),
-			Role: role,
 		},
 	}
-	return item
+}
+
+func NewActivityFromDefenseOperation(baseID int, op *MilitaryOperation) ActivityItem {
+	return ActivityItem{
+		ID:        0,
+		Kind:      ActivityKindDefense,
+		CreatedAt: NowUnix(),
+		BaseID:    baseID,
+		Defense: &DefenseActivity{
+			OpID: op.ID,
+			Subtype: func() DefenseActivitySubtype {
+				if op.Type == MilitaryOperationTypeSpy {
+					return DefenseActivitySubtypeSpy
+				}
+				return DefenseActivitySubtypeAttack
+			}(),
+		},
+	}
 }
 
 func NewActivityFromScan(baseID int, r *SectorScanReport) ActivityItem {
@@ -100,12 +121,4 @@ func NewActivityFromScan(baseID int, r *SectorScanReport) ActivityItem {
 		// Category removed
 		Scan: &ScanActivity{ReportID: r.ID},
 	}
-}
-
-// NewActivityFromDefense creates a defense activity view based on an operation and timestamp.
-// Use this when an attack against a base resolves and you want to emit a defense activity item.
-func NewActivityFromDefense(baseID int, op *MilitaryOperation) ActivityItem {
-	item := NewActivityFromOperation(baseID, op, OperationRoleDefender)
-	item.Operation.Subtype = MilitaryActivitySubtypeDefense
-	return item
 }

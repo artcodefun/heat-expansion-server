@@ -58,8 +58,11 @@ type SectorQueries interface {
 
 // ActivityQueries: activity feed filtering.
 type ActivityQueries interface {
-	ListActivities(ctx QueryContext, baseID int, limit int) ([]*readmodels.ActivityItem, error)
-	ListActivitiesByKind(ctx QueryContext, baseID int, kind readmodels.ActivityKind, limit int) ([]*readmodels.ActivityItem, error)
+	ListOffenseActivities(ctx QueryContext, baseID int, subtype readmodels.OffenseActivitySubtype, limit int) ([]*readmodels.ActivityItem, error)
+	ListDefenseActivities(ctx QueryContext, baseID int, subtype readmodels.DefenseActivitySubtype, limit int) ([]*readmodels.ActivityItem, error)
+	ListScanActivities(ctx QueryContext, baseID int, limit int) ([]*readmodels.ActivityItem, error)
+	ListRadarActivities(ctx QueryContext, baseID int, limit int) ([]*readmodels.ActivityItem, error)
+	ListTradeActivities(ctx QueryContext, baseID int, limit int) ([]*readmodels.ActivityItem, error)
 }
 
 // OperationQueries: operation state listings.

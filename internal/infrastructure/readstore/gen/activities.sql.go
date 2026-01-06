@@ -9,23 +9,23 @@ import (
 	"context"
 )
 
-const listActivities = `-- name: ListActivities :many
-
-SELECT id, kind, created_at, base_id, operation_data, scan_data, radar_data, trade_data
+const listDefenseActivities = `-- name: ListDefenseActivities :many
+SELECT id, kind, created_at, base_id, offense_data, defense_data, scan_data, radar_data, trade_data
 FROM activities
-WHERE base_id = $1
+WHERE base_id = $1 AND kind = 'DEFENSE'
+  AND ($2 = '' OR defense_data->>'subtype' = $2)
 ORDER BY created_at DESC
-LIMIT $2
+LIMIT $3
 `
 
-type ListActivitiesParams struct {
-	BaseID int64 `json:"base_id"`
-	Limit  int32 `json:"limit"`
+type ListDefenseActivitiesParams struct {
+	BaseID  int64       `json:"base_id"`
+	Column2 interface{} `json:"column_2"`
+	Limit   int32       `json:"limit"`
 }
 
-// Activity feed queries
-func (q *Queries) ListActivities(ctx context.Context, arg ListActivitiesParams) ([]Activity, error) {
-	rows, err := q.query(ctx, q.listActivitiesStmt, listActivities, arg.BaseID, arg.Limit)
+func (q *Queries) ListDefenseActivities(ctx context.Context, arg ListDefenseActivitiesParams) ([]Activity, error) {
+	rows, err := q.query(ctx, q.listDefenseActivitiesStmt, listDefenseActivities, arg.BaseID, arg.Column2, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,8 @@ func (q *Queries) ListActivities(ctx context.Context, arg ListActivitiesParams) 
 			&i.Kind,
 			&i.CreatedAt,
 			&i.BaseID,
-			&i.OperationData,
+			&i.OffenseData,
+			&i.DefenseData,
 			&i.ScanData,
 			&i.RadarData,
 			&i.TradeData,
@@ -56,22 +57,23 @@ func (q *Queries) ListActivities(ctx context.Context, arg ListActivitiesParams) 
 	return items, nil
 }
 
-const listActivitiesByKind = `-- name: ListActivitiesByKind :many
-SELECT id, kind, created_at, base_id, operation_data, scan_data, radar_data, trade_data
+const listOffenseActivities = `-- name: ListOffenseActivities :many
+SELECT id, kind, created_at, base_id, offense_data, defense_data, scan_data, radar_data, trade_data
 FROM activities
-WHERE base_id = $1 AND kind = $2
+WHERE base_id = $1 AND kind = 'OFFENSE'
+  AND ($2 = '' OR offense_data->>'subtype' = $2)
 ORDER BY created_at DESC
 LIMIT $3
 `
 
-type ListActivitiesByKindParams struct {
-	BaseID int64  `json:"base_id"`
-	Kind   string `json:"kind"`
-	Limit  int32  `json:"limit"`
+type ListOffenseActivitiesParams struct {
+	BaseID  int64       `json:"base_id"`
+	Column2 interface{} `json:"column_2"`
+	Limit   int32       `json:"limit"`
 }
 
-func (q *Queries) ListActivitiesByKind(ctx context.Context, arg ListActivitiesByKindParams) ([]Activity, error) {
-	rows, err := q.query(ctx, q.listActivitiesByKindStmt, listActivitiesByKind, arg.BaseID, arg.Kind, arg.Limit)
+func (q *Queries) ListOffenseActivities(ctx context.Context, arg ListOffenseActivitiesParams) ([]Activity, error) {
+	rows, err := q.query(ctx, q.listOffenseActivitiesStmt, listOffenseActivities, arg.BaseID, arg.Column2, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +86,146 @@ func (q *Queries) ListActivitiesByKind(ctx context.Context, arg ListActivitiesBy
 			&i.Kind,
 			&i.CreatedAt,
 			&i.BaseID,
-			&i.OperationData,
+			&i.OffenseData,
+			&i.DefenseData,
+			&i.ScanData,
+			&i.RadarData,
+			&i.TradeData,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listRadarActivities = `-- name: ListRadarActivities :many
+SELECT id, kind, created_at, base_id, offense_data, defense_data, scan_data, radar_data, trade_data
+FROM activities
+WHERE base_id = $1 AND kind = 'RADAR'
+ORDER BY created_at DESC
+LIMIT $2
+`
+
+type ListRadarActivitiesParams struct {
+	BaseID int64 `json:"base_id"`
+	Limit  int32 `json:"limit"`
+}
+
+func (q *Queries) ListRadarActivities(ctx context.Context, arg ListRadarActivitiesParams) ([]Activity, error) {
+	rows, err := q.query(ctx, q.listRadarActivitiesStmt, listRadarActivities, arg.BaseID, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Activity{}
+	for rows.Next() {
+		var i Activity
+		if err := rows.Scan(
+			&i.ID,
+			&i.Kind,
+			&i.CreatedAt,
+			&i.BaseID,
+			&i.OffenseData,
+			&i.DefenseData,
+			&i.ScanData,
+			&i.RadarData,
+			&i.TradeData,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listScanActivities = `-- name: ListScanActivities :many
+SELECT id, kind, created_at, base_id, offense_data, defense_data, scan_data, radar_data, trade_data
+FROM activities
+WHERE base_id = $1 AND kind = 'SCAN'
+ORDER BY created_at DESC
+LIMIT $2
+`
+
+type ListScanActivitiesParams struct {
+	BaseID int64 `json:"base_id"`
+	Limit  int32 `json:"limit"`
+}
+
+func (q *Queries) ListScanActivities(ctx context.Context, arg ListScanActivitiesParams) ([]Activity, error) {
+	rows, err := q.query(ctx, q.listScanActivitiesStmt, listScanActivities, arg.BaseID, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Activity{}
+	for rows.Next() {
+		var i Activity
+		if err := rows.Scan(
+			&i.ID,
+			&i.Kind,
+			&i.CreatedAt,
+			&i.BaseID,
+			&i.OffenseData,
+			&i.DefenseData,
+			&i.ScanData,
+			&i.RadarData,
+			&i.TradeData,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listTradeActivities = `-- name: ListTradeActivities :many
+SELECT id, kind, created_at, base_id, offense_data, defense_data, scan_data, radar_data, trade_data
+FROM activities
+WHERE base_id = $1 AND kind = 'TRADE'
+ORDER BY created_at DESC
+LIMIT $2
+`
+
+type ListTradeActivitiesParams struct {
+	BaseID int64 `json:"base_id"`
+	Limit  int32 `json:"limit"`
+}
+
+func (q *Queries) ListTradeActivities(ctx context.Context, arg ListTradeActivitiesParams) ([]Activity, error) {
+	rows, err := q.query(ctx, q.listTradeActivitiesStmt, listTradeActivities, arg.BaseID, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Activity{}
+	for rows.Next() {
+		var i Activity
+		if err := rows.Scan(
+			&i.ID,
+			&i.Kind,
+			&i.CreatedAt,
+			&i.BaseID,
+			&i.OffenseData,
+			&i.DefenseData,
 			&i.ScanData,
 			&i.RadarData,
 			&i.TradeData,

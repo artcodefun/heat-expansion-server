@@ -2,24 +2,42 @@ package dtos
 
 import "github.com/artcodefun/heat-expansion-api/internal/core/domain"
 
-// OperationActivityDTO mirrors the JSON structure stored for operation activities.
-type OperationActivityDTO struct {
+// OffenseActivityDTO mirrors the JSON structure stored for offensive activities.
+type OffenseActivityDTO struct {
 	OpID    int    `json:"op_id"`
 	Subtype string `json:"subtype"`
-	Role    string `json:"role"`
 }
 
-func OperationActivityDTOFromDomain(o *domain.OperationActivity) *OperationActivityDTO {
+func OffenseActivityDTOFromDomain(o *domain.OffenseActivity) *OffenseActivityDTO {
 	if o == nil {
 		return nil
 	}
-	return &OperationActivityDTO{OpID: o.OpID, Subtype: string(o.Subtype), Role: string(o.Role)}
+	return &OffenseActivityDTO{OpID: o.OpID, Subtype: string(o.Subtype)}
 }
-func OperationActivityFromDTO(d *OperationActivityDTO) *domain.OperationActivity {
+func OffenseActivityFromDTO(d *OffenseActivityDTO) *domain.OffenseActivity {
 	if d == nil {
 		return nil
 	}
-	return &domain.OperationActivity{OpID: d.OpID, Subtype: domain.MilitaryActivitySubtype(d.Subtype), Role: domain.OperationRole(d.Role)}
+	return &domain.OffenseActivity{OpID: d.OpID, Subtype: domain.OffenseActivitySubtype(d.Subtype)}
+}
+
+// DefenseActivityDTO mirrors the JSON structure stored for defensive activities.
+type DefenseActivityDTO struct {
+	OpID    int    `json:"op_id"`
+	Subtype string `json:"subtype"`
+}
+
+func DefenseActivityDTOFromDomain(o *domain.DefenseActivity) *DefenseActivityDTO {
+	if o == nil {
+		return nil
+	}
+	return &DefenseActivityDTO{OpID: o.OpID, Subtype: string(o.Subtype)}
+}
+func DefenseActivityFromDTO(d *DefenseActivityDTO) *domain.DefenseActivity {
+	if d == nil {
+		return nil
+	}
+	return &domain.DefenseActivity{OpID: d.OpID, Subtype: domain.DefenseActivitySubtype(d.Subtype)}
 }
 
 // ScanActivityDTO mirrors the JSON structure stored for scan activities.

@@ -23,13 +23,7 @@ func (q *Queries) DeleteMilitaryOperation(ctx context.Context, id int64) error {
 
 const getMilitaryOperationByID = `-- name: GetMilitaryOperationByID :one
 
-SELECT id, type, owner_user_id, source_base_id,
-       source_x, source_y, target_x, target_y,
-        outbound_depart_at, outbound_arrive_at,
-        return_depart_at, return_arrive_at,
-        completed_at, phase, result,
-        units, spy_result, attack_result,
-        crystals_skip_price
+SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, phase, result, crystals_skip_price, units, spy_result, attack_result
 FROM military_operations
 WHERE id = $1
 `
@@ -54,22 +48,16 @@ func (q *Queries) GetMilitaryOperationByID(ctx context.Context, id int64) (Milit
 		&i.CompletedAt,
 		&i.Phase,
 		&i.Result,
+		&i.CrystalsSkipPrice,
 		&i.Units,
 		&i.SpyResult,
 		&i.AttackResult,
-		&i.CrystalsSkipPrice,
 	)
 	return i, err
 }
 
 const getMilitaryOperationByIDForUpdate = `-- name: GetMilitaryOperationByIDForUpdate :one
-SELECT id, type, owner_user_id, source_base_id,
-       source_x, source_y, target_x, target_y,
-        outbound_depart_at, outbound_arrive_at,
-        return_depart_at, return_arrive_at,
-        completed_at, phase, result,
-        units, spy_result, attack_result,
-        crystals_skip_price
+SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, phase, result, crystals_skip_price, units, spy_result, attack_result
 FROM military_operations
 WHERE id = $1
 FOR UPDATE
@@ -94,10 +82,10 @@ func (q *Queries) GetMilitaryOperationByIDForUpdate(ctx context.Context, id int6
 		&i.CompletedAt,
 		&i.Phase,
 		&i.Result,
+		&i.CrystalsSkipPrice,
 		&i.Units,
 		&i.SpyResult,
 		&i.AttackResult,
-		&i.CrystalsSkipPrice,
 	)
 	return i, err
 }
@@ -175,9 +163,8 @@ SELECT id, type, owner_user_id, source_base_id,
        source_x, source_y, target_x, target_y,
         outbound_depart_at, outbound_arrive_at,
         return_depart_at, return_arrive_at,
-        completed_at, phase, result,
-        units, spy_result, attack_result,
-        crystals_skip_price
+        completed_at, phase, result, crystals_skip_price,
+        units, spy_result, attack_result
 FROM military_operations
 WHERE source_base_id = $3
 ORDER BY id DESC
@@ -215,10 +202,10 @@ func (q *Queries) ListOpsBySourceBase(ctx context.Context, arg ListOpsBySourceBa
 			&i.CompletedAt,
 			&i.Phase,
 			&i.Result,
+			&i.CrystalsSkipPrice,
 			&i.Units,
 			&i.SpyResult,
 			&i.AttackResult,
-			&i.CrystalsSkipPrice,
 		); err != nil {
 			return nil, err
 		}
@@ -238,9 +225,8 @@ SELECT id, type, owner_user_id, source_base_id,
        source_x, source_y, target_x, target_y,
         outbound_depart_at, outbound_arrive_at,
         return_depart_at, return_arrive_at,
-        completed_at, phase, result,
-        units, spy_result, attack_result,
-        crystals_skip_price
+        completed_at, phase, result, crystals_skip_price,
+        units, spy_result, attack_result
 FROM military_operations
 WHERE target_x = $3 AND target_y = $4
 ORDER BY id DESC
@@ -284,10 +270,10 @@ func (q *Queries) ListOpsByTargetCoordinates(ctx context.Context, arg ListOpsByT
 			&i.CompletedAt,
 			&i.Phase,
 			&i.Result,
+			&i.CrystalsSkipPrice,
 			&i.Units,
 			&i.SpyResult,
 			&i.AttackResult,
-			&i.CrystalsSkipPrice,
 		); err != nil {
 			return nil, err
 		}

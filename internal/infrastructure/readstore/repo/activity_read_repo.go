@@ -20,8 +20,8 @@ func NewActivityReadRepo(q *gen.Queries, ops ports.OperationReadRepository, sect
 	return &ActivityReadRepo{q: q, ops: ops, sectors: sectors}
 }
 
-func (r *ActivityReadRepo) ListActivities(baseID int, limit int) ([]*readmodels.ActivityItem, error) {
-	rows, err := r.q.ListActivities(context.Background(), gen.ListActivitiesParams{BaseID: int64(baseID), Limit: int32(limit)})
+func (r *ActivityReadRepo) ListOffenseActivities(baseID int, subtype readmodels.OffenseActivitySubtype, limit int) ([]*readmodels.ActivityItem, error) {
+	rows, err := r.q.ListOffenseActivities(context.Background(), gen.ListOffenseActivitiesParams{BaseID: int64(baseID), Column2: string(subtype), Limit: int32(limit)})
 	if err != nil {
 		return nil, err
 	}
@@ -36,8 +36,56 @@ func (r *ActivityReadRepo) ListActivities(baseID int, limit int) ([]*readmodels.
 	return out, nil
 }
 
-func (r *ActivityReadRepo) ListActivitiesByKind(baseID int, kind readmodels.ActivityKind, limit int) ([]*readmodels.ActivityItem, error) {
-	rows, err := r.q.ListActivitiesByKind(context.Background(), gen.ListActivitiesByKindParams{BaseID: int64(baseID), Kind: string(kind), Limit: int32(limit)})
+func (r *ActivityReadRepo) ListDefenseActivities(baseID int, subtype readmodels.DefenseActivitySubtype, limit int) ([]*readmodels.ActivityItem, error) {
+	rows, err := r.q.ListDefenseActivities(context.Background(), gen.ListDefenseActivitiesParams{BaseID: int64(baseID), Column2: string(subtype), Limit: int32(limit)})
+	if err != nil {
+		return nil, err
+	}
+	out := make([]*readmodels.ActivityItem, 0, len(rows))
+	for _, a := range rows {
+		v := mappers.ActivityItemFromModel(a)
+		if err := r.enrichActivity(&v); err != nil {
+			return nil, err
+		}
+		out = append(out, &v)
+	}
+	return out, nil
+}
+
+func (r *ActivityReadRepo) ListScanActivities(baseID int, limit int) ([]*readmodels.ActivityItem, error) {
+	rows, err := r.q.ListScanActivities(context.Background(), gen.ListScanActivitiesParams{BaseID: int64(baseID), Limit: int32(limit)})
+	if err != nil {
+		return nil, err
+	}
+	out := make([]*readmodels.ActivityItem, 0, len(rows))
+	for _, a := range rows {
+		v := mappers.ActivityItemFromModel(a)
+		if err := r.enrichActivity(&v); err != nil {
+			return nil, err
+		}
+		out = append(out, &v)
+	}
+	return out, nil
+}
+
+func (r *ActivityReadRepo) ListRadarActivities(baseID int, limit int) ([]*readmodels.ActivityItem, error) {
+	rows, err := r.q.ListRadarActivities(context.Background(), gen.ListRadarActivitiesParams{BaseID: int64(baseID), Limit: int32(limit)})
+	if err != nil {
+		return nil, err
+	}
+	out := make([]*readmodels.ActivityItem, 0, len(rows))
+	for _, a := range rows {
+		v := mappers.ActivityItemFromModel(a)
+		if err := r.enrichActivity(&v); err != nil {
+			return nil, err
+		}
+		out = append(out, &v)
+	}
+	return out, nil
+}
+
+func (r *ActivityReadRepo) ListTradeActivities(baseID int, limit int) ([]*readmodels.ActivityItem, error) {
+	rows, err := r.q.ListTradeActivities(context.Background(), gen.ListTradeActivitiesParams{BaseID: int64(baseID), Limit: int32(limit)})
 	if err != nil {
 		return nil, err
 	}
@@ -53,28 +101,40 @@ func (r *ActivityReadRepo) ListActivitiesByKind(baseID int, kind readmodels.Acti
 }
 
 func (r *ActivityReadRepo) enrichActivity(v *readmodels.ActivityItem) error {
-	if v.Operation != nil {
-		op, err := r.ops.GetOperation(v.Operation.OpID)
+	if v.Offense != nil {
+		op, err := r.ops.GetOperation(v.Offense.OpID)
 		if err != nil && !errors.Is(err, ports.ErrNotFound) {
 			return err
 		}
 		if err == nil {
-			v.Operation.Operation = op
+			v.Offense.Operation = op
 			// Enrich with prior opponent scan if coordinates and timeline are available.
-			var target readmodels.Vector2i
-			switch v.Operation.Role {
-			case readmodels.OperationRoleAttacker:
-				target = op.TargetCoordinates
-			case readmodels.OperationRoleDefender:
-				target = op.SourceCoordinates
-			}
-			if target != (readmodels.Vector2i{}) && op.OutboundDepartAt > 0 {
-				report, err := r.sectors.GetLatestScanBefore(v.BaseID, target.X, target.Y, op.OutboundDepartAt)
+			if op.TargetCoordinates != (readmodels.Vector2i{}) && op.OutboundDepartAt > 0 {
+				report, err := r.sectors.GetLatestScanBefore(v.BaseID, op.TargetCoordinates.X, op.TargetCoordinates.Y, op.OutboundDepartAt)
 				if err != nil && !errors.Is(err, ports.ErrNotFound) {
 					return err
 				}
 				if err == nil {
-					v.Operation.PriorOpponentScan = report
+					v.Offense.PriorOpponentScan = report
+				}
+			}
+		}
+	}
+	if v.Defense != nil {
+		op, err := r.ops.GetOperation(v.Defense.OpID)
+		if err != nil && !errors.Is(err, ports.ErrNotFound) {
+			return err
+		}
+		if err == nil {
+			v.Defense.Operation = op
+			// Enrich with prior opponent scan if coordinates and timeline are available.
+			if op.SourceCoordinates != (readmodels.Vector2i{}) && op.OutboundDepartAt > 0 {
+				report, err := r.sectors.GetLatestScanBefore(v.BaseID, op.SourceCoordinates.X, op.SourceCoordinates.Y, op.OutboundDepartAt)
+				if err != nil && !errors.Is(err, ports.ErrNotFound) {
+					return err
+				}
+				if err == nil {
+					v.Defense.PriorOpponentScan = report
 				}
 			}
 		}

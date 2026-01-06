@@ -138,7 +138,11 @@ func NewRouter(cmd Commands, qry Queries, tokenProvider ports.TokenProvider) *gi
 		// Activities
 		activities := api.Group("/bases/:baseId/activities")
 		{
-			activities.GET("", activityHandler.List)
+			activities.GET("/offense", activityHandler.ListOffense)
+			activities.GET("/defense", activityHandler.ListDefense)
+			activities.GET("/scan", activityHandler.ListScan)
+			activities.GET("/radar", activityHandler.ListRadar)
+			activities.GET("/trade", activityHandler.ListTrade)
 		}
 	}
 
@@ -155,9 +159,6 @@ func registerCustomValidators() {
 		})
 		_ = validatorEngine.RegisterValidation("operation_type", func(fl validator.FieldLevel) bool {
 			return dtos.IsValidOperationType(fl.Field().String())
-		})
-		_ = validatorEngine.RegisterValidation("activity_kind", func(fl validator.FieldLevel) bool {
-			return dtos.IsValidActivityKind(fl.Field().String())
 		})
 	}
 }

@@ -23,22 +23,23 @@ func (q *Queries) DeleteActivitiesByBase(ctx context.Context, baseID int64) erro
 const insertActivity = `-- name: InsertActivity :one
 INSERT INTO activities (
     kind, created_at, base_id,
-    operation_data, scan_data, radar_data, trade_data
+    offense_data, defense_data, scan_data, radar_data, trade_data
 ) VALUES (
     $1, $2, $3,
-    $4, $5, $6, $7
+    $4, $5, $6, $7, $8
 )
 RETURNING id
 `
 
 type InsertActivityParams struct {
-	Kind          string                `json:"kind"`
-	CreatedAt     int64                 `json:"created_at"`
-	BaseID        int64                 `json:"base_id"`
-	OperationData pqtype.NullRawMessage `json:"operation_data"`
-	ScanData      pqtype.NullRawMessage `json:"scan_data"`
-	RadarData     pqtype.NullRawMessage `json:"radar_data"`
-	TradeData     pqtype.NullRawMessage `json:"trade_data"`
+	Kind        string                `json:"kind"`
+	CreatedAt   int64                 `json:"created_at"`
+	BaseID      int64                 `json:"base_id"`
+	OffenseData pqtype.NullRawMessage `json:"offense_data"`
+	DefenseData pqtype.NullRawMessage `json:"defense_data"`
+	ScanData    pqtype.NullRawMessage `json:"scan_data"`
+	RadarData   pqtype.NullRawMessage `json:"radar_data"`
+	TradeData   pqtype.NullRawMessage `json:"trade_data"`
 }
 
 func (q *Queries) InsertActivity(ctx context.Context, arg InsertActivityParams) (int64, error) {
@@ -46,7 +47,8 @@ func (q *Queries) InsertActivity(ctx context.Context, arg InsertActivityParams) 
 		arg.Kind,
 		arg.CreatedAt,
 		arg.BaseID,
-		arg.OperationData,
+		arg.OffenseData,
+		arg.DefenseData,
 		arg.ScanData,
 		arg.RadarData,
 		arg.TradeData,
@@ -59,7 +61,7 @@ func (q *Queries) InsertActivity(ctx context.Context, arg InsertActivityParams) 
 const listActivitiesByBase = `-- name: ListActivitiesByBase :many
 
 SELECT id, kind, created_at, base_id,
-       operation_data, scan_data, radar_data, trade_data
+       offense_data, defense_data, scan_data, radar_data, trade_data
 FROM activities
 WHERE base_id = $3
 ORDER BY created_at DESC, id DESC
@@ -87,7 +89,8 @@ func (q *Queries) ListActivitiesByBase(ctx context.Context, arg ListActivitiesBy
 			&i.Kind,
 			&i.CreatedAt,
 			&i.BaseID,
-			&i.OperationData,
+			&i.OffenseData,
+			&i.DefenseData,
 			&i.ScanData,
 			&i.RadarData,
 			&i.TradeData,
