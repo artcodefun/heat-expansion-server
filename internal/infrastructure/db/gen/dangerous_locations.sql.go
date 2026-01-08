@@ -23,7 +23,7 @@ func (q *Queries) DeleteDangerousLocation(ctx context.Context, id int64) error {
 const getDangerousLocationByID = `-- name: GetDangerousLocationByID :one
 
 SELECT id, sector_x, sector_y, danger_level, name, description, image_url,
-       resources, resources_calc_timestamp, units, structures
+       resources, resources_calc_timestamp, armies, buildings
 FROM dangerous_locations
 WHERE id = $1
 `
@@ -42,15 +42,15 @@ func (q *Queries) GetDangerousLocationByID(ctx context.Context, id int64) (Dange
 		&i.ImageUrl,
 		&i.Resources,
 		&i.ResourcesCalcTimestamp,
-		&i.Units,
-		&i.Structures,
+		&i.Armies,
+		&i.Buildings,
 	)
 	return i, err
 }
 
 const getDangerousLocationBySector = `-- name: GetDangerousLocationBySector :one
 SELECT id, sector_x, sector_y, danger_level, name, description, image_url,
-       resources, resources_calc_timestamp, units, structures
+       resources, resources_calc_timestamp, armies, buildings
 FROM dangerous_locations
 WHERE sector_x = $1 AND sector_y = $2
 `
@@ -73,15 +73,15 @@ func (q *Queries) GetDangerousLocationBySector(ctx context.Context, arg GetDange
 		&i.ImageUrl,
 		&i.Resources,
 		&i.ResourcesCalcTimestamp,
-		&i.Units,
-		&i.Structures,
+		&i.Armies,
+		&i.Buildings,
 	)
 	return i, err
 }
 
 const getDangerousLocationBySectorForUpdate = `-- name: GetDangerousLocationBySectorForUpdate :one
 SELECT id, sector_x, sector_y, danger_level, name, description, image_url,
-       resources, resources_calc_timestamp, units, structures
+       resources, resources_calc_timestamp, armies, buildings
 FROM dangerous_locations
 WHERE sector_x = $1 AND sector_y = $2
 FOR UPDATE
@@ -105,8 +105,8 @@ func (q *Queries) GetDangerousLocationBySectorForUpdate(ctx context.Context, arg
 		&i.ImageUrl,
 		&i.Resources,
 		&i.ResourcesCalcTimestamp,
-		&i.Units,
-		&i.Structures,
+		&i.Armies,
+		&i.Buildings,
 	)
 	return i, err
 }
@@ -114,7 +114,7 @@ func (q *Queries) GetDangerousLocationBySectorForUpdate(ctx context.Context, arg
 const insertDangerousLocation = `-- name: InsertDangerousLocation :one
 INSERT INTO dangerous_locations (
     sector_x, sector_y, danger_level, name, description, image_url,
-    resources, resources_calc_timestamp, units, structures
+    resources, resources_calc_timestamp, armies, buildings
 ) VALUES (
     $1, $2, $3, $4, $5, $6,
     $7, $8, $9, $10
@@ -131,8 +131,8 @@ type InsertDangerousLocationParams struct {
 	ImageUrl               sql.NullString  `json:"image_url"`
 	Resources              json.RawMessage `json:"resources"`
 	ResourcesCalcTimestamp int64           `json:"resources_calc_timestamp"`
-	Units                  json.RawMessage `json:"units"`
-	Structures             json.RawMessage `json:"structures"`
+	Armies                 json.RawMessage `json:"armies"`
+	Buildings              json.RawMessage `json:"buildings"`
 }
 
 func (q *Queries) InsertDangerousLocation(ctx context.Context, arg InsertDangerousLocationParams) (int64, error) {
@@ -145,8 +145,8 @@ func (q *Queries) InsertDangerousLocation(ctx context.Context, arg InsertDangero
 		arg.ImageUrl,
 		arg.Resources,
 		arg.ResourcesCalcTimestamp,
-		arg.Units,
-		arg.Structures,
+		arg.Armies,
+		arg.Buildings,
 	)
 	var id int64
 	err := row.Scan(&id)
@@ -155,7 +155,7 @@ func (q *Queries) InsertDangerousLocation(ctx context.Context, arg InsertDangero
 
 const listDangerousLocations = `-- name: ListDangerousLocations :many
 SELECT id, sector_x, sector_y, danger_level, name, description, image_url,
-       resources, resources_calc_timestamp, units, structures
+       resources, resources_calc_timestamp, armies, buildings
 FROM dangerous_locations
 ORDER BY id
 LIMIT $1 OFFSET $2
@@ -185,8 +185,8 @@ func (q *Queries) ListDangerousLocations(ctx context.Context, arg ListDangerousL
 			&i.ImageUrl,
 			&i.Resources,
 			&i.ResourcesCalcTimestamp,
-			&i.Units,
-			&i.Structures,
+			&i.Armies,
+			&i.Buildings,
 		); err != nil {
 			return nil, err
 		}
@@ -209,8 +209,8 @@ SET danger_level = $1,
     image_url = $4,
     resources = $5,
     resources_calc_timestamp = $6,
-    units = $7,
-    structures = $8
+    armies = $7,
+    buildings = $8
 WHERE id = $9
 `
 
@@ -221,8 +221,8 @@ type UpdateDangerousLocationParams struct {
 	ImageUrl               sql.NullString  `json:"image_url"`
 	Resources              json.RawMessage `json:"resources"`
 	ResourcesCalcTimestamp int64           `json:"resources_calc_timestamp"`
-	Units                  json.RawMessage `json:"units"`
-	Structures             json.RawMessage `json:"structures"`
+	Armies                 json.RawMessage `json:"armies"`
+	Buildings              json.RawMessage `json:"buildings"`
 	ID                     int64           `json:"id"`
 }
 
@@ -234,8 +234,8 @@ func (q *Queries) UpdateDangerousLocation(ctx context.Context, arg UpdateDangero
 		arg.ImageUrl,
 		arg.Resources,
 		arg.ResourcesCalcTimestamp,
-		arg.Units,
-		arg.Structures,
+		arg.Armies,
+		arg.Buildings,
 		arg.ID,
 	)
 	return err

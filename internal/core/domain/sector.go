@@ -99,8 +99,10 @@ func NewSectorScanReportFromResourceLocation(baseID int, coords Vector2i, loc *R
 	if loc == nil {
 		return &SectorScanReport{BaseID: baseID, Coordinates: coords, CreatedAt: NowUnix(), IsCloaked: true, Type: LocationTypeResourceful, Details: emptyDetails}
 	}
-	defence := SumOperationUnitsDefence(loc.DefendingUnits) + SumDefenseStructureDefence(loc.Structures)
-	attack := SumOperationUnitsAttack(loc.DefendingUnits)
+	armySnaps := loc.MaterializeDefenderArmySnapshot()
+	structSnaps := loc.MaterializeDefenderStructureSnapshot()
+	defence := sumDefence(armySnaps) + sumStructureDefence(structSnaps)
+	attack := sumAttack(armySnaps)
 	info := ScanInfo{
 		Credits:    loc.Resources.Credits,
 		Iron:       loc.Resources.Iron,
@@ -118,8 +120,10 @@ func NewSectorScanReportFromDangerousLocation(baseID int, coords Vector2i, loc *
 	if loc == nil {
 		return &SectorScanReport{BaseID: baseID, Coordinates: coords, CreatedAt: NowUnix(), IsCloaked: true, Type: LocationTypeDangerous, Details: emptyDetails}
 	}
-	defence := SumOperationUnitsDefence(loc.DefendingUnits) + SumDefenseStructureDefence(loc.Structures)
-	attack := SumOperationUnitsAttack(loc.DefendingUnits)
+	armySnaps := loc.MaterializeDefenderArmySnapshot()
+	structSnaps := loc.MaterializeDefenderStructureSnapshot()
+	defence := sumDefence(armySnaps) + sumStructureDefence(structSnaps)
+	attack := sumAttack(armySnaps)
 	info := ScanInfo{
 		Credits:    loc.Resources.Credits,
 		Iron:       loc.Resources.Iron,
@@ -141,8 +145,3 @@ func NewSectorScanReportFromEmptySector(baseID int, coords Vector2i, sector *Sec
 	info := ScanInfo{}
 	return &SectorScanReport{BaseID: baseID, Coordinates: coords, CreatedAt: NowUnix(), Info: info, IsCloaked: false, Type: LocationTypeEmpty, Details: sector.Details}
 }
-
-// Exported helpers for other packages
-func SumOperationUnitsAttack(units []MilitaryUnit) int          { return sumAttack(units) }
-func SumOperationUnitsDefence(units []MilitaryUnit) int         { return sumDefence(units) }
-func SumDefenseStructureDefence(structs []DefenseStructure) int { return sumStructureDefence(structs) }

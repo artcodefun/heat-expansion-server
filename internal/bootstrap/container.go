@@ -73,14 +73,17 @@ func NewAdapters(db *sql.DB, jwtSecret, contentDir, staticBaseURL string) (*Adap
 	sectorRead := readrepo.NewSectorReadRepo(rq)
 	activityRead := readrepo.NewActivityReadRepo(rq, opRead, sectorRead)
 
+	armyProtoRepo := repo.NewArmyPrototypeRepo(q)
+	buildProtoRepo := repo.NewBuildPrototypeRepo(q)
+
 	return &Adapters{
 		Users:              repo.NewUserRepo(q),
 		UserBases:          repo.NewUserBaseRepo(q),
 		Sectors:            repo.NewSectorRepo(q),
-		ResourceLocations:  repo.NewResourceLocationRepo(q),
-		DangerousLocations: repo.NewDangerousLocationRepo(q),
-		ArmyPrototypes:     repo.NewArmyPrototypeRepo(q),
-		BuildPrototypes:    repo.NewBuildPrototypeRepo(q),
+		ResourceLocations:  repo.NewResourceLocationRepo(q, armyProtoRepo, buildProtoRepo),
+		DangerousLocations: repo.NewDangerousLocationRepo(q, armyProtoRepo, buildProtoRepo),
+		ArmyPrototypes:     armyProtoRepo,
+		BuildPrototypes:    buildProtoRepo,
 		StoragePrototypes:  repo.NewStoragePrototypeRepo(q),
 		TechPrototypes:     repo.NewTechPrototypeRepo(q),
 		MilitaryOps:        repo.NewMilitaryOperationRepo(q),

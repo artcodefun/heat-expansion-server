@@ -50,19 +50,19 @@ func SpyResultFromDTO(d *SpyResultDTO) *domain.SpyResult {
 	}
 	out := &domain.SpyResult{Outcome: domain.SpyOutcome(d.Outcome)}
 	if len(d.AttackerRemaining) > 0 {
-		out.AttackerRemaining = make([]domain.MilitaryUnit, 0, len(d.AttackerRemaining))
+		out.AttackerRemaining = make([]domain.MilitaryUnitSnap, 0, len(d.AttackerRemaining))
 		for _, u := range d.AttackerRemaining {
 			out.AttackerRemaining = append(out.AttackerRemaining, MilitaryUnitFromDTO(u))
 		}
 	}
 	if len(d.DefenderRemaining) > 0 {
-		out.DefenderRemaining = make([]domain.MilitaryUnit, 0, len(d.DefenderRemaining))
+		out.DefenderRemaining = make([]domain.MilitaryUnitSnap, 0, len(d.DefenderRemaining))
 		for _, u := range d.DefenderRemaining {
 			out.DefenderRemaining = append(out.DefenderRemaining, MilitaryUnitFromDTO(u))
 		}
 	}
 	if len(d.DefendersBefore) > 0 {
-		out.DefendersBefore = make([]domain.MilitaryUnit, 0, len(d.DefendersBefore))
+		out.DefendersBefore = make([]domain.MilitaryUnitSnap, 0, len(d.DefendersBefore))
 		for _, u := range d.DefendersBefore {
 			out.DefendersBefore = append(out.DefendersBefore, MilitaryUnitFromDTO(u))
 		}
@@ -113,31 +113,31 @@ func AttackResultFromDTO(d *AttackResultDTO) *domain.AttackResult {
 	}
 	out := &domain.AttackResult{Outcome: domain.AttackOutcome(d.Outcome), Loot: PriceFromDTO(d.Loot)}
 	if len(d.AttackerRemaining) > 0 {
-		out.AttackerRemaining = make([]domain.MilitaryUnit, 0, len(d.AttackerRemaining))
+		out.AttackerRemaining = make([]domain.MilitaryUnitSnap, 0, len(d.AttackerRemaining))
 		for _, u := range d.AttackerRemaining {
 			out.AttackerRemaining = append(out.AttackerRemaining, MilitaryUnitFromDTO(u))
 		}
 	}
 	if len(d.DefenderRemaining) > 0 {
-		out.DefenderRemaining = make([]domain.MilitaryUnit, 0, len(d.DefenderRemaining))
+		out.DefenderRemaining = make([]domain.MilitaryUnitSnap, 0, len(d.DefenderRemaining))
 		for _, u := range d.DefenderRemaining {
 			out.DefenderRemaining = append(out.DefenderRemaining, MilitaryUnitFromDTO(u))
 		}
 	}
 	if len(d.RemainingStructures) > 0 {
-		out.RemainingStructures = make([]domain.DefenseStructure, 0, len(d.RemainingStructures))
+		out.RemainingStructures = make([]domain.DefenseStructureSnap, 0, len(d.RemainingStructures))
 		for _, s := range d.RemainingStructures {
 			out.RemainingStructures = append(out.RemainingStructures, DefenseStructureFromDTO(s))
 		}
 	}
 	if len(d.DefendersBefore) > 0 {
-		out.DefendersBefore = make([]domain.MilitaryUnit, 0, len(d.DefendersBefore))
+		out.DefendersBefore = make([]domain.MilitaryUnitSnap, 0, len(d.DefendersBefore))
 		for _, u := range d.DefendersBefore {
 			out.DefendersBefore = append(out.DefendersBefore, MilitaryUnitFromDTO(u))
 		}
 	}
 	if len(d.StructuresBefore) > 0 {
-		out.StructuresBefore = make([]domain.DefenseStructure, 0, len(d.StructuresBefore))
+		out.StructuresBefore = make([]domain.DefenseStructureSnap, 0, len(d.StructuresBefore))
 		for _, s := range d.StructuresBefore {
 			out.StructuresBefore = append(out.StructuresBefore, DefenseStructureFromDTO(s))
 		}

@@ -24,7 +24,7 @@ func (s MilitaryOperationService) ResolveAgainstUserBase(defender *UserBaseModel
 	switch s.Operation.Type {
 	case MilitaryOperationTypeAttack:
 		// Build defender snapshot
-		defenders := OperationUnitsFromPresent(defender.ArmiesPresent)
+		defenders := MilitaryUnitsFromPresent(defender.ArmiesPresent)
 		structures := DefenseStructuresFromBuildings(defender.BuildingsPresent)
 
 		// Resolve using operation's domain logic
@@ -47,7 +47,7 @@ func (s MilitaryOperationService) ResolveAgainstUserBase(defender *UserBaseModel
 		}
 	case MilitaryOperationTypeSpy:
 		// Spy: no loot, but still compute survivors and adjust only spy defenders
-		allDefenders := OperationUnitsFromPresent(defender.ArmiesPresent)
+		allDefenders := MilitaryUnitsFromPresent(defender.ArmiesPresent)
 		defendingSpies := filterSpyUnits(allDefenders)
 		cloak := cloakingStrengthFromBuildings(defender.BuildingsPresent)
 		res := s.Operation.ResolveSpy(cloak, defendingSpies)
@@ -73,8 +73,8 @@ func (s MilitaryOperationService) ResolveAgainstResourceLocation(loc *ResourceLo
 
 	switch s.Operation.Type {
 	case MilitaryOperationTypeAttack:
-		defenders := CloneOperationUnits(loc.DefendingUnits)
-		structures := CloneDefenseStructures(loc.Structures)
+		defenders := loc.MaterializeDefenderArmySnapshot()
+		structures := loc.MaterializeDefenderStructureSnapshot()
 		available := PriceModel{
 			Credits:    maxInt(loc.Resources.Credits, 0),
 			Iron:       maxInt(loc.Resources.Iron, 0),
@@ -90,7 +90,7 @@ func (s MilitaryOperationService) ResolveAgainstResourceLocation(loc *ResourceLo
 			loc.DeductLoot(res.Loot)
 		}
 	case MilitaryOperationTypeSpy:
-		allDefenders := CloneOperationUnits(loc.DefendingUnits)
+		allDefenders := loc.MaterializeDefenderArmySnapshot()
 		defendingSpies := filterSpyUnits(allDefenders)
 		// No cloaking at resource locations for now
 		res := s.Operation.ResolveSpy(0, defendingSpies)
@@ -111,8 +111,8 @@ func (s MilitaryOperationService) ResolveAgainstDangerousLocation(loc *Dangerous
 
 	switch s.Operation.Type {
 	case MilitaryOperationTypeAttack:
-		defenders := CloneOperationUnits(loc.DefendingUnits)
-		structures := CloneDefenseStructures(loc.Structures)
+		defenders := loc.MaterializeDefenderArmySnapshot()
+		structures := loc.MaterializeDefenderStructureSnapshot()
 		available := PriceModel{
 			Credits:    maxInt(loc.Resources.Credits, 0),
 			Iron:       maxInt(loc.Resources.Iron, 0),
@@ -128,7 +128,7 @@ func (s MilitaryOperationService) ResolveAgainstDangerousLocation(loc *Dangerous
 			loc.DeductLoot(res.Loot)
 		}
 	case MilitaryOperationTypeSpy:
-		allDefenders := CloneOperationUnits(loc.DefendingUnits)
+		allDefenders := loc.MaterializeDefenderArmySnapshot()
 		defendingSpies := filterSpyUnits(allDefenders)
 		res := s.Operation.ResolveSpy(0, defendingSpies)
 		if res != nil {
@@ -148,8 +148,8 @@ func (s MilitaryOperationService) ResolveAgainstEmptySector(sector *SectorModel)
 	switch s.Operation.Type {
 	case MilitaryOperationTypeAttack:
 		// No defenders or structures, zero available loot
-		var defenders []MilitaryUnit
-		var structures []DefenseStructure
+		var defenders []MilitaryUnitSnap
+		var structures []DefenseStructureSnap
 		res := s.Operation.ResolveAttack(defenders, structures, PriceModel{})
 		if res != nil {
 			// available loot is zero; res.Loot remains empty
@@ -177,11 +177,11 @@ func maxInt(a, b int) int {
 // --- local helpers for spy resolution ---
 
 // filterSpyUnits returns only units with Spy category.
-func filterSpyUnits(units []MilitaryUnit) []MilitaryUnit {
+func filterSpyUnits(units []MilitaryUnitSnap) []MilitaryUnitSnap {
 	if len(units) == 0 {
 		return nil
 	}
-	out := make([]MilitaryUnit, 0, len(units))
+	out := make([]MilitaryUnitSnap, 0, len(units))
 	for _, u := range units {
 		if u.Category == ArmyCategorySpy && u.Count > 0 {
 			out = append(out, u)
@@ -195,11 +195,11 @@ func filterSpyUnits(units []MilitaryUnit) []MilitaryUnit {
 
 // mergeSpyRemaining merges spy remaining snapshot into the original defenders snapshot,
 // preserving non-spy units unchanged and applying new counts for spy prototypes.
-func mergeSpyRemaining(original []MilitaryUnit, spyRemaining []MilitaryUnit) []MilitaryUnit {
+func mergeSpyRemaining(original []MilitaryUnitSnap, spyRemaining []MilitaryUnitSnap) []MilitaryUnitSnap {
 	if len(original) == 0 && len(spyRemaining) == 0 {
 		return nil
 	}
-	merged := make([]MilitaryUnit, 0, len(original)+len(spyRemaining))
+	merged := make([]MilitaryUnitSnap, 0, len(original)+len(spyRemaining))
 	// keep non-spy units as-is
 	for _, u := range original {
 		if u.Category != ArmyCategorySpy && u.Count > 0 {

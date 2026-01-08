@@ -19,16 +19,16 @@ type DefenseStructureDTO struct {
 	Count       int `json:"count"`
 }
 
-func MilitaryUnitDTOFromDomain(u domain.MilitaryUnit) MilitaryUnitDTO {
+func MilitaryUnitDTOFromDomain(u domain.MilitaryUnitSnap) MilitaryUnitDTO {
 	return MilitaryUnitDTO{PrototypeID: u.PrototypeID, Category: string(u.Category), Attack: u.Attack, Defence: u.Defence, Capacity: u.Capacity, Stealth: u.Stealth, Speed: u.Speed, Count: u.Count}
 }
-func MilitaryUnitFromDTO(d MilitaryUnitDTO) domain.MilitaryUnit {
-	return domain.MilitaryUnit{PrototypeID: d.PrototypeID, Category: domain.ArmyCategory(d.Category), Attack: d.Attack, Defence: d.Defence, Capacity: d.Capacity, Stealth: d.Stealth, Speed: d.Speed, Count: d.Count}
+func MilitaryUnitFromDTO(d MilitaryUnitDTO) domain.MilitaryUnitSnap {
+	return domain.MilitaryUnitSnap{PrototypeID: d.PrototypeID, Category: domain.ArmyCategory(d.Category), Attack: d.Attack, Defence: d.Defence, Capacity: d.Capacity, Stealth: d.Stealth, Speed: d.Speed, Count: d.Count}
 }
 
-func DefenseStructureDTOFromDomain(s domain.DefenseStructure) DefenseStructureDTO {
+func DefenseStructureDTOFromDomain(s domain.DefenseStructureSnap) DefenseStructureDTO {
 	return DefenseStructureDTO{PrototypeID: s.PrototypeID, Defence: s.Defence, Count: s.Count}
 }
-func DefenseStructureFromDTO(d DefenseStructureDTO) domain.DefenseStructure {
-	return domain.DefenseStructure{PrototypeID: d.PrototypeID, Defence: d.Defence, Count: d.Count}
+func DefenseStructureFromDTO(d DefenseStructureDTO) domain.DefenseStructureSnap {
+	return domain.DefenseStructureSnap{PrototypeID: d.PrototypeID, Defence: d.Defence, Count: d.Count}
 }

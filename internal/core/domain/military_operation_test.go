@@ -4,7 +4,7 @@ import "testing"
 
 func TestOperation_Attack_EmptyLocation_PhaseAndEvents(t *testing.T) {
 	SetTestNow(t, 1_000)
-	units := []MilitaryUnit{
+	units := []MilitaryUnitSnap{
 		{PrototypeID: 1, Category: ArmyCategoryInfantry, Attack: 10, Defence: 5, Capacity: 0, Stealth: 0, Speed: 100, Count: 5},
 	}
 	source := Vector2i{X: 0, Y: 0}
@@ -102,7 +102,7 @@ func TestOperation_Attack_EmptyLocation_PhaseAndEvents(t *testing.T) {
 
 func TestOperation_TimeBeforeEntersCircle(t *testing.T) {
 	SetTestNow(t, 1_000)
-	units := []MilitaryUnit{
+	units := []MilitaryUnitSnap{
 		{PrototypeID: 1, Category: ArmyCategoryInfantry, Attack: 10, Defence: 5, Capacity: 0, Stealth: 0, Speed: 100, Count: 1},
 	}
 	source := Vector2i{X: 0, Y: 0}
@@ -149,7 +149,7 @@ func TestOperation_TimeBeforeEntersCircle(t *testing.T) {
 
 func TestOperation_TotalStealth(t *testing.T) {
 	op := &MilitaryOperation{
-		Units: []MilitaryUnit{
+		Units: []MilitaryUnitSnap{
 			{Stealth: 10, Count: 2},
 			{Stealth: 5, Count: 3},
 			{Stealth: 0, Count: 10},
@@ -164,7 +164,7 @@ func TestOperation_TotalStealth(t *testing.T) {
 func TestOperation_Attack_UserBase_LootAndDeduction(t *testing.T) {
 	SetTestNow(t, 2_000)
 	// Attacking unit with capacity 5
-	units := []MilitaryUnit{
+	units := []MilitaryUnitSnap{
 		{PrototypeID: 2, Category: ArmyCategoryInfantry, Attack: 10, Defence: 5, Capacity: 5, Stealth: 0, Speed: 200, Count: 1},
 	}
 	op, err := NewAttackOperation(1, 10, Vector2i{0, 0}, Vector2i{1, 0}, units)
@@ -207,7 +207,7 @@ func TestOperation_Attack_UserBase_LootAndDeduction(t *testing.T) {
 func TestSpy_BlockedByCloaking_OutcomeAndReturn(t *testing.T) {
 	SetTestNow(t, 3_000)
 	// Attacker spies
-	spies := []MilitaryUnit{
+	spies := []MilitaryUnitSnap{
 		{PrototypeID: 7, Category: ArmyCategorySpy, Attack: 2, Defence: 1, Capacity: 0, Stealth: 4, Speed: 120, Count: 2}, // stealth sum = 8
 	}
 	op, err := NewSpyOperation(1, 10, Vector2i{0, 0}, Vector2i{1, 1}, spies)
@@ -249,7 +249,7 @@ func TestSpy_BlockedByCloaking_OutcomeAndReturn(t *testing.T) {
 func TestSpy_DefeatedByDefendingSpies_ReturnImmediate(t *testing.T) {
 	SetTestNow(t, 3_500)
 	// Attacker spies with low attack
-	spies := []MilitaryUnit{
+	spies := []MilitaryUnitSnap{
 		{PrototypeID: 8, Category: ArmyCategorySpy, Attack: 1, Defence: 1, Capacity: 0, Stealth: 1, Speed: 100, Count: 2}, // atk power=2
 	}
 	op, err := NewSpyOperation(1, 10, Vector2i{0, 0}, Vector2i{1, 0}, spies)
@@ -261,7 +261,7 @@ func TestSpy_DefeatedByDefendingSpies_ReturnImmediate(t *testing.T) {
 	op.UpdatePhaseBasedOnTime()
 
 	// Defender spies with higher defence -> attackers lose
-	defendingSpies := []MilitaryUnit{{PrototypeID: 600, Category: ArmyCategorySpy, Attack: 1, Defence: 5, Count: 1}}
+	defendingSpies := []MilitaryUnitSnap{{PrototypeID: 600, Category: ArmyCategorySpy, Attack: 1, Defence: 5, Count: 1}}
 	res := op.ResolveSpy(0, defendingSpies)
 	if res == nil || res.Outcome != SpyOutcomeDefeatedBySpies {
 		t.Fatalf("expected spy outcome DEFEATED_BY_DEFENDING_SPIES, got %+v", op.SpyResult)
@@ -293,7 +293,7 @@ func TestSpy_DefeatedByDefendingSpies_ReturnImmediate(t *testing.T) {
 func TestSpy_ReportProduced_OutcomeAndReturn(t *testing.T) {
 	SetTestNow(t, 4_000)
 	// Attacker spies strong enough to win
-	spies := []MilitaryUnit{
+	spies := []MilitaryUnitSnap{
 		{PrototypeID: 9, Category: ArmyCategorySpy, Attack: 10, Defence: 1, Capacity: 0, Stealth: 2, Speed: 100, Count: 1},
 	}
 	op, err := NewSpyOperation(1, 10, Vector2i{0, 0}, Vector2i{2, 0}, spies)
@@ -307,7 +307,7 @@ func TestSpy_ReportProduced_OutcomeAndReturn(t *testing.T) {
 	op.UpdatePhaseBasedOnTime()
 
 	// Defender spies weak -> attackers win and produce a report
-	defendingSpies := []MilitaryUnit{{PrototypeID: 700, Category: ArmyCategorySpy, Attack: 1, Defence: 2, Count: 1}}
+	defendingSpies := []MilitaryUnitSnap{{PrototypeID: 700, Category: ArmyCategorySpy, Attack: 1, Defence: 2, Count: 1}}
 	res := op.ResolveSpy(0, defendingSpies)
 	if res == nil || res.Outcome != SpyOutcomeReportProduced {
 		t.Fatalf("expected spy outcome REPORT_PRODUCED, got %+v", op.SpyResult)
@@ -343,7 +343,7 @@ func TestNewAttackOperation_RejectsNoUnits(t *testing.T) {
 }
 
 func TestNewAttackOperation_RejectsSameCoordinates(t *testing.T) {
-	units := []MilitaryUnit{{PrototypeID: 1, Category: ArmyCategoryInfantry, Count: 1}}
+	units := []MilitaryUnitSnap{{PrototypeID: 1, Category: ArmyCategoryInfantry, Count: 1}}
 	_, err := NewAttackOperation(1, 10, Vector2i{5, 5}, Vector2i{5, 5}, units)
 	if err == nil {
 		t.Fatalf("expected error when creating attack operation with same source/target")
@@ -358,7 +358,7 @@ func TestNewSpyOperation_RejectsNoUnits(t *testing.T) {
 }
 
 func TestNewSpyOperation_RejectsSameCoordinates(t *testing.T) {
-	units := []MilitaryUnit{{PrototypeID: 7, Category: ArmyCategorySpy, Count: 1}}
+	units := []MilitaryUnitSnap{{PrototypeID: 7, Category: ArmyCategorySpy, Count: 1}}
 	_, err := NewSpyOperation(1, 10, Vector2i{5, 5}, Vector2i{5, 5}, units)
 	if err == nil {
 		t.Fatalf("expected error when creating spy operation with same source/target")
@@ -366,7 +366,7 @@ func TestNewSpyOperation_RejectsSameCoordinates(t *testing.T) {
 }
 
 func TestNewSpyOperation_RejectsNonSpyUnits(t *testing.T) {
-	units := []MilitaryUnit{{PrototypeID: 1, Category: ArmyCategoryInfantry, Count: 1}}
+	units := []MilitaryUnitSnap{{PrototypeID: 1, Category: ArmyCategoryInfantry, Count: 1}}
 	_, err := NewSpyOperation(1, 10, Vector2i{0, 0}, Vector2i{1, 0}, units)
 	if err == nil {
 		t.Fatalf("expected error when creating spy operation with non-spy units")

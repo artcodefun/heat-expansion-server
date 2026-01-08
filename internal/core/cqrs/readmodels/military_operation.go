@@ -52,21 +52,21 @@ const (
 
 type SpyResult struct {
 	Outcome           SpyOutcome
-	AttackerRemaining []MilitaryUnit
-	DefenderRemaining []MilitaryUnit
+	AttackerRemaining []MilitaryUnitSnap
+	DefenderRemaining []MilitaryUnitSnap
 	// New: snapshot of defenders before resolution (for UI diffs)
-	DefendersBefore []MilitaryUnit
+	DefendersBefore []MilitaryUnitSnap
 }
 
 type AttackResult struct {
 	Outcome             AttackOutcome
-	AttackerRemaining   []MilitaryUnit
-	DefenderRemaining   []MilitaryUnit
-	RemainingStructures []DefenseStructure
+	AttackerRemaining   []MilitaryUnitSnap
+	DefenderRemaining   []MilitaryUnitSnap
+	RemainingStructures []DefenseStructureSnap
 	Loot                PriceModel // what attackers managed to carry back; computed elsewhere
 	// New: snapshots for UI to show casualties/damage
-	DefendersBefore  []MilitaryUnit
-	StructuresBefore []DefenseStructure
+	DefendersBefore  []MilitaryUnitSnap
+	StructuresBefore []DefenseStructureSnap
 }
 
 // MilitaryOperation models an attack or spy op traveling between sectors and resolving on arrival.
@@ -93,7 +93,7 @@ type MilitaryOperation struct {
 	Result MilitaryOperationResult
 
 	// Snapshot of attacking units
-	Units []MilitaryUnit
+	Units []MilitaryUnitSnap
 
 	// Results (only one will be populated depending on Type)
 	SpyResult    *SpyResult

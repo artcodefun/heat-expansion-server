@@ -11,7 +11,7 @@ import (
 func MilitaryOperationFromDB(r gen.MilitaryOperation) *domain.MilitaryOperation {
 	var unitDTOs []dtos.MilitaryUnitDTO
 	_ = json.Unmarshal(r.Units, &unitDTOs)
-	units := make([]domain.MilitaryUnit, 0, len(unitDTOs))
+	units := make([]domain.MilitaryUnitSnap, 0, len(unitDTOs))
 	for _, d := range unitDTOs {
 		units = append(units, dtos.MilitaryUnitFromDTO(d))
 	}

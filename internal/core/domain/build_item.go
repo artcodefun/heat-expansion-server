@@ -119,3 +119,23 @@ type BuildItemPresent struct {
 	Prototype BuildItemPrototype
 	Refund    PriceModel
 }
+
+// DefenseStack represents a quantity of a given defense/build prototype defending a location.
+// Prototype is reference data loaded by the repository (join by prototype_id).
+type DefenseStack struct {
+	Prototype BuildItemPrototype
+	Count     int
+}
+
+// ToSnap materializes a defense snapshot from the current prototype values.
+func (s DefenseStack) ToSnap() DefenseStructureSnap {
+	defence := 0
+	if s.Prototype.DefenseData != nil {
+		defence = s.Prototype.DefenseData.DefenceBonus
+	}
+	return DefenseStructureSnap{
+		PrototypeID: s.Prototype.ID,
+		Defence:     defence,
+		Count:       s.Count,
+	}
+}

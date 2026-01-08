@@ -12,16 +12,22 @@ import (
 )
 
 type DangerousLocationRepo struct {
-	q *gen.Queries
+	q              *gen.Queries
+	armyProtoRepo  ports.ArmyPrototypeRepository
+	buildProtoRepo ports.BuildPrototypeRepository
 }
 
-func NewDangerousLocationRepo(q *gen.Queries) *DangerousLocationRepo {
-	return &DangerousLocationRepo{q: q}
+func NewDangerousLocationRepo(q *gen.Queries, armyProtoRepo ports.ArmyPrototypeRepository, buildProtoRepo ports.BuildPrototypeRepository) *DangerousLocationRepo {
+	return &DangerousLocationRepo{q: q, armyProtoRepo: armyProtoRepo, buildProtoRepo: buildProtoRepo}
 }
 
 func (r *DangerousLocationRepo) Tx(tx ports.Transaction) ports.DangerousLocationRepository {
 	if sqlTx, ok := tx.(*sql.Tx); ok {
-		return &DangerousLocationRepo{q: r.q.WithTx(sqlTx)}
+		return &DangerousLocationRepo{
+			q:              r.q.WithTx(sqlTx),
+			armyProtoRepo:  r.armyProtoRepo.Tx(tx),
+			buildProtoRepo: r.buildProtoRepo.Tx(tx),
+		}
 	}
 	return r
 }
@@ -36,38 +42,53 @@ func (r *DangerousLocationRepo) Create(loc *domain.DangerousLocationModel) error
 }
 
 func (r *DangerousLocationRepo) FindByID(id int) (*domain.DangerousLocationModel, error) {
-	row, err := r.q.GetDangerousLocationByID(context.Background(), int64(id))
+	ctx := context.Background()
+	row, err := r.q.GetDangerousLocationByID(ctx, int64(id))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ports.ErrNotFound
 		}
 		return nil, err
 	}
-	loc := mappers.DangerousLocationFromDB(row)
+	armyProtos, buildProtos, err := r.loadPrototypes(ctx)
+	if err != nil {
+		return nil, err
+	}
+	loc := mappers.DangerousLocationFromDB(row, armyProtos, buildProtos)
 	return loc, nil
 }
 
 func (r *DangerousLocationRepo) FindByCoordinates(x, y int) (*domain.DangerousLocationModel, error) {
-	row, err := r.q.GetDangerousLocationBySector(context.Background(), gen.GetDangerousLocationBySectorParams{SectorX: int32(x), SectorY: int32(y)})
+	ctx := context.Background()
+	row, err := r.q.GetDangerousLocationBySector(ctx, gen.GetDangerousLocationBySectorParams{SectorX: int32(x), SectorY: int32(y)})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ports.ErrNotFound
 		}
 		return nil, err
 	}
-	loc := mappers.DangerousLocationFromDB(row)
+	armyProtos, buildProtos, err := r.loadPrototypes(ctx)
+	if err != nil {
+		return nil, err
+	}
+	loc := mappers.DangerousLocationFromDB(row, armyProtos, buildProtos)
 	return loc, nil
 }
 
 func (r *DangerousLocationRepo) FindByCoordinatesForUpdate(x, y int) (*domain.DangerousLocationModel, error) {
-	row, err := r.q.GetDangerousLocationBySectorForUpdate(context.Background(), gen.GetDangerousLocationBySectorForUpdateParams{SectorX: int32(x), SectorY: int32(y)})
+	ctx := context.Background()
+	row, err := r.q.GetDangerousLocationBySectorForUpdate(ctx, gen.GetDangerousLocationBySectorForUpdateParams{SectorX: int32(x), SectorY: int32(y)})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ports.ErrNotFound
 		}
 		return nil, err
 	}
-	loc := mappers.DangerousLocationFromDB(row)
+	armyProtos, buildProtos, err := r.loadPrototypes(ctx)
+	if err != nil {
+		return nil, err
+	}
+	loc := mappers.DangerousLocationFromDB(row, armyProtos, buildProtos)
 	return loc, nil
 }
 
@@ -77,4 +98,25 @@ func (r *DangerousLocationRepo) Update(loc *domain.DangerousLocationModel) error
 
 func (r *DangerousLocationRepo) Delete(id int) error {
 	return r.q.DeleteDangerousLocation(context.Background(), int64(id))
+}
+
+func (r *DangerousLocationRepo) loadPrototypes(ctx context.Context) (map[int]*domain.ArmyItemPrototype, map[int]*domain.BuildItemPrototype, error) {
+	// For now, load all of them as they are relatively few. In a larger game, we'd fetch only needed ones.
+	armyList, err := r.armyProtoRepo.FindAllPrototypes()
+	if err != nil {
+		return nil, nil, err
+	}
+	buildList, err := r.buildProtoRepo.FindAllPrototypes()
+	if err != nil {
+		return nil, nil, err
+	}
+	armyMap := make(map[int]*domain.ArmyItemPrototype, len(armyList))
+	for _, p := range armyList {
+		armyMap[p.ID] = p
+	}
+	buildMap := make(map[int]*domain.BuildItemPrototype, len(buildList))
+	for _, p := range buildList {
+		buildMap[p.ID] = p
+	}
+	return armyMap, buildMap, nil
 }

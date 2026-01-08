@@ -113,8 +113,8 @@ type DangerousLocation struct {
 	ImageUrl               sql.NullString  `json:"image_url"`
 	Resources              json.RawMessage `json:"resources"`
 	ResourcesCalcTimestamp int64           `json:"resources_calc_timestamp"`
-	Units                  json.RawMessage `json:"units"`
-	Structures             json.RawMessage `json:"structures"`
+	Armies                 json.RawMessage `json:"armies"`
+	Buildings              json.RawMessage `json:"buildings"`
 }
 
 type DomainEvent struct {
@@ -159,8 +159,8 @@ type ResourceLocation struct {
 	ImageUrl               sql.NullString  `json:"image_url"`
 	Resources              json.RawMessage `json:"resources"`
 	ResourcesCalcTimestamp int64           `json:"resources_calc_timestamp"`
-	Units                  json.RawMessage `json:"units"`
-	Structures             json.RawMessage `json:"structures"`
+	Armies                 json.RawMessage `json:"armies"`
+	Buildings              json.RawMessage `json:"buildings"`
 }
 
 type ScanReport struct {

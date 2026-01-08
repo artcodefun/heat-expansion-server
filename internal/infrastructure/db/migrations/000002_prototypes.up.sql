@@ -9,9 +9,11 @@ CREATE TABLE tech_item_prototypes (
     unlock_technology_id BIGINT  REFERENCES tech_item_prototypes(id) ON DELETE RESTRICT,
     short_description    TEXT,
     full_description     TEXT,
+    -- Price: {"credits": int, "iron": int, "titanium": int, "antimatter": int}
     price                JSONB   NOT NULL DEFAULT '{}'::jsonb,
     research_time        BIGINT  NOT NULL DEFAULT 0,
     image_url            TEXT,
+    -- Effects: [{"type": string, "value": int}]
     effects              JSONB   NOT NULL DEFAULT '[]'::jsonb
 );
 CREATE INDEX idx_tech_prototypes_category ON tech_item_prototypes(category);
@@ -24,6 +26,7 @@ CREATE TABLE army_item_prototypes (
     unlock_technology_id BIGINT  REFERENCES tech_item_prototypes(id) ON DELETE RESTRICT,
     short_description    TEXT,
     full_description     TEXT,
+    -- Price: {"credits": int, "iron": int, "titanium": int, "antimatter": int}
     price                JSONB   NOT NULL DEFAULT '{}'::jsonb,
     production_time      BIGINT  NOT NULL DEFAULT 0,
     space                INTEGER NOT NULL DEFAULT 0,
@@ -44,14 +47,20 @@ CREATE TABLE build_item_prototypes (
     unlock_technology_id BIGINT  REFERENCES tech_item_prototypes(id) ON DELETE RESTRICT,
     short_description    TEXT,
     full_description     TEXT,
+    -- Price: {"credits": int, "iron": int, "titanium": int, "antimatter": int}
     price                JSONB   NOT NULL DEFAULT '{}'::jsonb,
     production_time      BIGINT  NOT NULL DEFAULT 0,
     space                INTEGER NOT NULL DEFAULT 0,
     image_url            TEXT,
+    -- Control building data: {"subtype": string}
     control_data         JSONB,
+    -- Resources building data: {"credits_production": float, "iron_production": float, ..., "credits_capacity": int, ...}
     resources_data       JSONB,
+    -- Defense building data: {"defence_bonus": int, "shield_strength": int}
     defense_data         JSONB,
+    -- Military building data: {"unlock_army_category": string}
     military_data        JSONB,
+    -- Intelligence building data: {"subtype": string, "stealth_strength": int, "target_location_type": string, "scan_range": int, "scan_cooldown": bigint}
     intelligence_data    JSONB
 );
 CREATE INDEX idx_build_prototypes_category ON build_item_prototypes(category);
@@ -64,10 +73,15 @@ CREATE TABLE storage_item_prototypes (
     short_description    TEXT,
     full_description     TEXT,
     image_url            TEXT,
+    -- Buff storage data: {"space_capacity_bonus": int, "attack_bonus": int, "defence_bonus": int, "duration_seconds": bigint, ...}
     buff_data            JSONB,
+    -- Map storage data: {"revealed_area": string, "scan_range": int}
     map_data             JSONB,
+    -- Damaged storage data: {"restore_price": {...}, "original_unit_id": int, "damage_level": int}
     damaged_data         JSONB,
+    -- Artifact storage data: {"passive_effect": string, "rarity": string, "lore": string}
     artifact_data        JSONB,
+    -- Consumable storage data: {"effect_type": string, "uses": int, "restore_price": {...}}
     consumable_data      JSONB
 );
 CREATE INDEX idx_storage_prototypes_category ON storage_item_prototypes(category);

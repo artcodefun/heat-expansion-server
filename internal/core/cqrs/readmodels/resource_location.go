@@ -13,6 +13,6 @@ type ResourceLocationModel struct {
 	Resources LocationResourceStats
 
 	// Defending forces snapshot
-	DefendingUnits []MilitaryUnit     // units guarding this resource location
-	Structures     []DefenseStructure // static defenses like turrets/shields
+	DefendingArmies     []MilitaryUnitSnap     // units guarding this resource location
+	DefendingStructures []DefenseStructureSnap // static defenses like turrets/shields
 }

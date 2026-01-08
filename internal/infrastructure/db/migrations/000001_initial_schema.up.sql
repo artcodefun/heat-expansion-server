@@ -30,7 +30,7 @@ CREATE TABLE user_bases (
     name                       TEXT,
     description                TEXT,
     image_url                  TEXT,
-    -- Base stats as JSONB (credits, iron, titanium, antimatter, capacities, production, attack/defence/space)
+    -- Base stats: {"credits": int, "iron": int, "titanium": int, "antimatter": int, "defence": int, "attack": int, "space": int, ...}
     stats                      JSONB            NOT NULL DEFAULT '{}'::jsonb,
     stats_calc_timestamp       BIGINT           NOT NULL DEFAULT 0,
     CONSTRAINT fk_user_bases_sector_coords FOREIGN KEY (sector_x, sector_y) REFERENCES sectors(x, y) ON DELETE RESTRICT,
@@ -57,9 +57,11 @@ CREATE TABLE military_operations (
     phase              TEXT    NOT NULL,
     result             TEXT    NOT NULL,
     crystals_skip_price INTEGER NOT NULL DEFAULT 0,
-    -- Attacking units stored as JSONB array: [{"prototype_id": bigint, "count": int}]
+    -- Snapshot of units: [{"prototype_id": int, "category": string, "attack": int, "defence": int, "count": int, ...}]
     units              JSONB  NOT NULL DEFAULT '[]'::jsonb,
+    -- Spy result: {"outcome": string, "attacker_remaining": [...], "defender_remaining": [...], "defenders_before": [...]}
     spy_result         JSONB,
+    -- Attack result: {"outcome": string, "attacker_remaining": [...], "defender_remaining": [...], "remaining_structures": [...], "loot": {...}, ...}
     attack_result      JSONB
 );
 CREATE INDEX idx_ops_owner ON military_operations(owner_user_id);
@@ -76,19 +78,20 @@ CREATE TABLE resource_locations (
     name             TEXT,
     description      TEXT,
     image_url        TEXT,
-    -- Resources as JSONB
+    -- Resources: {"credits": int, "iron": int, "titanium": int, "antimatter": int}
     resources               JSONB  NOT NULL DEFAULT '{}'::jsonb,
     resources_calc_timestamp BIGINT  NOT NULL DEFAULT 0,
-    -- Defenders as JSONB arrays: [{"prototype_id": bigint, "count": int}]
-    units                   JSONB  NOT NULL DEFAULT '[]'::jsonb,
-    structures              JSONB  NOT NULL DEFAULT '[]'::jsonb,
+    -- Defenders: [{"prototype_id": int, "count": int}]
+    armies                   JSONB  NOT NULL DEFAULT '[]'::jsonb,
+    -- Buildings: [{"prototype_id": int, "count": int}]
+    buildings                JSONB  NOT NULL DEFAULT '[]'::jsonb,
     CONSTRAINT fk_resource_locations_sector_coords FOREIGN KEY (sector_x, sector_y) REFERENCES sectors(x, y) ON DELETE CASCADE,
     CONSTRAINT resource_locations_sector_unique UNIQUE (sector_x, sector_y)
 );
 CREATE INDEX idx_resource_locations_sector_coords ON resource_locations(sector_x, sector_y);
--- Optional containment indexes for queries like units @> '[{"prototype_id": 123}]'
-CREATE INDEX idx_resource_locations_units_gin ON resource_locations USING gin (units jsonb_path_ops);
-CREATE INDEX idx_resource_locations_structures_gin ON resource_locations USING gin (structures jsonb_path_ops);
+-- Optional containment indexes for queries like armies @> '[{"prototype_id": 123}]'
+CREATE INDEX idx_resource_locations_armies_gin ON resource_locations USING gin (armies jsonb_path_ops);
+CREATE INDEX idx_resource_locations_buildings_gin ON resource_locations USING gin (buildings jsonb_path_ops);
 
 -- Dangerous Locations (one per sector)
 CREATE TABLE dangerous_locations (
@@ -99,19 +102,20 @@ CREATE TABLE dangerous_locations (
     name             TEXT,
     description      TEXT,
     image_url        TEXT,
-    -- Resources as JSONB
+    -- Resources: {"credits": int, "iron": int, "titanium": int, "antimatter": int}
     resources               JSONB  NOT NULL DEFAULT '{}'::jsonb,
     resources_calc_timestamp BIGINT  NOT NULL DEFAULT 0,
-    -- Defenders as JSONB arrays: [{"prototype_id": bigint, "count": int}]
-    units                   JSONB  NOT NULL DEFAULT '[]'::jsonb,
-    structures              JSONB  NOT NULL DEFAULT '[]'::jsonb,
+    -- Defenders: [{"prototype_id": int, "count": int}]
+    armies                   JSONB  NOT NULL DEFAULT '[]'::jsonb,
+    -- Buildings: [{"prototype_id": int, "count": int}]
+    buildings                JSONB  NOT NULL DEFAULT '[]'::jsonb,
     CONSTRAINT fk_dangerous_locations_sector_coords FOREIGN KEY (sector_x, sector_y) REFERENCES sectors(x, y) ON DELETE CASCADE,
     CONSTRAINT dangerous_locations_sector_unique UNIQUE (sector_x, sector_y)
 );
 CREATE INDEX idx_dangerous_locations_sector_coords ON dangerous_locations(sector_x, sector_y);
 -- Optional containment indexes
-CREATE INDEX idx_dang_locations_units_gin ON dangerous_locations USING gin (units jsonb_path_ops);
-CREATE INDEX idx_dang_locations_structures_gin ON dangerous_locations USING gin (structures jsonb_path_ops);
+CREATE INDEX idx_dang_locations_armies_gin ON dangerous_locations USING gin (armies jsonb_path_ops);
+CREATE INDEX idx_dang_locations_buildings_gin ON dangerous_locations USING gin (buildings jsonb_path_ops);
 
 -- Empty Locations table removed; emptiness is derived.
 
@@ -129,7 +133,7 @@ CREATE TABLE scan_reports (
     name                 TEXT,
     description          TEXT,
     image_url            TEXT,
-    -- Info as JSONB
+    -- Scan info: {"credits": int, "iron": int, "titanium": int, "antimatter": int, "defence": int, "attack": int, "space": int}
     info                JSONB  NOT NULL DEFAULT '{}'::jsonb,
     CONSTRAINT fk_scan_reports_sector_coords FOREIGN KEY (sector_x, sector_y) REFERENCES sectors(x, y) ON DELETE CASCADE
 );
@@ -142,11 +146,15 @@ CREATE TABLE activities (
     kind        TEXT   NOT NULL,
     created_at  BIGINT NOT NULL,
     base_id     BIGINT NOT NULL REFERENCES user_bases(id) ON DELETE CASCADE,
-    -- Per-kind payloads as JSONB (only one is non-NULL according to kind)
+    -- Offense activity: {"op_id": int, "subtype": string}
     offense_data     JSONB,
+    -- Defense activity: {"op_id": int, "subtype": string}
     defense_data     JSONB,
+    -- Scan activity: {"report_id": int}
     scan_data        JSONB,
+    -- Radar activity: {"op_id": int, "detected_at": bigint, "eta_at_base": bigint, "source_x": int, "source_y": int, "target_x": int, "target_y": int, "threat": {"attack": int, "speed": int, ...}}
     radar_data       JSONB,
+    -- Trade activity: JSONB structure TBD
     trade_data       JSONB,
     CONSTRAINT chk_activity_kind CHECK (kind IN ('OFFENSE','DEFENSE','SCAN','RADAR','TRADE')),
     CONSTRAINT chk_activity_payload_by_kind CHECK (

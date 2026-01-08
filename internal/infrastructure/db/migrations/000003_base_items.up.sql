@@ -9,10 +9,13 @@ CREATE TABLE base_army_items (
     base_id             BIGINT  NOT NULL REFERENCES user_bases(id) ON DELETE CASCADE,
     prototype_id        BIGINT  NOT NULL REFERENCES army_item_prototypes(id) ON DELETE RESTRICT,
     status              TEXT    NOT NULL,
-    -- status-specific payloads
+    -- Army pending data: {"count": int}
     pending_data        JSONB,
+    -- Army in production data: {"start_date": bigint, "completion_date": bigint, "crystals_skip_price": int}
     in_prod_data        JSONB,
+    -- Army present data: {"count": int, "refund": {...}}
     present_data        JSONB,
+    -- Army deployed data: {"operation_id": int, "count": int}
     deployed_data       JSONB,
     -- bookkeeping
     created_at          BIGINT  NOT NULL,
@@ -43,9 +46,11 @@ CREATE TABLE base_build_items (
     base_id             BIGINT  NOT NULL REFERENCES user_bases(id) ON DELETE CASCADE,
     prototype_id        BIGINT  NOT NULL REFERENCES build_item_prototypes(id) ON DELETE RESTRICT,
     status              TEXT    NOT NULL,
-    -- status-specific payloads
+    -- Build pending data: {}
     pending_data        JSONB,
+    -- Build in production data: {"start_date": bigint, "completion_date": bigint, "crystals_skip_price": int}
     in_prod_data        JSONB,
+    -- Build present data: {"refund": {...}}
     present_data        JSONB,
     -- bookkeeping
     created_at          BIGINT  NOT NULL,
@@ -67,8 +72,9 @@ CREATE TABLE base_tech_items (
     base_id             BIGINT  NOT NULL REFERENCES user_bases(id) ON DELETE CASCADE,
     prototype_id        BIGINT  NOT NULL REFERENCES tech_item_prototypes(id) ON DELETE RESTRICT,
     status              TEXT    NOT NULL,
-    -- status-specific payloads
+    -- Tech in progress data: {"start_date": bigint, "completion_date": bigint, "crystals_skip_price": int}
     in_progress_data   JSONB,
+    -- Tech done data: {"researched_at": bigint}
     done_data          JSONB,
     -- bookkeeping
     created_at          BIGINT  NOT NULL,
@@ -92,7 +98,9 @@ CREATE TABLE base_storage_items (
     base_id      BIGINT  NOT NULL REFERENCES user_bases(id) ON DELETE CASCADE,
     prototype_id BIGINT  NOT NULL REFERENCES storage_item_prototypes(id) ON DELETE RESTRICT,
     status       TEXT    NOT NULL,
+    -- Storage present data: {"refund": {...}}
     present_data    JSONB,
+    -- Storage dynamic state: JSONB structure varies by prototype
     state        JSONB   NOT NULL DEFAULT '{}'::jsonb,
     created_at   BIGINT  NOT NULL,
     CONSTRAINT chk_storage_status CHECK (status IN ('PRESENT'))

@@ -72,3 +72,24 @@ type ArmyItemDeployed struct {
 	OperationID int // owning military operation id
 	Count       int
 }
+
+// ArmyStack represents a quantity of a given army prototype defending a location.
+// Prototype is reference data loaded by the repository (join by prototype_id).
+type ArmyStack struct {
+	Prototype ArmyItemPrototype
+	Count     int
+}
+
+// ToSnap materializes an operation/battle snapshot from the current prototype values.
+func (s ArmyStack) ToSnap() MilitaryUnitSnap {
+	return MilitaryUnitSnap{
+		PrototypeID: s.Prototype.ID,
+		Category:    s.Prototype.Category,
+		Attack:      s.Prototype.Attack,
+		Defence:     s.Prototype.Defence,
+		Capacity:    s.Prototype.Capacity,
+		Stealth:     s.Prototype.Stealth,
+		Speed:       s.Prototype.Speed,
+		Count:       s.Count,
+	}
+}

@@ -634,7 +634,7 @@ func TestArmy_TrimDeployedToSurvivors_AdjustsCountsAndKeepsZeroEntries(t *testin
 		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: proto1, OperationID: 51, Count: 7}, // different op
 	}
 
-	survivors := []MilitaryUnit{{PrototypeID: proto1.ID, Count: 3}}
+	survivors := []MilitaryUnitSnap{{PrototypeID: proto1.ID, Count: 3}}
 	base.TrimDeployedToSurvivors(50, survivors)
 
 	var op50p1, op50p2, op51p1 int
@@ -819,7 +819,7 @@ func TestApplyDefenderArmyRemaining_UpdatesCountsAndZeroesMissing(t *testing.T) 
 		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: ArmyItemPrototype{ID: 301}, Count: 4},
 	}
 
-	remaining := []MilitaryUnit{
+	remaining := []MilitaryUnitSnap{
 		{PrototypeID: 300, Count: 2}, // proto 300 survives with 2
 	}
 	base.ApplyDefenderArmyRemaining(remaining)
@@ -851,7 +851,7 @@ func TestApplyRemainingDefensiveStructures_KeepsNonDefensiveAndAppliesCounts(t *
 	}
 
 	// Remaining structures say keep only 2 turrets of this prototype
-	remaining := []DefenseStructure{{PrototypeID: 400, Count: 2}}
+	remaining := []DefenseStructureSnap{{PrototypeID: 400, Count: 2}}
 	base.ApplyRemainingDefensiveStructures(remaining)
 
 	var nonDefCount, defCount int

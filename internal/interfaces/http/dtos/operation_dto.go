@@ -113,7 +113,7 @@ type MilitaryOperationDTO struct {
 	ProducedScanReport *SectorDTO        `json:"produced_scan_report,omitempty"`
 }
 
-func militaryUnitsFromReadModel(units []readmodels.MilitaryUnit) []MilitaryUnitDTO {
+func militaryUnitsFromReadModel(units []readmodels.MilitaryUnitSnap) []MilitaryUnitDTO {
 	out := make([]MilitaryUnitDTO, 0, len(units))
 	for _, unit := range units {
 		out = append(out, MilitaryUnitDTO{
@@ -132,7 +132,7 @@ func militaryUnitsFromReadModel(units []readmodels.MilitaryUnit) []MilitaryUnitD
 	return out
 }
 
-func defenseStructuresFromReadModel(structs []readmodels.DefenseStructure) []DefenseStructureDTO {
+func defenseStructuresFromReadModel(structs []readmodels.DefenseStructureSnap) []DefenseStructureDTO {
 	out := make([]DefenseStructureDTO, 0, len(structs))
 	for _, s := range structs {
 		out = append(out, DefenseStructureDTO{

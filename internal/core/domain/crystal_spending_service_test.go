@@ -49,7 +49,7 @@ func TestCrystalSpendingService_SpeedUpOperation_Outbound(t *testing.T) {
 	SetTestNow(t, 1_000)
 
 	user := &User{ID: 1, Crystals: 100}
-	units := []MilitaryUnit{
+	units := []MilitaryUnitSnap{
 		{PrototypeID: 1, Category: ArmyCategoryInfantry, Attack: 10, Defence: 5, Capacity: 0, Stealth: 0, Speed: 100, Count: 5},
 	}
 	source := Vector2i{X: 0, Y: 0}
@@ -94,7 +94,7 @@ func TestCrystalSpendingService_SpeedUpOperation_Returning(t *testing.T) {
 	SetTestNow(t, 2_000)
 
 	user := &User{ID: 1, Crystals: 100}
-	units := []MilitaryUnit{
+	units := []MilitaryUnitSnap{
 		{PrototypeID: 2, Category: ArmyCategoryInfantry, Attack: 10, Defence: 5, Capacity: 0, Stealth: 0, Speed: 100, Count: 5},
 	}
 	source := Vector2i{X: 0, Y: 0}

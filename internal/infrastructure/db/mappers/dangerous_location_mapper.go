@@ -8,23 +8,27 @@ import (
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/db/gen"
 )
 
-func DangerousLocationFromDB(r gen.DangerousLocation) *domain.DangerousLocationModel {
+func DangerousLocationFromDB(r gen.DangerousLocation, armyProtos map[int]*domain.ArmyItemPrototype, buildProtos map[int]*domain.BuildItemPrototype) *domain.DangerousLocationModel {
 	var resDTO dtos.LocationResourceStatsDTO
 	_ = json.Unmarshal(r.Resources, &resDTO)
 	res := dtos.LocationResourceStatsFromDTO(resDTO, r.ResourcesCalcTimestamp)
 
-	var unitDTOs []dtos.MilitaryUnitDTO
-	_ = json.Unmarshal(r.Units, &unitDTOs)
-	units := make([]domain.MilitaryUnit, 0, len(unitDTOs))
-	for _, d := range unitDTOs {
-		units = append(units, dtos.MilitaryUnitFromDTO(d))
+	var armyDTOs []dtos.ArmyStackDTO
+	_ = json.Unmarshal(r.Armies, &armyDTOs)
+	armies := make([]domain.ArmyStack, 0, len(armyDTOs))
+	for _, d := range armyDTOs {
+		if p, ok := armyProtos[d.PrototypeID]; ok {
+			armies = append(armies, dtos.ArmyStackFromDTO(d, *p))
+		}
 	}
 
-	var structDTOs []dtos.DefenseStructureDTO
-	_ = json.Unmarshal(r.Structures, &structDTOs)
-	structs := make([]domain.DefenseStructure, 0, len(structDTOs))
+	var structDTOs []dtos.DefenseStackDTO
+	_ = json.Unmarshal(r.Buildings, &structDTOs)
+	structs := make([]domain.DefenseStack, 0, len(structDTOs))
 	for _, d := range structDTOs {
-		structs = append(structs, dtos.DefenseStructureFromDTO(d))
+		if p, ok := buildProtos[d.PrototypeID]; ok {
+			structs = append(structs, dtos.DefenseStackFromDTO(d, *p))
+		}
 	}
 
 	return &domain.DangerousLocationModel{
@@ -36,24 +40,24 @@ func DangerousLocationFromDB(r gen.DangerousLocation) *domain.DangerousLocationM
 			Description: nullStringToString(&r.Description.String, r.Description.Valid),
 			ImageURL:    nullStringToString(&r.ImageUrl.String, r.ImageUrl.Valid),
 		},
-		Resources:      res,
-		DefendingUnits: units,
-		Structures:     structs,
+		Resources:           res,
+		DefendingArmies:     armies,
+		DefendingStructures: structs,
 	}
 }
 
 func InsertDangerousLocationParamsFromDomain(loc *domain.DangerousLocationModel) gen.InsertDangerousLocationParams {
 	resJSON, _ := json.Marshal(dtos.LocationResourceStatsDTOFromDomain(loc.Resources))
-	unitDTOs := make([]dtos.MilitaryUnitDTO, 0, len(loc.DefendingUnits))
-	for _, u := range loc.DefendingUnits {
-		unitDTOs = append(unitDTOs, dtos.MilitaryUnitDTOFromDomain(u))
+	armyDTOs := make([]dtos.ArmyStackDTO, 0, len(loc.DefendingArmies))
+	for _, a := range loc.DefendingArmies {
+		armyDTOs = append(armyDTOs, dtos.ArmyStackDTOFromDomain(a))
 	}
-	structsDTO := make([]dtos.DefenseStructureDTO, 0, len(loc.Structures))
-	for _, s := range loc.Structures {
-		structsDTO = append(structsDTO, dtos.DefenseStructureDTOFromDomain(s))
+	structsDTO := make([]dtos.DefenseStackDTO, 0, len(loc.DefendingStructures))
+	for _, s := range loc.DefendingStructures {
+		structsDTO = append(structsDTO, dtos.DefenseStackDTOFromDomain(s))
 	}
-	unitsJSON, _ := json.Marshal(unitDTOs)
-	structsJSON, _ := json.Marshal(structsDTO)
+	armiesJSON, _ := json.Marshal(armyDTOs)
+	buildingsJSON, _ := json.Marshal(structsDTO)
 	return gen.InsertDangerousLocationParams{
 		SectorX:                int32(loc.Coordinates.X),
 		SectorY:                int32(loc.Coordinates.Y),
@@ -63,23 +67,23 @@ func InsertDangerousLocationParamsFromDomain(loc *domain.DangerousLocationModel)
 		ImageUrl:               toNullString(loc.ImageURL),
 		Resources:              resJSON,
 		ResourcesCalcTimestamp: loc.Resources.CalculationTimestamp,
-		Units:                  unitsJSON,
-		Structures:             structsJSON,
+		Armies:                 armiesJSON,
+		Buildings:              buildingsJSON,
 	}
 }
 
 func UpdateDangerousLocationParamsFromDomain(loc *domain.DangerousLocationModel) gen.UpdateDangerousLocationParams {
 	resJSON, _ := json.Marshal(dtos.LocationResourceStatsDTOFromDomain(loc.Resources))
-	unitDTOs := make([]dtos.MilitaryUnitDTO, 0, len(loc.DefendingUnits))
-	for _, u := range loc.DefendingUnits {
-		unitDTOs = append(unitDTOs, dtos.MilitaryUnitDTOFromDomain(u))
+	armyDTOs := make([]dtos.ArmyStackDTO, 0, len(loc.DefendingArmies))
+	for _, a := range loc.DefendingArmies {
+		armyDTOs = append(armyDTOs, dtos.ArmyStackDTOFromDomain(a))
 	}
-	structsDTO := make([]dtos.DefenseStructureDTO, 0, len(loc.Structures))
-	for _, s := range loc.Structures {
-		structsDTO = append(structsDTO, dtos.DefenseStructureDTOFromDomain(s))
+	structsDTO := make([]dtos.DefenseStackDTO, 0, len(loc.DefendingStructures))
+	for _, s := range loc.DefendingStructures {
+		structsDTO = append(structsDTO, dtos.DefenseStackDTOFromDomain(s))
 	}
-	unitsJSON, _ := json.Marshal(unitDTOs)
-	structsJSON, _ := json.Marshal(structsDTO)
+	armiesJSON, _ := json.Marshal(armyDTOs)
+	buildingsJSON, _ := json.Marshal(structsDTO)
 	return gen.UpdateDangerousLocationParams{
 		ID:                     int64(loc.ID),
 		DangerLevel:            int32(loc.DangerLevel),
@@ -88,7 +92,7 @@ func UpdateDangerousLocationParamsFromDomain(loc *domain.DangerousLocationModel)
 		ImageUrl:               toNullString(loc.ImageURL),
 		Resources:              resJSON,
 		ResourcesCalcTimestamp: loc.Resources.CalculationTimestamp,
-		Units:                  unitsJSON,
-		Structures:             structsJSON,
+		Armies:                 armiesJSON,
+		Buildings:              buildingsJSON,
 	}
 }

@@ -875,8 +875,8 @@ func (ub *UserBaseModel) ReturnAllDeployedFromOperation(operationID int) {
 }
 
 // TrimDeployedToSurvivors reduces deployed counts for this operation down to the
-// survivors by prototype. Keeps zero-count entries (clean-up can be done separately).
-func (ub *UserBaseModel) TrimDeployedToSurvivors(operationID int, survivors []MilitaryUnit) {
+// survivors by prototype, removing any stacks that were completely destroyed.
+func (ub *UserBaseModel) TrimDeployedToSurvivors(operationID int, survivors []MilitaryUnitSnap) {
 	defer ub.recalculateStats()
 	if len(ub.ArmiesDeployed) == 0 {
 		return
@@ -887,26 +887,29 @@ func (ub *UserBaseModel) TrimDeployedToSurvivors(operationID int, survivors []Mi
 			remainByProto[u.PrototypeID] += u.Count
 		}
 	}
-	for i := range ub.ArmiesDeployed {
-		d := &ub.ArmiesDeployed[i]
+
+	newDeployed := make([]ArmyItemDeployed, 0, len(ub.ArmiesDeployed))
+	for _, d := range ub.ArmiesDeployed {
 		if d.OperationID != operationID {
+			newDeployed = append(newDeployed, d)
 			continue
 		}
+
 		remain := remainByProto[d.Prototype.ID]
-		if remain <= 0 {
-			d.Count = 0
-			continue
+		if remain > 0 {
+			if d.Count > remain {
+				d.Count = remain
+			}
+			remainByProto[d.Prototype.ID] -= d.Count
+			newDeployed = append(newDeployed, d)
 		}
-		if d.Count > remain {
-			d.Count = remain
-		}
-		remainByProto[d.Prototype.ID] -= d.Count
 	}
+	ub.ArmiesDeployed = newDeployed
 }
 
 // ApplyDefenderArmyRemaining sets ArmiesPresent counts to the provided remaining defenders
-// by prototype ID, zeroing out any stacks not present in the remaining set.
-func (ub *UserBaseModel) ApplyDefenderArmyRemaining(remaining []MilitaryUnit) {
+// by prototype ID, removing any stacks that were completely destroyed.
+func (ub *UserBaseModel) ApplyDefenderArmyRemaining(remaining []MilitaryUnitSnap) {
 	defer ub.recalculateStats()
 	remainByProto := map[int]int{}
 	for _, u := range remaining {
@@ -914,19 +917,20 @@ func (ub *UserBaseModel) ApplyDefenderArmyRemaining(remaining []MilitaryUnit) {
 			remainByProto[u.PrototypeID] += u.Count
 		}
 	}
-	for i := range ub.ArmiesPresent {
-		p := &ub.ArmiesPresent[i]
-		if newCount, ok := remainByProto[p.Prototype.ID]; ok {
+
+	newArmies := make([]ArmyItemPresent, 0, len(ub.ArmiesPresent))
+	for _, p := range ub.ArmiesPresent {
+		if newCount, ok := remainByProto[p.Prototype.ID]; ok && newCount > 0 {
 			p.Count = newCount
-		} else {
-			p.Count = 0
+			newArmies = append(newArmies, p)
 		}
 	}
+	ub.ArmiesPresent = newArmies
 }
 
 // ApplyRemainingDefensiveStructures adjusts defensive BuildingsPresent to match the
 // remaining structures (by PrototypeID). Non-defensive buildings are left untouched.
-func (ub *UserBaseModel) ApplyRemainingDefensiveStructures(remaining []DefenseStructure) {
+func (ub *UserBaseModel) ApplyRemainingDefensiveStructures(remaining []DefenseStructureSnap) {
 	defer ub.recalculateStats()
 	if len(ub.BuildingsPresent) == 0 {
 		return

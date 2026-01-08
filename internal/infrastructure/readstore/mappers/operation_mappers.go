@@ -46,26 +46,26 @@ func OperationFromModel(m gen.MilitaryOperation) readmodels.MilitaryOperation {
 
 // JSON helpers: DTO shape -> readmodels.*
 
-func militaryUnitsFromJSON(raw json.RawMessage) []readmodels.MilitaryUnit {
+func militaryUnitsFromJSON(raw json.RawMessage) []readmodels.MilitaryUnitSnap {
 	if len(raw) == 0 {
-		return []readmodels.MilitaryUnit{}
+		return []readmodels.MilitaryUnitSnap{}
 	}
 	var unitDTOs []dtos.MilitaryUnitDTO
 	if err := json.Unmarshal(raw, &unitDTOs); err != nil {
-		return []readmodels.MilitaryUnit{}
+		return []readmodels.MilitaryUnitSnap{}
 	}
 	if len(unitDTOs) == 0 {
-		return []readmodels.MilitaryUnit{}
+		return []readmodels.MilitaryUnitSnap{}
 	}
-	unites := make([]readmodels.MilitaryUnit, 0, len(unitDTOs))
+	unites := make([]readmodels.MilitaryUnitSnap, 0, len(unitDTOs))
 	for _, d := range unitDTOs {
 		unites = append(unites, militaryUnitFromDTO(d))
 	}
 	return unites
 }
 
-func militaryUnitFromDTO(d dtos.MilitaryUnitDTO) readmodels.MilitaryUnit {
-	return readmodels.MilitaryUnit{
+func militaryUnitFromDTO(d dtos.MilitaryUnitDTO) readmodels.MilitaryUnitSnap {
+	return readmodels.MilitaryUnitSnap{
 		PrototypeID: d.PrototypeID,
 		Category:    readmodels.ArmyCategory(d.Category),
 		Attack:      d.Attack,
@@ -77,8 +77,8 @@ func militaryUnitFromDTO(d dtos.MilitaryUnitDTO) readmodels.MilitaryUnit {
 	}
 }
 
-func defenseStructureFromDTO(d dtos.DefenseStructureDTO) readmodels.DefenseStructure {
-	return readmodels.DefenseStructure{
+func defenseStructureFromDTO(d dtos.DefenseStructureDTO) readmodels.DefenseStructureSnap {
+	return readmodels.DefenseStructureSnap{
 		PrototypeID: d.PrototypeID,
 		Defence:     d.Defence,
 		Count:       d.Count,
@@ -97,19 +97,19 @@ func spyResultFromJSON(nm pqtype.NullRawMessage) *readmodels.SpyResult {
 		Outcome: readmodels.SpyOutcome(d.Outcome),
 	}
 	if len(d.AttackerRemaining) > 0 {
-		res.AttackerRemaining = make([]readmodels.MilitaryUnit, 0, len(d.AttackerRemaining))
+		res.AttackerRemaining = make([]readmodels.MilitaryUnitSnap, 0, len(d.AttackerRemaining))
 		for _, u := range d.AttackerRemaining {
 			res.AttackerRemaining = append(res.AttackerRemaining, militaryUnitFromDTO(u))
 		}
 	}
 	if len(d.DefenderRemaining) > 0 {
-		res.DefenderRemaining = make([]readmodels.MilitaryUnit, 0, len(d.DefenderRemaining))
+		res.DefenderRemaining = make([]readmodels.MilitaryUnitSnap, 0, len(d.DefenderRemaining))
 		for _, u := range d.DefenderRemaining {
 			res.DefenderRemaining = append(res.DefenderRemaining, militaryUnitFromDTO(u))
 		}
 	}
 	if len(d.DefendersBefore) > 0 {
-		res.DefendersBefore = make([]readmodels.MilitaryUnit, 0, len(d.DefendersBefore))
+		res.DefendersBefore = make([]readmodels.MilitaryUnitSnap, 0, len(d.DefendersBefore))
 		for _, u := range d.DefendersBefore {
 			res.DefendersBefore = append(res.DefendersBefore, militaryUnitFromDTO(u))
 		}
@@ -135,31 +135,31 @@ func attackResultFromJSON(nm pqtype.NullRawMessage) *readmodels.AttackResult {
 		},
 	}
 	if len(d.AttackerRemaining) > 0 {
-		res.AttackerRemaining = make([]readmodels.MilitaryUnit, 0, len(d.AttackerRemaining))
+		res.AttackerRemaining = make([]readmodels.MilitaryUnitSnap, 0, len(d.AttackerRemaining))
 		for _, u := range d.AttackerRemaining {
 			res.AttackerRemaining = append(res.AttackerRemaining, militaryUnitFromDTO(u))
 		}
 	}
 	if len(d.DefenderRemaining) > 0 {
-		res.DefenderRemaining = make([]readmodels.MilitaryUnit, 0, len(d.DefenderRemaining))
+		res.DefenderRemaining = make([]readmodels.MilitaryUnitSnap, 0, len(d.DefenderRemaining))
 		for _, u := range d.DefenderRemaining {
 			res.DefenderRemaining = append(res.DefenderRemaining, militaryUnitFromDTO(u))
 		}
 	}
 	if len(d.RemainingStructures) > 0 {
-		res.RemainingStructures = make([]readmodels.DefenseStructure, 0, len(d.RemainingStructures))
+		res.RemainingStructures = make([]readmodels.DefenseStructureSnap, 0, len(d.RemainingStructures))
 		for _, s := range d.RemainingStructures {
 			res.RemainingStructures = append(res.RemainingStructures, defenseStructureFromDTO(s))
 		}
 	}
 	if len(d.DefendersBefore) > 0 {
-		res.DefendersBefore = make([]readmodels.MilitaryUnit, 0, len(d.DefendersBefore))
+		res.DefendersBefore = make([]readmodels.MilitaryUnitSnap, 0, len(d.DefendersBefore))
 		for _, u := range d.DefendersBefore {
 			res.DefendersBefore = append(res.DefendersBefore, militaryUnitFromDTO(u))
 		}
 	}
 	if len(d.StructuresBefore) > 0 {
-		res.StructuresBefore = make([]readmodels.DefenseStructure, 0, len(d.StructuresBefore))
+		res.StructuresBefore = make([]readmodels.DefenseStructureSnap, 0, len(d.StructuresBefore))
 		for _, s := range d.StructuresBefore {
 			res.StructuresBefore = append(res.StructuresBefore, defenseStructureFromDTO(s))
 		}

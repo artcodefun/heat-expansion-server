@@ -13,7 +13,7 @@ func TestResolveAgainstUserBase_Attack_AppliesLootAndSurvivors(t *testing.T) {
 	SetTestNow(t, 10_000)
 
 	// Simple attacking force with some capacity for loot
-	attackUnits := []MilitaryUnit{
+	attackUnits := []MilitaryUnitSnap{
 		{PrototypeID: 1, Category: ArmyCategoryInfantry, Attack: 5, Defence: 3, Capacity: 2, Stealth: 0, Speed: 100, Count: 3},
 	}
 
@@ -107,7 +107,7 @@ func TestResolveAgainstUserBase_Spy_BlockedByCloaking_PreservesNonSpyDefenders(t
 	SetTestNow(t, 20_000)
 
 	// Attacker spies (stealth sum = 8)
-	spies := []MilitaryUnit{
+	spies := []MilitaryUnitSnap{
 		{PrototypeID: 7, Category: ArmyCategorySpy, Attack: 2, Defence: 1, Capacity: 0, Stealth: 4, Speed: 120, Count: 2},
 	}
 	op, err := NewSpyOperation(1, 10, Vector2i{X: 0, Y: 0}, Vector2i{X: 1, Y: 1}, spies)
