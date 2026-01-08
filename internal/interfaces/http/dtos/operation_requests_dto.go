@@ -31,8 +31,8 @@ type ArmyDeploymentRequestDTO struct {
 type operationCreateBody struct {
 	Type         OperationType `json:"type" binding:"required,operation_type"`
 	SourceBaseID int           `json:"source_base_id" binding:"required,min=1"`
-	TargetX      int           `json:"target_x" binding:"required"`
-	TargetY      int           `json:"target_y" binding:"required"`
+	TargetX      *int          `json:"target_x" binding:"required"`
+	TargetY      *int          `json:"target_y" binding:"required"`
 	// Deployed contains army stacks to send, identified by prototype IDs.
 	Deployed []ArmyDeploymentRequestDTO `json:"deployed" binding:"required,dive"`
 }

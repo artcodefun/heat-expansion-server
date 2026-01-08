@@ -18,6 +18,44 @@ func newBaseWithDefaults(id int) *UserBaseModel {
 	return b
 }
 
+func TestUserBase_TotalRadarStealthStrength(t *testing.T) {
+	base := newBaseWithDefaults(1)
+	if base.TotalRadarStealthStrength() != 0 {
+		t.Errorf("expected 0 initial radar strength, got %d", base.TotalRadarStealthStrength())
+	}
+
+	radarProto := &BuildItemPrototype{
+		ID:       10,
+		Category: BuildCategoryIntelligence,
+		IntelligenceData: &IntelligenceBuildingData{
+			Subtype:         IntelligenceSubtypeRadar,
+			StealthStrength: 50,
+			ScanRange:       100,
+		},
+	}
+
+	base.BuildingsPresent = append(base.BuildingsPresent, BuildItemPresent{
+		Prototype: *radarProto,
+	})
+
+	base.recalculateStats()
+
+	if base.TotalRadarStealthStrength() != 50 {
+		t.Errorf("expected 50 radar strength, got %d", base.TotalRadarStealthStrength())
+	}
+
+	// Add another one
+	base.BuildingsPresent = append(base.BuildingsPresent, BuildItemPresent{
+		Prototype: *radarProto,
+	})
+
+	base.recalculateStats()
+
+	if base.TotalRadarStealthStrength() != 100 {
+		t.Errorf("expected 100 radar strength, got %d", base.TotalRadarStealthStrength())
+	}
+}
+
 func TestBuilding_MoveAndSpeedUpProduction_EmitsEvents(t *testing.T) {
 	SetTestNow(t, 1_000)
 	base := newBaseWithDefaults(1)

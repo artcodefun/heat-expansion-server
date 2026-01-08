@@ -11,8 +11,8 @@ import (
 )
 
 const getLatestScanBefore = `-- name: GetLatestScanBefore :one
-SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked, source_operation_id,
-       name, description, image_url, info
+SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked,
+       source_operation_id, source_scanner_id, name, description, image_url, info
 FROM scan_reports
 WHERE base_id = $1
   AND sector_x = $2
@@ -46,6 +46,7 @@ func (q *Queries) GetLatestScanBefore(ctx context.Context, arg GetLatestScanBefo
 		&i.Type,
 		&i.IsCloaked,
 		&i.SourceOperationID,
+		&i.SourceScannerID,
 		&i.Name,
 		&i.Description,
 		&i.ImageUrl,
@@ -55,8 +56,8 @@ func (q *Queries) GetLatestScanBefore(ctx context.Context, arg GetLatestScanBefo
 }
 
 const getScanReportByID = `-- name: GetScanReportByID :one
-SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked, source_operation_id,
-       name, description, image_url, info
+SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked,
+       source_operation_id, source_scanner_id, name, description, image_url, info
 FROM scan_reports
 WHERE id = $1 AND base_id = $2
 `
@@ -78,6 +79,7 @@ func (q *Queries) GetScanReportByID(ctx context.Context, arg GetScanReportByIDPa
 		&i.Type,
 		&i.IsCloaked,
 		&i.SourceOperationID,
+		&i.SourceScannerID,
 		&i.Name,
 		&i.Description,
 		&i.ImageUrl,
@@ -87,8 +89,8 @@ func (q *Queries) GetScanReportByID(ctx context.Context, arg GetScanReportByIDPa
 }
 
 const getScanReportByOperationID = `-- name: GetScanReportByOperationID :one
-SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked, source_operation_id,
-       name, description, image_url, info
+SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked,
+       source_operation_id, source_scanner_id, name, description, image_url, info
 FROM scan_reports
 WHERE source_operation_id = $1
 `
@@ -105,6 +107,7 @@ func (q *Queries) GetScanReportByOperationID(ctx context.Context, sourceOperatio
 		&i.Type,
 		&i.IsCloaked,
 		&i.SourceOperationID,
+		&i.SourceScannerID,
 		&i.Name,
 		&i.Description,
 		&i.ImageUrl,
@@ -117,7 +120,7 @@ const getScansNear = `-- name: GetScansNear :many
 
 SELECT DISTINCT ON (sector_x, sector_y)
        id, base_id, sector_x, sector_y, created_at, type, is_cloaked,
-       source_operation_id, name, description, image_url, info
+       source_operation_id, source_scanner_id, name, description, image_url, info
 FROM scan_reports
 WHERE base_id = $1
   AND ((sector_x - $2) * (sector_x - $2)
@@ -157,6 +160,7 @@ func (q *Queries) GetScansNear(ctx context.Context, arg GetScansNearParams) ([]S
 			&i.Type,
 			&i.IsCloaked,
 			&i.SourceOperationID,
+			&i.SourceScannerID,
 			&i.Name,
 			&i.Description,
 			&i.ImageUrl,

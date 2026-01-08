@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/google/uuid"
+
 	"github.com/artcodefun/heat-expansion-api/internal/core/domain"
 	"github.com/artcodefun/heat-expansion-api/internal/core/ports"
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/db/gen"
@@ -42,6 +44,14 @@ func (r *ScanReportRepo) FindByID(id int) (*domain.SectorScanReport, error) {
 		return nil, err
 	}
 	return mappers.ScanReportFromDB(row), nil
+}
+
+func (r *ScanReportRepo) RecentReportExistsByScanner(scannerID uuid.UUID, since int64) (bool, error) {
+	exists, err := r.q.RecentReportExistsByScanner(context.Background(), gen.RecentReportExistsByScannerParams{
+		SourceScannerID: uuid.NullUUID{UUID: scannerID, Valid: true},
+		Since:           since,
+	})
+	return exists, err
 }
 
 func (r *ScanReportRepo) FindByBaseAndCoordinates(baseID int, x int, y int) ([]*domain.SectorScanReport, error) {

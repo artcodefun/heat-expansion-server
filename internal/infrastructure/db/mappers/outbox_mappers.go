@@ -18,7 +18,8 @@ const (
 	jobKindDeleteExpiredBuff    = "DELETE_EXPIRED_BUFF"
 	jobKindUpdateMilitaryOp     = "UPDATE_MILITARY_OPERATION"
 	jobKindSpawnNearbyLocations = "SPAWN_NEARBY_LOCATIONS"
-	jobKindRadarScan            = "RADAR_SCAN"
+	jobKindIntelligenceScan     = "INTELLIGENCE_SCAN"
+	jobKindIntelligenceRadar    = "INTELLIGENCE_RADAR"
 )
 
 // EncodeJob converts a typed Scheduler job into a kind label and JSON payload
@@ -43,9 +44,12 @@ func EncodeJob(job ports.SchadulableJob) (kind string, payload []byte, err error
 	case ports.SpawnNearbyLocationsJob:
 		payload, err = json.Marshal(dtos.SpawnNearbyLocationsJobDTOFromDomain(j))
 		return jobKindSpawnNearbyLocations, payload, err
-	case ports.RadarScanJob:
-		payload, err = json.Marshal(dtos.RadarScanJobDTOFromDomain(j))
-		return jobKindRadarScan, payload, err
+	case ports.IntelligenceScanJob:
+		payload, err = json.Marshal(dtos.IntelligenceScanJobDTOFromDomain(j))
+		return jobKindIntelligenceScan, payload, err
+	case ports.IntelligenceRadarJob:
+		payload, err = json.Marshal(dtos.IntelligenceRadarJobDTOFromDomain(j))
+		return jobKindIntelligenceRadar, payload, err
 	default:
 		return "", nil, errors.New("unsupported scheduler job type")
 	}
@@ -91,12 +95,18 @@ func DecodeJob(kind string, payload []byte) (ports.SchadulableJob, error) {
 			return nil, err
 		}
 		return dtos.SpawnNearbyLocationsJobFromDTO(dto), nil
-	case jobKindRadarScan:
-		var dto dtos.RadarScanJobDTO
+	case jobKindIntelligenceScan:
+		var dto dtos.IntelligenceScanJobDTO
 		if err := json.Unmarshal(payload, &dto); err != nil {
 			return nil, err
 		}
-		return dtos.RadarScanJobFromDTO(dto), nil
+		return dtos.IntelligenceScanJobFromDTO(dto), nil
+	case jobKindIntelligenceRadar:
+		var dto dtos.IntelligenceRadarJobDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.IntelligenceRadarJobFromDTO(dto), nil
 	default:
 		return nil, errors.New("unknown scheduler job kind")
 	}

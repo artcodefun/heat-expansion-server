@@ -100,6 +100,67 @@ func TestOperation_Attack_EmptyLocation_PhaseAndEvents(t *testing.T) {
 	}
 }
 
+func TestOperation_TimeBeforeEntersCircle(t *testing.T) {
+	SetTestNow(t, 1_000)
+	units := []MilitaryUnit{
+		{PrototypeID: 1, Category: ArmyCategoryInfantry, Attack: 10, Defence: 5, Capacity: 0, Stealth: 0, Speed: 100, Count: 1},
+	}
+	source := Vector2i{X: 0, Y: 0}
+	target := Vector2i{X: 10, Y: 0} // Distance 10 (scaled 10000)
+	// Speed 100 -> Total travel time 10000 / 100 = 100s
+
+	op, _ := NewAttackOperation(1, 1, source, target, units)
+	op.Start() // OutboundDepartAt = 1000, OutboundArriveAt = 1100
+
+	center := Vector2i{X: 10, Y: 0}
+	radius := 4
+	// Edge of circle at X=6. Travels from X=0 to X=6.
+	// That's 6/10 of total distance.
+	// So 6/10 of total time (100s) = 60s.
+	// Enter at 1000 + 60 = 1060.
+
+	enterAt, err := op.TimeBeforeEntersCircle(center, radius)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if enterAt != 1060 {
+		t.Errorf("expected enterAt 1060, got %d", enterAt)
+	}
+
+	// Test already inside
+	centerInside := Vector2i{X: 1, Y: 0}
+	radiusInside := 2
+	enterAtInside, err := op.TimeBeforeEntersCircle(centerInside, radiusInside)
+	if err != nil {
+		t.Fatalf("unexpected error for inside center: %v", err)
+	}
+	if enterAtInside != 1000 {
+		t.Errorf("expected enterAt 1000 for starting inside, got %d", enterAtInside)
+	}
+
+	// Test never enters
+	centerFar := Vector2i{X: 0, Y: 10}
+	radiusFar := 2
+	_, err = op.TimeBeforeEntersCircle(centerFar, radiusFar)
+	if err == nil {
+		t.Errorf("expected error for never entering circle")
+	}
+}
+
+func TestOperation_TotalStealth(t *testing.T) {
+	op := &MilitaryOperation{
+		Units: []MilitaryUnit{
+			{Stealth: 10, Count: 2},
+			{Stealth: 5, Count: 3},
+			{Stealth: 0, Count: 10},
+		},
+	}
+	expected := 2*10 + 3*5 // 35
+	if got := op.TotalStealth(); got != expected {
+		t.Errorf("expected total stealth %d, got %d", expected, got)
+	}
+}
+
 func TestOperation_Attack_UserBase_LootAndDeduction(t *testing.T) {
 	SetTestNow(t, 2_000)
 	// Attacking unit with capacity 5
@@ -281,10 +342,26 @@ func TestNewAttackOperation_RejectsNoUnits(t *testing.T) {
 	}
 }
 
+func TestNewAttackOperation_RejectsSameCoordinates(t *testing.T) {
+	units := []MilitaryUnit{{PrototypeID: 1, Category: ArmyCategoryInfantry, Count: 1}}
+	_, err := NewAttackOperation(1, 10, Vector2i{5, 5}, Vector2i{5, 5}, units)
+	if err == nil {
+		t.Fatalf("expected error when creating attack operation with same source/target")
+	}
+}
+
 func TestNewSpyOperation_RejectsNoUnits(t *testing.T) {
 	_, err := NewSpyOperation(1, 10, Vector2i{0, 0}, Vector2i{1, 0}, nil)
 	if err == nil {
 		t.Fatalf("expected error when creating spy operation with no units")
+	}
+}
+
+func TestNewSpyOperation_RejectsSameCoordinates(t *testing.T) {
+	units := []MilitaryUnit{{PrototypeID: 7, Category: ArmyCategorySpy, Count: 1}}
+	_, err := NewSpyOperation(1, 10, Vector2i{5, 5}, Vector2i{5, 5}, units)
+	if err == nil {
+		t.Fatalf("expected error when creating spy operation with same source/target")
 	}
 }
 

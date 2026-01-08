@@ -246,6 +246,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.markScheduledJobDispatchedStmt, err = db.PrepareContext(ctx, markScheduledJobDispatched); err != nil {
 		return nil, fmt.Errorf("error preparing query MarkScheduledJobDispatched: %w", err)
 	}
+	if q.radarActivityExistsStmt, err = db.PrepareContext(ctx, radarActivityExists); err != nil {
+		return nil, fmt.Errorf("error preparing query RadarActivityExists: %w", err)
+	}
+	if q.recentReportExistsByScannerStmt, err = db.PrepareContext(ctx, recentReportExistsByScanner); err != nil {
+		return nil, fmt.Errorf("error preparing query RecentReportExistsByScanner: %w", err)
+	}
 	if q.updateBaseStmt, err = db.PrepareContext(ctx, updateBase); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateBase: %w", err)
 	}
@@ -639,6 +645,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing markScheduledJobDispatchedStmt: %w", cerr)
 		}
 	}
+	if q.radarActivityExistsStmt != nil {
+		if cerr := q.radarActivityExistsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing radarActivityExistsStmt: %w", cerr)
+		}
+	}
+	if q.recentReportExistsByScannerStmt != nil {
+		if cerr := q.recentReportExistsByScannerStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing recentReportExistsByScannerStmt: %w", cerr)
+		}
+	}
 	if q.updateBaseStmt != nil {
 		if cerr := q.updateBaseStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateBaseStmt: %w", cerr)
@@ -782,6 +798,8 @@ type Queries struct {
 	lockScheduledJobsTableStmt                *sql.Stmt
 	markOutboxEventPublishedStmt              *sql.Stmt
 	markScheduledJobDispatchedStmt            *sql.Stmt
+	radarActivityExistsStmt                   *sql.Stmt
+	recentReportExistsByScannerStmt           *sql.Stmt
 	updateBaseStmt                            *sql.Stmt
 	updateDangerousLocationStmt               *sql.Stmt
 	updateMilitaryOperationStmt               *sql.Stmt
@@ -868,6 +886,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		lockScheduledJobsTableStmt:                q.lockScheduledJobsTableStmt,
 		markOutboxEventPublishedStmt:              q.markOutboxEventPublishedStmt,
 		markScheduledJobDispatchedStmt:            q.markScheduledJobDispatchedStmt,
+		radarActivityExistsStmt:                   q.radarActivityExistsStmt,
+		recentReportExistsByScannerStmt:           q.recentReportExistsByScannerStmt,
 		updateBaseStmt:                            q.updateBaseStmt,
 		updateDangerousLocationStmt:               q.updateDangerousLocationStmt,
 		updateMilitaryOperationStmt:               q.updateMilitaryOperationStmt,

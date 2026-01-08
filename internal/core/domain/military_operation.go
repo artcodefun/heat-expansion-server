@@ -110,8 +110,11 @@ type MilitaryOperation struct {
 }
 
 // NewAttackOperation creates an ATTACK operation in transit.
-// It validates that at least one unit is provided.
+// It validates that at least one unit is provided and that source/target are different.
 func NewAttackOperation(ownerUserID, sourceBaseID int, source, target Vector2i, units []MilitaryUnit) (*MilitaryOperation, error) {
+	if source == target {
+		return nil, fmt.Errorf("source and target coordinates must be different")
+	}
 	if len(units) == 0 {
 		return nil, fmt.Errorf("no units provided for attack operation")
 	}
@@ -131,8 +134,11 @@ func NewAttackOperation(ownerUserID, sourceBaseID int, source, target Vector2i, 
 }
 
 // NewSpyOperation creates a SPY operation in transit.
-// It validates that at least one unit is provided and that all units are of spy category.
+// It validates that at least one unit is provided, targeting a different sector, and that all units are spies.
 func NewSpyOperation(ownerUserID, sourceBaseID int, source, target Vector2i, spies []MilitaryUnit) (*MilitaryOperation, error) {
+	if source == target {
+		return nil, fmt.Errorf("source and target coordinates must be different")
+	}
 	if len(spies) == 0 {
 		return nil, fmt.Errorf("no units provided for spy operation")
 	}
@@ -544,26 +550,6 @@ func (op *MilitaryOperation) Cancel(startReturn bool) {
 	}
 }
 
-// Helpers
-
-func cloneUnits(src []MilitaryUnit) []MilitaryUnit {
-	if len(src) == 0 {
-		return nil
-	}
-	out := make([]MilitaryUnit, len(src))
-	copy(out, src)
-	return out
-}
-
-func cloneStructures(src []DefenseStructure) []DefenseStructure {
-	if len(src) == 0 {
-		return nil
-	}
-	out := make([]DefenseStructure, len(src))
-	copy(out, src)
-	return out
-}
-
 // Travel time helpers
 
 // computeTravelSecondsBetween computes travel time as ceil(distance / slowestSpeed).
@@ -599,20 +585,57 @@ func euclideanScaled(a, b Vector2i) int {
 	return int(math.Ceil(d))
 }
 
-func slowestSpeed(units []MilitaryUnit) int {
-	if len(units) == 0 {
-		return 0
+// TimeBeforeEntersCircle returns the unix timestamp when the operation first enters the circle
+// defined by center and radius (in coordinate units) during its outbound journey.
+// Returns an error if the operation is not outbound or if it never enters the circle.
+func (op *MilitaryOperation) TimeBeforeEntersCircle(center Vector2i, radius int) (int64, error) {
+	if op.Phase != OperationPhaseOutbound {
+		return 0, fmt.Errorf("operation is not in outbound travel")
 	}
-	min := 0
-	for _, u := range units {
-		if u.Count <= 0 {
-			continue
-		}
-		if min == 0 || u.Speed < min {
-			min = u.Speed
-		}
+
+	// Quadratic intersection for P(k) = S + k(T-S), k in [0, 1]
+	// ||P(k) - C||^2 = R^2
+	sx, sy := float64(op.SourceCoordinates.X), float64(op.SourceCoordinates.Y)
+	tx, ty := float64(op.TargetCoordinates.X), float64(op.TargetCoordinates.Y)
+	cx, cy := float64(center.X), float64(center.Y)
+	r := float64(radius)
+
+	dx := tx - sx
+	dy := ty - sy
+	wx := sx - cx
+	wy := sy - cy
+
+	a := dx*dx + dy*dy
+	if a == 0 {
+		return 0, fmt.Errorf("operation has no movement")
 	}
-	return min
+	b := 2 * (dx*wx + dy*wy)
+	c := wx*wx + wy*wy - r*r
+
+	// If already inside (c <= 0), it entered at the start of travel
+	if c <= 0 {
+		return op.OutboundDepartAt, nil
+	}
+
+	delta := b*b - 4*a*c
+	if delta < 0 {
+		return 0, fmt.Errorf("operation never enters circle")
+	}
+
+	sqrtDelta := math.Sqrt(delta)
+	k1 := (-b - sqrtDelta) / (2 * a)
+
+	if k1 < 0 {
+		// Moving away from the circle since we started outside (c > 0)
+		return 0, fmt.Errorf("operation moving away from circle")
+	}
+	if k1 > 1.0 {
+		return 0, fmt.Errorf("operation reaches target before entering circle")
+	}
+
+	travelDuration := op.OutboundArriveAt - op.OutboundDepartAt
+	enterAt := op.OutboundDepartAt + int64(float64(travelDuration)*k1)
+	return enterAt, nil
 }
 
 func filterUnitsByCategory(units []MilitaryUnit, cat ArmyCategory) []MilitaryUnit {
@@ -628,60 +651,23 @@ func filterUnitsByCategory(units []MilitaryUnit, cat ArmyCategory) []MilitaryUni
 	return out
 }
 
-func sumStealth(units []MilitaryUnit) int {
-	total := 0
-	for _, u := range units {
-		total += u.Stealth * u.Count
-	}
-	return total
+func (op *MilitaryOperation) TotalStealth() int {
+	return sumStealth(op.Units)
 }
 
-func sumAttack(units []MilitaryUnit) int {
-	total := 0
-	for _, u := range units {
-		total += u.Attack * u.Count
-	}
-	return total
+func (op *MilitaryOperation) TotalSpeed() int {
+	return slowestSpeed(op.Units)
 }
 
-func sumDefence(units []MilitaryUnit) int {
-	total := 0
-	for _, u := range units {
-		total += u.Defence * u.Count
-	}
-	return total
-}
-
-func sumStructureDefence(structs []DefenseStructure) int {
-	total := 0
-	for _, s := range structs {
-		total += s.Defence * s.Count
-	}
-	return total
-}
-
-// --- loot helpers moved into operation domain ---
-
-// lootCapacityFromUnits sums capacity across remaining operation units.
-func lootCapacityFromUnits(units []MilitaryUnit) int {
-	if len(units) == 0 {
-		return 0
-	}
-	total := 0
-	for _, u := range units {
-		if u.Count <= 0 || u.Capacity <= 0 {
-			continue
-		}
-		total += u.Capacity * u.Count
-	}
-	return total
+func (op *MilitaryOperation) TotalCapacity() int {
+	return sumCapacity(op.Units)
 }
 
 // computeLoadFromLocation randomly fills available carrying capacity using the available
 // resource pool. Allocation is random but bounded by both capacity and available amounts.
 // This is used after resolution, based on attacker survivors.
 func computeLoadFromLocation(remaining []MilitaryUnit, available PriceModel) PriceModel {
-	capacity := lootCapacityFromUnits(remaining)
+	capacity := sumCapacity(remaining)
 	if capacity <= 0 {
 		return PriceModel{}
 	}

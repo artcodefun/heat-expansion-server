@@ -6,6 +6,7 @@ import (
 	"github.com/artcodefun/heat-expansion-api/internal/core/domain"
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/db/dtos"
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/db/gen"
+	"github.com/google/uuid"
 )
 
 func ScanReportFromDB(r gen.ScanReport) *domain.SectorScanReport {
@@ -31,12 +32,19 @@ func ScanReportFromDB(r gen.ScanReport) *domain.SectorScanReport {
 	} else {
 		sr.SourceOperationID = 0
 	}
+	if r.SourceScannerID.Valid {
+		sr.SourceScannerID = &r.SourceScannerID.UUID
+	}
 	return sr
 }
 
 func InsertScanReportParamsFromDomain(r *domain.SectorScanReport) gen.InsertScanReportParams {
 	infoJSON, _ := json.Marshal(dtos.ScanInfoDTOFromDomain(r.Info))
 	var srcOpID = toNullInt64ZeroAsNull(r.SourceOperationID)
+	var srcScannerID uuid.NullUUID
+	if r.SourceScannerID != nil {
+		srcScannerID = uuid.NullUUID{UUID: *r.SourceScannerID, Valid: true}
+	}
 	return gen.InsertScanReportParams{
 		BaseID:            int64(r.BaseID),
 		SectorX:           int32(r.Coordinates.X),
@@ -45,6 +53,7 @@ func InsertScanReportParamsFromDomain(r *domain.SectorScanReport) gen.InsertScan
 		Type:              string(r.Type),
 		IsCloaked:         r.IsCloaked,
 		SourceOperationID: srcOpID,
+		SourceScannerID:   srcScannerID,
 		Name:              toNullString(r.Details.Name),
 		Description:       toNullString(r.Details.Description),
 		ImageUrl:          toNullString(r.Details.ImageURL),

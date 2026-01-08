@@ -11,7 +11,21 @@ import (
 // SectorScanReportFromModel converts a generic scan report row returned by scan-report queries.
 func SectorScanReportFromModel(r gen.ScanReport) readmodels.SectorScanReport {
 	info := parseScanInfo(r.Info)
-	return readmodels.SectorScanReport{ID: int(r.ID), BaseID: int(r.BaseID), Coordinates: readmodels.Vector2i{X: int(r.SectorX), Y: int(r.SectorY)}, CreatedAt: r.CreatedAt, Details: readmodels.LocationDetails{Name: nullString(r.Name), Description: nullString(r.Description), ImageURL: nullString(r.ImageUrl)}, Type: readmodels.LocationType(r.Type), Info: info, IsCloaked: r.IsCloaked, SourceOperationID: int(nullInt64(r.SourceOperationID))}
+	sr := readmodels.SectorScanReport{
+		ID:                int(r.ID),
+		BaseID:            int(r.BaseID),
+		Coordinates:       readmodels.Vector2i{X: int(r.SectorX), Y: int(r.SectorY)},
+		CreatedAt:         r.CreatedAt,
+		Details:           readmodels.LocationDetails{Name: nullString(r.Name), Description: nullString(r.Description), ImageURL: nullString(r.ImageUrl)},
+		Type:              readmodels.LocationType(r.Type),
+		Info:              info,
+		IsCloaked:         r.IsCloaked,
+		SourceOperationID: int(nullInt64(r.SourceOperationID)),
+	}
+	if r.SourceScannerID.Valid {
+		sr.SourceScannerID = &r.SourceScannerID.UUID
+	}
+	return sr
 }
 
 // Helpers local to sector mapping

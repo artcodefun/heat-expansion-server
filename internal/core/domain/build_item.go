@@ -93,9 +93,9 @@ type IntelligenceBuildingData struct {
 type IntelligenceSubtype string
 
 const (
+	IntelligenceSubtypeScanner  IntelligenceSubtype = "SCANNER"
 	IntelligenceSubtypeRadar    IntelligenceSubtype = "RADAR"
 	IntelligenceSubtypeCloaking IntelligenceSubtype = "CLOAKING"
-	// Add more as needed
 )
 
 // BuildItemPending represents a pending build item.

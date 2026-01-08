@@ -21,7 +21,7 @@ func WireCommandEvents(c *Commands, pub ports.EventPublisher) {
 		case domain.BuildingProductionStartedEvent:
 			return c.Building.HandleProductionStartedEvent(&ev)
 		case domain.BuildingProductionFinishedEvent:
-			return c.Building.HandleProductionFinishedEvent(&ev)
+			return c.Scanner.HandleBuildingProductionFinishedEvent(&ev)
 		case domain.ArmyProductionStartedEvent:
 			return c.Army.HandleProductionStartedEvent(&ev)
 		case domain.TechResearchStartedEvent:
@@ -30,6 +30,9 @@ func WireCommandEvents(c *Commands, pub ports.EventPublisher) {
 			return c.Storage.HandleBuffActivatedEvent(&ev)
 		case domain.MilitaryOperationStartedEvent:
 			if err := c.Operation.HandleMilitaryOperationStartedEvent(ev); err != nil {
+				return err
+			}
+			if err := c.Radar.HandleMilitaryOperationStartedEvent(ev); err != nil {
 				return err
 			}
 			return c.Activity.HandleMilitaryOperationStartedEvent(ev)
@@ -65,8 +68,10 @@ func WireCommandSchedulerHandler(c *Commands, sch ports.Scheduler) {
 			return c.Tech.HandleMoveTechQueueJob(job)
 		case ports.UpdateMilitaryOperationJob:
 			return c.Operation.HandleUpdateMilitaryOperationJob(job)
-		case ports.RadarScanJob:
-			return c.Radar.HandleRadarScanJob(job)
+		case ports.IntelligenceScanJob:
+			return c.Scanner.HandleIntelligenceScanJob(job)
+		case ports.IntelligenceRadarJob:
+			return c.Radar.HandleIntelligenceRadarJob(job)
 		case ports.DeleteExpiredBuffJob:
 			_, err := c.Storage.HandleDeleteExpiredBuffJob(job.BaseID)
 			return err

@@ -115,7 +115,7 @@ func (h *OperationHandler) Create(c *gin.Context) {
 			Count:         d.Count,
 		})
 	}
-	op, err := h.commands.CreateMilitaryOperation(ctx, opType, req.Body.SourceBaseID, req.Body.TargetX, req.Body.TargetY, deployments)
+	op, err := h.commands.CreateMilitaryOperation(ctx, opType, req.Body.SourceBaseID, *req.Body.TargetX, *req.Body.TargetY, deployments)
 	if handleCoreErr(c, err) {
 		return
 	}

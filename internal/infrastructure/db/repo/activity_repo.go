@@ -28,3 +28,11 @@ func (r *ActivityRepo) Create(item *domain.ActivityItem) error {
 	_, err := r.q.InsertActivity(context.Background(), params)
 	return err
 }
+
+func (r *ActivityRepo) RadarActivityExists(baseID int, operationID int) (bool, error) {
+	exists, err := r.q.RadarActivityExists(context.Background(), gen.RadarActivityExistsParams{
+		BaseID:      int64(baseID),
+		OperationID: int32(operationID),
+	})
+	return exists, err
+}

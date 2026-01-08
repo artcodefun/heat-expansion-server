@@ -172,6 +172,7 @@ type ScanReport struct {
 	Type              string          `json:"type"`
 	IsCloaked         bool            `json:"is_cloaked"`
 	SourceOperationID sql.NullInt64   `json:"source_operation_id"`
+	SourceScannerID   uuid.NullUUID   `json:"source_scanner_id"`
 	Name              sql.NullString  `json:"name"`
 	Description       sql.NullString  `json:"description"`
 	ImageUrl          sql.NullString  `json:"image_url"`

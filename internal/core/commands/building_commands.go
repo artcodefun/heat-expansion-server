@@ -1,8 +1,6 @@
 package commands
 
 import (
-	"time"
-
 	"github.com/artcodefun/heat-expansion-api/internal/core/cqrs"
 	"github.com/artcodefun/heat-expansion-api/internal/core/domain"
 	"github.com/artcodefun/heat-expansion-api/internal/core/ports"
@@ -137,27 +135,6 @@ func (c *BuildingCommands) DeletePresentBuilding(ctx cqrs.CommandContext, baseID
 func (c *BuildingCommands) HandleProductionStartedEvent(event *domain.BuildingProductionStartedEvent) error {
 	cmd := ports.MoveBuildQueueJob{BaseID: event.BaseID}
 	return c.Scheduler.Schedule(cmd, event.CompletionDate)
-}
-
-func (c *BuildingCommands) HandleProductionFinishedEvent(event *domain.BuildingProductionFinishedEvent) error {
-	base, err := c.BaseRepo.FindByID(event.BaseID)
-	if err != nil {
-		return nil
-	}
-	for _, b := range base.BuildingsPresent {
-		if b.ID == event.PresentItemID {
-			if b.Prototype.IntelligenceData != nil && b.Prototype.IntelligenceData.Subtype == domain.IntelligenceSubtypeRadar {
-				cooldown := b.Prototype.IntelligenceData.ScanCooldown
-				if cooldown <= 0 {
-					cooldown = 3600
-				}
-				firstAt := time.Now().Unix() + cooldown
-				_ = c.Scheduler.Schedule(ports.RadarScanJob{BaseID: event.BaseID, BuildingID: b.ID}, firstAt)
-			}
-			break
-		}
-	}
-	return nil
 }
 
 func (c *BuildingCommands) HandleMoveBuildQueueJob(cmd ports.MoveBuildQueueJob) error {

@@ -76,6 +76,8 @@ type RadarActivity struct {
 }
 
 type Threat struct {
-	Attack  int
-	Defence int
+	Attack   int
+	Speed    int
+	Stealth  int
+	Capacity int
 }

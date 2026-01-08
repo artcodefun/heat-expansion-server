@@ -1,5 +1,7 @@
 package readmodels
 
+import "github.com/google/uuid"
+
 // LocationType represents the occupant classification at given coordinates.
 // Derived from presence of user base / resource / dangerous location; persisted here temporarily.
 type LocationType string
@@ -57,4 +59,6 @@ type SectorScanReport struct {
 	IsCloaked bool
 	// Optional link to the operation that produced this report (for traceability/idempotency)
 	SourceOperationID int
+	// Optional link to the scanner that produced this report
+	SourceScannerID *uuid.UUID
 }

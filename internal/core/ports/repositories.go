@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/artcodefun/heat-expansion-api/internal/core/domain"
+	"github.com/google/uuid"
 )
 
 // ErrNotFound is a generic sentinel for missing records.
@@ -48,6 +49,8 @@ type ScanReportRepository interface {
 	// GetLatestScansByBase returns the latest scan reports for the base, ordered by CreatedAt desc.
 	// Implementations may choose an internal cap; expose pagination later if needed.
 	GetLatestScansByBase(baseID int) ([]*domain.SectorScanReport, error)
+	// RecentReportExistsByScanner checks if a report was produced by a specific building within the last 'since' seconds.
+	RecentReportExistsByScanner(scannerID uuid.UUID, since int64) (bool, error)
 	// FindByBaseWithinArea returns all scan reports for a base whose sector coordinates fall within
 	// the inclusive radius (Euclidean) of the provided center. This may be implemented efficiently
 	// with a join against sectors; a naive implementation can load latest scans and filter in memory.
@@ -176,8 +179,8 @@ type MilitaryOperationRepository interface {
 // ActivityRepository defines persistence for activity items (append-only feed).
 type ActivityRepository interface {
 	Create(item *domain.ActivityItem) error
-	// Optional read-side helpers; may be implemented by DB layer later
-	// ListRecentByBase(baseID int, limit int) ([]*domain.ActivityItem, error)
+	// RadarActivityExists checks if a radar activity already exists for the given base and operation.
+	RadarActivityExists(baseID int, operationID int) (bool, error)
 	// Tx returns a repository instance bound to the provided transaction.
 	Tx(tx Transaction) ActivityRepository
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/artcodefun/heat-expansion-api/internal/core/services"
 )
 
-type RadarCommands struct {
+type IntelligenceScannerCommands struct {
 	BaseRepo          ports.UserBaseRepository
 	SectorRepo        ports.SectorRepository
 	ResourceRepo      ports.ResourceLocationRepository
@@ -21,33 +21,73 @@ type RadarCommands struct {
 	TxMgr             ports.TransactionManager
 }
 
-func NewRadarCommands(baseRepo ports.UserBaseRepository, sectorRepo ports.SectorRepository, resRepo ports.ResourceLocationRepository, dangerRepo ports.DangerousLocationRepository, scanRepo ports.ScanReportRepository, provisioner *services.SectorProvisioningService, scheduler ports.Scheduler, outbox ports.OutboxEventRepository, txMgr ports.TransactionManager) *RadarCommands {
-	return &RadarCommands{BaseRepo: baseRepo, SectorRepo: sectorRepo, ResourceRepo: resRepo, DangerousRepo: dangerRepo, ScanReportRepo: scanRepo, SectorProvisioner: provisioner, Scheduler: scheduler, Outbox: outbox, TxMgr: txMgr}
+func NewIntelligenceScannerCommands(baseRepo ports.UserBaseRepository, sectorRepo ports.SectorRepository, resRepo ports.ResourceLocationRepository, dangerRepo ports.DangerousLocationRepository, scanRepo ports.ScanReportRepository, provisioner *services.SectorProvisioningService, scheduler ports.Scheduler, outbox ports.OutboxEventRepository, txMgr ports.TransactionManager) *IntelligenceScannerCommands {
+	return &IntelligenceScannerCommands{
+		BaseRepo:          baseRepo,
+		SectorRepo:        sectorRepo,
+		ResourceRepo:      resRepo,
+		DangerousRepo:     dangerRepo,
+		ScanReportRepo:    scanRepo,
+		SectorProvisioner: provisioner,
+		Scheduler:         scheduler,
+		Outbox:            outbox,
+		TxMgr:             txMgr,
+	}
 }
 
-func (c *RadarCommands) HandleRadarScanJob(job ports.RadarScanJob) error {
+func (c *IntelligenceScannerCommands) HandleBuildingProductionFinishedEvent(event *domain.BuildingProductionFinishedEvent) error {
+	base, err := c.BaseRepo.FindByID(event.BaseID)
+	if err != nil {
+		return nil
+	}
+	for _, b := range base.BuildingsPresent {
+		if b.ID == event.PresentItemID {
+			if b.Prototype.IntelligenceData != nil && b.Prototype.IntelligenceData.Subtype == domain.IntelligenceSubtypeScanner {
+				cooldown := b.Prototype.IntelligenceData.ScanCooldown
+				if cooldown <= 0 {
+					cooldown = 3600
+				}
+				firstAt := time.Now().Unix() + cooldown
+				_ = c.Scheduler.Schedule(ports.IntelligenceScanJob{BaseID: event.BaseID, BuildingID: b.ID}, firstAt)
+			}
+			break
+		}
+	}
+	return nil
+}
+
+func (c *IntelligenceScannerCommands) HandleIntelligenceScanJob(job ports.IntelligenceScanJob) error {
+	// 1. Idempotency: skip if already scanned recently
+	now := domain.NowUnix()
+	exists, err := c.ScanReportRepo.RecentReportExistsByScanner(job.BuildingID, now-60) // small buffer for overlapping runs
+	if err != nil || exists {
+		return err
+	}
+
 	base, err := c.BaseRepo.FindByID(job.BaseID)
 	if err != nil {
 		return err
 	}
-	var radarProto *domain.BuildItemPrototype
+	var scannerProto *domain.BuildItemPrototype
 	for _, b := range base.BuildingsPresent {
 		if b.ID == job.BuildingID {
-			radarProto = &b.Prototype
+			scannerProto = &b.Prototype
 			break
 		}
 	}
-	if radarProto == nil || radarProto.IntelligenceData == nil || radarProto.IntelligenceData.Subtype != domain.IntelligenceSubtypeRadar {
+	if scannerProto == nil || scannerProto.IntelligenceData == nil || scannerProto.IntelligenceData.Subtype != domain.IntelligenceSubtypeScanner {
 		return nil
 	}
-	rangeTiles := radarProto.IntelligenceData.ScanRange
+
+	rangeTiles := scannerProto.IntelligenceData.ScanRange
 	if rangeTiles <= 0 {
 		rangeTiles = 1
 	}
-	periodSec := radarProto.IntelligenceData.ScanCooldown
+	periodSec := scannerProto.IntelligenceData.ScanCooldown
 	if periodSec <= 0 {
 		periodSec = 3600
 	}
+
 	target := randomSectorInRange(base.Coordinates, rangeTiles)
 	sector, err := c.SectorRepo.FindByCoordinates(target.X, target.Y)
 	if err == ports.ErrNotFound || sector == nil {
@@ -60,6 +100,7 @@ func (c *RadarCommands) HandleRadarScanJob(job ports.RadarScanJob) error {
 		c.reschedule(job, periodSec)
 		return nil
 	}
+
 	occType, _ := c.SectorRepo.GetLocationTypeByCoordinates(sector.Coordinates.X, sector.Coordinates.Y)
 	var report *domain.SectorScanReport
 	switch occType {
@@ -78,7 +119,8 @@ func (c *RadarCommands) HandleRadarScanJob(job ports.RadarScanJob) error {
 		c.reschedule(job, periodSec)
 		return nil
 	}
-	report.SourceOperationID = 0
+
+	report.SourceScannerID = &job.BuildingID
 	err = c.TxMgr.WithTx(func(tx ports.Transaction) error {
 		srRepo := c.ScanReportRepo.Tx(tx)
 		if err := srRepo.Create(report); err != nil {
@@ -90,11 +132,12 @@ func (c *RadarCommands) HandleRadarScanJob(job ports.RadarScanJob) error {
 		}
 		return nil
 	})
+
 	c.reschedule(job, periodSec)
 	return err
 }
 
-func (c *RadarCommands) reschedule(job ports.RadarScanJob, periodSec int64) {
+func (c *IntelligenceScannerCommands) reschedule(job ports.IntelligenceScanJob, periodSec int64) {
 	jitter := int64(rand.Intn(60) - 30)
 	_ = c.Scheduler.Schedule(job, time.Now().Unix()+periodSec+jitter)
 }

@@ -33,11 +33,16 @@ type UpdateMilitaryOperationJob struct {
 // The job handler is responsible for rescheduling itself.
 type SpawnNearbyLocationsJob struct{}
 
-// RadarScanJob asks the system to perform a radar scan for a specific radar building of a base.
-// The job is idempotent: if the building no longer exists, it should no-op and not reschedule.
-type RadarScanJob struct {
+// IntelligenceScanJob asks the system to perform a periodic scan for a scanner building.
+type IntelligenceScanJob struct {
 	BaseID     int
 	BuildingID uuid.UUID
+}
+
+// IntelligenceRadarJob asks the system to detect incoming threats for a radar building.
+type IntelligenceRadarJob struct {
+	BaseID      int
+	OperationID int
 }
 
 // SchadulableJob represents a generic job that can be scheduled for execution.

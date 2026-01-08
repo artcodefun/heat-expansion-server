@@ -104,6 +104,8 @@ type Querier interface {
 	LockScheduledJobsTable(ctx context.Context) error
 	MarkOutboxEventPublished(ctx context.Context, arg MarkOutboxEventPublishedParams) error
 	MarkScheduledJobDispatched(ctx context.Context, arg MarkScheduledJobDispatchedParams) error
+	RadarActivityExists(ctx context.Context, arg RadarActivityExistsParams) (bool, error)
+	RecentReportExistsByScanner(ctx context.Context, arg RecentReportExistsByScannerParams) (bool, error)
 	UpdateBase(ctx context.Context, arg UpdateBaseParams) (UserBasis, error)
 	UpdateDangerousLocation(ctx context.Context, arg UpdateDangerousLocationParams) error
 	UpdateMilitaryOperation(ctx context.Context, arg UpdateMilitaryOperationParams) error

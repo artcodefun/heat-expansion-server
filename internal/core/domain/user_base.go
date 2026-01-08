@@ -988,6 +988,16 @@ func (ub *UserBaseModel) CreditLoot(loot PriceModel) {
 	}
 }
 
+func (ub *UserBaseModel) TotalRadarStealthStrength() int {
+	total := 0
+	for _, b := range ub.BuildingsPresent {
+		if b.Prototype.IntelligenceData != nil && b.Prototype.IntelligenceData.Subtype == IntelligenceSubtypeRadar {
+			total += b.Prototype.IntelligenceData.StealthStrength
+		}
+	}
+	return total
+}
+
 // Default capacities and stats for UserBaseStats
 const (
 	DefaultCreditsCapacity    = 10000

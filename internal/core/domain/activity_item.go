@@ -68,11 +68,11 @@ type RadarActivity struct {
 }
 
 type Threat struct {
-	Attack  int
-	Defence int
+	Attack   int
+	Speed    int
+	Stealth  int
+	Capacity int
 }
-
-// Note: Defence (defense) results are now embedded into OperationOutcome
 
 // Helpers to build ActivityItem from domain entities
 
@@ -120,5 +120,27 @@ func NewActivityFromScan(baseID int, r *SectorScanReport) ActivityItem {
 		BaseID:    baseID,
 		// Category removed
 		Scan: &ScanActivity{ReportID: r.ID},
+	}
+}
+
+func NewActivityFromRadarDetection(baseID int, op *MilitaryOperation) ActivityItem {
+	return ActivityItem{
+		ID:        0,
+		Kind:      ActivityKindRadar,
+		CreatedAt: NowUnix(),
+		BaseID:    baseID,
+		Radar: &RadarActivity{
+			OpID:              op.ID,
+			DetectedAt:        NowUnix(),
+			EtaAtBase:         op.OutboundArriveAt,
+			SourceCoordinates: op.SourceCoordinates,
+			TargetCoordinates: op.TargetCoordinates,
+			Threat: Threat{
+				Attack:   sumAttack(op.Units),
+				Speed:    op.TotalSpeed(),
+				Stealth:  op.TotalStealth(),
+				Capacity: op.TotalCapacity(),
+			},
+		},
 	}
 }

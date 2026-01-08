@@ -28,7 +28,19 @@ func ActivityItemFromModel(a gen.Activity) readmodels.ActivityItem {
 	if a.RadarData.Valid {
 		var dto dtos.RadarActivityDTO
 		_ = json.Unmarshal(a.RadarData.RawMessage, &dto)
-		item.Radar = &readmodels.RadarActivity{OpID: dto.OpID, DetectedAt: dto.DetectedAt, EtaAtBase: dto.EtaAtBase, SourceCoordinates: readmodels.Vector2i{X: dto.SourceX, Y: dto.SourceY}, TargetCoordinates: readmodels.Vector2i{X: dto.TargetX, Y: dto.TargetY}, Threat: readmodels.Threat{Attack: dto.Threat.Attack, Defence: dto.Threat.Defence}}
+		item.Radar = &readmodels.RadarActivity{
+			OpID:              dto.OpID,
+			DetectedAt:        dto.DetectedAt,
+			EtaAtBase:         dto.EtaAtBase,
+			SourceCoordinates: readmodels.Vector2i{X: dto.SourceX, Y: dto.SourceY},
+			TargetCoordinates: readmodels.Vector2i{X: dto.TargetX, Y: dto.TargetY},
+			Threat: readmodels.Threat{
+				Attack:   dto.Threat.Attack,
+				Speed:    dto.Threat.Speed,
+				Stealth:  dto.Threat.Stealth,
+				Capacity: dto.Threat.Capacity,
+			},
+		}
 	}
 	return item
 }

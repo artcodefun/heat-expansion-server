@@ -81,17 +81,30 @@ func SpawnNearbyLocationsJobFromDTO(SpawnNearbyLocationsJobDTO) ports.SpawnNearb
 	return ports.SpawnNearbyLocationsJob{}
 }
 
-type RadarScanJobDTO struct {
+type IntelligenceScanJobDTO struct {
 	BaseID     int       `json:"base_id"`
 	BuildingID uuid.UUID `json:"building_id"`
 }
 
-func RadarScanJobDTOFromDomain(j ports.RadarScanJob) RadarScanJobDTO {
-	return RadarScanJobDTO{BaseID: j.BaseID, BuildingID: j.BuildingID}
+func IntelligenceScanJobDTOFromDomain(j ports.IntelligenceScanJob) IntelligenceScanJobDTO {
+	return IntelligenceScanJobDTO{BaseID: j.BaseID, BuildingID: j.BuildingID}
 }
 
-func RadarScanJobFromDTO(d RadarScanJobDTO) ports.RadarScanJob {
-	return ports.RadarScanJob{BaseID: d.BaseID, BuildingID: d.BuildingID}
+func IntelligenceScanJobFromDTO(d IntelligenceScanJobDTO) ports.IntelligenceScanJob {
+	return ports.IntelligenceScanJob{BaseID: d.BaseID, BuildingID: d.BuildingID}
+}
+
+type IntelligenceRadarJobDTO struct {
+	BaseID      int `json:"base_id"`
+	OperationID int `json:"operation_id"`
+}
+
+func IntelligenceRadarJobDTOFromDomain(j ports.IntelligenceRadarJob) IntelligenceRadarJobDTO {
+	return IntelligenceRadarJobDTO{BaseID: j.BaseID, OperationID: j.OperationID}
+}
+
+func IntelligenceRadarJobFromDTO(d IntelligenceRadarJobDTO) ports.IntelligenceRadarJob {
+	return ports.IntelligenceRadarJob{BaseID: d.BaseID, OperationID: d.OperationID}
 }
 
 // =========================
