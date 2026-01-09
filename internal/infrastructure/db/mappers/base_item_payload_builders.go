@@ -67,7 +67,7 @@ func BuildTechDoneRaw(it domain.TechItemDone) pqtype.NullRawMessage {
 
 // Storage payloads
 func BuildStoragePresentRaw(it domain.StorageItemPresent) pqtype.NullRawMessage {
-	dto := dtos.StoragePresentDTO{Refund: dtos.PriceDTOFromDomain(it.Refund)}
+	dto := dtos.StoragePresentDTOFromDomain(it)
 	b, _ := json.Marshal(dto)
 	return pqtype.NullRawMessage{RawMessage: b, Valid: true}
 }

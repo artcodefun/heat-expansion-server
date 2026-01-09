@@ -763,7 +763,7 @@ func TestStorage_BuffActivateAndExpire(t *testing.T) {
 	if _, ok := events[0].(BuffActivatedEvent); !ok {
 		t.Fatalf("expected BuffActivatedEvent, got %T", events[0])
 	}
-	if base.StorageItemsPresent[0].Prototype.BuffData.ActivatedAt == nil || *base.StorageItemsPresent[0].Prototype.BuffData.ActivatedAt != 20_000 {
+	if base.StorageItemsPresent[0].ActivatedAt == nil || *base.StorageItemsPresent[0].ActivatedAt != 20_000 {
 		t.Fatalf("expected ActivatedAt=20000")
 	}
 
@@ -793,7 +793,7 @@ func TestStorage_ActivateBuffTwice_ErrorsAndDoesNotDuplicate(t *testing.T) {
 	if err := base.ActivateBuffByID(buff.ID); err != nil {
 		t.Fatalf("first ActivateBuffByID error: %v", err)
 	}
-	firstActivatedAt := base.StorageItemsPresent[0].Prototype.BuffData.ActivatedAt
+	firstActivatedAt := base.StorageItemsPresent[0].ActivatedAt
 	if firstActivatedAt == nil || *firstActivatedAt != 21_000 {
 		t.Fatalf("expected ActivatedAt to be set on first activation, got %+v", firstActivatedAt)
 	}
@@ -803,7 +803,7 @@ func TestStorage_ActivateBuffTwice_ErrorsAndDoesNotDuplicate(t *testing.T) {
 	if err := base.ActivateBuffByID(buff.ID); err == nil {
 		t.Fatalf("expected error on second ActivateBuffByID for same buff")
 	}
-	secondActivatedAt := base.StorageItemsPresent[0].Prototype.BuffData.ActivatedAt
+	secondActivatedAt := base.StorageItemsPresent[0].ActivatedAt
 	if secondActivatedAt == nil || *secondActivatedAt != *firstActivatedAt {
 		t.Fatalf("expected ActivatedAt to remain unchanged on second activation, got %+v", secondActivatedAt)
 	}

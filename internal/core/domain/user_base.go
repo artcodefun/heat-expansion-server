@@ -680,12 +680,12 @@ func (ub *UserBaseModel) ActivateBuffByID(itemID uuid.UUID) error {
 	for i, item := range ub.StorageItemsPresent {
 		if item.ID == itemID && item.Prototype.BuffData != nil {
 			// Check if already activated
-			if item.Prototype.BuffData.ActivatedAt != nil {
+			if item.ActivatedAt != nil {
 				return fmt.Errorf("buff item with ID %s is already activated", itemID)
 			}
 			// Set ActivatedAt
-			ub.StorageItemsPresent[i].Prototype.BuffData.ActivatedAt = new(int64)
-			*ub.StorageItemsPresent[i].Prototype.BuffData.ActivatedAt = activatedAt
+			ub.StorageItemsPresent[i].ActivatedAt = new(int64)
+			*ub.StorageItemsPresent[i].ActivatedAt = activatedAt
 			// Emit event for buff activation
 			ub.AddEvent(NewBuffActivatedEvent(ub.ID, itemID))
 			return nil
@@ -700,8 +700,8 @@ func (ub *UserBaseModel) DeleteExpiredBuffs() int {
 	var remaining []StorageItemPresent
 	deleted := 0
 	for _, item := range ub.StorageItemsPresent {
-		if item.Prototype.BuffData != nil && item.Prototype.BuffData.ActivatedAt != nil {
-			expiresAt := *item.Prototype.BuffData.ActivatedAt + item.Prototype.BuffData.DurationSeconds
+		if item.Prototype.BuffData != nil && item.ActivatedAt != nil {
+			expiresAt := *item.ActivatedAt + item.Prototype.BuffData.DurationSeconds
 			if expiresAt <= now {
 				deleted++
 				continue

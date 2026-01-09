@@ -4,11 +4,10 @@ import "github.com/artcodefun/heat-expansion-api/internal/core/domain"
 
 // BuffStorageDataDTO represents JSON shape for buff storage items in prototypes.
 type BuffStorageDataDTO struct {
-	SpaceCapacityBonus int    `json:"space_capacity_bonus"`
-	AttackBonus        int    `json:"attack_bonus"`
-	DefenceBonus       int    `json:"defence_bonus"`
-	DurationSeconds    int64  `json:"duration_seconds"`
-	ActivatedAt        *int64 `json:"activated_at,omitempty"`
+	SpaceCapacityBonus int   `json:"space_capacity_bonus"`
+	AttackBonus        int   `json:"attack_bonus"`
+	DefenceBonus       int   `json:"defence_bonus"`
+	DurationSeconds    int64 `json:"duration_seconds"`
 }
 
 func BuffStorageDataDTOFromDomain(d *domain.BuffStorageData) *BuffStorageDataDTO {
@@ -20,7 +19,6 @@ func BuffStorageDataDTOFromDomain(d *domain.BuffStorageData) *BuffStorageDataDTO
 		AttackBonus:        d.AttackBonus,
 		DefenceBonus:       d.DefenceBonus,
 		DurationSeconds:    d.DurationSeconds,
-		ActivatedAt:        d.ActivatedAt,
 	}
 }
 
@@ -33,7 +31,6 @@ func BuffStorageDataFromDTO(d *BuffStorageDataDTO) *domain.BuffStorageData {
 		AttackBonus:        d.AttackBonus,
 		DefenceBonus:       d.DefenceBonus,
 		DurationSeconds:    d.DurationSeconds,
-		ActivatedAt:        d.ActivatedAt,
 	}
 }
 

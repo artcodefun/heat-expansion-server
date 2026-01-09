@@ -34,7 +34,6 @@ type BuffStorageData struct {
 	AttackBonus        int
 	DefenceBonus       int
 	DurationSeconds    int64
-	ActivatedAt        *int64
 }
 
 // MapStorageData: properties for map items
@@ -71,6 +70,7 @@ type ConsumableStorageData struct {
 // StorageItemPresent represents a present storage item.
 type StorageItemPresent struct {
 	BaseOwnedItem
-	Prototype StorageItemPrototype
-	Refund    PriceModel
+	Prototype   StorageItemPrototype
+	Refund      PriceModel
+	ActivatedAt *int64
 }

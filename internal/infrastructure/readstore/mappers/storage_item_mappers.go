@@ -32,7 +32,12 @@ func StorageItemPresentFromRow(r gen.ListPresentStorageItemsRow) readmodels.Stor
 		_ = json.Unmarshal(r.PresentData.RawMessage, &jd)
 	}
 	refund := readmodels.PriceModel{Credits: jd.Refund.Credits, Iron: jd.Refund.Iron, Titanium: jd.Refund.Titanium, Antimatter: jd.Refund.Antimatter}
-	return readmodels.StorageItemPresent{BaseOwnedItem: readmodels.BaseOwnedItem{ID: uuid.UUID(r.ID), UserBaseID: int(r.BaseID)}, Prototype: StoragePrototypeFromPresentRow(r), Refund: refund}
+	return readmodels.StorageItemPresent{
+		BaseOwnedItem: readmodels.BaseOwnedItem{ID: uuid.UUID(r.ID), UserBaseID: int(r.BaseID)},
+		Prototype:     StoragePrototypeFromPresentRow(r),
+		Refund:        refund,
+		ActivatedAt:   jd.ActivatedAt,
+	}
 }
 
 // Storage prototype detail helpers: JSONB (DTO shape) -> readmodels.* data
@@ -50,7 +55,6 @@ func buffStorageDataFromJSON(nm pqtype.NullRawMessage) *readmodels.BuffStorageDa
 		AttackBonus:        d.AttackBonus,
 		DefenceBonus:       d.DefenceBonus,
 		DurationSeconds:    d.DurationSeconds,
-		ActivatedAt:        d.ActivatedAt,
 	}
 }
 
