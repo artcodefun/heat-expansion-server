@@ -109,7 +109,7 @@ func (q *Queries) ListBuildPrototypes(ctx context.Context) ([]BuildItemPrototype
 
 const listStoragePrototypes = `-- name: ListStoragePrototypes :many
 SELECT id, name, category, short_description, full_description, image_url,
-       buff_data, map_data, damaged_data, artifact_data, consumable_data
+       buff_data, intel_data, damaged_data, artifact_data, consumable_data
 FROM storage_item_prototypes
 ORDER BY id
 `
@@ -131,7 +131,7 @@ func (q *Queries) ListStoragePrototypes(ctx context.Context) ([]StorageItemProto
 			&i.FullDescription,
 			&i.ImageUrl,
 			&i.BuffData,
-			&i.MapData,
+			&i.IntelData,
 			&i.DamagedData,
 			&i.ArtifactData,
 			&i.ConsumableData,

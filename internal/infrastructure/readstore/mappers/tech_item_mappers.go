@@ -7,7 +7,6 @@ import (
 	"github.com/artcodefun/heat-expansion-api/internal/core/cqrs/readmodels"
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/db/dtos"
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/readstore/gen"
-	"github.com/google/uuid"
 )
 
 func techPrototypeFromParts(id int64, name, category string, unlock sql.NullInt64, short, full sql.NullString, price []byte, researchTime int64, imageURL sql.NullString, effects []byte) readmodels.TechItemPrototype {
@@ -41,7 +40,7 @@ func TechItemInProgressFromRow(r gen.ListInResearchTechItemsRow) readmodels.Tech
 		_ = json.Unmarshal(r.InProgressData.RawMessage, &jd)
 	}
 	return readmodels.TechItemInProgress{
-		BaseOwnedItem:     readmodels.BaseOwnedItem{ID: uuid.UUID(r.ID), UserBaseID: int(r.BaseID)},
+		BaseOwnedItem:     readmodels.BaseOwnedItem{ID: r.ID, UserBaseID: int(r.BaseID)},
 		Prototype:         techPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ResearchTime, r.ImageUrl, r.Effects),
 		StartDate:         jd.StartDate,
 		CompletionDate:    jd.CompletionDate,
@@ -55,7 +54,7 @@ func TechItemDoneFromRow(r gen.ListDoneTechItemsRow) readmodels.TechItemDone {
 		_ = json.Unmarshal(r.DoneData.RawMessage, &jd)
 	}
 	return readmodels.TechItemDone{
-		BaseOwnedItem: readmodels.BaseOwnedItem{ID: uuid.UUID(r.ID), UserBaseID: int(r.BaseID)},
+		BaseOwnedItem: readmodels.BaseOwnedItem{ID: r.ID, UserBaseID: int(r.BaseID)},
 		Prototype:     techPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ResearchTime, r.ImageUrl, r.Effects),
 		ResearchedAt:  jd.ResearchedAt,
 	}

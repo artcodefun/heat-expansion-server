@@ -7,7 +7,6 @@ import (
 	"github.com/artcodefun/heat-expansion-api/internal/core/cqrs/readmodels"
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/db/dtos"
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/readstore/gen"
-	"github.com/google/uuid"
 )
 
 // Convert prototype row to readmodel prototype
@@ -44,7 +43,7 @@ func ArmyItemPendingFromRow(r gen.ListPendingArmyItemsRow) readmodels.ArmyItemPe
 		count = tmp.Count
 	}
 	return readmodels.ArmyItemPending{
-		BaseOwnedItem: readmodels.BaseOwnedItem{ID: uuid.UUID(r.ID), UserBaseID: int(r.BaseID)},
+		BaseOwnedItem: readmodels.BaseOwnedItem{ID: r.ID, UserBaseID: int(r.BaseID)},
 		Prototype:     armyPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ProductionTime, r.Space, r.ImageUrl, r.Attack, r.Defence, r.Capacity, r.Stealth, r.Speed),
 		Count:         count,
 	}
@@ -56,7 +55,7 @@ func ArmyItemInProductionFromRow(r gen.ListInProductionArmyItemsRow) readmodels.
 		_ = json.Unmarshal(r.InProdData.RawMessage, &jd)
 	}
 	return readmodels.ArmyItemInProduction{
-		BaseOwnedItem:     readmodels.BaseOwnedItem{ID: uuid.UUID(r.ID), UserBaseID: int(r.BaseID)},
+		BaseOwnedItem:     readmodels.BaseOwnedItem{ID: r.ID, UserBaseID: int(r.BaseID)},
 		Prototype:         armyPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ProductionTime, r.Space, r.ImageUrl, r.Attack, r.Defence, r.Capacity, r.Stealth, r.Speed),
 		StartDate:         jd.StartDate,
 		CompletionDate:    jd.CompletionDate,
@@ -71,7 +70,7 @@ func ArmyItemPresentFromRow(r gen.ListPresentArmyItemsRow) readmodels.ArmyItemPr
 	}
 	refund := readmodels.PriceModel{Credits: jd.Refund.Credits, Iron: jd.Refund.Iron, Titanium: jd.Refund.Titanium, Antimatter: jd.Refund.Antimatter}
 	return readmodels.ArmyItemPresent{
-		BaseOwnedItem: readmodels.BaseOwnedItem{ID: uuid.UUID(r.ID), UserBaseID: int(r.BaseID)},
+		BaseOwnedItem: readmodels.BaseOwnedItem{ID: r.ID, UserBaseID: int(r.BaseID)},
 		Prototype:     armyPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ProductionTime, r.Space, r.ImageUrl, r.Attack, r.Defence, r.Capacity, r.Stealth, r.Speed),
 		Count:         jd.Count,
 		Refund:        refund,

@@ -73,15 +73,15 @@ CREATE TABLE storage_item_prototypes (
     short_description    TEXT,
     full_description     TEXT,
     image_url            TEXT,
-    -- Buff storage data: {"space_capacity_bonus": int, "attack_bonus": int, "defence_bonus": int, "duration_seconds": bigint, ...}
+    -- Buff storage data: {"type": string, "value": float, "duration_seconds": bigint}
     buff_data            JSONB,
-    -- Map storage data: {"revealed_area": string, "scan_range": int}
-    map_data             JSONB,
-    -- Damaged storage data: {"restore_price": {...}, "original_unit_id": int, "damage_level": int}
+    -- Intel storage data: {"type": string, "decryption_seconds": bigint}
+    intel_data           JSONB,
+    -- Damaged storage data: {"restore_price": PriceDTO, "original_unit_id": int}
     damaged_data         JSONB,
-    -- Artifact storage data: {"passive_effect": string, "rarity": string, "lore": string}
+    -- Artifact storage data: {"type": string, "value": float}
     artifact_data        JSONB,
-    -- Consumable storage data: {"effect_type": string, "uses": int, "restore_price": {...}}
+    -- Consumable storage data: {"type": string, "box_contents": []string, "box_size": int}
     consumable_data      JSONB
 );
 CREATE INDEX idx_storage_prototypes_category ON storage_item_prototypes(category);

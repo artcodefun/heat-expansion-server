@@ -7,7 +7,6 @@ import (
 	"github.com/artcodefun/heat-expansion-api/internal/core/cqrs/readmodels"
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/db/dtos"
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/readstore/gen"
-	"github.com/google/uuid"
 	"github.com/sqlc-dev/pqtype"
 )
 
@@ -44,7 +43,7 @@ func NewBuildItemFromPrototype(p gen.BuildItemPrototype) readmodels.BuildItemNew
 }
 
 func BuildItemPendingFromRow(r gen.ListPendingBuildItemsRow) readmodels.BuildItemPending {
-	return readmodels.BuildItemPending{BaseOwnedItem: readmodels.BaseOwnedItem{ID: uuid.UUID(r.ID), UserBaseID: int(r.BaseID)}, Prototype: buildPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ProductionTime, r.Space, r.ImageUrl, r.ControlData, r.ResourcesData, r.DefenseData, r.MilitaryData, r.IntelligenceData)}
+	return readmodels.BuildItemPending{BaseOwnedItem: readmodels.BaseOwnedItem{ID: r.ID, UserBaseID: int(r.BaseID)}, Prototype: buildPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ProductionTime, r.Space, r.ImageUrl, r.ControlData, r.ResourcesData, r.DefenseData, r.MilitaryData, r.IntelligenceData)}
 }
 
 func BuildItemInProductionFromRow(r gen.ListInProductionBuildItemsRow) readmodels.BuildItemInProduction {
@@ -52,7 +51,7 @@ func BuildItemInProductionFromRow(r gen.ListInProductionBuildItemsRow) readmodel
 	if r.InProdData.Valid {
 		_ = json.Unmarshal(r.InProdData.RawMessage, &jd)
 	}
-	return readmodels.BuildItemInProduction{BaseOwnedItem: readmodels.BaseOwnedItem{ID: uuid.UUID(r.ID), UserBaseID: int(r.BaseID)}, Prototype: buildPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ProductionTime, r.Space, r.ImageUrl, r.ControlData, r.ResourcesData, r.DefenseData, r.MilitaryData, r.IntelligenceData), StartDate: jd.StartDate, CompletionDate: jd.CompletionDate, CrystalsSkipPrice: jd.CrystalsSkipPrice}
+	return readmodels.BuildItemInProduction{BaseOwnedItem: readmodels.BaseOwnedItem{ID: r.ID, UserBaseID: int(r.BaseID)}, Prototype: buildPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ProductionTime, r.Space, r.ImageUrl, r.ControlData, r.ResourcesData, r.DefenseData, r.MilitaryData, r.IntelligenceData), StartDate: jd.StartDate, CompletionDate: jd.CompletionDate, CrystalsSkipPrice: jd.CrystalsSkipPrice}
 }
 
 func BuildItemPresentFromRow(r gen.ListPresentBuildItemsRow) readmodels.BuildItemPresent {
@@ -61,7 +60,7 @@ func BuildItemPresentFromRow(r gen.ListPresentBuildItemsRow) readmodels.BuildIte
 		_ = json.Unmarshal(r.PresentData.RawMessage, &jd)
 	}
 	refund := readmodels.PriceModel{Credits: jd.Refund.Credits, Iron: jd.Refund.Iron, Titanium: jd.Refund.Titanium, Antimatter: jd.Refund.Antimatter}
-	return readmodels.BuildItemPresent{BaseOwnedItem: readmodels.BaseOwnedItem{ID: uuid.UUID(r.ID), UserBaseID: int(r.BaseID)}, Prototype: buildPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ProductionTime, r.Space, r.ImageUrl, r.ControlData, r.ResourcesData, r.DefenseData, r.MilitaryData, r.IntelligenceData), Refund: refund}
+	return readmodels.BuildItemPresent{BaseOwnedItem: readmodels.BaseOwnedItem{ID: r.ID, UserBaseID: int(r.BaseID)}, Prototype: buildPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ProductionTime, r.Space, r.ImageUrl, r.ControlData, r.ResourcesData, r.DefenseData, r.MilitaryData, r.IntelligenceData), Refund: refund}
 }
 
 // Build prototype detail helpers: JSONB (DTO shape) -> readmodels.* data

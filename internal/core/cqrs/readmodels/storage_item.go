@@ -5,7 +5,7 @@ type StorageCategory string
 
 const (
 	StorageCategoryBuff       StorageCategory = "BUFF"
-	StorageCategoryMap        StorageCategory = "MAP"
+	StorageCategoryIntel      StorageCategory = "INTEL"
 	StorageCategoryDamaged    StorageCategory = "DAMAGED"
 	StorageCategoryArtifact   StorageCategory = "ARTIFACT"
 	StorageCategoryConsumable StorageCategory = "CONSUMABLE"
@@ -22,55 +22,116 @@ type StorageItemPrototype struct {
 
 	// Category-specific fields
 	BuffData       *BuffStorageData
-	MapData        *MapStorageData
+	IntelData      *IntelStorageData
 	DamagedData    *DamagedStorageData
 	ArtifactData   *ArtifactStorageData
 	ConsumableData *ConsumableStorageData
 }
 
+// BuffType identifies the specific stat or resource a buff affects.
+type BuffType string
+
+const (
+	BuffTypeCreditsProduction  BuffType = "CREDITS_PRODUCTION"
+	BuffTypeIronProduction     BuffType = "IRON_PRODUCTION"
+	BuffTypeTitaniumProduction BuffType = "TITANIUM_PRODUCTION"
+
+	BuffTypeAttackIncrease   BuffType = "ATTACK_INCREASE"
+	BuffTypeDefenceIncrease  BuffType = "DEFENCE_INCREASE"
+	BuffTypeStealthIncrease  BuffType = "STEALTH_INCREASE"
+	BuffTypeCapacityIncrease BuffType = "CAPACITY_INCREASE"
+	BuffTypeSpeedIncrease    BuffType = "SPEED_INCREASE"
+
+	BuffTypePricesDecrease BuffType = "PRICES_DECREASE"
+)
+
 // BuffStorageData: bonuses for buffs
 type BuffStorageData struct {
-	SpaceCapacityBonus int
-	AttackBonus        int
-	DefenceBonus       int
-	DurationSeconds    int64
+	Type            BuffType
+	Value           float32
+	DurationSeconds int64
 }
 
-// MapStorageData: properties for map items
-type MapStorageData struct {
-	RevealedArea string // e.g., region or sector identifier
-	ScanRange    int    // How much area is revealed
-	// Add more as needed
+// HiddenLocationType identifies what kind of entity an intel item reveals on the map.
+type HiddenLocationType string
+
+const (
+	HiddenLocationTypeResourcefulCredits  HiddenLocationType = "RESOURCEFUL_CREDITS"
+	HiddenLocationTypeResourcefulIron     HiddenLocationType = "RESOURCEFUL_IRON"
+	HiddenLocationTypeResourcefulTitanium HiddenLocationType = "RESOURCEFUL_TITANIUM"
+	HiddenLocationTypeDangerous           HiddenLocationType = "DANGEROUS" // e.g., NPC hostiles
+	HiddenLocationTypeUserBase            HiddenLocationType = "USERBASE"  // Reveals a player base
+)
+
+// IntelStorageData: properties for intel items
+type IntelStorageData struct {
+	Type              HiddenLocationType
+	DecryptionSeconds int64
 }
 
 // DamagedStorageData: properties for damaged items (e.g., damaged army units)
 type DamagedStorageData struct {
 	RestorePrice   PriceModel // Cost to restore the item
 	OriginalUnitID int        // Reference to the original army unit prototype
-	DamageLevel    int        // Severity of damage
-	// Add more as needed
 }
+
+// ArtifactEffectType identifies the permanent passive bonus provided by an artifact.
+type ArtifactEffectType string
+
+const (
+	ArtifactEffectTypeCreditsProduction  ArtifactEffectType = "CREDITS_PRODUCTION"
+	ArtifactEffectTypeIronProduction     ArtifactEffectType = "IRON_PRODUCTION"
+	ArtifactEffectTypeTitaniumProduction ArtifactEffectType = "TITANIUM_PRODUCTION"
+
+	ArtifactEffectTypeAttackIncrease   ArtifactEffectType = "ATTACK_INCREASE"
+	ArtifactEffectTypeDefenceIncrease  ArtifactEffectType = "DEFENCE_INCREASE"
+	ArtifactEffectTypeStealthIncrease  ArtifactEffectType = "STEALTH_INCREASE"
+	ArtifactEffectTypeCapacityIncrease ArtifactEffectType = "CAPACITY_INCREASE"
+	ArtifactEffectTypeSpeedIncrease    ArtifactEffectType = "SPEED_INCREASE"
+
+	ArtifactEffectTypePricesDecrease ArtifactEffectType = "PRICES_DECREASE"
+)
 
 // ArtifactStorageData: properties for artifacts
 type ArtifactStorageData struct {
-	PassiveEffect string // Description of constant effect
-	Rarity        string // e.g., "Common", "Rare", "Legendary"
-	Lore          string // Optional: flavor text or story
-	// Add more as needed
+	Type  ArtifactEffectType
+	Value float32
 }
+
+// ConsumableType identifies the type of consumable
+type ConsumableType string
+
+const (
+	ConsumableTypeBox         ConsumableType = "BOX"          // A loot box containing multiple rewards
+	ConsumableTypeWarpCapsule ConsumableType = "WARP_CAPSULE" // An item with a specific gameplay function
+)
+
+// ConsumableBoxContents defines the pool of possible rewards within a loot box.
+type ConsumableBoxContents string
+
+const (
+	ConsumableContentsCredits    ConsumableBoxContents = "CREDITS"
+	ConsumableContentsIron       ConsumableBoxContents = "IRON"
+	ConsumableContentsTitanium   ConsumableBoxContents = "TITANIUM"
+	ConsumableContentsAntimatter ConsumableBoxContents = "ANTIMATTER"
+	ConsumableContentsCrystals   ConsumableBoxContents = "CRYSTALS"
+	ConsumableContentsBuff       ConsumableBoxContents = "BUFF"
+	ConsumableContentsMap        ConsumableBoxContents = "MAP"
+	ConsumableContentsDamaged    ConsumableBoxContents = "DAMAGED"
+	ConsumableContentsArtifact   ConsumableBoxContents = "ARTIFACT"
+)
 
 // ConsumableStorageData: properties for consumable items used in control buildings or special effects
 type ConsumableStorageData struct {
-	EffectType   string      // e.g., "RESTORE_UNIT", "BOOST_PRODUCTION", etc.
-	Uses         int         // Number of uses (if applicable)
-	RestorePrice *PriceModel // Optional: cost to use/restore if relevant
-	// Add more as needed
+	Type        ConsumableType
+	BoxContents []ConsumableBoxContents
+	BoxSize     int
 }
 
 // StorageItemPresent represents a present storage item.
 type StorageItemPresent struct {
 	BaseOwnedItem
-	Prototype   StorageItemPrototype
-	Refund      PriceModel
-	ActivatedAt *int64
+	Prototype StorageItemPrototype
+	ExpiresAt *int64
+	IsActive  bool
 }

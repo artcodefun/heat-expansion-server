@@ -6,7 +6,6 @@ import (
 	"github.com/artcodefun/heat-expansion-api/internal/core/cqrs/readmodels"
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/db/dtos"
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/readstore/gen"
-	"github.com/google/uuid"
 	"github.com/sqlc-dev/pqtype"
 )
 
@@ -19,7 +18,7 @@ func StoragePrototypeFromPresentRow(r gen.ListPresentStorageItemsRow) readmodels
 		FullDescription:  nullString(r.FullDescription),
 		ImageURL:         nullString(r.ImageUrl),
 		BuffData:         buffStorageDataFromJSON(r.BuffData),
-		MapData:          mapStorageDataFromJSON(r.MapData),
+		IntelData:        intelStorageDataFromJSON(r.IntelData),
 		DamagedData:      damagedStorageDataFromJSON(r.DamagedData),
 		ArtifactData:     artifactStorageDataFromJSON(r.ArtifactData),
 		ConsumableData:   consumableStorageDataFromJSON(r.ConsumableData),
@@ -31,12 +30,11 @@ func StorageItemPresentFromRow(r gen.ListPresentStorageItemsRow) readmodels.Stor
 	if r.PresentData.Valid {
 		_ = json.Unmarshal(r.PresentData.RawMessage, &jd)
 	}
-	refund := readmodels.PriceModel{Credits: jd.Refund.Credits, Iron: jd.Refund.Iron, Titanium: jd.Refund.Titanium, Antimatter: jd.Refund.Antimatter}
 	return readmodels.StorageItemPresent{
-		BaseOwnedItem: readmodels.BaseOwnedItem{ID: uuid.UUID(r.ID), UserBaseID: int(r.BaseID)},
+		BaseOwnedItem: readmodels.BaseOwnedItem{ID: r.ID, UserBaseID: int(r.BaseID)},
 		Prototype:     StoragePrototypeFromPresentRow(r),
-		Refund:        refund,
-		ActivatedAt:   jd.ActivatedAt,
+		ExpiresAt:     jd.ExpiresAt,
+		IsActive:      jd.IsActive,
 	}
 }
 
@@ -51,24 +49,23 @@ func buffStorageDataFromJSON(nm pqtype.NullRawMessage) *readmodels.BuffStorageDa
 		return nil
 	}
 	return &readmodels.BuffStorageData{
-		SpaceCapacityBonus: d.SpaceCapacityBonus,
-		AttackBonus:        d.AttackBonus,
-		DefenceBonus:       d.DefenceBonus,
-		DurationSeconds:    d.DurationSeconds,
+		Type:            readmodels.BuffType(d.Type),
+		Value:           d.Value,
+		DurationSeconds: d.DurationSeconds,
 	}
 }
 
-func mapStorageDataFromJSON(nm pqtype.NullRawMessage) *readmodels.MapStorageData {
+func intelStorageDataFromJSON(nm pqtype.NullRawMessage) *readmodels.IntelStorageData {
 	if !nm.Valid {
 		return nil
 	}
-	var d dtos.MapStorageDataDTO
+	var d dtos.IntelStorageDataDTO
 	if err := json.Unmarshal(nm.RawMessage, &d); err != nil {
 		return nil
 	}
-	return &readmodels.MapStorageData{
-		RevealedArea: d.RevealedArea,
-		ScanRange:    d.ScanRange,
+	return &readmodels.IntelStorageData{
+		Type:              readmodels.HiddenLocationType(d.Type),
+		DecryptionSeconds: d.DecryptionSeconds,
 	}
 }
 
@@ -88,7 +85,6 @@ func damagedStorageDataFromJSON(nm pqtype.NullRawMessage) *readmodels.DamagedSto
 			Antimatter: d.RestorePrice.Antimatter,
 		},
 		OriginalUnitID: d.OriginalUnitID,
-		DamageLevel:    d.DamageLevel,
 	}
 }
 
@@ -101,9 +97,8 @@ func artifactStorageDataFromJSON(nm pqtype.NullRawMessage) *readmodels.ArtifactS
 		return nil
 	}
 	return &readmodels.ArtifactStorageData{
-		PassiveEffect: d.PassiveEffect,
-		Rarity:        d.Rarity,
-		Lore:          d.Lore,
+		Type:  readmodels.ArtifactEffectType(d.Type),
+		Value: d.Value,
 	}
 }
 
@@ -115,18 +110,13 @@ func consumableStorageDataFromJSON(nm pqtype.NullRawMessage) *readmodels.Consuma
 	if err := json.Unmarshal(nm.RawMessage, &d); err != nil {
 		return nil
 	}
-	var price *readmodels.PriceModel
-	if d.RestorePrice != nil {
-		price = &readmodels.PriceModel{
-			Credits:    d.RestorePrice.Credits,
-			Iron:       d.RestorePrice.Iron,
-			Titanium:   d.RestorePrice.Titanium,
-			Antimatter: d.RestorePrice.Antimatter,
-		}
+	contents := make([]readmodels.ConsumableBoxContents, len(d.BoxContents))
+	for i, c := range d.BoxContents {
+		contents[i] = readmodels.ConsumableBoxContents(c)
 	}
 	return &readmodels.ConsumableStorageData{
-		EffectType:   d.EffectType,
-		Uses:         d.Uses,
-		RestorePrice: price,
+		Type:        readmodels.ConsumableType(d.Type),
+		BoxContents: contents,
+		BoxSize:     d.BoxSize,
 	}
 }

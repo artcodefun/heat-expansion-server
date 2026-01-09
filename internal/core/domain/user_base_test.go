@@ -763,8 +763,8 @@ func TestStorage_BuffActivateAndExpire(t *testing.T) {
 	if _, ok := events[0].(BuffActivatedEvent); !ok {
 		t.Fatalf("expected BuffActivatedEvent, got %T", events[0])
 	}
-	if base.StorageItemsPresent[0].ActivatedAt == nil || *base.StorageItemsPresent[0].ActivatedAt != 20_000 {
-		t.Fatalf("expected ActivatedAt=20000")
+	if base.StorageItemsPresent[0].ExpiresAt == nil || *base.StorageItemsPresent[0].ExpiresAt != 20_100 {
+		t.Fatalf("expected ExpiresAt=20100")
 	}
 
 	// advance time past expiration and delete
@@ -793,19 +793,19 @@ func TestStorage_ActivateBuffTwice_ErrorsAndDoesNotDuplicate(t *testing.T) {
 	if err := base.ActivateBuffByID(buff.ID); err != nil {
 		t.Fatalf("first ActivateBuffByID error: %v", err)
 	}
-	firstActivatedAt := base.StorageItemsPresent[0].ActivatedAt
-	if firstActivatedAt == nil || *firstActivatedAt != 21_000 {
-		t.Fatalf("expected ActivatedAt to be set on first activation, got %+v", firstActivatedAt)
+	firstExpiresAt := base.StorageItemsPresent[0].ExpiresAt
+	if firstExpiresAt == nil || *firstExpiresAt != 21_050 {
+		t.Fatalf("expected ExpiresAt to be set on first activation, got %+v", firstExpiresAt)
 	}
 	base.PullEvents() // clear
 
-	// second activation should return error and not change ActivatedAt or emit events
+	// second activation should return error and not change ExpiresAt or emit events
 	if err := base.ActivateBuffByID(buff.ID); err == nil {
 		t.Fatalf("expected error on second ActivateBuffByID for same buff")
 	}
-	secondActivatedAt := base.StorageItemsPresent[0].ActivatedAt
-	if secondActivatedAt == nil || *secondActivatedAt != *firstActivatedAt {
-		t.Fatalf("expected ActivatedAt to remain unchanged on second activation, got %+v", secondActivatedAt)
+	secondExpiresAt := base.StorageItemsPresent[0].ExpiresAt
+	if secondExpiresAt == nil || *secondExpiresAt != *firstExpiresAt {
+		t.Fatalf("expected ExpiresAt to remain unchanged on second activation, got %+v", secondExpiresAt)
 	}
 	if events := base.PullEvents(); len(events) != 0 {
 		t.Fatalf("expected no additional events on second activation, got %v", events)

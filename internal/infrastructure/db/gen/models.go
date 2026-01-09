@@ -206,7 +206,7 @@ type StorageItemPrototype struct {
 	FullDescription  sql.NullString        `json:"full_description"`
 	ImageUrl         sql.NullString        `json:"image_url"`
 	BuffData         pqtype.NullRawMessage `json:"buff_data"`
-	MapData          pqtype.NullRawMessage `json:"map_data"`
+	IntelData        pqtype.NullRawMessage `json:"intel_data"`
 	DamagedData      pqtype.NullRawMessage `json:"damaged_data"`
 	ArtifactData     pqtype.NullRawMessage `json:"artifact_data"`
 	ConsumableData   pqtype.NullRawMessage `json:"consumable_data"`

@@ -98,7 +98,7 @@ CREATE TABLE base_storage_items (
     base_id      BIGINT  NOT NULL REFERENCES user_bases(id) ON DELETE CASCADE,
     prototype_id BIGINT  NOT NULL REFERENCES storage_item_prototypes(id) ON DELETE RESTRICT,
     status       TEXT    NOT NULL,
-    -- Storage present data: {"refund": {...}}
+    -- Storage present data: {"expires_at": bigint, "is_active": boolean}
     present_data    JSONB,
     -- Storage dynamic state: JSONB structure varies by prototype
     state        JSONB   NOT NULL DEFAULT '{}'::jsonb,

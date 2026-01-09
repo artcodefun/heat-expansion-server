@@ -13,11 +13,11 @@ func StoragePrototypeFromDB(p gen.StorageItemPrototype) *domain.StorageItemProto
 		unmarshalIfValid(p.BuffData, &dto)
 		buff = dtos.BuffStorageDataFromDTO(&dto)
 	}
-	var mp *domain.MapStorageData
-	if p.MapData.Valid {
-		var dto dtos.MapStorageDataDTO
-		unmarshalIfValid(p.MapData, &dto)
-		mp = dtos.MapStorageDataFromDTO(&dto)
+	var intel *domain.IntelStorageData
+	if p.IntelData.Valid {
+		var dto dtos.IntelStorageDataDTO
+		unmarshalIfValid(p.IntelData, &dto)
+		intel = dtos.IntelStorageDataFromDTO(&dto)
 	}
 	var dmg *domain.DamagedStorageData
 	if p.DamagedData.Valid {
@@ -46,7 +46,7 @@ func StoragePrototypeFromDB(p gen.StorageItemPrototype) *domain.StorageItemProto
 		FullDescription:  nullStringToString(&p.FullDescription.String, p.FullDescription.Valid),
 		ImageURL:         nullStringToString(&p.ImageUrl.String, p.ImageUrl.Valid),
 		BuffData:         buff,
-		MapData:          mp,
+		IntelData:        intel,
 		DamagedData:      dmg,
 		ArtifactData:     art,
 		ConsumableData:   cons,

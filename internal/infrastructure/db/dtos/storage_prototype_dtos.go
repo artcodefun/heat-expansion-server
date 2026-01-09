@@ -4,10 +4,9 @@ import "github.com/artcodefun/heat-expansion-api/internal/core/domain"
 
 // BuffStorageDataDTO represents JSON shape for buff storage items in prototypes.
 type BuffStorageDataDTO struct {
-	SpaceCapacityBonus int   `json:"space_capacity_bonus"`
-	AttackBonus        int   `json:"attack_bonus"`
-	DefenceBonus       int   `json:"defence_bonus"`
-	DurationSeconds    int64 `json:"duration_seconds"`
+	Type            string  `json:"type"`
+	Value           float32 `json:"value"`
+	DurationSeconds int64   `json:"duration_seconds"`
 }
 
 func BuffStorageDataDTOFromDomain(d *domain.BuffStorageData) *BuffStorageDataDTO {
@@ -15,10 +14,9 @@ func BuffStorageDataDTOFromDomain(d *domain.BuffStorageData) *BuffStorageDataDTO
 		return nil
 	}
 	return &BuffStorageDataDTO{
-		SpaceCapacityBonus: d.SpaceCapacityBonus,
-		AttackBonus:        d.AttackBonus,
-		DefenceBonus:       d.DefenceBonus,
-		DurationSeconds:    d.DurationSeconds,
+		Type:            string(d.Type),
+		Value:           d.Value,
+		DurationSeconds: d.DurationSeconds,
 	}
 }
 
@@ -27,36 +25,35 @@ func BuffStorageDataFromDTO(d *BuffStorageDataDTO) *domain.BuffStorageData {
 		return nil
 	}
 	return &domain.BuffStorageData{
-		SpaceCapacityBonus: d.SpaceCapacityBonus,
-		AttackBonus:        d.AttackBonus,
-		DefenceBonus:       d.DefenceBonus,
-		DurationSeconds:    d.DurationSeconds,
+		Type:            domain.BuffType(d.Type),
+		Value:           d.Value,
+		DurationSeconds: d.DurationSeconds,
 	}
 }
 
-// MapStorageDataDTO represents JSON shape for map storage items in prototypes.
-type MapStorageDataDTO struct {
-	RevealedArea string `json:"revealed_area"`
-	ScanRange    int    `json:"scan_range"`
+// IntelStorageDataDTO represents JSON shape for intel storage items in prototypes.
+type IntelStorageDataDTO struct {
+	Type              string `json:"type"`
+	DecryptionSeconds int64  `json:"decryption_seconds"`
 }
 
-func MapStorageDataDTOFromDomain(d *domain.MapStorageData) *MapStorageDataDTO {
+func IntelStorageDataDTOFromDomain(d *domain.IntelStorageData) *IntelStorageDataDTO {
 	if d == nil {
 		return nil
 	}
-	return &MapStorageDataDTO{
-		RevealedArea: d.RevealedArea,
-		ScanRange:    d.ScanRange,
+	return &IntelStorageDataDTO{
+		Type:              string(d.Type),
+		DecryptionSeconds: d.DecryptionSeconds,
 	}
 }
 
-func MapStorageDataFromDTO(d *MapStorageDataDTO) *domain.MapStorageData {
+func IntelStorageDataFromDTO(d *IntelStorageDataDTO) *domain.IntelStorageData {
 	if d == nil {
 		return nil
 	}
-	return &domain.MapStorageData{
-		RevealedArea: d.RevealedArea,
-		ScanRange:    d.ScanRange,
+	return &domain.IntelStorageData{
+		Type:              domain.HiddenLocationType(d.Type),
+		DecryptionSeconds: d.DecryptionSeconds,
 	}
 }
 
@@ -64,7 +61,6 @@ func MapStorageDataFromDTO(d *MapStorageDataDTO) *domain.MapStorageData {
 type DamagedStorageDataDTO struct {
 	RestorePrice   PriceDTO `json:"restore_price"`
 	OriginalUnitID int      `json:"original_unit_id"`
-	DamageLevel    int      `json:"damage_level"`
 }
 
 func DamagedStorageDataDTOFromDomain(d *domain.DamagedStorageData) *DamagedStorageDataDTO {
@@ -74,7 +70,6 @@ func DamagedStorageDataDTOFromDomain(d *domain.DamagedStorageData) *DamagedStora
 	return &DamagedStorageDataDTO{
 		RestorePrice:   PriceDTOFromDomain(d.RestorePrice),
 		OriginalUnitID: d.OriginalUnitID,
-		DamageLevel:    d.DamageLevel,
 	}
 }
 
@@ -85,15 +80,13 @@ func DamagedStorageDataFromDTO(d *DamagedStorageDataDTO) *domain.DamagedStorageD
 	return &domain.DamagedStorageData{
 		RestorePrice:   PriceFromDTO(d.RestorePrice),
 		OriginalUnitID: d.OriginalUnitID,
-		DamageLevel:    d.DamageLevel,
 	}
 }
 
 // ArtifactStorageDataDTO represents JSON shape for artifact storage items in prototypes.
 type ArtifactStorageDataDTO struct {
-	PassiveEffect string `json:"passive_effect"`
-	Rarity        string `json:"rarity"`
-	Lore          string `json:"lore"`
+	Type  string  `json:"type"`
+	Value float32 `json:"value"`
 }
 
 func ArtifactStorageDataDTOFromDomain(d *domain.ArtifactStorageData) *ArtifactStorageDataDTO {
@@ -101,9 +94,8 @@ func ArtifactStorageDataDTOFromDomain(d *domain.ArtifactStorageData) *ArtifactSt
 		return nil
 	}
 	return &ArtifactStorageDataDTO{
-		PassiveEffect: d.PassiveEffect,
-		Rarity:        d.Rarity,
-		Lore:          d.Lore,
+		Type:  string(d.Type),
+		Value: d.Value,
 	}
 }
 
@@ -112,32 +104,30 @@ func ArtifactStorageDataFromDTO(d *ArtifactStorageDataDTO) *domain.ArtifactStora
 		return nil
 	}
 	return &domain.ArtifactStorageData{
-		PassiveEffect: d.PassiveEffect,
-		Rarity:        d.Rarity,
-		Lore:          d.Lore,
+		Type:  domain.ArtifactEffectType(d.Type),
+		Value: d.Value,
 	}
 }
 
 // ConsumableStorageDataDTO represents JSON shape for consumable storage items in prototypes.
 type ConsumableStorageDataDTO struct {
-	EffectType   string    `json:"effect_type"`
-	Uses         int       `json:"uses"`
-	RestorePrice *PriceDTO `json:"restore_price,omitempty"`
+	Type        string   `json:"type"`
+	BoxContents []string `json:"box_contents"`
+	BoxSize     int      `json:"box_size"`
 }
 
 func ConsumableStorageDataDTOFromDomain(d *domain.ConsumableStorageData) *ConsumableStorageDataDTO {
 	if d == nil {
 		return nil
 	}
-	var priceDTO *PriceDTO
-	if d.RestorePrice != nil {
-		v := PriceDTOFromDomain(*d.RestorePrice)
-		priceDTO = &v
+	contents := make([]string, len(d.BoxContents))
+	for i, c := range d.BoxContents {
+		contents[i] = string(c)
 	}
 	return &ConsumableStorageDataDTO{
-		EffectType:   d.EffectType,
-		Uses:         d.Uses,
-		RestorePrice: priceDTO,
+		Type:        string(d.Type),
+		BoxContents: contents,
+		BoxSize:     d.BoxSize,
 	}
 }
 
@@ -145,14 +135,13 @@ func ConsumableStorageDataFromDTO(d *ConsumableStorageDataDTO) *domain.Consumabl
 	if d == nil {
 		return nil
 	}
-	var price *domain.PriceModel
-	if d.RestorePrice != nil {
-		v := PriceFromDTO(*d.RestorePrice)
-		price = &v
+	contents := make([]domain.ConsumableBoxContents, len(d.BoxContents))
+	for i, c := range d.BoxContents {
+		contents[i] = domain.ConsumableBoxContents(c)
 	}
 	return &domain.ConsumableStorageData{
-		EffectType:   d.EffectType,
-		Uses:         d.Uses,
-		RestorePrice: price,
+		Type:        domain.ConsumableType(d.Type),
+		BoxContents: contents,
+		BoxSize:     d.BoxSize,
 	}
 }

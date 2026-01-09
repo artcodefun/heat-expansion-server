@@ -16,7 +16,7 @@ import (
 
 const listPresentStorageItems = `-- name: ListPresentStorageItems :many
 
-SELECT bsi.id, bsi.base_id, bsi.prototype_id, bsi.status, bsi.present_data, bsi.state, p.id AS proto_id, p.name, p.category, p.short_description, p.full_description, p.image_url, p.buff_data, p.map_data, p.damaged_data, p.artifact_data, p.consumable_data
+SELECT bsi.id, bsi.base_id, bsi.prototype_id, bsi.status, bsi.present_data, bsi.state, p.id AS proto_id, p.name, p.category, p.short_description, p.full_description, p.image_url, p.buff_data, p.intel_data, p.damaged_data, p.artifact_data, p.consumable_data
 FROM base_storage_items bsi
 JOIN storage_item_prototypes p ON p.id = bsi.prototype_id
 WHERE bsi.base_id = $1 AND bsi.status = 'PRESENT'
@@ -37,7 +37,7 @@ type ListPresentStorageItemsRow struct {
 	FullDescription  sql.NullString        `json:"full_description"`
 	ImageUrl         sql.NullString        `json:"image_url"`
 	BuffData         pqtype.NullRawMessage `json:"buff_data"`
-	MapData          pqtype.NullRawMessage `json:"map_data"`
+	IntelData        pqtype.NullRawMessage `json:"intel_data"`
 	DamagedData      pqtype.NullRawMessage `json:"damaged_data"`
 	ArtifactData     pqtype.NullRawMessage `json:"artifact_data"`
 	ConsumableData   pqtype.NullRawMessage `json:"consumable_data"`
@@ -67,7 +67,7 @@ func (q *Queries) ListPresentStorageItems(ctx context.Context, baseID int64) ([]
 			&i.FullDescription,
 			&i.ImageUrl,
 			&i.BuffData,
-			&i.MapData,
+			&i.IntelData,
 			&i.DamagedData,
 			&i.ArtifactData,
 			&i.ConsumableData,

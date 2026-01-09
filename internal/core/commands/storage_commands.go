@@ -75,7 +75,7 @@ func (c *StorageCommands) HandleBuffActivatedEvent(event *domain.BuffActivatedEv
 	}
 	var activatedBuff *domain.StorageItemPresent
 	for _, item := range base.StorageItemsPresent {
-		if item.ID == event.ItemID && item.Prototype.BuffData != nil && item.ActivatedAt != nil {
+		if item.ID == event.ItemID && item.Prototype.BuffData != nil && item.ExpiresAt != nil {
 			activatedBuff = &item
 			break
 		}
@@ -83,9 +83,8 @@ func (c *StorageCommands) HandleBuffActivatedEvent(event *domain.BuffActivatedEv
 	if activatedBuff == nil {
 		return nil
 	}
-	expireAt := *activatedBuff.ActivatedAt + activatedBuff.Prototype.BuffData.DurationSeconds
 	cmd := ports.DeleteExpiredBuffJob{BaseID: event.BaseID, ItemID: event.ItemID}
-	return c.Scheduler.Schedule(cmd, expireAt)
+	return c.Scheduler.Schedule(cmd, *activatedBuff.ExpiresAt)
 }
 
 func (c *StorageCommands) HandleDeleteExpiredBuffJob(baseID int) (int, error) {
