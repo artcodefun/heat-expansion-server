@@ -366,6 +366,7 @@ func (c *StorageCommands) HandleDecryptIntelItemJob(cmd ports.DecryptIntelItemJo
 		}
 
 		if report != nil {
+			report.SourceIntelItemID = &cmd.ItemID
 			if err := c.ScanReports.Tx(tx).Create(report); err != nil {
 				return err
 			}

@@ -64,6 +64,8 @@ type SectorScanReport struct {
 	SourceOperationID int
 	// Optional link to the scanner that produced this report (for traceability/idempotency)
 	SourceScannerID *uuid.UUID
+	// Optional link to the intel item that was decrypted to produce this report (for traceability/activity logging)
+	SourceIntelItemID *uuid.UUID
 }
 
 // EmitCreated records a domain event indicating this report has been created/persisted for its owning base.

@@ -25,6 +25,9 @@ func SectorScanReportFromModel(r gen.ScanReport) readmodels.SectorScanReport {
 	if r.SourceScannerID.Valid {
 		sr.SourceScannerID = &r.SourceScannerID.UUID
 	}
+	if r.SourceIntelItemID.Valid {
+		sr.SourceIntelItemID = &r.SourceIntelItemID.UUID
+	}
 	return sr
 }
 

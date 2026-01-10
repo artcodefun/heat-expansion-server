@@ -81,7 +81,7 @@ This project uses Hexagonal Architecture (Ports and Adapters), DDD (Domain-drive
    - (Future) additional adapters like `ws/` or `cli/` can plug into the same core via ports.
 
 - **Bootstrap** logic (dependency wiring, aggregators) is in `internal/bootstrap`:
-   - `container.go`: wires concrete infrastructure adapters to core ports (repositories, tx manager, scheduler, security, content).
+   - `adapters.go`: wires concrete infrastructure adapters to core ports (repositories, tx manager, scheduler, security, content).
    - `commands.go`, `queries.go`: aggregate all command/query handlers into cohesive structs for the interfaces layer.
    - `app.go`: builds `App` (DB, adapters, commands, queries, HTTP server) and runs the scheduler + Gin server.
 

@@ -49,10 +49,6 @@ type Adapters struct {
 	Hasher    ports.PasswordHasher
 	Tokens    ports.TokenProvider
 	Content   ports.ContentGenerator
-
-	// Keep shared queries handy for further wiring if needed
-	q  *dbgen.Queries
-	rq *readgen.Queries
 }
 
 func NewAdapters(db *sql.DB, jwtSecret, contentDir, staticBaseURL string) (*Adapters, error) {
@@ -106,7 +102,5 @@ func NewAdapters(db *sql.DB, jwtSecret, contentDir, staticBaseURL string) (*Adap
 		Hasher:        hasher,
 		Tokens:        tokens,
 		Content:       generator,
-		q:             q,
-		rq:            rq,
 	}, nil
 }

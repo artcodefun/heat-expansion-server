@@ -35,6 +35,9 @@ func ScanReportFromDB(r gen.ScanReport) *domain.SectorScanReport {
 	if r.SourceScannerID.Valid {
 		sr.SourceScannerID = &r.SourceScannerID.UUID
 	}
+	if r.SourceIntelItemID.Valid {
+		sr.SourceIntelItemID = &r.SourceIntelItemID.UUID
+	}
 	return sr
 }
 
@@ -45,6 +48,10 @@ func InsertScanReportParamsFromDomain(r *domain.SectorScanReport) gen.InsertScan
 	if r.SourceScannerID != nil {
 		srcScannerID = uuid.NullUUID{UUID: *r.SourceScannerID, Valid: true}
 	}
+	var srcIntelID uuid.NullUUID
+	if r.SourceIntelItemID != nil {
+		srcIntelID = uuid.NullUUID{UUID: *r.SourceIntelItemID, Valid: true}
+	}
 	return gen.InsertScanReportParams{
 		BaseID:            int64(r.BaseID),
 		SectorX:           int32(r.Coordinates.X),
@@ -54,6 +61,7 @@ func InsertScanReportParamsFromDomain(r *domain.SectorScanReport) gen.InsertScan
 		IsCloaked:         r.IsCloaked,
 		SourceOperationID: srcOpID,
 		SourceScannerID:   srcScannerID,
+		SourceIntelItemID: srcIntelID,
 		Name:              toNullString(r.Details.Name),
 		Description:       toNullString(r.Details.Description),
 		ImageUrl:          toNullString(r.Details.ImageURL),

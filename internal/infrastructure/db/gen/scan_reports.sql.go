@@ -24,7 +24,7 @@ func (q *Queries) DeleteScanReport(ctx context.Context, id int64) error {
 
 const getLatestScanReportsByBase = `-- name: GetLatestScanReportsByBase :many
 SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked,
-       source_operation_id, source_scanner_id, name, description, image_url, info
+       source_operation_id, source_scanner_id, source_intel_item_id, name, description, image_url, info
 FROM scan_reports
 WHERE base_id = $1
 ORDER BY created_at DESC
@@ -50,6 +50,7 @@ func (q *Queries) GetLatestScanReportsByBase(ctx context.Context, baseID int64) 
 			&i.IsCloaked,
 			&i.SourceOperationID,
 			&i.SourceScannerID,
+			&i.SourceIntelItemID,
 			&i.Name,
 			&i.Description,
 			&i.ImageUrl,
@@ -70,7 +71,7 @@ func (q *Queries) GetLatestScanReportsByBase(ctx context.Context, baseID int64) 
 
 const getScanReportByID = `-- name: GetScanReportByID :one
 SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked,
-       source_operation_id, source_scanner_id, name, description, image_url, info
+       source_operation_id, source_scanner_id, source_intel_item_id, name, description, image_url, info
 FROM scan_reports
 WHERE id = $1
 `
@@ -88,6 +89,7 @@ func (q *Queries) GetScanReportByID(ctx context.Context, id int64) (ScanReport, 
 		&i.IsCloaked,
 		&i.SourceOperationID,
 		&i.SourceScannerID,
+		&i.SourceIntelItemID,
 		&i.Name,
 		&i.Description,
 		&i.ImageUrl,
@@ -100,10 +102,10 @@ const insertScanReport = `-- name: InsertScanReport :one
 
 INSERT INTO scan_reports (
     base_id, sector_x, sector_y, created_at, type, is_cloaked,
-    source_operation_id, source_scanner_id, name, description, image_url, info
+    source_operation_id, source_scanner_id, source_intel_item_id, name, description, image_url, info
 ) VALUES (
     $1, $2, $3, $4, $5, $6,
-    $7, $8, $9, $10, $11, $12
+    $7, $8, $9, $10, $11, $12, $13
 )
 RETURNING id
 `
@@ -117,6 +119,7 @@ type InsertScanReportParams struct {
 	IsCloaked         bool            `json:"is_cloaked"`
 	SourceOperationID sql.NullInt64   `json:"source_operation_id"`
 	SourceScannerID   uuid.NullUUID   `json:"source_scanner_id"`
+	SourceIntelItemID uuid.NullUUID   `json:"source_intel_item_id"`
 	Name              sql.NullString  `json:"name"`
 	Description       sql.NullString  `json:"description"`
 	ImageUrl          sql.NullString  `json:"image_url"`
@@ -134,6 +137,7 @@ func (q *Queries) InsertScanReport(ctx context.Context, arg InsertScanReportPara
 		arg.IsCloaked,
 		arg.SourceOperationID,
 		arg.SourceScannerID,
+		arg.SourceIntelItemID,
 		arg.Name,
 		arg.Description,
 		arg.ImageUrl,
@@ -146,7 +150,7 @@ func (q *Queries) InsertScanReport(ctx context.Context, arg InsertScanReportPara
 
 const listScanReportsByBaseAndCoordinates = `-- name: ListScanReportsByBaseAndCoordinates :many
 SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked,
-       source_operation_id, source_scanner_id, name, description, image_url, info
+       source_operation_id, source_scanner_id, source_intel_item_id, name, description, image_url, info
 FROM scan_reports
 WHERE base_id = $1 AND sector_x = $2 AND sector_y = $3
 ORDER BY created_at DESC
@@ -177,6 +181,7 @@ func (q *Queries) ListScanReportsByBaseAndCoordinates(ctx context.Context, arg L
 			&i.IsCloaked,
 			&i.SourceOperationID,
 			&i.SourceScannerID,
+			&i.SourceIntelItemID,
 			&i.Name,
 			&i.Description,
 			&i.ImageUrl,
@@ -203,7 +208,7 @@ WITH params AS (
            $4::int AS r
 )
 SELECT sr.id, sr.base_id, sr.sector_x, sr.sector_y, sr.created_at, sr.type, sr.is_cloaked,
-       sr.source_operation_id, sr.source_scanner_id, sr.name, sr.description, sr.image_url, sr.info
+       sr.source_operation_id, sr.source_scanner_id, sr.source_intel_item_id, sr.name, sr.description, sr.image_url, sr.info
 FROM scan_reports AS sr
 JOIN sectors AS s ON s.x = sr.sector_x AND s.y = sr.sector_y
 JOIN params p ON p.base_id = sr.base_id
@@ -242,6 +247,7 @@ func (q *Queries) ListScanReportsByBaseWithinArea(ctx context.Context, arg ListS
 			&i.IsCloaked,
 			&i.SourceOperationID,
 			&i.SourceScannerID,
+			&i.SourceIntelItemID,
 			&i.Name,
 			&i.Description,
 			&i.ImageUrl,

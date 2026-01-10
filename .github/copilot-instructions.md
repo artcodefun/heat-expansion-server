@@ -19,7 +19,7 @@ This repo is a Go backend for the Heat Expansion strategy game. It uses Hexagona
 - **Interfaces (HTTP)**: `internal/interfaces/http`
   - Handlers translate HTTP to CQRS commands/queries; DTOs live in `dtos/`; router/server wiring lives here.
 - **Bootstrap**: `internal/bootstrap`
-  - `container.go`: Wires infrastructure to ports (repositories, scheduler, tx manager, tokens, etc.).
+  - `adapters.go`: Wires infrastructure to ports (repositories, scheduler, tx manager, tokens, etc.).
   - `app_services.go`: Aggregates app-level services (e.g. `AppServices` with provisioning, access control, outbox).
   - `commands.go` / `queries.go`: Aggregated command/query structs created from `Adapters` and `AppServices`.
   - `app.go`: Builds and runs the `App` (DB, adapters, services, commands, queries, HTTP server, background loops).
@@ -56,6 +56,6 @@ This repo is a Go backend for the Heat Expansion strategy game. It uses Hexagona
 
 ## How to Extend Safely
 - When introducing new domain behavior, prefer adding methods to aggregates in `internal/core/domain` and invoking them from command handlers, rather than mutating models directly in handlers.
-- For new write-side features, add/extend ports in `internal/core/ports`, implement them in `internal/infrastructure/db/repo`, wire them in `internal/bootstrap/container.go`, and inject via `Commands`/`AppServices`.
+- For new write-side features, add/extend ports in `internal/core/ports`, implement them in `internal/infrastructure/db/repo`, wire them in `internal/bootstrap/adapters.go`, and inject via `Commands`/`AppServices`.
 - For new read-side endpoints, add read models and queries in `internal/infrastructure/readstore`, then wire new query facades in `internal/core/queries` and expose via HTTP handlers.
 - Keep serialization, DTOs, and DB schemas in infra layers (`dtos/`, `mappers/`, `queries/`), not in domain or command/query packages.

@@ -130,6 +130,7 @@ CREATE TABLE scan_reports (
     is_cloaked           BOOLEAN NOT NULL DEFAULT FALSE,
     source_operation_id  BIGINT  REFERENCES military_operations(id) ON DELETE SET NULL,
     source_scanner_id    UUID,
+    source_intel_item_id UUID,
     name                 TEXT,
     description          TEXT,
     image_url            TEXT,

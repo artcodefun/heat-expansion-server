@@ -61,4 +61,6 @@ type SectorScanReport struct {
 	SourceOperationID int
 	// Optional link to the scanner that produced this report
 	SourceScannerID *uuid.UUID
+	// Optional link to the intel item that was decrypted to produce this report
+	SourceIntelItemID *uuid.UUID
 }
