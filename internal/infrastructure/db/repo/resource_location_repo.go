@@ -92,6 +92,23 @@ func (r *ResourceLocationRepo) FindByCoordinatesForUpdate(x, y int) (*domain.Res
 	return loc, nil
 }
 
+func (r *ResourceLocationRepo) FindClosest(x, y int) (*domain.ResourceLocationModel, error) {
+	ctx := context.Background()
+	row, err := r.q.FindClosestResourceLocation(ctx, gen.FindClosestResourceLocationParams{X: int32(x), Y: int32(y)})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ports.ErrNotFound
+		}
+		return nil, err
+	}
+	armyProtos, buildProtos, err := r.loadPrototypes(ctx)
+	if err != nil {
+		return nil, err
+	}
+	loc := mappers.ResourceLocationFromDB(row, armyProtos, buildProtos)
+	return loc, nil
+}
+
 func (r *ResourceLocationRepo) Update(loc *domain.ResourceLocationModel) error {
 	return r.q.UpdateResourceLocation(context.Background(), mappers.UpdateResourceLocationParamsFromDomain(loc))
 }

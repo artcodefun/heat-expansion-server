@@ -59,6 +59,14 @@ FROM user_bases
 WHERE sector_x = @sector_x AND sector_y = @sector_y
 FOR UPDATE;
 
+-- name: FindClosestBase :one
+SELECT id, user_id, sector_x, sector_y, name, description, image_url,
+       stats, stats_calc_timestamp
+FROM user_bases
+WHERE sector_x != @x OR sector_y != @y
+ORDER BY (sector_x - @x)^2 + (sector_y - @y)^2 ASC
+LIMIT 1;
+
 -- name: ListAllBases :many
 SELECT id, user_id, sector_x, sector_y, name, description, image_url,
        stats, stats_calc_timestamp

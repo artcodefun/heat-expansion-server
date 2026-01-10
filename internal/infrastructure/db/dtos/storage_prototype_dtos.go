@@ -59,8 +59,9 @@ func IntelStorageDataFromDTO(d *IntelStorageDataDTO) *domain.IntelStorageData {
 
 // DamagedStorageDataDTO represents JSON shape for damaged storage items in prototypes.
 type DamagedStorageDataDTO struct {
-	RestorePrice   PriceDTO `json:"restore_price"`
-	OriginalUnitID int      `json:"original_unit_id"`
+	RestorePrice       PriceDTO `json:"restore_price"`
+	RestorationSeconds int64    `json:"restoration_seconds"`
+	OriginalUnitID     int      `json:"original_unit_id"`
 }
 
 func DamagedStorageDataDTOFromDomain(d *domain.DamagedStorageData) *DamagedStorageDataDTO {
@@ -68,8 +69,9 @@ func DamagedStorageDataDTOFromDomain(d *domain.DamagedStorageData) *DamagedStora
 		return nil
 	}
 	return &DamagedStorageDataDTO{
-		RestorePrice:   PriceDTOFromDomain(d.RestorePrice),
-		OriginalUnitID: d.OriginalUnitID,
+		RestorePrice:       PriceDTOFromDomain(d.RestorePrice),
+		RestorationSeconds: d.RestorationSeconds,
+		OriginalUnitID:     d.OriginalUnitID,
 	}
 }
 
@@ -78,8 +80,9 @@ func DamagedStorageDataFromDTO(d *DamagedStorageDataDTO) *domain.DamagedStorageD
 		return nil
 	}
 	return &domain.DamagedStorageData{
-		RestorePrice:   PriceFromDTO(d.RestorePrice),
-		OriginalUnitID: d.OriginalUnitID,
+		RestorePrice:       PriceFromDTO(d.RestorePrice),
+		RestorationSeconds: d.RestorationSeconds,
+		OriginalUnitID:     d.OriginalUnitID,
 	}
 }
 

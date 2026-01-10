@@ -73,6 +73,37 @@ func (q *Queries) DeleteBase(ctx context.Context, id int64) error {
 	return err
 }
 
+const findClosestBase = `-- name: FindClosestBase :one
+SELECT id, user_id, sector_x, sector_y, name, description, image_url,
+       stats, stats_calc_timestamp
+FROM user_bases
+WHERE sector_x != $1 OR sector_y != $2
+ORDER BY (sector_x - $1)^2 + (sector_y - $2)^2 ASC
+LIMIT 1
+`
+
+type FindClosestBaseParams struct {
+	X int32 `json:"x"`
+	Y int32 `json:"y"`
+}
+
+func (q *Queries) FindClosestBase(ctx context.Context, arg FindClosestBaseParams) (UserBasis, error) {
+	row := q.queryRow(ctx, q.findClosestBaseStmt, findClosestBase, arg.X, arg.Y)
+	var i UserBasis
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.SectorX,
+		&i.SectorY,
+		&i.Name,
+		&i.Description,
+		&i.ImageUrl,
+		&i.Stats,
+		&i.StatsCalcTimestamp,
+	)
+	return i, err
+}
+
 const getBaseByCoordinates = `-- name: GetBaseByCoordinates :one
 SELECT id, user_id, sector_x, sector_y, name, description, image_url,
        stats, stats_calc_timestamp

@@ -24,8 +24,9 @@ func (s MilitaryOperationService) ResolveAgainstUserBase(defender *UserBaseModel
 	switch s.Operation.Type {
 	case MilitaryOperationTypeAttack:
 		// Build defender snapshot
-		defenders := MilitaryUnitsFromPresent(defender.ArmiesPresent)
-		structures := DefenseStructuresFromBuildings(defender.BuildingsPresent)
+		mods := defender.ActiveModifiers()
+		defenders := MilitaryUnitsFromPresent(defender.ArmiesPresent, mods)
+		structures := DefenseStructuresFromBuildings(defender.BuildingsPresent, mods)
 
 		// Resolve using operation's domain logic
 		// Compute available resource pool at target for loot calculation inside operation
@@ -47,7 +48,8 @@ func (s MilitaryOperationService) ResolveAgainstUserBase(defender *UserBaseModel
 		}
 	case MilitaryOperationTypeSpy:
 		// Spy: no loot, but still compute survivors and adjust only spy defenders
-		allDefenders := MilitaryUnitsFromPresent(defender.ArmiesPresent)
+		mods := defender.ActiveModifiers()
+		allDefenders := MilitaryUnitsFromPresent(defender.ArmiesPresent, mods)
 		defendingSpies := filterSpyUnits(allDefenders)
 		cloak := cloakingStrengthFromBuildings(defender.BuildingsPresent)
 		res := s.Operation.ResolveSpy(cloak, defendingSpies)

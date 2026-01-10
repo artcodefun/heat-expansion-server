@@ -29,7 +29,6 @@ type UserBaseModel struct {
 	StorageItemsPresent []StorageItemPresent
 
 	Stats UserBaseStats
-	// ...existing fields...
 }
 
 // NewUserBaseModel constructs a fresh user base aggregate, ensuring all slices are initialized
@@ -148,12 +147,7 @@ func (ub *UserBaseModel) MoveBuildQueue() {
 			present := BuildItemPresent{
 				BaseOwnedItem: NewBaseOwnedItem(ub.ID),
 				Prototype:     prod.Prototype,
-				Refund: PriceModel{
-					Credits:    prod.Prototype.Price.Credits / 10,
-					Iron:       prod.Prototype.Price.Iron / 10,
-					Titanium:   prod.Prototype.Price.Titanium / 10,
-					Antimatter: prod.Prototype.Price.Antimatter / 10,
-				},
+				Refund:        prod.Prototype.Price.Divide(10),
 			}
 			ub.BuildingsPresent = append(ub.BuildingsPresent, present)
 			// Emit event for building production finished
@@ -377,12 +371,7 @@ func (ub *UserBaseModel) MoveArmyQueue() {
 					BaseOwnedItem: NewBaseOwnedItem(ub.ID),
 					Prototype:     prod.Prototype,
 					Count:         1,
-					Refund: PriceModel{
-						Credits:    prod.Prototype.Price.Credits / 10,
-						Iron:       prod.Prototype.Price.Iron / 10,
-						Titanium:   prod.Prototype.Price.Titanium / 10,
-						Antimatter: prod.Prototype.Price.Antimatter / 10,
-					},
+					Refund:        prod.Prototype.Price.Divide(10),
 				}
 				ub.ArmiesPresent = append(ub.ArmiesPresent, present)
 			}
@@ -667,8 +656,21 @@ func (ub *UserBaseModel) DeletePresentStorageItemByID(itemID uuid.UUID) error {
 	return nil
 }
 
+// AddStorageItem adds a new storage item to the base.
+func (ub *UserBaseModel) AddStorageItem(proto StorageItemPrototype, expiresAt *int64) uuid.UUID {
+	item := StorageItemPresent{
+		BaseOwnedItem: NewBaseOwnedItem(ub.ID),
+		Prototype:     proto,
+		ExpiresAt:     expiresAt,
+		IsActive:      false,
+	}
+	ub.StorageItemsPresent = append(ub.StorageItemsPresent, item)
+	return item.ID
+}
+
 // ActivateBuffByID activates a buff storage item by item ID, sets ExpiresAt, emits event, and returns error if not found or already activated
 func (ub *UserBaseModel) ActivateBuffByID(itemID uuid.UUID) error {
+	defer ub.recalculateStats()
 	now := NowUnix()
 	for i, item := range ub.StorageItemsPresent {
 		if item.ID == itemID && item.Prototype.BuffData != nil {
@@ -679,6 +681,7 @@ func (ub *UserBaseModel) ActivateBuffByID(itemID uuid.UUID) error {
 			// Set ExpiresAt
 			expiresAt := now + item.Prototype.BuffData.DurationSeconds
 			ub.StorageItemsPresent[i].ExpiresAt = &expiresAt
+			ub.StorageItemsPresent[i].IsActive = true
 
 			// Emit event for buff activation
 			ub.AddEvent(NewBuffActivatedEvent(ub.ID, itemID))
@@ -688,25 +691,208 @@ func (ub *UserBaseModel) ActivateBuffByID(itemID uuid.UUID) error {
 	return fmt.Errorf("buff storage item with ID %s not found or not a buff", itemID)
 }
 
-// DeleteExpiredBuffs removes all expired buff storage items from present
+// DeleteExpiredBuffs removes expired buffs from storage.
 func (ub *UserBaseModel) DeleteExpiredBuffs() int {
 	now := NowUnix()
 	var remaining []StorageItemPresent
-	deleted := 0
+	processed := 0
 	for _, item := range ub.StorageItemsPresent {
-		if item.Prototype.BuffData != nil && item.ExpiresAt != nil {
-			if *item.ExpiresAt <= now {
-				deleted++
-				continue
-			}
+		if item.ExpiresAt != nil && *item.ExpiresAt <= now && item.Prototype.BuffData != nil {
+			processed++
+			continue
 		}
 		remaining = append(remaining, item)
 	}
 	ub.StorageItemsPresent = remaining
-	if deleted > 0 {
+	if processed > 0 {
 		ub.recalculateStats()
 	}
-	return deleted
+	return processed
+}
+
+// DecryptIntelItemByID completes the decryption process for a specific intel item.
+func (ub *UserBaseModel) DecryptIntelItemByID(itemID uuid.UUID) (HiddenLocationType, error) {
+	now := NowUnix()
+	idx := -1
+	for i, item := range ub.StorageItemsPresent {
+		if item.ID == itemID && item.Prototype.IntelData != nil {
+			if item.ExpiresAt == nil || *item.ExpiresAt > now {
+				return "", fmt.Errorf("intel item %s is not ready for decryption completion", itemID)
+			}
+			idx = i
+			break
+		}
+	}
+	if idx == -1 {
+		return "", fmt.Errorf("ready intel item %s not found", itemID)
+	}
+
+	item := ub.StorageItemsPresent[idx]
+	intelType := item.Prototype.IntelData.Type
+	// Emit event
+	ub.AddEvent(NewIntelDecryptionFinishedEvent(ub.ID, item.ID, intelType))
+
+	// Remove from storage
+	ub.StorageItemsPresent = append(ub.StorageItemsPresent[:idx], ub.StorageItemsPresent[idx+1:]...)
+	return intelType, nil
+}
+
+// RestoreDamagedItemByID completes the restoration process for a specific damaged item.
+func (ub *UserBaseModel) RestoreDamagedItemByID(itemID uuid.UUID, armyProtos []*ArmyItemPrototype) error {
+	defer ub.recalculateStats()
+	now := NowUnix()
+	idx := -1
+	for i, item := range ub.StorageItemsPresent {
+		if item.ID == itemID && item.Prototype.DamagedData != nil {
+			if item.ExpiresAt == nil || *item.ExpiresAt > now {
+				return fmt.Errorf("damaged item %s is not ready for restoration completion", itemID)
+			}
+			idx = i
+			break
+		}
+	}
+	if idx == -1 {
+		return fmt.Errorf("ready damaged item %s not found", itemID)
+	}
+
+	item := ub.StorageItemsPresent[idx]
+	data := item.Prototype.DamagedData
+	var unitProto *ArmyItemPrototype
+	for _, p := range armyProtos {
+		if p.ID == data.OriginalUnitID {
+			unitProto = p
+			break
+		}
+	}
+
+	if unitProto == nil {
+		return fmt.Errorf("original unit prototype %d not found", data.OriginalUnitID)
+	}
+
+	// Add to present armies
+	found := false
+	for j, p := range ub.ArmiesPresent {
+		if p.Prototype.ID == unitProto.ID {
+			ub.ArmiesPresent[j].Count++
+			found = true
+			break
+		}
+	}
+	if !found {
+		ub.ArmiesPresent = append(ub.ArmiesPresent, ArmyItemPresent{
+			BaseOwnedItem: NewBaseOwnedItem(ub.ID),
+			Prototype:     *unitProto,
+			Count:         1,
+			Refund:        unitProto.Price.Divide(2),
+		})
+	}
+
+	// Emit event
+	ub.AddEvent(NewDamagedItemRestoredEvent(ub.ID, item.ID))
+
+	// Remove from storage
+	ub.StorageItemsPresent = append(ub.StorageItemsPresent[:idx], ub.StorageItemsPresent[idx+1:]...)
+	return nil
+}
+
+// StartIntelDecryptionByID starts the decryption process for an intel item.
+func (ub *UserBaseModel) StartIntelDecryptionByID(itemID uuid.UUID) error {
+	now := NowUnix()
+	for i, item := range ub.StorageItemsPresent {
+		if item.ID == itemID && item.Prototype.IntelData != nil {
+			if item.ExpiresAt != nil {
+				return fmt.Errorf("intel item with ID %s is already being decrypted", itemID)
+			}
+			expiresAt := now + item.Prototype.IntelData.DecryptionSeconds
+			ub.StorageItemsPresent[i].ExpiresAt = &expiresAt
+			ub.StorageItemsPresent[i].IsActive = true
+
+			ub.AddEvent(NewIntelDecryptionStartedEvent(ub.ID, itemID))
+			return nil
+		}
+	}
+	return fmt.Errorf("intel storage item with ID %s not found or not an intel item", itemID)
+}
+
+// StartDamagedItemRestorationByID starts the restoration process for a damaged item.
+func (ub *UserBaseModel) StartDamagedItemRestorationByID(itemID uuid.UUID, armyProtos []*ArmyItemPrototype) error {
+	defer ub.recalculateStats()
+	now := NowUnix()
+
+	for i, item := range ub.StorageItemsPresent {
+		if item.ID == itemID && item.Prototype.DamagedData != nil {
+			if item.ExpiresAt != nil {
+				return fmt.Errorf("damaged item with ID %s is already being restored", itemID)
+			}
+			data := item.Prototype.DamagedData
+
+			// Find original unit prototype
+			var unitProto *ArmyItemPrototype
+			for _, p := range armyProtos {
+				if p.ID == data.OriginalUnitID {
+					unitProto = p
+					break
+				}
+			}
+			if unitProto == nil {
+				return fmt.Errorf("original unit prototype %d not found", data.OriginalUnitID)
+			}
+
+			// Validate space
+			if ub.Stats.Space+unitProto.Space > ub.Stats.SpaceCapacity {
+				return fmt.Errorf("not enough space to restore unit: required %d, available %d", unitProto.Space, ub.Stats.SpaceCapacity-ub.Stats.Space)
+			}
+
+			// Validate resources
+			if err := ub.Stats.CheckResources(data.RestorePrice); err != nil {
+				return err
+			}
+
+			// Deduct price
+			ub.Stats.SubtractResources(data.RestorePrice)
+
+			// Start restoration
+			expiresAt := now + data.RestorationSeconds
+			ub.StorageItemsPresent[i].ExpiresAt = &expiresAt
+			ub.StorageItemsPresent[i].IsActive = true
+
+			ub.AddEvent(NewDamagedItemRestorationStartedEvent(ub.ID, itemID))
+			return nil
+		}
+	}
+	return fmt.Errorf("damaged storage item with ID %s not found or not a damaged item", itemID)
+}
+
+// ActivateArtifactByID enables the bonus of an artifact.
+func (ub *UserBaseModel) ActivateArtifactByID(itemID uuid.UUID) error {
+	defer ub.recalculateStats()
+	for i, item := range ub.StorageItemsPresent {
+		if item.ID == itemID && item.Prototype.ArtifactData != nil {
+			if item.IsActive {
+				return fmt.Errorf("artifact with ID %s is already active", itemID)
+			}
+			ub.StorageItemsPresent[i].IsActive = true
+			ub.AddEvent(NewArtifactActivatedEvent(ub.ID, itemID))
+			return nil
+		}
+	}
+	return fmt.Errorf("artifact storage item with ID %s not found or not an artifact", itemID)
+}
+
+// DeactivateArtifactByID disables the bonus of an artifact.
+func (ub *UserBaseModel) DeactivateArtifactByID(itemID uuid.UUID) error {
+	defer ub.recalculateStats()
+	for i, item := range ub.StorageItemsPresent {
+		if item.ID == itemID && item.Prototype.ArtifactData != nil {
+			if !item.IsActive {
+				return fmt.Errorf("artifact with ID %s is not active", itemID)
+			}
+			ub.StorageItemsPresent[i].IsActive = false
+			ub.AddEvent(NewArtifactDeactivatedEvent(ub.ID, itemID))
+			return nil
+		}
+	}
+	return fmt.Errorf("artifact storage item with ID %s not found or not an artifact", itemID)
 }
 
 // ArmyDeploymentRequest represents a request to allocate a number of units
@@ -859,7 +1045,7 @@ func (ub *UserBaseModel) ReturnAllDeployedFromOperation(operationID int) {
 				BaseOwnedItem: NewBaseOwnedItem(ub.ID),
 				Prototype:     d.Prototype,
 				Count:         d.Count,
-				Refund:        PriceModel{},
+				Refund:        d.Prototype.Price.Divide(10),
 			})
 		}
 	}
@@ -972,16 +1158,16 @@ func (ub *UserBaseModel) DeductLoot(loot PriceModel) {
 // CreditLoot adds the provided loot to the base's resources, clamped by capacities.
 func (ub *UserBaseModel) CreditLoot(loot PriceModel) {
 	if loot.Credits > 0 {
-		ub.Stats.Credits = minInt(ub.Stats.Credits+loot.Credits, ub.Stats.CreditsCapacity)
+		ub.Stats.Credits = min(ub.Stats.Credits+loot.Credits, ub.Stats.CreditsCapacity)
 	}
 	if loot.Iron > 0 {
-		ub.Stats.Iron = minInt(ub.Stats.Iron+loot.Iron, ub.Stats.IronCapacity)
+		ub.Stats.Iron = min(ub.Stats.Iron+loot.Iron, ub.Stats.IronCapacity)
 	}
 	if loot.Titanium > 0 {
-		ub.Stats.Titanium = minInt(ub.Stats.Titanium+loot.Titanium, ub.Stats.TitaniumCapacity)
+		ub.Stats.Titanium = min(ub.Stats.Titanium+loot.Titanium, ub.Stats.TitaniumCapacity)
 	}
 	if loot.Antimatter > 0 {
-		ub.Stats.Antimatter = minInt(ub.Stats.Antimatter+loot.Antimatter, ub.Stats.AntimatterCapacity)
+		ub.Stats.Antimatter = min(ub.Stats.Antimatter+loot.Antimatter, ub.Stats.AntimatterCapacity)
 	}
 }
 
@@ -993,6 +1179,36 @@ func (ub *UserBaseModel) TotalRadarStealthStrength() int {
 		}
 	}
 	return total
+}
+
+// ActiveModifiers returns the currently-active multipliers.
+// Buffs must be IsActive and non-expired; artifacts must be IsActive.
+func (ub *UserBaseModel) ActiveModifiers() BaseModifiers {
+	m := IdentityBaseModifiers()
+	now := NowUnix()
+
+	for _, it := range ub.StorageItemsPresent {
+		if !it.IsActive {
+			continue
+		}
+
+		// Timed buffs
+		if it.Prototype.BuffData != nil {
+			if it.ExpiresAt != nil && *it.ExpiresAt <= now {
+				continue
+			}
+			m.ApplyBuff(it.Prototype.BuffData.Type, float64(it.Prototype.BuffData.Value))
+			continue
+		}
+
+		// Permanent artifacts (toggleable by IsActive)
+		if it.Prototype.ArtifactData != nil {
+			m.ApplyArtifact(it.Prototype.ArtifactData.Type, float64(it.Prototype.ArtifactData.Value))
+			continue
+		}
+	}
+
+	return m
 }
 
 // Default capacities and stats for UserBaseStats
@@ -1025,6 +1241,29 @@ type UserBaseStats struct {
 	Space                int
 	SpaceCapacity        int
 	CalculationTimestamp int64 // Unix timestamp of last resource calculation
+}
+
+func (s *UserBaseStats) CheckResources(price PriceModel) error {
+	if price.Credits > s.Credits {
+		return fmt.Errorf("insufficient credits")
+	}
+	if price.Iron > s.Iron {
+		return fmt.Errorf("insufficient iron")
+	}
+	if price.Titanium > s.Titanium {
+		return fmt.Errorf("insufficient titanium")
+	}
+	if price.Antimatter > s.Antimatter {
+		return fmt.Errorf("insufficient antimatter")
+	}
+	return nil
+}
+
+func (s *UserBaseStats) SubtractResources(price PriceModel) {
+	s.Credits -= price.Credits
+	s.Iron -= price.Iron
+	s.Titanium -= price.Titanium
+	s.Antimatter -= price.Antimatter
 }
 
 // RecalculateStats updates the UserBaseStats based on present items and default constants.
@@ -1120,14 +1359,15 @@ func (ub *UserBaseModel) recalculateStats() {
 		}
 	}
 
-	// // Aggregate bonuses from present storage items
-	// for _, s := range ub.StorageItemsPresent {
-	// 	stats.CreditsCapacity += s.Prototype.CreditsCapacityBonus
-	// 	stats.IronCapacity += s.Prototype.IronCapacityBonus
-	// 	stats.TitaniumCapacity += s.Prototype.TitaniumCapacityBonus
-	// 	stats.AntimatterCapacity += s.Prototype.AntimatterCapacityBonus
-	// 	stats.SpaceCapacity += s.Prototype.SpaceCapacityBonus
-	// }
+	// Apply modifiers from storage items (buffs and artifacts)
+	mods := ub.ActiveModifiers()
+	stats.CreditsProduction *= mods.CreditsProdMul
+	stats.IronProduction *= mods.IronProdMul
+	stats.TitaniumProduction *= mods.TitaniumProdMul
+	// (Antimatter production doesn't have a specific multiplier in the current BuffTypes/ArtifactTypes)
+
+	stats.Attack = mulInt(stats.Attack, mods.AttackMul)
+	stats.Defence = mulInt(stats.Defence, mods.DefenceMul)
 
 	// Calculate current resources based on previous value, production rate, and elapsed time
 	prevStats := ub.Stats
@@ -1163,14 +1403,6 @@ func (ub *UserBaseModel) recalculateStats() {
 
 	stats.CalculationTimestamp = now
 	ub.Stats = stats
-}
-
-// Utility: minInt returns the smaller of two ints.
-func minInt(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
 }
 
 // BaseOwnedItem is embedded in all items that belong to a user base.

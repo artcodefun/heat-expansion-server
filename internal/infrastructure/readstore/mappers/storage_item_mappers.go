@@ -84,7 +84,8 @@ func damagedStorageDataFromJSON(nm pqtype.NullRawMessage) *readmodels.DamagedSto
 			Titanium:   d.RestorePrice.Titanium,
 			Antimatter: d.RestorePrice.Antimatter,
 		},
-		OriginalUnitID: d.OriginalUnitID,
+		RestorationSeconds: d.RestorationSeconds,
+		OriginalUnitID:     d.OriginalUnitID,
 	}
 }
 

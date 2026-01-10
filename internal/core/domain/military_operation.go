@@ -744,31 +744,3 @@ func resolveSpySkirmish(attackers, defenders []MilitaryUnitSnap) (atkRemaining [
 	}
 	return atk, def, attackerWon
 }
-
-// Converters from base deploy-ready items to operation units
-
-// OperationUnitFromDeployed converts a single deploy-ready stack into an OperationUnit snapshot.
-func OperationUnitFromDeployed(d DeploymentReadyItem) MilitaryUnitSnap {
-	return MilitaryUnitSnap{
-		PrototypeID: d.Prototype.ID,
-		Category:    d.Prototype.Category,
-		Attack:      d.Prototype.Attack,
-		Defence:     d.Prototype.Defence,
-		Capacity:    d.Prototype.Capacity,
-		Stealth:     d.Prototype.Stealth,
-		Speed:       d.Prototype.Speed,
-		Count:       d.Count,
-	}
-}
-
-// OperationUnitsFromDeployed returns operation units for a list of deploy-ready stacks.
-func OperationUnitsFromDeployed(items []DeploymentReadyItem) []MilitaryUnitSnap {
-	if len(items) == 0 {
-		return nil
-	}
-	out := make([]MilitaryUnitSnap, 0, len(items))
-	for _, d := range items {
-		out = append(out, OperationUnitFromDeployed(d))
-	}
-	return out
-}

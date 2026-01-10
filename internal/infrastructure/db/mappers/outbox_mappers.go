@@ -16,6 +16,8 @@ const (
 	jobKindMoveArmyQueue        = "MOVE_ARMY_QUEUE"
 	jobKindMoveTechQueue        = "MOVE_TECH_QUEUE"
 	jobKindDeleteExpiredBuff    = "DELETE_EXPIRED_BUFF"
+	jobKindRestoreDamagedItem   = "RESTORE_DAMAGED_ITEM"
+	jobKindDecryptIntelItem     = "DECRYPT_INTEL_ITEM"
 	jobKindUpdateMilitaryOp     = "UPDATE_MILITARY_OPERATION"
 	jobKindSpawnNearbyLocations = "SPAWN_NEARBY_LOCATIONS"
 	jobKindIntelligenceScan     = "INTELLIGENCE_SCAN"
@@ -38,6 +40,12 @@ func EncodeJob(job ports.SchadulableJob) (kind string, payload []byte, err error
 	case ports.DeleteExpiredBuffJob:
 		payload, err = json.Marshal(dtos.DeleteExpiredBuffJobDTOFromDomain(j))
 		return jobKindDeleteExpiredBuff, payload, err
+	case ports.RestoreDamagedItemJob:
+		payload, err = json.Marshal(dtos.RestoreDamagedItemJobDTOFromDomain(j))
+		return jobKindRestoreDamagedItem, payload, err
+	case ports.DecryptIntelItemJob:
+		payload, err = json.Marshal(dtos.DecryptIntelItemJobDTOFromDomain(j))
+		return jobKindDecryptIntelItem, payload, err
 	case ports.UpdateMilitaryOperationJob:
 		payload, err = json.Marshal(dtos.UpdateMilitaryOperationJobDTOFromDomain(j))
 		return jobKindUpdateMilitaryOp, payload, err
@@ -83,6 +91,18 @@ func DecodeJob(kind string, payload []byte) (ports.SchadulableJob, error) {
 			return nil, err
 		}
 		return dtos.DeleteExpiredBuffJobFromDTO(dto), nil
+	case jobKindRestoreDamagedItem:
+		var dto dtos.RestoreDamagedItemJobDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.RestoreDamagedItemJobFromDTO(dto), nil
+	case jobKindDecryptIntelItem:
+		var dto dtos.DecryptIntelItemJobDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.DecryptIntelItemJobFromDTO(dto), nil
 	case jobKindUpdateMilitaryOp:
 		var dto dtos.UpdateMilitaryOperationJobDTO
 		if err := json.Unmarshal(payload, &dto); err != nil {
@@ -132,6 +152,12 @@ const (
 	evKindTechResearchSpeedup            = "TECH_RESEARCH_SPEEDUP"
 	evKindStorageItemPresentDeleted      = "STORAGE_ITEM_PRESENT_DELETED"
 	evKindBuffActivated                  = "BUFF_ACTIVATED"
+	evKindIntelDecryptionStarted         = "INTEL_DECRYPTION_STARTED"
+	evKindIntelDecryptionFinished        = "INTEL_DECRYPTION_FINISHED"
+	evKindDamagedItemRestorationStarted  = "DAMAGED_ITEM_RESTORATION_STARTED"
+	evKindDamagedItemRestored            = "DAMAGED_ITEM_RESTORED"
+	evKindArtifactActivated              = "ARTIFACT_ACTIVATED"
+	evKindArtifactDeactivated            = "ARTIFACT_DEACTIVATED"
 	evKindMilitaryOperationStarted       = "MILITARY_OPERATION_STARTED"
 	evKindMilitaryOperationArrived       = "MILITARY_OPERATION_ARRIVED"
 	evKindMilitaryOperationResolved      = "MILITARY_OPERATION_RESOLVED"
@@ -199,6 +225,24 @@ func EncodeEvent(ev domain.DomainEvent) (kind string, payload []byte, err error)
 	case domain.BuffActivatedEvent:
 		payload, err = json.Marshal(dtos.BuffActivatedEventDTOFromDomain(e))
 		return evKindBuffActivated, payload, err
+	case domain.IntelDecryptionStartedEvent:
+		payload, err = json.Marshal(dtos.IntelDecryptionStartedEventDTOFromDomain(e))
+		return evKindIntelDecryptionStarted, payload, err
+	case domain.IntelDecryptionFinishedEvent:
+		payload, err = json.Marshal(dtos.IntelDecryptionFinishedEventDTOFromDomain(e))
+		return evKindIntelDecryptionFinished, payload, err
+	case domain.DamagedItemRestorationStartedEvent:
+		payload, err = json.Marshal(dtos.DamagedItemRestorationStartedEventDTOFromDomain(e))
+		return evKindDamagedItemRestorationStarted, payload, err
+	case domain.DamagedItemRestoredEvent:
+		payload, err = json.Marshal(dtos.DamagedItemRestoredEventDTOFromDomain(e))
+		return evKindDamagedItemRestored, payload, err
+	case domain.ArtifactActivatedEvent:
+		payload, err = json.Marshal(dtos.ArtifactActivatedEventDTOFromDomain(e))
+		return evKindArtifactActivated, payload, err
+	case domain.ArtifactDeactivatedEvent:
+		payload, err = json.Marshal(dtos.ArtifactDeactivatedEventDTOFromDomain(e))
+		return evKindArtifactDeactivated, payload, err
 
 	case domain.MilitaryOperationStartedEvent:
 		payload, err = json.Marshal(dtos.MilitaryOperationStartedEventDTOFromDomain(e))
@@ -334,6 +378,48 @@ func DecodeEvent(kind string, payload []byte) (domain.DomainEvent, error) {
 			return nil, err
 		}
 		return dtos.BuffActivatedEventFromDTO(dto), nil
+
+	case evKindIntelDecryptionStarted:
+		var dto dtos.IntelDecryptionStartedEventDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.IntelDecryptionStartedEventFromDTO(dto), nil
+
+	case evKindIntelDecryptionFinished:
+		var dto dtos.IntelDecryptionFinishedEventDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.IntelDecryptionFinishedEventFromDTO(dto), nil
+
+	case evKindDamagedItemRestorationStarted:
+		var dto dtos.DamagedItemRestorationStartedEventDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.DamagedItemRestorationStartedEventFromDTO(dto), nil
+
+	case evKindDamagedItemRestored:
+		var dto dtos.DamagedItemRestoredEventDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.DamagedItemRestoredEventFromDTO(dto), nil
+
+	case evKindArtifactActivated:
+		var dto dtos.ArtifactActivatedEventDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.ArtifactActivatedEventFromDTO(dto), nil
+
+	case evKindArtifactDeactivated:
+		var dto dtos.ArtifactDeactivatedEventDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.ArtifactDeactivatedEventFromDTO(dto), nil
 
 	case evKindMilitaryOperationStarted:
 		var dto dtos.MilitaryOperationStartedEventDTO

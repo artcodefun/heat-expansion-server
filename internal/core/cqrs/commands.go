@@ -49,6 +49,11 @@ type TechCommands interface {
 type StorageCommands interface {
 	DeletePresentStorageItem(ctx CommandContext, baseID int, itemID uuid.UUID) error
 	ActivateBuff(ctx CommandContext, baseID int, itemID uuid.UUID) error
+	StartIntelDecryption(ctx CommandContext, baseID int, itemID uuid.UUID) error
+	StartDamagedItemRestoration(ctx CommandContext, baseID int, itemID uuid.UUID) error
+	ActivateArtifact(ctx CommandContext, baseID int, itemID uuid.UUID) error
+	DeactivateArtifact(ctx CommandContext, baseID int, itemID uuid.UUID) error
+	OpenConsumableBox(ctx CommandContext, baseID int, itemID uuid.UUID) error
 }
 
 // OperationCommands encapsulates military operation life-cycle mutations.

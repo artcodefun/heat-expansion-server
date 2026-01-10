@@ -67,6 +67,8 @@ type ResourceLocationRepository interface {
 	FindByCoordinates(x, y int) (*domain.ResourceLocationModel, error)
 	// FindByCoordinatesForUpdate acquires a row-level lock on the resource location for the duration of the transaction.
 	FindByCoordinatesForUpdate(x, y int) (*domain.ResourceLocationModel, error)
+	// FindClosest returns the resource location closest to the provided coordinates.
+	FindClosest(x, y int) (*domain.ResourceLocationModel, error)
 	Update(loc *domain.ResourceLocationModel) error
 	Delete(id int) error
 	// Tx returns a repository instance bound to the provided transaction.
@@ -80,6 +82,8 @@ type DangerousLocationRepository interface {
 	FindByCoordinates(x, y int) (*domain.DangerousLocationModel, error)
 	// FindByCoordinatesForUpdate acquires a row-level lock on the dangerous location for the duration of the transaction.
 	FindByCoordinatesForUpdate(x, y int) (*domain.DangerousLocationModel, error)
+	// FindClosest returns the dangerous location closest to the provided coordinates.
+	FindClosest(x, y int) (*domain.DangerousLocationModel, error)
 	Update(loc *domain.DangerousLocationModel) error
 	Delete(id int) error
 	// Tx returns a repository instance bound to the provided transaction.
@@ -102,6 +106,8 @@ type UserBaseRepository interface {
 	FindByCoordinates(x, y int) (*domain.UserBaseModel, error)
 	// FindByCoordinatesForUpdate acquires a row-level lock on the base found by coordinates.
 	FindByCoordinatesForUpdate(x, y int) (*domain.UserBaseModel, error)
+	// FindClosest returns the user base closest to the provided coordinates.
+	FindClosest(x, y int) (*domain.UserBaseModel, error)
 	// FindAll returns all user bases (light hydration). Primarily for world generation / balancing.
 	FindAll() ([]*domain.UserBaseModel, error)
 	// Tx returns a repository instance bound to the provided transaction.

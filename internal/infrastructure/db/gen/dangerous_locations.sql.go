@@ -20,6 +20,38 @@ func (q *Queries) DeleteDangerousLocation(ctx context.Context, id int64) error {
 	return err
 }
 
+const findClosestDangerousLocation = `-- name: FindClosestDangerousLocation :one
+SELECT id, sector_x, sector_y, danger_level, name, description, image_url,
+       resources, resources_calc_timestamp, armies, buildings
+FROM dangerous_locations
+ORDER BY (sector_x - $1)^2 + (sector_y - $2)^2 ASC
+LIMIT 1
+`
+
+type FindClosestDangerousLocationParams struct {
+	X int32 `json:"x"`
+	Y int32 `json:"y"`
+}
+
+func (q *Queries) FindClosestDangerousLocation(ctx context.Context, arg FindClosestDangerousLocationParams) (DangerousLocation, error) {
+	row := q.queryRow(ctx, q.findClosestDangerousLocationStmt, findClosestDangerousLocation, arg.X, arg.Y)
+	var i DangerousLocation
+	err := row.Scan(
+		&i.ID,
+		&i.SectorX,
+		&i.SectorY,
+		&i.DangerLevel,
+		&i.Name,
+		&i.Description,
+		&i.ImageUrl,
+		&i.Resources,
+		&i.ResourcesCalcTimestamp,
+		&i.Armies,
+		&i.Buildings,
+	)
+	return i, err
+}
+
 const getDangerousLocationByID = `-- name: GetDangerousLocationByID :one
 
 SELECT id, sector_x, sector_y, danger_level, name, description, image_url,
@@ -151,54 +183,6 @@ func (q *Queries) InsertDangerousLocation(ctx context.Context, arg InsertDangero
 	var id int64
 	err := row.Scan(&id)
 	return id, err
-}
-
-const listDangerousLocations = `-- name: ListDangerousLocations :many
-SELECT id, sector_x, sector_y, danger_level, name, description, image_url,
-       resources, resources_calc_timestamp, armies, buildings
-FROM dangerous_locations
-ORDER BY id
-LIMIT $1 OFFSET $2
-`
-
-type ListDangerousLocationsParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
-}
-
-func (q *Queries) ListDangerousLocations(ctx context.Context, arg ListDangerousLocationsParams) ([]DangerousLocation, error) {
-	rows, err := q.query(ctx, q.listDangerousLocationsStmt, listDangerousLocations, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []DangerousLocation{}
-	for rows.Next() {
-		var i DangerousLocation
-		if err := rows.Scan(
-			&i.ID,
-			&i.SectorX,
-			&i.SectorY,
-			&i.DangerLevel,
-			&i.Name,
-			&i.Description,
-			&i.ImageUrl,
-			&i.Resources,
-			&i.ResourcesCalcTimestamp,
-			&i.Armies,
-			&i.Buildings,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }
 
 const updateDangerousLocation = `-- name: UpdateDangerousLocation :exec

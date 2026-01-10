@@ -28,6 +28,9 @@ type Querier interface {
 	DeleteMilitaryOperation(ctx context.Context, id int64) error
 	DeleteResourceLocation(ctx context.Context, id int64) error
 	DeleteScanReport(ctx context.Context, id int64) error
+	FindClosestBase(ctx context.Context, arg FindClosestBaseParams) (UserBasis, error)
+	FindClosestDangerousLocation(ctx context.Context, arg FindClosestDangerousLocationParams) (DangerousLocation, error)
+	FindClosestResourceLocation(ctx context.Context, arg FindClosestResourceLocationParams) (ResourceLocation, error)
 	// Army prototypes queries
 	GetArmyPrototypeByID(ctx context.Context, id int64) (ArmyItemPrototype, error)
 	GetBaseByCoordinates(ctx context.Context, arg GetBaseByCoordinatesParams) (UserBasis, error)
@@ -90,11 +93,9 @@ type Querier interface {
 	ListBaseTechItems(ctx context.Context, baseID int64) ([]BaseTechItem, error)
 	ListBasesByUserID(ctx context.Context, userID int64) ([]UserBasis, error)
 	ListBuildPrototypes(ctx context.Context) ([]BuildItemPrototype, error)
-	ListDangerousLocations(ctx context.Context, arg ListDangerousLocationsParams) ([]DangerousLocation, error)
 	ListOccupiedSectorCoordinates(ctx context.Context) ([]ListOccupiedSectorCoordinatesRow, error)
 	ListOpsBySourceBase(ctx context.Context, arg ListOpsBySourceBaseParams) ([]MilitaryOperation, error)
 	ListOpsByTargetCoordinates(ctx context.Context, arg ListOpsByTargetCoordinatesParams) ([]MilitaryOperation, error)
-	ListResourceLocations(ctx context.Context, arg ListResourceLocationsParams) ([]ResourceLocation, error)
 	ListScanReportsByBaseAndCoordinates(ctx context.Context, arg ListScanReportsByBaseAndCoordinatesParams) ([]ScanReport, error)
 	ListScanReportsByBaseWithinArea(ctx context.Context, arg ListScanReportsByBaseWithinAreaParams) ([]ScanReport, error)
 	ListSectors(ctx context.Context) ([]Sector, error)

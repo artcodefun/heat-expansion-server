@@ -56,11 +56,9 @@ type BuffStorageData struct {
 type HiddenLocationType string
 
 const (
-	HiddenLocationTypeResourcefulCredits  HiddenLocationType = "RESOURCEFUL_CREDITS"
-	HiddenLocationTypeResourcefulIron     HiddenLocationType = "RESOURCEFUL_IRON"
-	HiddenLocationTypeResourcefulTitanium HiddenLocationType = "RESOURCEFUL_TITANIUM"
-	HiddenLocationTypeDangerous           HiddenLocationType = "DANGEROUS" // e.g., NPC hostiles
-	HiddenLocationTypeUserBase            HiddenLocationType = "USERBASE"  // Reveals a player base
+	HiddenLocationTypeResourceful HiddenLocationType = "RESOURCEFUL"
+	HiddenLocationTypeDangerous   HiddenLocationType = "DANGEROUS" // e.g., NPC hostiles
+	HiddenLocationTypeUserBase    HiddenLocationType = "USERBASE"  // Reveals a player base
 )
 
 // IntelStorageData: properties for intel items
@@ -71,8 +69,9 @@ type IntelStorageData struct {
 
 // DamagedStorageData: properties for damaged items (e.g., damaged army units)
 type DamagedStorageData struct {
-	RestorePrice   PriceModel // Cost to restore the item
-	OriginalUnitID int        // Reference to the original army unit prototype
+	RestorePrice       PriceModel // Cost to restore the item
+	RestorationSeconds int64      // How long it takes to restore
+	OriginalUnitID     int        // Reference to the original army unit prototype
 }
 
 // ArtifactEffectType identifies the permanent passive bonus provided by an artifact.

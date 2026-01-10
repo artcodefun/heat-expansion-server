@@ -17,8 +17,20 @@ type MoveTechQueueJob struct {
 	BaseID int
 }
 
-// DeleteExpiredBuffJob is a serializable domain job to delete an expired buff item.
+// DeleteExpiredBuffJob is a serializable domain job to cleanup an expired buff.
 type DeleteExpiredBuffJob struct {
+	BaseID int
+	ItemID uuid.UUID
+}
+
+// RestoreDamagedItemJob is a serializable domain job to cleanup a finished restoration.
+type RestoreDamagedItemJob struct {
+	BaseID int
+	ItemID uuid.UUID
+}
+
+// DecryptIntelItemJob is a serializable domain job to cleanup a finished decryption.
+type DecryptIntelItemJob struct {
 	BaseID int
 	ItemID uuid.UUID
 }

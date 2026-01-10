@@ -1,5 +1,7 @@
 package domain
 
+import "math"
+
 // StorageCategory represents the category of a storage item.
 type StorageCategory string
 
@@ -56,11 +58,9 @@ type BuffStorageData struct {
 type HiddenLocationType string
 
 const (
-	HiddenLocationTypeResourcefulCredits  HiddenLocationType = "RESOURCEFUL_CREDITS"
-	HiddenLocationTypeResourcefulIron     HiddenLocationType = "RESOURCEFUL_IRON"
-	HiddenLocationTypeResourcefulTitanium HiddenLocationType = "RESOURCEFUL_TITANIUM"
-	HiddenLocationTypeDangerous           HiddenLocationType = "DANGEROUS" // e.g., NPC hostiles
-	HiddenLocationTypeUserBase            HiddenLocationType = "USERBASE"  // Reveals a player base
+	HiddenLocationTypeResourceful HiddenLocationType = "RESOURCEFUL"
+	HiddenLocationTypeDangerous   HiddenLocationType = "DANGEROUS" // e.g., NPC hostiles
+	HiddenLocationTypeUserBase    HiddenLocationType = "USERBASE"  // Reveals a player base
 )
 
 // IntelStorageData defines properties for items that uncover hidden map nodes.
@@ -71,8 +71,9 @@ type IntelStorageData struct {
 
 // DamagedStorageData defines the requirements to restore a non-functional item (usually an army unit).
 type DamagedStorageData struct {
-	RestorePrice   PriceModel // Resources required for the repair
-	OriginalUnitID int        // The ID of the ArmyUnitPrototype this will transform into
+	RestorePrice       PriceModel // Resources required for the repair
+	RestorationSeconds int64      // Time required to restore the unit
+	OriginalUnitID     int        // The ID of the ArmyUnitPrototype this will transform into
 }
 
 // ArtifactEffectType identifies the permanent passive bonus provided by an artifact.
@@ -134,4 +135,109 @@ type StorageItemPresent struct {
 	Prototype StorageItemPrototype
 	ExpiresAt *int64 // Unix timestamp for when the item (not necessarily the buff) disappears
 	IsActive  bool   // Whether the item is currently active (e.g., toggled artifact or active buff)
+}
+
+// BaseModifiers aggregates currently-active buffs/artifacts as multipliers.
+type BaseModifiers struct {
+	CreditsProdMul  float64
+	IronProdMul     float64
+	TitaniumProdMul float64
+
+	AttackMul   float64
+	DefenceMul  float64
+	StealthMul  float64
+	CapacityMul float64
+	SpeedMul    float64
+
+	PricesMul float64
+}
+
+func IdentityBaseModifiers() BaseModifiers {
+	return BaseModifiers{
+		CreditsProdMul:  1,
+		IronProdMul:     1,
+		TitaniumProdMul: 1,
+		AttackMul:       1,
+		DefenceMul:      1,
+		StealthMul:      1,
+		CapacityMul:     1,
+		SpeedMul:        1,
+		PricesMul:       1,
+	}
+}
+
+func (m BaseModifiers) ApplyToUnitSnap(s MilitaryUnitSnap) MilitaryUnitSnap {
+	s.Attack = mulInt(s.Attack, m.AttackMul)
+	s.Defence = mulInt(s.Defence, m.DefenceMul)
+	s.Stealth = mulInt(s.Stealth, m.StealthMul)
+	s.Capacity = mulInt(s.Capacity, m.CapacityMul)
+	s.Speed = mulInt(s.Speed, m.SpeedMul)
+	return s
+}
+
+func (m BaseModifiers) ApplyToStructureSnap(s DefenseStructureSnap) DefenseStructureSnap {
+	s.Defence = mulInt(s.Defence, m.DefenceMul)
+	return s
+}
+
+func mulInt(v int, mul float64) int {
+	if v <= 0 {
+		return 0
+	}
+	if mul <= 0 {
+		return 0
+	}
+	return int(math.Round(float64(v) * mul))
+}
+
+func (m *BaseModifiers) ApplyBuff(t BuffType, v float64) {
+	if v <= 0 {
+		return
+	}
+	switch t {
+	case BuffTypeCreditsProduction:
+		m.CreditsProdMul *= v
+	case BuffTypeIronProduction:
+		m.IronProdMul *= v
+	case BuffTypeTitaniumProduction:
+		m.TitaniumProdMul *= v
+	case BuffTypeAttackIncrease:
+		m.AttackMul *= v
+	case BuffTypeDefenceIncrease:
+		m.DefenceMul *= v
+	case BuffTypeStealthIncrease:
+		m.StealthMul *= v
+	case BuffTypeCapacityIncrease:
+		m.CapacityMul *= v
+	case BuffTypeSpeedIncrease:
+		m.SpeedMul *= v
+	case BuffTypePricesDecrease:
+		m.PricesMul *= v
+	}
+}
+
+func (m *BaseModifiers) ApplyArtifact(t ArtifactEffectType, v float64) {
+	if v <= 0 {
+		return
+	}
+	switch t {
+	case ArtifactEffectTypeCreditsProduction:
+		m.CreditsProdMul *= v
+	case ArtifactEffectTypeIronProduction:
+		m.IronProdMul *= v
+	case ArtifactEffectTypeTitaniumProduction:
+		m.TitaniumProdMul *= v
+	case ArtifactEffectTypeAttackIncrease:
+		m.AttackMul *= v
+	case ArtifactEffectTypeDefenceIncrease:
+		m.DefenceMul *= v
+	case ArtifactEffectTypeStealthIncrease:
+		m.StealthMul *= v
+	case ArtifactEffectTypeCapacityIncrease:
+		m.CapacityMul *= v
+	case ArtifactEffectTypeSpeedIncrease:
+		m.SpeedMul *= v
+	case ArtifactEffectTypePricesDecrease:
+		m.PricesMul *= v
+	}
 }

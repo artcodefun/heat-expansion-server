@@ -115,6 +115,11 @@ func NewRouter(cmd Commands, qry Queries, tokenProvider ports.TokenProvider) *gi
 			storage.GET("/present", storageHandler.ListPresent)
 			storage.DELETE("/items/:itemId", storageHandler.DeleteItem)
 			storage.POST("/items/:itemId/activate", storageHandler.ActivateBuff)
+			storage.POST("/items/:itemId/decrypt", storageHandler.StartIntelDecryption)
+			storage.POST("/items/:itemId/restore", storageHandler.StartDamagedItemRestoration)
+			storage.POST("/items/:itemId/enable", storageHandler.ActivateArtifact)
+			storage.POST("/items/:itemId/disable", storageHandler.DeactivateArtifact)
+			storage.POST("/items/:itemId/open", storageHandler.OpenBox)
 		}
 
 		// Sector scan reports

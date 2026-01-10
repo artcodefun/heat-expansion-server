@@ -126,16 +126,3 @@ type DefenseStack struct {
 	Prototype BuildItemPrototype
 	Count     int
 }
-
-// ToSnap materializes a defense snapshot from the current prototype values.
-func (s DefenseStack) ToSnap() DefenseStructureSnap {
-	defence := 0
-	if s.Prototype.DefenseData != nil {
-		defence = s.Prototype.DefenseData.DefenceBonus
-	}
-	return DefenseStructureSnap{
-		PrototypeID: s.Prototype.ID,
-		Defence:     defence,
-		Count:       s.Count,
-	}
-}

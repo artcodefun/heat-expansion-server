@@ -79,17 +79,3 @@ type ArmyStack struct {
 	Prototype ArmyItemPrototype
 	Count     int
 }
-
-// ToSnap materializes an operation/battle snapshot from the current prototype values.
-func (s ArmyStack) ToSnap() MilitaryUnitSnap {
-	return MilitaryUnitSnap{
-		PrototypeID: s.Prototype.ID,
-		Category:    s.Prototype.Category,
-		Attack:      s.Prototype.Attack,
-		Defence:     s.Prototype.Defence,
-		Capacity:    s.Prototype.Capacity,
-		Stealth:     s.Prototype.Stealth,
-		Speed:       s.Prototype.Speed,
-		Count:       s.Count,
-	}
-}

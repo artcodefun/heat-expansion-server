@@ -66,6 +66,15 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteScanReportStmt, err = db.PrepareContext(ctx, deleteScanReport); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteScanReport: %w", err)
 	}
+	if q.findClosestBaseStmt, err = db.PrepareContext(ctx, findClosestBase); err != nil {
+		return nil, fmt.Errorf("error preparing query FindClosestBase: %w", err)
+	}
+	if q.findClosestDangerousLocationStmt, err = db.PrepareContext(ctx, findClosestDangerousLocation); err != nil {
+		return nil, fmt.Errorf("error preparing query FindClosestDangerousLocation: %w", err)
+	}
+	if q.findClosestResourceLocationStmt, err = db.PrepareContext(ctx, findClosestResourceLocation); err != nil {
+		return nil, fmt.Errorf("error preparing query FindClosestResourceLocation: %w", err)
+	}
 	if q.getArmyPrototypeByIDStmt, err = db.PrepareContext(ctx, getArmyPrototypeByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetArmyPrototypeByID: %w", err)
 	}
@@ -204,9 +213,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listBuildPrototypesStmt, err = db.PrepareContext(ctx, listBuildPrototypes); err != nil {
 		return nil, fmt.Errorf("error preparing query ListBuildPrototypes: %w", err)
 	}
-	if q.listDangerousLocationsStmt, err = db.PrepareContext(ctx, listDangerousLocations); err != nil {
-		return nil, fmt.Errorf("error preparing query ListDangerousLocations: %w", err)
-	}
 	if q.listOccupiedSectorCoordinatesStmt, err = db.PrepareContext(ctx, listOccupiedSectorCoordinates); err != nil {
 		return nil, fmt.Errorf("error preparing query ListOccupiedSectorCoordinates: %w", err)
 	}
@@ -215,9 +221,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.listOpsByTargetCoordinatesStmt, err = db.PrepareContext(ctx, listOpsByTargetCoordinates); err != nil {
 		return nil, fmt.Errorf("error preparing query ListOpsByTargetCoordinates: %w", err)
-	}
-	if q.listResourceLocationsStmt, err = db.PrepareContext(ctx, listResourceLocations); err != nil {
-		return nil, fmt.Errorf("error preparing query ListResourceLocations: %w", err)
 	}
 	if q.listScanReportsByBaseAndCoordinatesStmt, err = db.PrepareContext(ctx, listScanReportsByBaseAndCoordinates); err != nil {
 		return nil, fmt.Errorf("error preparing query ListScanReportsByBaseAndCoordinates: %w", err)
@@ -343,6 +346,21 @@ func (q *Queries) Close() error {
 	if q.deleteScanReportStmt != nil {
 		if cerr := q.deleteScanReportStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteScanReportStmt: %w", cerr)
+		}
+	}
+	if q.findClosestBaseStmt != nil {
+		if cerr := q.findClosestBaseStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing findClosestBaseStmt: %w", cerr)
+		}
+	}
+	if q.findClosestDangerousLocationStmt != nil {
+		if cerr := q.findClosestDangerousLocationStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing findClosestDangerousLocationStmt: %w", cerr)
+		}
+	}
+	if q.findClosestResourceLocationStmt != nil {
+		if cerr := q.findClosestResourceLocationStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing findClosestResourceLocationStmt: %w", cerr)
 		}
 	}
 	if q.getArmyPrototypeByIDStmt != nil {
@@ -575,11 +593,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listBuildPrototypesStmt: %w", cerr)
 		}
 	}
-	if q.listDangerousLocationsStmt != nil {
-		if cerr := q.listDangerousLocationsStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listDangerousLocationsStmt: %w", cerr)
-		}
-	}
 	if q.listOccupiedSectorCoordinatesStmt != nil {
 		if cerr := q.listOccupiedSectorCoordinatesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listOccupiedSectorCoordinatesStmt: %w", cerr)
@@ -593,11 +606,6 @@ func (q *Queries) Close() error {
 	if q.listOpsByTargetCoordinatesStmt != nil {
 		if cerr := q.listOpsByTargetCoordinatesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listOpsByTargetCoordinatesStmt: %w", cerr)
-		}
-	}
-	if q.listResourceLocationsStmt != nil {
-		if cerr := q.listResourceLocationsStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listResourceLocationsStmt: %w", cerr)
 		}
 	}
 	if q.listScanReportsByBaseAndCoordinatesStmt != nil {
@@ -738,6 +746,9 @@ type Queries struct {
 	deleteMilitaryOperationStmt               *sql.Stmt
 	deleteResourceLocationStmt                *sql.Stmt
 	deleteScanReportStmt                      *sql.Stmt
+	findClosestBaseStmt                       *sql.Stmt
+	findClosestDangerousLocationStmt          *sql.Stmt
+	findClosestResourceLocationStmt           *sql.Stmt
 	getArmyPrototypeByIDStmt                  *sql.Stmt
 	getBaseByCoordinatesStmt                  *sql.Stmt
 	getBaseByCoordinatesForUpdateStmt         *sql.Stmt
@@ -784,11 +795,9 @@ type Queries struct {
 	listBaseTechItemsStmt                     *sql.Stmt
 	listBasesByUserIDStmt                     *sql.Stmt
 	listBuildPrototypesStmt                   *sql.Stmt
-	listDangerousLocationsStmt                *sql.Stmt
 	listOccupiedSectorCoordinatesStmt         *sql.Stmt
 	listOpsBySourceBaseStmt                   *sql.Stmt
 	listOpsByTargetCoordinatesStmt            *sql.Stmt
-	listResourceLocationsStmt                 *sql.Stmt
 	listScanReportsByBaseAndCoordinatesStmt   *sql.Stmt
 	listScanReportsByBaseWithinAreaStmt       *sql.Stmt
 	listSectorsStmt                           *sql.Stmt
@@ -826,6 +835,9 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		deleteMilitaryOperationStmt:               q.deleteMilitaryOperationStmt,
 		deleteResourceLocationStmt:                q.deleteResourceLocationStmt,
 		deleteScanReportStmt:                      q.deleteScanReportStmt,
+		findClosestBaseStmt:                       q.findClosestBaseStmt,
+		findClosestDangerousLocationStmt:          q.findClosestDangerousLocationStmt,
+		findClosestResourceLocationStmt:           q.findClosestResourceLocationStmt,
 		getArmyPrototypeByIDStmt:                  q.getArmyPrototypeByIDStmt,
 		getBaseByCoordinatesStmt:                  q.getBaseByCoordinatesStmt,
 		getBaseByCoordinatesForUpdateStmt:         q.getBaseByCoordinatesForUpdateStmt,
@@ -872,11 +884,9 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listBaseTechItemsStmt:                     q.listBaseTechItemsStmt,
 		listBasesByUserIDStmt:                     q.listBasesByUserIDStmt,
 		listBuildPrototypesStmt:                   q.listBuildPrototypesStmt,
-		listDangerousLocationsStmt:                q.listDangerousLocationsStmt,
 		listOccupiedSectorCoordinatesStmt:         q.listOccupiedSectorCoordinatesStmt,
 		listOpsBySourceBaseStmt:                   q.listOpsBySourceBaseStmt,
 		listOpsByTargetCoordinatesStmt:            q.listOpsByTargetCoordinatesStmt,
-		listResourceLocationsStmt:                 q.listResourceLocationsStmt,
 		listScanReportsByBaseAndCoordinatesStmt:   q.listScanReportsByBaseAndCoordinatesStmt,
 		listScanReportsByBaseWithinAreaStmt:       q.listScanReportsByBaseWithinAreaStmt,
 		listSectorsStmt:                           q.listSectorsStmt,

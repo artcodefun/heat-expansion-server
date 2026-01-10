@@ -19,12 +19,12 @@ FROM resource_locations
 WHERE sector_x = @sector_x AND sector_y = @sector_y
 FOR UPDATE;
 
--- name: ListResourceLocations :many
+-- name: FindClosestResourceLocation :one
 SELECT id, sector_x, sector_y, type, amount, name, description, image_url,
        resources, resources_calc_timestamp, armies, buildings
 FROM resource_locations
-ORDER BY id
-LIMIT $1 OFFSET $2;
+ORDER BY (sector_x - @x)^2 + (sector_y - @y)^2 ASC
+LIMIT 1;
 
 -- name: InsertResourceLocation :one
 INSERT INTO resource_locations (

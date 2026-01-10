@@ -28,6 +28,10 @@ func WireCommandEvents(c *Commands, pub ports.EventPublisher) {
 			return c.Tech.HandleTechResearchStartedEvent(&ev)
 		case domain.BuffActivatedEvent:
 			return c.Storage.HandleBuffActivatedEvent(&ev)
+		case domain.IntelDecryptionStartedEvent:
+			return c.Storage.HandleIntelDecryptionStartedEvent(&ev)
+		case domain.DamagedItemRestorationStartedEvent:
+			return c.Storage.HandleDamagedItemRestorationStartedEvent(&ev)
 		case domain.MilitaryOperationStartedEvent:
 			if err := c.Operation.HandleMilitaryOperationStartedEvent(ev); err != nil {
 				return err
@@ -73,8 +77,11 @@ func WireCommandSchedulerHandler(c *Commands, sch ports.Scheduler) {
 		case ports.IntelligenceRadarJob:
 			return c.Radar.HandleIntelligenceRadarJob(job)
 		case ports.DeleteExpiredBuffJob:
-			_, err := c.Storage.HandleDeleteExpiredBuffJob(job.BaseID)
-			return err
+			return c.Storage.HandleDeleteExpiredBuffJob(job)
+		case ports.DecryptIntelItemJob:
+			return c.Storage.HandleDecryptIntelItemJob(job)
+		case ports.RestoreDamagedItemJob:
+			return c.Storage.HandleRestoreDamagedItemJob(job)
 		case ports.SpawnNearbyLocationsJob:
 			return c.World.HandleSpawnNearbyLocationsJob(job)
 		}

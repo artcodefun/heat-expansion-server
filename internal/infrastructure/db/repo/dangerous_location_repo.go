@@ -92,6 +92,23 @@ func (r *DangerousLocationRepo) FindByCoordinatesForUpdate(x, y int) (*domain.Da
 	return loc, nil
 }
 
+func (r *DangerousLocationRepo) FindClosest(x, y int) (*domain.DangerousLocationModel, error) {
+	ctx := context.Background()
+	row, err := r.q.FindClosestDangerousLocation(ctx, gen.FindClosestDangerousLocationParams{X: int32(x), Y: int32(y)})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ports.ErrNotFound
+		}
+		return nil, err
+	}
+	armyProtos, buildProtos, err := r.loadPrototypes(ctx)
+	if err != nil {
+		return nil, err
+	}
+	loc := mappers.DangerousLocationFromDB(row, armyProtos, buildProtos)
+	return loc, nil
+}
+
 func (r *DangerousLocationRepo) Update(loc *domain.DangerousLocationModel) error {
 	return r.q.UpdateDangerousLocation(context.Background(), mappers.UpdateDangerousLocationParamsFromDomain(loc))
 }

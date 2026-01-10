@@ -20,6 +20,39 @@ func (q *Queries) DeleteResourceLocation(ctx context.Context, id int64) error {
 	return err
 }
 
+const findClosestResourceLocation = `-- name: FindClosestResourceLocation :one
+SELECT id, sector_x, sector_y, type, amount, name, description, image_url,
+       resources, resources_calc_timestamp, armies, buildings
+FROM resource_locations
+ORDER BY (sector_x - $1)^2 + (sector_y - $2)^2 ASC
+LIMIT 1
+`
+
+type FindClosestResourceLocationParams struct {
+	X int32 `json:"x"`
+	Y int32 `json:"y"`
+}
+
+func (q *Queries) FindClosestResourceLocation(ctx context.Context, arg FindClosestResourceLocationParams) (ResourceLocation, error) {
+	row := q.queryRow(ctx, q.findClosestResourceLocationStmt, findClosestResourceLocation, arg.X, arg.Y)
+	var i ResourceLocation
+	err := row.Scan(
+		&i.ID,
+		&i.SectorX,
+		&i.SectorY,
+		&i.Type,
+		&i.Amount,
+		&i.Name,
+		&i.Description,
+		&i.ImageUrl,
+		&i.Resources,
+		&i.ResourcesCalcTimestamp,
+		&i.Armies,
+		&i.Buildings,
+	)
+	return i, err
+}
+
 const getResourceLocationByID = `-- name: GetResourceLocationByID :one
 
 SELECT id, sector_x, sector_y, type, amount, name, description, image_url,
@@ -156,55 +189,6 @@ func (q *Queries) InsertResourceLocation(ctx context.Context, arg InsertResource
 	var id int64
 	err := row.Scan(&id)
 	return id, err
-}
-
-const listResourceLocations = `-- name: ListResourceLocations :many
-SELECT id, sector_x, sector_y, type, amount, name, description, image_url,
-       resources, resources_calc_timestamp, armies, buildings
-FROM resource_locations
-ORDER BY id
-LIMIT $1 OFFSET $2
-`
-
-type ListResourceLocationsParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
-}
-
-func (q *Queries) ListResourceLocations(ctx context.Context, arg ListResourceLocationsParams) ([]ResourceLocation, error) {
-	rows, err := q.query(ctx, q.listResourceLocationsStmt, listResourceLocations, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []ResourceLocation{}
-	for rows.Next() {
-		var i ResourceLocation
-		if err := rows.Scan(
-			&i.ID,
-			&i.SectorX,
-			&i.SectorY,
-			&i.Type,
-			&i.Amount,
-			&i.Name,
-			&i.Description,
-			&i.ImageUrl,
-			&i.Resources,
-			&i.ResourcesCalcTimestamp,
-			&i.Armies,
-			&i.Buildings,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }
 
 const updateResourceLocation = `-- name: UpdateResourceLocation :exec

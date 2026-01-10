@@ -129,6 +129,19 @@ func (r *UserBaseRepo) FindByCoordinatesForUpdate(x, y int) (*domain.UserBaseMod
 	return base, nil
 }
 
+func (r *UserBaseRepo) FindClosest(x, y int) (*domain.UserBaseModel, error) {
+	row, err := r.q.FindClosestBase(context.Background(), gen.FindClosestBaseParams{X: int32(x), Y: int32(y)})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ports.ErrNotFound
+		}
+		return nil, err
+	}
+	base := mappers.UserBaseFromDB(row)
+	_ = r.hydrateBase(base)
+	return base, nil
+}
+
 func (r *UserBaseRepo) FindAll() ([]*domain.UserBaseModel, error) {
 	rows, err := r.q.ListAllBases(context.Background())
 	if err != nil {

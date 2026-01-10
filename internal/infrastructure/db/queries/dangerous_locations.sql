@@ -19,12 +19,12 @@ FROM dangerous_locations
 WHERE sector_x = @sector_x AND sector_y = @sector_y
 FOR UPDATE;
 
--- name: ListDangerousLocations :many
+-- name: FindClosestDangerousLocation :one
 SELECT id, sector_x, sector_y, danger_level, name, description, image_url,
        resources, resources_calc_timestamp, armies, buildings
 FROM dangerous_locations
-ORDER BY id
-LIMIT $1 OFFSET $2;
+ORDER BY (sector_x - @x)^2 + (sector_y - @y)^2 ASC
+LIMIT 1;
 
 -- name: InsertDangerousLocation :one
 INSERT INTO dangerous_locations (

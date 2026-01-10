@@ -23,11 +23,12 @@ func (rl *ResourceLocationModel) MaterializeDefenderArmySnapshot() []MilitaryUni
 		return nil
 	}
 	out := make([]MilitaryUnitSnap, 0, len(rl.DefendingArmies))
+	mods := IdentityBaseModifiers()
 	for _, s := range rl.DefendingArmies {
 		if s.Count <= 0 {
 			continue
 		}
-		out = append(out, s.ToSnap())
+		out = append(out, MilitaryUnitFromStack(s, mods))
 	}
 	return out
 }
@@ -38,11 +39,12 @@ func (rl *ResourceLocationModel) MaterializeDefenderStructureSnapshot() []Defens
 		return nil
 	}
 	out := make([]DefenseStructureSnap, 0, len(rl.DefendingStructures))
+	mods := IdentityBaseModifiers()
 	for _, s := range rl.DefendingStructures {
 		if s.Count <= 0 {
 			continue
 		}
-		out = append(out, s.ToSnap())
+		out = append(out, DefenseStructureFromStack(s, mods))
 	}
 	return out
 }

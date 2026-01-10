@@ -61,7 +61,9 @@ func (c *OperationCommands) CreateMilitaryOperation(ctx cqrs.CommandContext, opT
 		if err != nil {
 			return cqrs.NewDomainError(err)
 		}
-		units := domain.OperationUnitsFromDeployed(readyToDeploy)
+
+		mods := base.ActiveModifiers()
+		units := domain.MilitaryUnitsFromDeployed(readyToDeploy, mods)
 		sourceSector, err := c.Provisioner.EnsureSectorExists(sRepo, base.Coordinates.X, base.Coordinates.Y)
 		if err != nil {
 			return err

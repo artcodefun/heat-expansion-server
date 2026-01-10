@@ -59,6 +59,32 @@ func DeleteExpiredBuffJobFromDTO(d DeleteExpiredBuffJobDTO) ports.DeleteExpiredB
 	return ports.DeleteExpiredBuffJob{BaseID: d.BaseID, ItemID: d.ItemID}
 }
 
+type RestoreDamagedItemJobDTO struct {
+	BaseID int       `json:"base_id"`
+	ItemID uuid.UUID `json:"item_id"`
+}
+
+func RestoreDamagedItemJobDTOFromDomain(j ports.RestoreDamagedItemJob) RestoreDamagedItemJobDTO {
+	return RestoreDamagedItemJobDTO{BaseID: j.BaseID, ItemID: j.ItemID}
+}
+
+func RestoreDamagedItemJobFromDTO(d RestoreDamagedItemJobDTO) ports.RestoreDamagedItemJob {
+	return ports.RestoreDamagedItemJob{BaseID: d.BaseID, ItemID: d.ItemID}
+}
+
+type DecryptIntelItemJobDTO struct {
+	BaseID int       `json:"base_id"`
+	ItemID uuid.UUID `json:"item_id"`
+}
+
+func DecryptIntelItemJobDTOFromDomain(j ports.DecryptIntelItemJob) DecryptIntelItemJobDTO {
+	return DecryptIntelItemJobDTO{BaseID: j.BaseID, ItemID: j.ItemID}
+}
+
+func DecryptIntelItemJobFromDTO(d DecryptIntelItemJobDTO) ports.DecryptIntelItemJob {
+	return ports.DecryptIntelItemJob{BaseID: d.BaseID, ItemID: d.ItemID}
+}
+
 type UpdateMilitaryOperationJobDTO struct {
 	OperationID int `json:"operation_id"`
 }
@@ -360,6 +386,96 @@ func BuffActivatedEventDTOFromDomain(e domain.BuffActivatedEvent) BuffActivatedE
 
 func BuffActivatedEventFromDTO(d BuffActivatedEventDTO) domain.BuffActivatedEvent {
 	return domain.NewBuffActivatedEvent(d.BaseID, d.ItemID)
+}
+
+type IntelDecryptionStartedEventDTO struct {
+	OccurredAt int64     `json:"occurred_at"`
+	BaseID     int       `json:"base_id"`
+	ItemID     uuid.UUID `json:"item_id"`
+}
+
+func IntelDecryptionStartedEventDTOFromDomain(e domain.IntelDecryptionStartedEvent) IntelDecryptionStartedEventDTO {
+	return IntelDecryptionStartedEventDTO{OccurredAt: e.OccurredAt(), BaseID: e.BaseID, ItemID: e.ItemID}
+}
+
+func IntelDecryptionStartedEventFromDTO(d IntelDecryptionStartedEventDTO) domain.IntelDecryptionStartedEvent {
+	return domain.NewIntelDecryptionStartedEvent(d.BaseID, d.ItemID)
+}
+
+type IntelDecryptionFinishedEventDTO struct {
+	OccurredAt int64                     `json:"occurred_at"`
+	BaseID     int                       `json:"base_id"`
+	ItemID     uuid.UUID                 `json:"item_id"`
+	IntelType  domain.HiddenLocationType `json:"intel_type"`
+}
+
+func IntelDecryptionFinishedEventDTOFromDomain(e domain.IntelDecryptionFinishedEvent) IntelDecryptionFinishedEventDTO {
+	return IntelDecryptionFinishedEventDTO{
+		OccurredAt: e.OccurredAt(),
+		BaseID:     e.BaseID,
+		ItemID:     e.ItemID,
+		IntelType:  e.IntelType,
+	}
+}
+
+func IntelDecryptionFinishedEventFromDTO(d IntelDecryptionFinishedEventDTO) domain.IntelDecryptionFinishedEvent {
+	return domain.NewIntelDecryptionFinishedEvent(d.BaseID, d.ItemID, d.IntelType)
+}
+
+type DamagedItemRestorationStartedEventDTO struct {
+	OccurredAt int64     `json:"occurred_at"`
+	BaseID     int       `json:"base_id"`
+	ItemID     uuid.UUID `json:"item_id"`
+}
+
+func DamagedItemRestorationStartedEventDTOFromDomain(e domain.DamagedItemRestorationStartedEvent) DamagedItemRestorationStartedEventDTO {
+	return DamagedItemRestorationStartedEventDTO{OccurredAt: e.OccurredAt(), BaseID: e.BaseID, ItemID: e.ItemID}
+}
+
+func DamagedItemRestorationStartedEventFromDTO(d DamagedItemRestorationStartedEventDTO) domain.DamagedItemRestorationStartedEvent {
+	return domain.NewDamagedItemRestorationStartedEvent(d.BaseID, d.ItemID)
+}
+
+type DamagedItemRestoredEventDTO struct {
+	OccurredAt int64     `json:"occurred_at"`
+	BaseID     int       `json:"base_id"`
+	ItemID     uuid.UUID `json:"item_id"`
+}
+
+func DamagedItemRestoredEventDTOFromDomain(e domain.DamagedItemRestoredEvent) DamagedItemRestoredEventDTO {
+	return DamagedItemRestoredEventDTO{OccurredAt: e.OccurredAt(), BaseID: e.BaseID, ItemID: e.ItemID}
+}
+
+func DamagedItemRestoredEventFromDTO(d DamagedItemRestoredEventDTO) domain.DamagedItemRestoredEvent {
+	return domain.NewDamagedItemRestoredEvent(d.BaseID, d.ItemID)
+}
+
+type ArtifactActivatedEventDTO struct {
+	OccurredAt int64     `json:"occurred_at"`
+	BaseID     int       `json:"base_id"`
+	ItemID     uuid.UUID `json:"item_id"`
+}
+
+func ArtifactActivatedEventDTOFromDomain(e domain.ArtifactActivatedEvent) ArtifactActivatedEventDTO {
+	return ArtifactActivatedEventDTO{OccurredAt: e.OccurredAt(), BaseID: e.BaseID, ItemID: e.ItemID}
+}
+
+func ArtifactActivatedEventFromDTO(d ArtifactActivatedEventDTO) domain.ArtifactActivatedEvent {
+	return domain.NewArtifactActivatedEvent(d.BaseID, d.ItemID)
+}
+
+type ArtifactDeactivatedEventDTO struct {
+	OccurredAt int64     `json:"occurred_at"`
+	BaseID     int       `json:"base_id"`
+	ItemID     uuid.UUID `json:"item_id"`
+}
+
+func ArtifactDeactivatedEventDTOFromDomain(e domain.ArtifactDeactivatedEvent) ArtifactDeactivatedEventDTO {
+	return ArtifactDeactivatedEventDTO{OccurredAt: e.OccurredAt(), BaseID: e.BaseID, ItemID: e.ItemID}
+}
+
+func ArtifactDeactivatedEventFromDTO(d ArtifactDeactivatedEventDTO) domain.ArtifactDeactivatedEvent {
+	return domain.NewArtifactDeactivatedEvent(d.BaseID, d.ItemID)
 }
 
 type MilitaryOperationStartedEventDTO struct {

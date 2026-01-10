@@ -298,6 +298,92 @@ func NewBuffActivatedEvent(baseID int, itemID uuid.UUID) BuffActivatedEvent {
 	}
 }
 
+type IntelDecryptionStartedEvent struct {
+	BasicEvent
+	BaseID int
+	ItemID uuid.UUID
+}
+
+func NewIntelDecryptionStartedEvent(baseID int, itemID uuid.UUID) IntelDecryptionStartedEvent {
+	return IntelDecryptionStartedEvent{
+		BasicEvent: NewBasicEvent(),
+		BaseID:     baseID,
+		ItemID:     itemID,
+	}
+}
+
+type IntelDecryptionFinishedEvent struct {
+	BasicEvent
+	BaseID    int
+	ItemID    uuid.UUID
+	IntelType HiddenLocationType
+}
+
+func NewIntelDecryptionFinishedEvent(baseID int, itemID uuid.UUID, intelType HiddenLocationType) IntelDecryptionFinishedEvent {
+	return IntelDecryptionFinishedEvent{
+		BasicEvent: NewBasicEvent(),
+		BaseID:     baseID,
+		ItemID:     itemID,
+		IntelType:  intelType,
+	}
+}
+
+type DamagedItemRestorationStartedEvent struct {
+	BasicEvent
+	BaseID int
+	ItemID uuid.UUID
+}
+
+func NewDamagedItemRestorationStartedEvent(baseID int, itemID uuid.UUID) DamagedItemRestorationStartedEvent {
+	return DamagedItemRestorationStartedEvent{
+		BasicEvent: NewBasicEvent(),
+		BaseID:     baseID,
+		ItemID:     itemID,
+	}
+}
+
+type DamagedItemRestoredEvent struct {
+	BasicEvent
+	BaseID int
+	ItemID uuid.UUID
+}
+
+func NewDamagedItemRestoredEvent(baseID int, itemID uuid.UUID) DamagedItemRestoredEvent {
+	return DamagedItemRestoredEvent{
+		BasicEvent: NewBasicEvent(),
+		BaseID:     baseID,
+		ItemID:     itemID,
+	}
+}
+
+type ArtifactActivatedEvent struct {
+	BasicEvent
+	BaseID int
+	ItemID uuid.UUID
+}
+
+func NewArtifactActivatedEvent(baseID int, itemID uuid.UUID) ArtifactActivatedEvent {
+	return ArtifactActivatedEvent{
+		BasicEvent: NewBasicEvent(),
+		BaseID:     baseID,
+		ItemID:     itemID,
+	}
+}
+
+type ArtifactDeactivatedEvent struct {
+	BasicEvent
+	BaseID int
+	ItemID uuid.UUID
+}
+
+func NewArtifactDeactivatedEvent(baseID int, itemID uuid.UUID) ArtifactDeactivatedEvent {
+	return ArtifactDeactivatedEvent{
+		BasicEvent: NewBasicEvent(),
+		BaseID:     baseID,
+		ItemID:     itemID,
+	}
+}
+
 // Military operation-related domain events
 
 type MilitaryOperationStartedEvent struct {
