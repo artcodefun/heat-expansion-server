@@ -9,6 +9,22 @@ import (
 	"github.com/sqlc-dev/pqtype"
 )
 
+func StoragePrototypeFromModel(r gen.StorageItemPrototype) readmodels.StorageItemPrototype {
+	return readmodels.StorageItemPrototype{
+		ID:               int(r.ID),
+		Name:             r.Name,
+		Category:         readmodels.StorageCategory(r.Category),
+		ShortDescription: nullString(r.ShortDescription),
+		FullDescription:  nullString(r.FullDescription),
+		ImageURL:         nullString(r.ImageUrl),
+		BuffData:         buffStorageDataFromJSON(r.BuffData),
+		IntelData:        intelStorageDataFromJSON(r.IntelData),
+		DamagedData:      damagedStorageDataFromJSON(r.DamagedData),
+		ArtifactData:     artifactStorageDataFromJSON(r.ArtifactData),
+		ConsumableData:   consumableStorageDataFromJSON(r.ConsumableData),
+	}
+}
+
 func StoragePrototypeFromPresentRow(r gen.ListPresentStorageItemsRow) readmodels.StorageItemPrototype {
 	return readmodels.StorageItemPrototype{
 		ID:               int(r.ProtoID),

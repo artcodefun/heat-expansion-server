@@ -69,7 +69,8 @@ type AttackResult struct {
 	AttackerRemaining   []MilitaryUnitSnap
 	DefenderRemaining   []MilitaryUnitSnap
 	RemainingStructures []DefenseStructureSnap
-	Loot                PriceModel // what attackers managed to carry back; computed elsewhere
+	Loot                PriceModel          // what attackers managed to carry back; computed elsewhere
+	Trophies            []TrophyStorageItem // special items collected from dangerous locations
 	// New: snapshots for UI to show casualties/damage
 	DefendersBefore  []MilitaryUnitSnap
 	StructuresBefore []DefenseStructureSnap
@@ -251,7 +252,7 @@ func (op *MilitaryOperation) ResolveSpy(targetCloakingStrength int, defendingSpi
 
 // ResolveAttack resolves an attack using a simplified power comparison as a placeholder.
 // A more detailed sequential algorithm can replace this later.
-func (op *MilitaryOperation) ResolveAttack(defenders []MilitaryUnitSnap, structures []DefenseStructureSnap, availableResourcePool PriceModel) *AttackResult {
+func (op *MilitaryOperation) ResolveAttack(defenders []MilitaryUnitSnap, structures []DefenseStructureSnap, availableResourcePool PriceModel, trophies []TrophyStorageItem) *AttackResult {
 	if op.Type != MilitaryOperationTypeAttack || (op.Phase != OperationPhaseAtTarget && op.Phase != OperationPhaseOutbound) {
 		return op.AttackResult
 	}
@@ -275,6 +276,8 @@ func (op *MilitaryOperation) ResolveAttack(defenders []MilitaryUnitSnap, structu
 	if attackerWon {
 		result.Outcome = AttackOutcomeAttackerWon
 		op.Result = OperationResultSuccess
+		// Award trophies only if attacker won
+		result.Trophies = trophies
 	} else {
 		result.Outcome = AttackOutcomeDefenderHeld
 		op.Result = OperationResultFailure

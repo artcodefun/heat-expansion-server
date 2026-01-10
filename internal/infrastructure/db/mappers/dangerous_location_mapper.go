@@ -31,6 +31,13 @@ func DangerousLocationFromDB(r gen.DangerousLocation, armyProtos map[int]*domain
 		}
 	}
 
+	var trophyDTOs []dtos.TrophyDTO
+	_ = json.Unmarshal(r.Trophies, &trophyDTOs)
+	trophies := make([]domain.TrophyStorageItem, 0, len(trophyDTOs))
+	for _, d := range trophyDTOs {
+		trophies = append(trophies, dtos.TrophyFromDTO(d))
+	}
+
 	return &domain.DangerousLocationModel{
 		ID:          int(r.ID),
 		Coordinates: domain.Vector2i{X: int(r.SectorX), Y: int(r.SectorY)},
@@ -43,6 +50,7 @@ func DangerousLocationFromDB(r gen.DangerousLocation, armyProtos map[int]*domain
 		Resources:           res,
 		DefendingArmies:     armies,
 		DefendingStructures: structs,
+		Trophies:            trophies,
 	}
 }
 
@@ -56,8 +64,13 @@ func InsertDangerousLocationParamsFromDomain(loc *domain.DangerousLocationModel)
 	for _, s := range loc.DefendingStructures {
 		structsDTO = append(structsDTO, dtos.DefenseStackDTOFromDomain(s))
 	}
+	trophyDTOs := make([]dtos.TrophyDTO, 0, len(loc.Trophies))
+	for _, t := range loc.Trophies {
+		trophyDTOs = append(trophyDTOs, dtos.TrophyDTOFromDomain(t))
+	}
 	armiesJSON, _ := json.Marshal(armyDTOs)
 	buildingsJSON, _ := json.Marshal(structsDTO)
+	trophiesJSON, _ := json.Marshal(trophyDTOs)
 	return gen.InsertDangerousLocationParams{
 		SectorX:                int32(loc.Coordinates.X),
 		SectorY:                int32(loc.Coordinates.Y),
@@ -69,6 +82,7 @@ func InsertDangerousLocationParamsFromDomain(loc *domain.DangerousLocationModel)
 		ResourcesCalcTimestamp: loc.Resources.CalculationTimestamp,
 		Armies:                 armiesJSON,
 		Buildings:              buildingsJSON,
+		Trophies:               trophiesJSON,
 	}
 }
 
@@ -82,8 +96,13 @@ func UpdateDangerousLocationParamsFromDomain(loc *domain.DangerousLocationModel)
 	for _, s := range loc.DefendingStructures {
 		structsDTO = append(structsDTO, dtos.DefenseStackDTOFromDomain(s))
 	}
+	trophyDTOs := make([]dtos.TrophyDTO, 0, len(loc.Trophies))
+	for _, t := range loc.Trophies {
+		trophyDTOs = append(trophyDTOs, dtos.TrophyDTOFromDomain(t))
+	}
 	armiesJSON, _ := json.Marshal(armyDTOs)
 	buildingsJSON, _ := json.Marshal(structsDTO)
+	trophiesJSON, _ := json.Marshal(trophyDTOs)
 	return gen.UpdateDangerousLocationParams{
 		ID:                     int64(loc.ID),
 		DangerLevel:            int32(loc.DangerLevel),
@@ -94,5 +113,6 @@ func UpdateDangerousLocationParamsFromDomain(loc *domain.DangerousLocationModel)
 		ResourcesCalcTimestamp: loc.Resources.CalculationTimestamp,
 		Armies:                 armiesJSON,
 		Buildings:              buildingsJSON,
+		Trophies:               trophiesJSON,
 	}
 }

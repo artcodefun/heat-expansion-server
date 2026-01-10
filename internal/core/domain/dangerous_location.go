@@ -14,6 +14,14 @@ type DangerousLocationModel struct {
 	// Defenders as stacks (composition). Snapshots are materialized for battles.
 	DefendingArmies     []ArmyStack
 	DefendingStructures []DefenseStack
+
+	// Trophies granted to the winner when this location is cleared.
+	Trophies []TrophyStorageItem
+}
+
+// TrophyStorageItem represents a special item granted when a dangerous location is defeated.
+type TrophyStorageItem struct {
+	PrototypeID int
 }
 
 // MaterializeDefenderArmySnapshot builds battle-ready snapshots using current prototype values.

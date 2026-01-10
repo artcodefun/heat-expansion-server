@@ -18,6 +18,7 @@ type OperationCommands struct {
 	ResourceRepo   ports.ResourceLocationRepository
 	DangerousRepo  ports.DangerousLocationRepository
 	ScanReportRepo ports.ScanReportRepository
+	StorageProtos  ports.StoragePrototypeRepository
 	Provisioner    *services.SectorProvisioningService
 	Scheduler      ports.Scheduler
 	Outbox         ports.OutboxEventRepository
@@ -26,7 +27,7 @@ type OperationCommands struct {
 	crystalService *domain.CrystalSpendingService
 }
 
-func NewOperationCommands(userBaseRepo ports.UserBaseRepository, userRepo ports.UserRepository, sectorRepo ports.SectorRepository, opRepo ports.MilitaryOperationRepository, resRepo ports.ResourceLocationRepository, dangerRepo ports.DangerousLocationRepository, scanRepo ports.ScanReportRepository, provisioner *services.SectorProvisioningService, scheduler ports.Scheduler, outbox ports.OutboxEventRepository, txMgr ports.TransactionManager, access *services.AccessControlService) *OperationCommands {
+func NewOperationCommands(userBaseRepo ports.UserBaseRepository, userRepo ports.UserRepository, sectorRepo ports.SectorRepository, opRepo ports.MilitaryOperationRepository, resRepo ports.ResourceLocationRepository, dangerRepo ports.DangerousLocationRepository, scanRepo ports.ScanReportRepository, storageProtos ports.StoragePrototypeRepository, provisioner *services.SectorProvisioningService, scheduler ports.Scheduler, outbox ports.OutboxEventRepository, txMgr ports.TransactionManager, access *services.AccessControlService) *OperationCommands {
 	return &OperationCommands{
 		UserBaseRepo:   userBaseRepo,
 		UserRepo:       userRepo,
@@ -35,6 +36,7 @@ func NewOperationCommands(userBaseRepo ports.UserBaseRepository, userRepo ports.
 		ResourceRepo:   resRepo,
 		DangerousRepo:  dangerRepo,
 		ScanReportRepo: scanRepo,
+		StorageProtos:  storageProtos,
 		Provisioner:    provisioner,
 		Scheduler:      scheduler,
 		Outbox:         outbox,
@@ -276,6 +278,17 @@ func (c *OperationCommands) HandleMilitaryOperationReturnArrivedEvent(event doma
 		base.ReturnAllDeployedFromOperation(op.ID)
 		if op.AttackResult != nil {
 			base.CreditLoot(op.AttackResult.Loot)
+
+			if len(op.AttackResult.Trophies) > 0 {
+				protos, err := c.StorageProtos.Tx(tx).FindAllPrototypes()
+				if err == nil {
+					protoMap := make(map[int]domain.StorageItemPrototype, len(protos))
+					for _, p := range protos {
+						protoMap[p.ID] = *p
+					}
+					base.AddTrophies(op.AttackResult.Trophies, protoMap)
+				}
+			}
 		}
 		if err := bRepo.Update(base); err != nil {
 			return err

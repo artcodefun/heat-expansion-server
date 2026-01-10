@@ -115,6 +115,7 @@ type DangerousLocation struct {
 	ResourcesCalcTimestamp int64           `json:"resources_calc_timestamp"`
 	Armies                 json.RawMessage `json:"armies"`
 	Buildings              json.RawMessage `json:"buildings"`
+	Trophies               json.RawMessage `json:"trophies"`
 }
 
 type DomainEvent struct {

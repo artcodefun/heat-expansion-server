@@ -85,6 +85,14 @@ func defenseStructureFromDTO(d dtos.DefenseStructureDTO) readmodels.DefenseStruc
 	}
 }
 
+func trophyFromDTO(d dtos.TrophyDTO) readmodels.TrophyStorageItem {
+	return readmodels.TrophyStorageItem{
+		Prototype: readmodels.StorageItemPrototype{
+			ID: d.PrototypeID,
+		},
+	}
+}
+
 func spyResultFromJSON(nm pqtype.NullRawMessage) *readmodels.SpyResult {
 	if !nm.Valid {
 		return nil
@@ -152,6 +160,12 @@ func attackResultFromJSON(nm pqtype.NullRawMessage) *readmodels.AttackResult {
 			res.RemainingStructures = append(res.RemainingStructures, defenseStructureFromDTO(s))
 		}
 	}
+	if len(d.Trophies) > 0 {
+		res.Trophies = make([]readmodels.TrophyStorageItem, 0, len(d.Trophies))
+		for _, t := range d.Trophies {
+			res.Trophies = append(res.Trophies, trophyFromDTO(t))
+		}
+	}
 	if len(d.DefendersBefore) > 0 {
 		res.DefendersBefore = make([]readmodels.MilitaryUnitSnap, 0, len(d.DefendersBefore))
 		for _, u := range d.DefendersBefore {
@@ -169,7 +183,7 @@ func attackResultFromJSON(nm pqtype.NullRawMessage) *readmodels.AttackResult {
 
 // EnrichOperationUnitsAndStructures builds a MilitaryOperation readmodel and enriches its
 // units/structures with prototype-derived name and image data.
-func EnrichOperationUnitsAndStructures(op *readmodels.MilitaryOperation, armyMap map[int]ArmyPrototypeSnapshot, buildMap map[int]BuildPrototypeSnapshot) {
+func EnrichOperationUnitsAndStructures(op *readmodels.MilitaryOperation, armyMap map[int]ArmyPrototypeSnapshot, buildMap map[int]BuildPrototypeSnapshot, storageMap map[int]readmodels.StorageItemPrototype) {
 	for i := range op.Units {
 		if proto, ok := armyMap[op.Units[i].PrototypeID]; ok {
 			op.Units[i].Name = proto.Name
@@ -213,6 +227,11 @@ func EnrichOperationUnitsAndStructures(op *readmodels.MilitaryOperation, armyMap
 			if proto, ok := buildMap[op.AttackResult.RemainingStructures[i].PrototypeID]; ok {
 				op.AttackResult.RemainingStructures[i].Name = proto.Name
 				op.AttackResult.RemainingStructures[i].ImageURL = proto.ImageURL
+			}
+		}
+		for i := range op.AttackResult.Trophies {
+			if proto, ok := storageMap[op.AttackResult.Trophies[i].Prototype.ID]; ok {
+				op.AttackResult.Trophies[i].Prototype = proto
 			}
 		}
 		for i := range op.AttackResult.DefendersBefore {

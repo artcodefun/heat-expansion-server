@@ -58,12 +58,17 @@ type SpyResult struct {
 	DefendersBefore []MilitaryUnitSnap
 }
 
+type TrophyStorageItem struct {
+	Prototype StorageItemPrototype
+}
+
 type AttackResult struct {
 	Outcome             AttackOutcome
 	AttackerRemaining   []MilitaryUnitSnap
 	DefenderRemaining   []MilitaryUnitSnap
 	RemainingStructures []DefenseStructureSnap
 	Loot                PriceModel // what attackers managed to carry back; computed elsewhere
+	Trophies            []TrophyStorageItem
 	// New: snapshots for UI to show casualties/damage
 	DefendersBefore  []MilitaryUnitSnap
 	StructuresBefore []DefenseStructureSnap

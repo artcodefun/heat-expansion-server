@@ -15,6 +15,15 @@ const (
 	Dangerous   SectorType = "DANGEROUS"
 )
 
+type ScanSource string
+
+const (
+	ScanSourceUnknown   ScanSource = "UNKNOWN"
+	ScanSourceOperation ScanSource = "OPERATION"
+	ScanSourceScanner   ScanSource = "SCANNER"
+	ScanSourceIntel     ScanSource = "INTEL"
+)
+
 type SectorDTO struct {
 	Coordinates  Vector2iDTO  `json:"coordinates"`
 	Type         SectorType   `json:"type"`
@@ -24,6 +33,7 @@ type SectorDTO struct {
 	ScanDate     int          `json:"scan_date"`
 	ScanReportID int          `json:"scan_report_id"`
 	ScanInfo     *ScanInfoDTO `json:"scan_info"`
+	Source       ScanSource   `json:"source"`
 }
 
 type ScanInfoDTO struct {
@@ -64,6 +74,15 @@ func sectorTypeFromLocation(loc readmodels.LocationType) SectorType {
 }
 
 func SectorScanReportFromReadModel(r *readmodels.SectorScanReport) SectorDTO {
+	source := ScanSourceUnknown
+	if r.SourceIntelItemID != nil {
+		source = ScanSourceIntel
+	} else if r.SourceScannerID != nil {
+		source = ScanSourceScanner
+	} else if r.SourceOperationID > 0 {
+		source = ScanSourceOperation
+	}
+
 	return SectorDTO{
 		Coordinates:  Vector2iFromReadModel(r.Coordinates),
 		Type:         sectorTypeFromLocation(r.Type),
@@ -73,6 +92,7 @@ func SectorScanReportFromReadModel(r *readmodels.SectorScanReport) SectorDTO {
 		ScanDate:     int(r.CreatedAt),
 		ScanReportID: r.ID,
 		ScanInfo:     scanInfoFromReadModel(r.Info),
+		Source:       source,
 	}
 }
 

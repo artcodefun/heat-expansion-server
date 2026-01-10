@@ -15,6 +15,7 @@ type AttackResultDTO struct {
 	DefenderRemaining   []MilitaryUnitDTO     `json:"defender_remaining"`
 	RemainingStructures []DefenseStructureDTO `json:"remaining_structures"`
 	Loot                PriceDTO              `json:"loot"`
+	Trophies            []TrophyDTO           `json:"trophies"`
 	DefendersBefore     []MilitaryUnitDTO     `json:"defenders_before"`
 	StructuresBefore    []DefenseStructureDTO `json:"structures_before"`
 }
@@ -93,6 +94,12 @@ func AttackResultDTOFromDomain(a *domain.AttackResult) *AttackResultDTO {
 			out.RemainingStructures = append(out.RemainingStructures, DefenseStructureDTOFromDomain(s))
 		}
 	}
+	if len(a.Trophies) > 0 {
+		out.Trophies = make([]TrophyDTO, 0, len(a.Trophies))
+		for _, t := range a.Trophies {
+			out.Trophies = append(out.Trophies, TrophyDTOFromDomain(t))
+		}
+	}
 	if len(a.DefendersBefore) > 0 {
 		out.DefendersBefore = make([]MilitaryUnitDTO, 0, len(a.DefendersBefore))
 		for _, u := range a.DefendersBefore {
@@ -128,6 +135,12 @@ func AttackResultFromDTO(d *AttackResultDTO) *domain.AttackResult {
 		out.RemainingStructures = make([]domain.DefenseStructureSnap, 0, len(d.RemainingStructures))
 		for _, s := range d.RemainingStructures {
 			out.RemainingStructures = append(out.RemainingStructures, DefenseStructureFromDTO(s))
+		}
+	}
+	if len(d.Trophies) > 0 {
+		out.Trophies = make([]domain.TrophyStorageItem, 0, len(d.Trophies))
+		for _, t := range d.Trophies {
+			out.Trophies = append(out.Trophies, TrophyFromDTO(t))
 		}
 	}
 	if len(d.DefendersBefore) > 0 {

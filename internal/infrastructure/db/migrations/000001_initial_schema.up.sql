@@ -109,6 +109,8 @@ CREATE TABLE dangerous_locations (
     armies                   JSONB  NOT NULL DEFAULT '[]'::jsonb,
     -- Buildings: [{"prototype_id": int, "count": int}]
     buildings                JSONB  NOT NULL DEFAULT '[]'::jsonb,
+    -- Trophies: [{"prototype_id": int}]
+    trophies                 JSONB  NOT NULL DEFAULT '[]'::jsonb,
     CONSTRAINT fk_dangerous_locations_sector_coords FOREIGN KEY (sector_x, sector_y) REFERENCES sectors(x, y) ON DELETE CASCADE,
     CONSTRAINT dangerous_locations_sector_unique UNIQUE (sector_x, sector_y)
 );

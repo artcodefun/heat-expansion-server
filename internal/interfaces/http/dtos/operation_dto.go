@@ -73,6 +73,11 @@ type DefenseStructureDTO struct {
 	Count       int    `json:"count"`
 }
 
+// TrophyStorageItemDTO represents trophy item snapshots.
+type TrophyStorageItemDTO struct {
+	Prototype StorageItemPrototypeDTO `json:"prototype"`
+}
+
 // SpyResultDTO reports spy resolution outcomes.
 type SpyResultDTO struct {
 	Outcome           SpyOutcome        `json:"outcome"`
@@ -83,13 +88,14 @@ type SpyResultDTO struct {
 
 // AttackResultDTO reports attack outcomes.
 type AttackResultDTO struct {
-	Outcome             AttackOutcome         `json:"outcome"`
-	AttackerRemaining   []MilitaryUnitDTO     `json:"attacker_remaining"`
-	DefenderRemaining   []MilitaryUnitDTO     `json:"defender_remaining"`
-	RemainingStructures []DefenseStructureDTO `json:"remaining_structures"`
-	Loot                PriceModelDTO         `json:"loot"`
-	DefendersBefore     []MilitaryUnitDTO     `json:"defenders_before"`
-	StructuresBefore    []DefenseStructureDTO `json:"structures_before"`
+	Outcome             AttackOutcome          `json:"outcome"`
+	AttackerRemaining   []MilitaryUnitDTO      `json:"attacker_remaining"`
+	DefenderRemaining   []MilitaryUnitDTO      `json:"defender_remaining"`
+	RemainingStructures []DefenseStructureDTO  `json:"remaining_structures"`
+	Loot                PriceModelDTO          `json:"loot"`
+	Trophies            []TrophyStorageItemDTO `json:"trophies"`
+	DefendersBefore     []MilitaryUnitDTO      `json:"defenders_before"`
+	StructuresBefore    []DefenseStructureDTO  `json:"structures_before"`
 }
 
 // MilitaryOperationDTO serializes military operations for HTTP responses.
@@ -162,7 +168,7 @@ func attackResultFromReadModel(res *readmodels.AttackResult) *AttackResultDTO {
 	if res == nil {
 		return nil
 	}
-	return &AttackResultDTO{
+	dto := &AttackResultDTO{
 		Outcome:             AttackOutcome(res.Outcome),
 		AttackerRemaining:   militaryUnitsFromReadModel(res.AttackerRemaining),
 		DefenderRemaining:   militaryUnitsFromReadModel(res.DefenderRemaining),
@@ -171,6 +177,15 @@ func attackResultFromReadModel(res *readmodels.AttackResult) *AttackResultDTO {
 		DefendersBefore:     militaryUnitsFromReadModel(res.DefendersBefore),
 		StructuresBefore:    defenseStructuresFromReadModel(res.StructuresBefore),
 	}
+	if len(res.Trophies) > 0 {
+		dto.Trophies = make([]TrophyStorageItemDTO, 0, len(res.Trophies))
+		for _, t := range res.Trophies {
+			dto.Trophies = append(dto.Trophies, TrophyStorageItemDTO{
+				Prototype: mapStorageItemPrototype(t.Prototype),
+			})
+		}
+	}
+	return dto
 }
 
 func OperationFromReadModel(m *readmodels.MilitaryOperation) MilitaryOperationDTO {

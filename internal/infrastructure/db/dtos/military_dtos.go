@@ -32,3 +32,15 @@ func DefenseStructureDTOFromDomain(s domain.DefenseStructureSnap) DefenseStructu
 func DefenseStructureFromDTO(d DefenseStructureDTO) domain.DefenseStructureSnap {
 	return domain.DefenseStructureSnap{PrototypeID: d.PrototypeID, Defence: d.Defence, Count: d.Count}
 }
+
+type TrophyDTO struct {
+	PrototypeID int `json:"prototype_id"`
+}
+
+func TrophyDTOFromDomain(t domain.TrophyStorageItem) TrophyDTO {
+	return TrophyDTO{PrototypeID: t.PrototypeID}
+}
+
+func TrophyFromDTO(d TrophyDTO) domain.TrophyStorageItem {
+	return domain.TrophyStorageItem{PrototypeID: d.PrototypeID}
+}

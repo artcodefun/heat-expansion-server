@@ -28,7 +28,7 @@ func (r *OperationReadRepo) GetOperation(opID int) (*readmodels.MilitaryOperatio
 		return nil, err
 	}
 	v := mappers.OperationFromModel(row)
-	if err := r.enrichOperation(&v, nil, nil); err != nil {
+	if err := r.enrichOperation(&v, nil, nil, nil); err != nil {
 		return nil, err
 	}
 	return &v, nil
@@ -39,14 +39,14 @@ func (r *OperationReadRepo) ListOperationsByBase(baseID int) ([]*readmodels.Mili
 	if err != nil {
 		return nil, err
 	}
-	armyMap, buildMap, err := r.loadPrototypeMaps()
+	armyMap, buildMap, storageMap, err := r.loadPrototypeMaps()
 	if err != nil {
 		return nil, err
 	}
 	out := make([]*readmodels.MilitaryOperation, 0, len(rows))
 	for _, row := range rows {
 		v := mappers.OperationFromModel(row)
-		if err := r.enrichOperation(&v, armyMap, buildMap); err != nil {
+		if err := r.enrichOperation(&v, armyMap, buildMap, storageMap); err != nil {
 			return nil, err
 		}
 		out = append(out, &v)
@@ -59,14 +59,14 @@ func (r *OperationReadRepo) ListActiveOperations(baseID int) ([]*readmodels.Mili
 	if err != nil {
 		return nil, err
 	}
-	armyMap, buildMap, err := r.loadPrototypeMaps()
+	armyMap, buildMap, storageMap, err := r.loadPrototypeMaps()
 	if err != nil {
 		return nil, err
 	}
 	out := make([]*readmodels.MilitaryOperation, 0, len(rows))
 	for _, row := range rows {
 		v := mappers.OperationFromModel(row)
-		if err := r.enrichOperation(&v, armyMap, buildMap); err != nil {
+		if err := r.enrichOperation(&v, armyMap, buildMap, storageMap); err != nil {
 			return nil, err
 		}
 		out = append(out, &v)
@@ -75,18 +75,18 @@ func (r *OperationReadRepo) ListActiveOperations(baseID int) ([]*readmodels.Mili
 }
 
 // enrichOperation enriches a single operation.
-func (r *OperationReadRepo) enrichOperation(v *readmodels.MilitaryOperation, army map[int]mappers.ArmyPrototypeSnapshot, build map[int]mappers.BuildPrototypeSnapshot) error {
+func (r *OperationReadRepo) enrichOperation(v *readmodels.MilitaryOperation, army map[int]mappers.ArmyPrototypeSnapshot, build map[int]mappers.BuildPrototypeSnapshot, storage map[int]readmodels.StorageItemPrototype) error {
 	// 1. Resolve prototypes if not provided
-	if army == nil || build == nil {
+	if army == nil || build == nil || storage == nil {
 		var err error
-		army, build, err = r.loadPrototypeMaps()
+		army, build, storage, err = r.loadPrototypeMaps()
 		if err != nil {
 			return err
 		}
 	}
 
 	// 2. Enrich with prototypes
-	mappers.EnrichOperationUnitsAndStructures(v, army, build)
+	mappers.EnrichOperationUnitsAndStructures(v, army, build, storage)
 
 	// 3. Fetch produced scan report if any
 	reportRow, err := r.q.GetScanReportByOperationID(context.Background(), sql.NullInt64{Int64: int64(v.ID), Valid: true})
@@ -102,14 +102,18 @@ func (r *OperationReadRepo) enrichOperation(v *readmodels.MilitaryOperation, arm
 }
 
 // loadPrototypeMaps fetches all army/build prototypes for read-store and indexes them by ID.
-func (r *OperationReadRepo) loadPrototypeMaps() (map[int]mappers.ArmyPrototypeSnapshot, map[int]mappers.BuildPrototypeSnapshot, error) {
+func (r *OperationReadRepo) loadPrototypeMaps() (map[int]mappers.ArmyPrototypeSnapshot, map[int]mappers.BuildPrototypeSnapshot, map[int]readmodels.StorageItemPrototype, error) {
 	armyRows, err := r.q.ListArmyPrototypes(context.Background())
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	buildRows, err := r.q.ListBuildPrototypes(context.Background())
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
+	}
+	storageRows, err := r.q.ListStoragePrototypes(context.Background())
+	if err != nil {
+		return nil, nil, nil, err
 	}
 	armyMap := make(map[int]mappers.ArmyPrototypeSnapshot, len(armyRows))
 	for _, p := range armyRows {
@@ -129,5 +133,9 @@ func (r *OperationReadRepo) loadPrototypeMaps() (map[int]mappers.ArmyPrototypeSn
 		}
 		buildMap[int(p.ID)] = mappers.BuildPrototypeSnapshot{Name: name, ImageURL: imageURL}
 	}
-	return armyMap, buildMap, nil
+	storageMap := make(map[int]readmodels.StorageItemPrototype, len(storageRows))
+	for _, p := range storageRows {
+		storageMap[int(p.ID)] = mappers.StoragePrototypeFromModel(p)
+	}
+	return armyMap, buildMap, storageMap, nil
 }

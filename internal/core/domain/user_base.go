@@ -1171,6 +1171,19 @@ func (ub *UserBaseModel) CreditLoot(loot PriceModel) {
 	}
 }
 
+// AddTrophies adds the provided trophies to the base's storage.
+// It requires the prototypes to be resolved by the caller.
+func (ub *UserBaseModel) AddTrophies(trophies []TrophyStorageItem, protos map[int]StorageItemPrototype) {
+	for _, t := range trophies {
+		if p, ok := protos[t.PrototypeID]; ok {
+			ub.StorageItemsPresent = append(ub.StorageItemsPresent, StorageItemPresent{
+				BaseOwnedItem: NewBaseOwnedItem(ub.ID),
+				Prototype:     p,
+			})
+		}
+	}
+}
+
 func (ub *UserBaseModel) TotalRadarStealthStrength() int {
 	total := 0
 	for _, b := range ub.BuildingsPresent {

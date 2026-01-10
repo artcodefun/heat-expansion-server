@@ -59,7 +59,7 @@ func TestOperation_Attack_EmptyLocation_PhaseAndEvents(t *testing.T) {
 	}
 
 	// Resolve directly against an empty location (no defenders, no loot)
-	res := op.ResolveAttack(nil, nil, PriceModel{})
+	res := op.ResolveAttack(nil, nil, PriceModel{}, nil)
 	if res == nil {
 		t.Fatalf("expected non-nil AttackResult when resolving against empty location")
 	}

@@ -36,7 +36,7 @@ func (s MilitaryOperationService) ResolveAgainstUserBase(defender *UserBaseModel
 			Titanium:   maxInt(defender.Stats.Titanium, 0),
 			Antimatter: maxInt(defender.Stats.Antimatter, 0),
 		}
-		res := s.Operation.ResolveAttack(defenders, structures, available)
+		res := s.Operation.ResolveAttack(defenders, structures, available, nil)
 
 		// Apply effects
 		if res != nil {
@@ -83,7 +83,7 @@ func (s MilitaryOperationService) ResolveAgainstResourceLocation(loc *ResourceLo
 			Titanium:   maxInt(loc.Resources.Titanium, 0),
 			Antimatter: maxInt(loc.Resources.Antimatter, 0),
 		}
-		res := s.Operation.ResolveAttack(defenders, structures, available)
+		res := s.Operation.ResolveAttack(defenders, structures, available, nil)
 		if res != nil {
 			s.Attacker.TrimDeployedToSurvivors(s.Operation.ID, res.AttackerRemaining)
 			loc.ApplyDefenderArmyRemaining(res.DefenderRemaining)
@@ -121,13 +121,17 @@ func (s MilitaryOperationService) ResolveAgainstDangerousLocation(loc *Dangerous
 			Titanium:   maxInt(loc.Resources.Titanium, 0),
 			Antimatter: maxInt(loc.Resources.Antimatter, 0),
 		}
-		res := s.Operation.ResolveAttack(defenders, structures, available)
+		res := s.Operation.ResolveAttack(defenders, structures, available, loc.Trophies)
 		if res != nil {
 			s.Attacker.TrimDeployedToSurvivors(s.Operation.ID, res.AttackerRemaining)
 			loc.ApplyDefenderArmyRemaining(res.DefenderRemaining)
 			loc.ApplyRemainingDefensiveStructures(res.RemainingStructures)
 			// Deduct loot from location resources
 			loc.DeductLoot(res.Loot)
+			// Clear trophies if they were taken
+			if len(res.Trophies) > 0 {
+				loc.Trophies = nil
+			}
 		}
 	case MilitaryOperationTypeSpy:
 		allDefenders := loc.MaterializeDefenderArmySnapshot()
@@ -152,7 +156,7 @@ func (s MilitaryOperationService) ResolveAgainstEmptySector(sector *SectorModel)
 		// No defenders or structures, zero available loot
 		var defenders []MilitaryUnitSnap
 		var structures []DefenseStructureSnap
-		res := s.Operation.ResolveAttack(defenders, structures, PriceModel{})
+		res := s.Operation.ResolveAttack(defenders, structures, PriceModel{}, nil)
 		if res != nil {
 			// available loot is zero; res.Loot remains empty
 			s.Attacker.TrimDeployedToSurvivors(s.Operation.ID, res.AttackerRemaining)
