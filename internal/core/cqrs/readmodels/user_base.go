@@ -14,23 +14,28 @@ type UserBaseModel struct {
 
 // UserBaseStats represents current properties of a base.
 type UserBaseStats struct {
-	Credits              int
-	CreditsCapacity      int
-	CreditsProduction    float64
-	Iron                 int
-	IronCapacity         int
-	IronProduction       float64
-	Titanium             int
-	TitaniumCapacity     int
-	TitaniumProduction   float64
-	Antimatter           int
-	AntimatterCapacity   int
-	AntimatterProduction float64
-	Defence              int
-	Attack               int
-	Space                int
-	SpaceCapacity        int
-	CalculationTimestamp int64 // Unix timestamp of last resource calculation
+	Credits               int
+	CreditsCapacity       int
+	CreditsProduction     float64
+	Iron                  int
+	IronCapacity          int
+	IronProduction        float64
+	Titanium              int
+	TitaniumCapacity      int
+	TitaniumProduction    float64
+	Antimatter            int
+	AntimatterCapacity    int
+	AntimatterProduction  float64
+	Defence               int
+	Attack                int
+	Space                 int
+	MaxSpace              int
+	MaxOperations         int
+	MaxActiveBuffs        int
+	MaxActiveArtifacts    int
+	MaxBuildingProduction int
+	MaxActiveRestorations int   // Numeric bonus (prev. DamagedRestorationBonus)
+	CalculationTimestamp  int64 // Unix timestamp of last resource calculation
 }
 
 // BaseOwnedItem is embedded in all items that belong to a user base.

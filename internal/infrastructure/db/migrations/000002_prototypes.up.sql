@@ -13,8 +13,8 @@ CREATE TABLE tech_item_prototypes (
     price                JSONB   NOT NULL DEFAULT '{}'::jsonb,
     research_time        BIGINT  NOT NULL DEFAULT 0,
     image_url            TEXT,
-    -- Effects: [{"type": string, "value": int}]
-    effects              JSONB   NOT NULL DEFAULT '[]'::jsonb
+    -- Improvement: {"type": string, "value": int, "max_level": int|null}
+    improvement          JSONB
 );
 CREATE INDEX idx_tech_prototypes_category ON tech_item_prototypes(category);
 

@@ -13,11 +13,12 @@ func TechPrototypeFromDB(p gen.TechItemPrototype) *domain.TechItemPrototype {
 	_ = json.Unmarshal(p.Price, &priceDTO)
 	price := dtos.PriceFromDTO(priceDTO)
 
-	var effDTOs []dtos.TechnologyEffectDTO
-	_ = json.Unmarshal(p.Effects, &effDTOs)
-	effects := make([]domain.TechnologyEffect, 0, len(effDTOs))
-	for _, d := range effDTOs {
-		effects = append(effects, dtos.TechnologyEffectFromDTO(d))
+	var improvement *domain.TechImprovement
+	if p.Improvement.Valid {
+		var impDTO dtos.TechImprovementDTO
+		_ = json.Unmarshal(p.Improvement.RawMessage, &impDTO)
+		imp := dtos.TechImprovementFromDTO(&impDTO)
+		improvement = imp
 	}
 
 	proto := &domain.TechItemPrototype{
@@ -30,7 +31,7 @@ func TechPrototypeFromDB(p gen.TechItemPrototype) *domain.TechItemPrototype {
 		Price:              price,
 		ResearchTime:       p.ResearchTime,
 		ImageURL:           nullStringToString(&p.ImageUrl.String, p.ImageUrl.Valid),
-		Effects:            effects,
+		Improvement:        improvement,
 	}
 	return proto
 }

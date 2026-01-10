@@ -63,6 +63,15 @@ func hasTech(techs []TechItemDone, techID int) bool {
 	return false
 }
 
+func getTechLevel(techs []TechItemDone, techID int) int {
+	for _, t := range techs {
+		if t.Prototype.ID == techID {
+			return t.Level
+		}
+	}
+	return 0
+}
+
 // Domain logic for building creation
 
 // Returns all building prototypes the user can create based on unlocked technologies
@@ -97,8 +106,8 @@ func (ub *UserBaseModel) AddToBuildQueue(proto *BuildItemPrototype) error {
 
 	// Calculate total space after adding this building
 	totalSpace := ub.Stats.Space + proto.Space
-	if totalSpace > ub.Stats.SpaceCapacity {
-		return fmt.Errorf("not enough space to queue building: required %d, available %d", totalSpace, ub.Stats.SpaceCapacity)
+	if totalSpace > ub.Stats.MaxSpace {
+		return fmt.Errorf("not enough space to queue building: required %d, available %d", totalSpace, ub.Stats.MaxSpace)
 	}
 
 	// Validate resources (example: credits, iron, titanium, antimatter)
@@ -158,8 +167,8 @@ func (ub *UserBaseModel) MoveBuildQueue() {
 	}
 	ub.BuildingsInProduction = remainingInProduction
 
-	// If no items in production, start next pending
-	if len(ub.BuildingsInProduction) == 0 && len(ub.BuildingsPending) > 0 {
+	// Start next pending items up to MaxBuildingProduction limit
+	for len(ub.BuildingsInProduction) < ub.Stats.MaxBuildingProduction && len(ub.BuildingsPending) > 0 {
 		next := ub.BuildingsPending[0]
 		ub.BuildingsPending = ub.BuildingsPending[1:]
 		startDate := now
@@ -311,8 +320,8 @@ func (ub *UserBaseModel) QueueArmy(proto *ArmyItemPrototype, count int) error {
 	// just like buildings do).
 	requiredSpace := proto.Space * count
 	totalSpace := ub.Stats.Space + requiredSpace
-	if totalSpace > ub.Stats.SpaceCapacity {
-		return fmt.Errorf("not enough space to queue army: required %d, available %d", totalSpace, ub.Stats.SpaceCapacity)
+	if totalSpace > ub.Stats.MaxSpace {
+		return fmt.Errorf("not enough space to queue army: required %d, available %d", totalSpace, ub.Stats.MaxSpace)
 	}
 
 	// Validate resources
@@ -533,10 +542,6 @@ func (ub *UserBaseModel) DeletePresentArmyByID(itemID uuid.UUID, count int) erro
 func (ub *UserBaseModel) AvailableTechnologies(allPrototypes []*TechItemPrototype) []*TechItemPrototype {
 	available := []*TechItemPrototype{}
 	for _, proto := range allPrototypes {
-		// Already researched?
-		if hasTech(ub.TechnologiesDone, proto.ID) {
-			continue
-		}
 		// Already in progress?
 		alreadyInProgress := false
 		for _, t := range ub.TechnologiesInProgress {
@@ -548,6 +553,19 @@ func (ub *UserBaseModel) AvailableTechnologies(allPrototypes []*TechItemPrototyp
 		if alreadyInProgress {
 			continue
 		}
+
+		// Check level limits
+		currentLevel := getTechLevel(ub.TechnologiesDone, proto.ID)
+		if proto.Improvement == nil {
+			// Capability unlock tech: if level > 0, cannot research again
+			if currentLevel > 0 {
+				continue
+			}
+		} else if proto.Improvement.MaxLevel != nil && currentLevel >= *proto.Improvement.MaxLevel {
+			// Scalable tech: check MaxLevel limit if present
+			continue
+		}
+
 		// Check unlock condition (if any)
 		if proto.UnlockTechnologyID != nil && !hasTech(ub.TechnologiesDone, *proto.UnlockTechnologyID) {
 			continue
@@ -608,12 +626,24 @@ func (ub *UserBaseModel) MoveTechQueue() {
 	for _, tech := range ub.TechnologiesInProgress {
 		if tech.CompletionDate <= now {
 			// Move to done
-			done := TechItemDone{
-				BaseOwnedItem: NewBaseOwnedItem(ub.ID),
-				Prototype:     tech.Prototype,
-				ResearchedAt:  tech.CompletionDate,
+			found := false
+			for i := range ub.TechnologiesDone {
+				if ub.TechnologiesDone[i].Prototype.ID == tech.Prototype.ID {
+					ub.TechnologiesDone[i].Level++
+					ub.TechnologiesDone[i].ResearchedAt = tech.CompletionDate
+					found = true
+					break
+				}
 			}
-			ub.TechnologiesDone = append(ub.TechnologiesDone, done)
+			if !found {
+				done := TechItemDone{
+					BaseOwnedItem: NewBaseOwnedItem(ub.ID),
+					Prototype:     tech.Prototype,
+					ResearchedAt:  tech.CompletionDate,
+					Level:         1,
+				}
+				ub.TechnologiesDone = append(ub.TechnologiesDone, done)
+			}
 			// Emit event for tech research finished
 			ub.AddEvent(NewTechResearchFinishedEvent(ub.ID, tech.BaseOwnedItem.ID, tech.Prototype.ID))
 		} else {
@@ -683,6 +713,18 @@ func (ub *UserBaseModel) AddStorageItem(proto StorageItemPrototype, expiresAt *i
 func (ub *UserBaseModel) ActivateBuffByID(itemID uuid.UUID) error {
 	defer ub.recalculateStats()
 	now := NowUnix()
+
+	// Check current active buffs count
+	activeCount := 0
+	for _, item := range ub.StorageItemsPresent {
+		if item.IsActive && item.Prototype.BuffData != nil {
+			activeCount++
+		}
+	}
+	if activeCount >= ub.Stats.MaxActiveBuffs {
+		return fmt.Errorf("maximum number of active buffs (%d) reached", ub.Stats.MaxActiveBuffs)
+	}
+
 	for i, item := range ub.StorageItemsPresent {
 		if item.ID == itemID && item.Prototype.BuffData != nil {
 			// Check if already activated
@@ -842,6 +884,17 @@ func (ub *UserBaseModel) StartDamagedItemRestorationByID(itemID uuid.UUID, armyP
 	defer ub.recalculateStats()
 	now := NowUnix()
 
+	// Check current active restorations count
+	activeRestorations := 0
+	for _, item := range ub.StorageItemsPresent {
+		if item.Prototype.DamagedData != nil && item.ExpiresAt != nil && *item.ExpiresAt > now {
+			activeRestorations++
+		}
+	}
+	if activeRestorations >= ub.Stats.MaxActiveRestorations {
+		return fmt.Errorf("maximum number of simultaneous restorations (%d) reached", ub.Stats.MaxActiveRestorations)
+	}
+
 	for i, item := range ub.StorageItemsPresent {
 		if item.ID == itemID && item.Prototype.DamagedData != nil {
 			if item.ExpiresAt != nil {
@@ -862,8 +915,8 @@ func (ub *UserBaseModel) StartDamagedItemRestorationByID(itemID uuid.UUID, armyP
 			}
 
 			// Validate space
-			if ub.Stats.Space+unitProto.Space > ub.Stats.SpaceCapacity {
-				return fmt.Errorf("not enough space to restore unit: required %d, available %d", unitProto.Space, ub.Stats.SpaceCapacity-ub.Stats.Space)
+			if ub.Stats.Space+unitProto.Space > ub.Stats.MaxSpace {
+				return fmt.Errorf("not enough space to restore unit: required %d, available %d", unitProto.Space, ub.Stats.MaxSpace-ub.Stats.Space)
 			}
 
 			// Validate resources
@@ -889,6 +942,18 @@ func (ub *UserBaseModel) StartDamagedItemRestorationByID(itemID uuid.UUID, armyP
 // ActivateArtifactByID enables the bonus of an artifact.
 func (ub *UserBaseModel) ActivateArtifactByID(itemID uuid.UUID) error {
 	defer ub.recalculateStats()
+
+	// Check current active artifacts count
+	activeCount := 0
+	for _, item := range ub.StorageItemsPresent {
+		if item.IsActive && item.Prototype.ArtifactData != nil {
+			activeCount++
+		}
+	}
+	if activeCount >= ub.Stats.MaxActiveArtifacts {
+		return fmt.Errorf("maximum number of active artifacts (%d) reached", ub.Stats.MaxActiveArtifacts)
+	}
+
 	for i, item := range ub.StorageItemsPresent {
 		if item.ID == itemID && item.Prototype.ArtifactData != nil {
 			if item.IsActive {
@@ -1249,34 +1314,44 @@ func (ub *UserBaseModel) ActiveModifiers() BaseModifiers {
 
 // Default capacities and stats for UserBaseStats
 const (
-	DefaultCreditsCapacity    = 10000
-	DefaultIronCapacity       = 5000
-	DefaultTitaniumCapacity   = 2500
-	DefaultAntimatterCapacity = 1000
-	DefaultDefence            = 100
-	DefaultAttack             = 0
-	DefaultSpaceCapacity      = 50
+	DefaultCreditsCapacity       = 10000
+	DefaultIronCapacity          = 5000
+	DefaultTitaniumCapacity      = 2500
+	DefaultAntimatterCapacity    = 1000
+	DefaultDefence               = 100
+	DefaultAttack                = 0
+	DefaultMaxSpace              = 50
+	DefaultMaxOperations         = 3
+	DefaultMaxActiveBuffs        = 2
+	DefaultMaxActiveArtifacts    = 1
+	DefaultMaxBuildingProduction = 1
+	DefaultMaxActiveRestorations = 1
 )
 
 // UserBaseStats represents current properties of a base.
 type UserBaseStats struct {
-	Credits              int
-	CreditsCapacity      int
-	CreditsProduction    float64
-	Iron                 int
-	IronCapacity         int
-	IronProduction       float64
-	Titanium             int
-	TitaniumCapacity     int
-	TitaniumProduction   float64
-	Antimatter           int
-	AntimatterCapacity   int
-	AntimatterProduction float64
-	Defence              int
-	Attack               int
-	Space                int
-	SpaceCapacity        int
-	CalculationTimestamp int64 // Unix timestamp of last resource calculation
+	Credits               int
+	CreditsCapacity       int
+	CreditsProduction     float64
+	Iron                  int
+	IronCapacity          int
+	IronProduction        float64
+	Titanium              int
+	TitaniumCapacity      int
+	TitaniumProduction    float64
+	Antimatter            int
+	AntimatterCapacity    int
+	AntimatterProduction  float64
+	Defence               int
+	Attack                int
+	Space                 int
+	MaxSpace              int
+	MaxOperations         int
+	MaxActiveBuffs        int
+	MaxActiveArtifacts    int
+	MaxBuildingProduction int
+	MaxActiveRestorations int
+	CalculationTimestamp  int64 // Unix timestamp of last resource calculation
 }
 
 func (s *UserBaseStats) CheckResources(price PriceModel) error {
@@ -1312,7 +1387,12 @@ func (ub *UserBaseModel) recalculateStats() {
 	stats.AntimatterCapacity = DefaultAntimatterCapacity
 	stats.Defence = DefaultDefence
 	stats.Attack = DefaultAttack
-	stats.SpaceCapacity = DefaultSpaceCapacity
+	stats.MaxSpace = DefaultMaxSpace
+	stats.MaxOperations = DefaultMaxOperations
+	stats.MaxActiveBuffs = DefaultMaxActiveBuffs
+	stats.MaxActiveArtifacts = DefaultMaxActiveArtifacts
+	stats.MaxBuildingProduction = DefaultMaxBuildingProduction
+	stats.MaxActiveRestorations = DefaultMaxActiveRestorations
 
 	// Aggregate bonuses from present buildings
 	for _, b := range ub.BuildingsPresent {
@@ -1371,27 +1451,26 @@ func (ub *UserBaseModel) recalculateStats() {
 		stats.Attack += a.Prototype.Attack
 	}
 
-	// Apply researched technology effects (additive for space/attack/defence, multiplicative % for production)
-	// EffectTypeResourceBonus is treated as a percentage boost across all resource production rates.
+	// Apply researched technology improvements (additive bonuses scaling with level)
 	for _, tech := range ub.TechnologiesDone {
-		for _, eff := range tech.Prototype.Effects {
-			switch eff.EffectType {
-			case EffectTypeSpaceBonus:
-				stats.SpaceCapacity += eff.Value
-			case EffectTypeDefenceBonus:
-				stats.Defence += eff.Value
-			case EffectTypeAttackBonus:
-				stats.Attack += eff.Value
-			case EffectTypeResourceBonus:
-				mult := 1 + float64(eff.Value)/100.0
-				if mult < 0 { // guard against negative values producing negative production
-					mult = 0
-				}
-				stats.CreditsProduction *= mult
-				stats.IronProduction *= mult
-				stats.TitaniumProduction *= mult
-				stats.AntimatterProduction *= mult
-			}
+		imp := tech.Prototype.Improvement
+		if imp == nil {
+			continue
+		}
+		value := imp.Value * tech.Level
+		switch imp.Type {
+		case ImprovementTypeSpaceCapacity:
+			stats.MaxSpace += value
+		case ImprovementTypeOperationsCount:
+			stats.MaxOperations += value
+		case ImprovementTypeActiveBuffsCount:
+			stats.MaxActiveBuffs += value
+		case ImprovementTypeActiveArtifactsCount:
+			stats.MaxActiveArtifacts += value
+		case ImprovementTypeActiveRestorationsCount:
+			stats.MaxActiveRestorations += value
+		case ImprovementTypeBuildingProductionCount:
+			stats.MaxBuildingProduction += value
 		}
 	}
 

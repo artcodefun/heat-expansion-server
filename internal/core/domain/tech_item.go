@@ -27,9 +27,9 @@ type TechItemPrototype struct {
 	ShortDescription   string
 	FullDescription    string
 	Price              PriceModel
-	ResearchTime       int64 // how many seconds it takes to research
+	ResearchTime       int64            // how many seconds it takes to research
+	Improvement        *TechImprovement // optional numeric improvement offered by this technology
 	ImageURL           string
-	Effects            []TechnologyEffect
 }
 
 // TechItemInProgress represents a tech item in progress with task details.
@@ -46,21 +46,24 @@ type TechItemDone struct {
 	BaseOwnedItem
 	Prototype    TechItemPrototype
 	ResearchedAt int64 // Unix timestamp when research was completed
+	Level        int   // current level of the technology (how many times it was researched)
 }
 
-// EffectType represents the type of effect a technology can have.
-type EffectType string
+// ImprovementType represents the type of improvement a technology can provide.
+type ImprovementType string
 
 const (
-	EffectTypeSpaceBonus    EffectType = "SPACE_BONUS"
-	EffectTypeDefenceBonus  EffectType = "DEFENCE_BONUS"
-	EffectTypeAttackBonus   EffectType = "ATTACK_BONUS"
-	EffectTypeResourceBonus EffectType = "RESOURCE_BONUS"
-	// Add more as needed
+	ImprovementTypeSpaceCapacity           ImprovementType = "SPACE_CAPACITY"
+	ImprovementTypeOperationsCount         ImprovementType = "OPERATIONS_COUNT"
+	ImprovementTypeActiveBuffsCount        ImprovementType = "ACTIVE_BUFFS_COUNT"
+	ImprovementTypeActiveArtifactsCount    ImprovementType = "ACTIVE_ARTIFACTS_COUNT"
+	ImprovementTypeActiveRestorationsCount ImprovementType = "ACTIVE_RESTORATIONS_COUNT"
+	ImprovementTypeBuildingProductionCount ImprovementType = "BUILDING_PRODUCTION_COUNT"
 )
 
-// TechnologyEffect describes an effect a technology has on a base or items.
-type TechnologyEffect struct {
-	EffectType EffectType
-	Value      int
+// TechImprovement describes a single numeric benefit that scales with technology level.
+type TechImprovement struct {
+	Type     ImprovementType
+	Value    int
+	MaxLevel *int // if nil, this improvement (and thus the tech) can be upgraded infinitely
 }

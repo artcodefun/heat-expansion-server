@@ -13,7 +13,7 @@ const getTechPrototypeByID = `-- name: GetTechPrototypeByID :one
 
 SELECT id, name, category, unlock_technology_id, short_description, full_description,
        price,
-       research_time, image_url, effects
+       research_time, image_url, improvement
 FROM tech_item_prototypes
 WHERE id = $1
 `
@@ -32,7 +32,7 @@ func (q *Queries) GetTechPrototypeByID(ctx context.Context, id int64) (TechItemP
 		&i.Price,
 		&i.ResearchTime,
 		&i.ImageUrl,
-		&i.Effects,
+		&i.Improvement,
 	)
 	return i, err
 }
@@ -40,7 +40,7 @@ func (q *Queries) GetTechPrototypeByID(ctx context.Context, id int64) (TechItemP
 const listTechPrototypes = `-- name: ListTechPrototypes :many
 SELECT id, name, category, unlock_technology_id, short_description, full_description,
        price,
-       research_time, image_url, effects
+       research_time, image_url, improvement
 FROM tech_item_prototypes
 ORDER BY id
 `
@@ -64,7 +64,7 @@ func (q *Queries) ListTechPrototypes(ctx context.Context) ([]TechItemPrototype, 
 			&i.Price,
 			&i.ResearchTime,
 			&i.ImageUrl,
-			&i.Effects,
+			&i.Improvement,
 		); err != nil {
 			return nil, err
 		}

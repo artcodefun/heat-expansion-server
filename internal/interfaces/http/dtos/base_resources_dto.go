@@ -17,7 +17,7 @@ type BaseResourcesDTO struct {
 	Defence            int     `json:"defence"`
 	Attack             int     `json:"attack"`
 	Space              int     `json:"space"`
-	SpaceCapacity      int     `json:"space_capacity"`
+	MaxSpace           int     `json:"max_space"`
 }
 
 // BaseResourcesFromReadModel maps a readmodel.UserBaseStats to BaseResourcesDTO.
@@ -37,6 +37,6 @@ func BaseResourcesFromReadModel(m *readmodels.UserBaseStats) BaseResourcesDTO {
 		Defence:            m.Defence,
 		Attack:             m.Attack,
 		Space:              m.Space,
-		SpaceCapacity:      m.SpaceCapacity,
+		MaxSpace:           m.MaxSpace,
 	}
 }

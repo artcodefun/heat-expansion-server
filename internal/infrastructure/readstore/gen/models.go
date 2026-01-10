@@ -215,16 +215,16 @@ type StorageItemPrototype struct {
 }
 
 type TechItemPrototype struct {
-	ID                 int64           `json:"id"`
-	Name               string          `json:"name"`
-	Category           string          `json:"category"`
-	UnlockTechnologyID sql.NullInt64   `json:"unlock_technology_id"`
-	ShortDescription   sql.NullString  `json:"short_description"`
-	FullDescription    sql.NullString  `json:"full_description"`
-	Price              json.RawMessage `json:"price"`
-	ResearchTime       int64           `json:"research_time"`
-	ImageUrl           sql.NullString  `json:"image_url"`
-	Effects            json.RawMessage `json:"effects"`
+	ID                 int64                 `json:"id"`
+	Name               string                `json:"name"`
+	Category           string                `json:"category"`
+	UnlockTechnologyID sql.NullInt64         `json:"unlock_technology_id"`
+	ShortDescription   sql.NullString        `json:"short_description"`
+	FullDescription    sql.NullString        `json:"full_description"`
+	Price              json.RawMessage       `json:"price"`
+	ResearchTime       int64                 `json:"research_time"`
+	ImageUrl           sql.NullString        `json:"image_url"`
+	Improvement        pqtype.NullRawMessage `json:"improvement"`
 }
 
 type User struct {

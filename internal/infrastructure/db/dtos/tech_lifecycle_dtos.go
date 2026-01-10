@@ -17,11 +17,12 @@ func TechInProgressFromDTO(d TechInProgressDTO, owned domain.BaseOwnedItem, prot
 
 type TechDoneDTO struct {
 	ResearchedAt int64 `json:"researched_at"`
+	Level        int   `json:"level"`
 }
 
 func TechDoneDTOFromDomain(t domain.TechItemDone) TechDoneDTO {
-	return TechDoneDTO{ResearchedAt: t.ResearchedAt}
+	return TechDoneDTO{ResearchedAt: t.ResearchedAt, Level: t.Level}
 }
 func TechDoneFromDTO(d TechDoneDTO, owned domain.BaseOwnedItem, proto domain.TechItemPrototype) domain.TechItemDone {
-	return domain.TechItemDone{BaseOwnedItem: owned, Prototype: proto, ResearchedAt: d.ResearchedAt}
+	return domain.TechItemDone{BaseOwnedItem: owned, Prototype: proto, ResearchedAt: d.ResearchedAt, Level: d.Level}
 }

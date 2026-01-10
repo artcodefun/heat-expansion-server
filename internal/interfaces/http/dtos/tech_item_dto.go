@@ -21,15 +21,22 @@ const (
 	TechDone       TechStatus = "DONE"
 )
 
+type TechImprovementDTO struct {
+	Type     string `json:"type"`
+	Value    int    `json:"value"`
+	MaxLevel *int   `json:"max_level,omitempty"`
+}
+
 type TechItemPrototypeDTO struct {
-	ID               int           `json:"id"`
-	Name             string        `json:"name"`
-	Category         TechCategory  `json:"category"`
-	ShortDescription string        `json:"short_description"`
-	FullDescription  string        `json:"full_description"`
-	Price            PriceModelDTO `json:"price"`
-	ImageURL         string        `json:"image_url"`
-	ResearchTime     int           `json:"research_time"`
+	ID               int                 `json:"id"`
+	Name             string              `json:"name"`
+	Category         TechCategory        `json:"category"`
+	ShortDescription string              `json:"short_description"`
+	FullDescription  string              `json:"full_description"`
+	Price            PriceModelDTO       `json:"price"`
+	ImageURL         string              `json:"image_url"`
+	ResearchTime     int                 `json:"research_time"`
+	Improvement      *TechImprovementDTO `json:"improvement,omitempty"`
 }
 
 type TechItemNewDTO struct {
@@ -47,6 +54,7 @@ type TechItemInProgressDTO struct {
 type TechItemDoneDTO struct {
 	BaseOwnedItemDTO
 	Prototype TechItemPrototypeDTO `json:"prototype"`
+	Level     int                  `json:"level"`
 }
 
 type TechItemCombinedDTO struct {
@@ -56,6 +64,14 @@ type TechItemCombinedDTO struct {
 }
 
 func mapTechPrototype(proto readmodels.TechItemPrototype) TechItemPrototypeDTO {
+	var improvement *TechImprovementDTO
+	if proto.Improvement != nil {
+		improvement = &TechImprovementDTO{
+			Type:     string(proto.Improvement.Type),
+			Value:    proto.Improvement.Value,
+			MaxLevel: proto.Improvement.MaxLevel,
+		}
+	}
 	return TechItemPrototypeDTO{
 		ID:               proto.ID,
 		Name:             proto.Name,
@@ -65,6 +81,7 @@ func mapTechPrototype(proto readmodels.TechItemPrototype) TechItemPrototypeDTO {
 		Price:            PriceModelFromReadModel(proto.Price),
 		ImageURL:         proto.ImageURL,
 		ResearchTime:     int(proto.ResearchTime),
+		Improvement:      improvement,
 	}
 }
 
@@ -96,6 +113,7 @@ func TechItemsDoneFromReadModels(items []*readmodels.TechItemDone) []TechItemDon
 		out = append(out, TechItemDoneDTO{
 			BaseOwnedItemDTO: BaseOwnedItemDTOFromReadModel(item.BaseOwnedItem),
 			Prototype:        mapTechPrototype(item.Prototype),
+			Level:            item.Level,
 		})
 	}
 	return out

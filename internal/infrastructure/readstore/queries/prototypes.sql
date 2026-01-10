@@ -25,6 +25,6 @@ ORDER BY id;
 -- name: ListTechPrototypes :many
 SELECT id, name, category, unlock_technology_id, short_description, full_description,
        price,
-       research_time, image_url, effects
+       research_time, image_url, improvement
 FROM tech_item_prototypes
 ORDER BY id;

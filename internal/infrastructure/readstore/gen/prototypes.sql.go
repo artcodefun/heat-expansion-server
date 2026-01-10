@@ -152,7 +152,7 @@ func (q *Queries) ListStoragePrototypes(ctx context.Context) ([]StorageItemProto
 const listTechPrototypes = `-- name: ListTechPrototypes :many
 SELECT id, name, category, unlock_technology_id, short_description, full_description,
        price,
-       research_time, image_url, effects
+       research_time, image_url, improvement
 FROM tech_item_prototypes
 ORDER BY id
 `
@@ -176,7 +176,7 @@ func (q *Queries) ListTechPrototypes(ctx context.Context) ([]TechItemPrototype, 
 			&i.Price,
 			&i.ResearchTime,
 			&i.ImageUrl,
-			&i.Effects,
+			&i.Improvement,
 		); err != nil {
 			return nil, err
 		}

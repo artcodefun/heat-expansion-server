@@ -60,7 +60,7 @@ func BuildTechInProgressRaw(it domain.TechItemInProgress) pqtype.NullRawMessage 
 }
 
 func BuildTechDoneRaw(it domain.TechItemDone) pqtype.NullRawMessage {
-	dto := dtos.TechDoneDTO{ResearchedAt: it.ResearchedAt}
+	dto := dtos.TechDoneDTO{ResearchedAt: it.ResearchedAt, Level: it.Level}
 	b, _ := json.Marshal(dto)
 	return pqtype.NullRawMessage{RawMessage: b, Valid: true}
 }

@@ -6,15 +6,13 @@ import (
 
 func newBaseWithDefaults(id int) *UserBaseModel {
 	b := &UserBaseModel{ID: id}
-	// Zero production rates by default
-	b.Stats = UserBaseStats{
-		Credits:              10_000,
-		Iron:                 10_000,
-		Titanium:             10_000,
-		Antimatter:           10_000,
-		SpaceCapacity:        DefaultSpaceCapacity,
-		CalculationTimestamp: NowUnix(),
-	}
+	b.recalculateStats()
+	// Override with some initial resources for tests
+	b.Stats.Credits = 10_000
+	b.Stats.Iron = 10_000
+	b.Stats.Titanium = 10_000
+	b.Stats.Antimatter = 10_000
+	b.Stats.CalculationTimestamp = NowUnix()
 	return b
 }
 
@@ -170,7 +168,7 @@ func TestBuilding_AddToBuildQueue_NotEnoughSpace(t *testing.T) {
 	SetTestNow(t, 2_000)
 	base := newBaseWithDefaults(10)
 	// artificially restrict space capacity to simulate a nearly full base
-	base.Stats.SpaceCapacity = 1
+	base.Stats.MaxSpace = 1
 
 	proto := &BuildItemPrototype{
 		ID:             2,
@@ -269,7 +267,7 @@ func TestArmy_QueueArmy_NotEnoughSpace(t *testing.T) {
 	SetTestNow(t, 5_100)
 	base := newBaseWithDefaults(3)
 	// artificially restrict space capacity to simulate a nearly full base
-	base.Stats.SpaceCapacity = 1
+	base.Stats.MaxSpace = 1
 
 	// Unlock infantry via present military building
 	base.BuildingsPresent = []BuildItemPresent{{
@@ -720,10 +718,11 @@ func TestTech_StartTechResearch_NotAvailableWhenAlreadyDone(t *testing.T) {
 		Price:        PriceModel{Credits: 100},
 		ResearchTime: 30,
 	}
-	// mark tech as already done so AvailableTechnologies returns empty
+	// mark tech as already done (Level 1) so AvailableTechnologies returns empty
 	base.TechnologiesDone = []TechItemDone{{
 		BaseOwnedItem: NewBaseOwnedItem(base.ID),
 		Prototype:     *tech,
+		Level:         1,
 	}}
 
 	if err := base.StartTechResearch(tech); err == nil {

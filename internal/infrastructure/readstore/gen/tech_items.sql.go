@@ -16,7 +16,7 @@ import (
 )
 
 const listDoneTechItems = `-- name: ListDoneTechItems :many
-SELECT bti.id, bti.base_id, bti.prototype_id, bti.status, bti.done_data, p.id AS proto_id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.research_time, p.image_url, p.effects
+SELECT bti.id, bti.base_id, bti.prototype_id, bti.status, bti.done_data, p.id AS proto_id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.research_time, p.image_url, p.improvement
 FROM base_tech_items bti
 JOIN tech_item_prototypes p ON p.id = bti.prototype_id
 WHERE bti.base_id = $1 AND bti.status = 'DONE'
@@ -38,7 +38,7 @@ type ListDoneTechItemsRow struct {
 	Price              json.RawMessage       `json:"price"`
 	ResearchTime       int64                 `json:"research_time"`
 	ImageUrl           sql.NullString        `json:"image_url"`
-	Effects            json.RawMessage       `json:"effects"`
+	Improvement        pqtype.NullRawMessage `json:"improvement"`
 }
 
 func (q *Queries) ListDoneTechItems(ctx context.Context, baseID int64) ([]ListDoneTechItemsRow, error) {
@@ -65,7 +65,7 @@ func (q *Queries) ListDoneTechItems(ctx context.Context, baseID int64) ([]ListDo
 			&i.Price,
 			&i.ResearchTime,
 			&i.ImageUrl,
-			&i.Effects,
+			&i.Improvement,
 		); err != nil {
 			return nil, err
 		}
@@ -81,7 +81,7 @@ func (q *Queries) ListDoneTechItems(ctx context.Context, baseID int64) ([]ListDo
 }
 
 const listInResearchTechItems = `-- name: ListInResearchTechItems :many
-SELECT bti.id, bti.base_id, bti.prototype_id, bti.status, bti.in_progress_data, p.id AS proto_id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.research_time, p.image_url, p.effects
+SELECT bti.id, bti.base_id, bti.prototype_id, bti.status, bti.in_progress_data, p.id AS proto_id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.research_time, p.image_url, p.improvement
 FROM base_tech_items bti
 JOIN tech_item_prototypes p ON p.id = bti.prototype_id
 WHERE bti.base_id = $1 AND bti.status = 'IN_PROGRESS'
@@ -103,7 +103,7 @@ type ListInResearchTechItemsRow struct {
 	Price              json.RawMessage       `json:"price"`
 	ResearchTime       int64                 `json:"research_time"`
 	ImageUrl           sql.NullString        `json:"image_url"`
-	Effects            json.RawMessage       `json:"effects"`
+	Improvement        pqtype.NullRawMessage `json:"improvement"`
 }
 
 func (q *Queries) ListInResearchTechItems(ctx context.Context, baseID int64) ([]ListInResearchTechItemsRow, error) {
@@ -130,7 +130,7 @@ func (q *Queries) ListInResearchTechItems(ctx context.Context, baseID int64) ([]
 			&i.Price,
 			&i.ResearchTime,
 			&i.ImageUrl,
-			&i.Effects,
+			&i.Improvement,
 		); err != nil {
 			return nil, err
 		}
@@ -147,7 +147,7 @@ func (q *Queries) ListInResearchTechItems(ctx context.Context, baseID int64) ([]
 
 const listTechPrototypesByIDs = `-- name: ListTechPrototypesByIDs :many
 
-SELECT p.id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.research_time, p.image_url, p.effects
+SELECT p.id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.research_time, p.image_url, p.improvement
 FROM tech_item_prototypes p
 WHERE p.id = ANY($1::bigint[])
 ORDER BY p.id
@@ -173,7 +173,7 @@ func (q *Queries) ListTechPrototypesByIDs(ctx context.Context, dollar_1 []int64)
 			&i.Price,
 			&i.ResearchTime,
 			&i.ImageUrl,
-			&i.Effects,
+			&i.Improvement,
 		); err != nil {
 			return nil, err
 		}

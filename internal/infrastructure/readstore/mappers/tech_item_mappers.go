@@ -9,7 +9,7 @@ import (
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/readstore/gen"
 )
 
-func techPrototypeFromParts(id int64, name, category string, unlock sql.NullInt64, short, full sql.NullString, price []byte, researchTime int64, imageURL sql.NullString, effects []byte) readmodels.TechItemPrototype {
+func techPrototypeFromParts(id int64, name, category string, unlock sql.NullInt64, short, full sql.NullString, price []byte, researchTime int64, imageURL sql.NullString, improvement []byte) readmodels.TechItemPrototype {
 	var unlockPtr *int
 	if unlock.Valid {
 		v := int(unlock.Int64)
@@ -25,12 +25,12 @@ func techPrototypeFromParts(id int64, name, category string, unlock sql.NullInt6
 		Price:              priceFromJSON(price),
 		ResearchTime:       researchTime,
 		ImageURL:           nullString(imageURL),
-		Effects:            technologyEffectsFromJSON(effects),
+		Improvement:        techImprovementFromJSON(improvement),
 	}
 }
 
 func NewTechItemFromPrototype(p gen.TechItemPrototype) readmodels.TechItemNew {
-	proto := techPrototypeFromParts(p.ID, p.Name, p.Category, p.UnlockTechnologyID, p.ShortDescription, p.FullDescription, p.Price, p.ResearchTime, p.ImageUrl, p.Effects)
+	proto := techPrototypeFromParts(p.ID, p.Name, p.Category, p.UnlockTechnologyID, p.ShortDescription, p.FullDescription, p.Price, p.ResearchTime, p.ImageUrl, p.Improvement.RawMessage)
 	return readmodels.TechItemNew{Prototype: proto}
 }
 
@@ -41,7 +41,7 @@ func TechItemInProgressFromRow(r gen.ListInResearchTechItemsRow) readmodels.Tech
 	}
 	return readmodels.TechItemInProgress{
 		BaseOwnedItem:     readmodels.BaseOwnedItem{ID: r.ID, UserBaseID: int(r.BaseID)},
-		Prototype:         techPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ResearchTime, r.ImageUrl, r.Effects),
+		Prototype:         techPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ResearchTime, r.ImageUrl, r.Improvement.RawMessage),
 		StartDate:         jd.StartDate,
 		CompletionDate:    jd.CompletionDate,
 		CrystalsSkipPrice: jd.CrystalsSkipPrice,
@@ -55,25 +55,23 @@ func TechItemDoneFromRow(r gen.ListDoneTechItemsRow) readmodels.TechItemDone {
 	}
 	return readmodels.TechItemDone{
 		BaseOwnedItem: readmodels.BaseOwnedItem{ID: r.ID, UserBaseID: int(r.BaseID)},
-		Prototype:     techPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ResearchTime, r.ImageUrl, r.Effects),
+		Prototype:     techPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ResearchTime, r.ImageUrl, r.Improvement.RawMessage),
 		ResearchedAt:  jd.ResearchedAt,
+		Level:         jd.Level,
 	}
 }
 
-func technologyEffectsFromJSON(b []byte) []readmodels.TechnologyEffect {
+func techImprovementFromJSON(b []byte) *readmodels.TechImprovement {
 	if len(b) == 0 {
 		return nil
 	}
-	var arrDTO []dtos.TechnologyEffectDTO
-	if err := json.Unmarshal(b, &arrDTO); err != nil {
+	var d dtos.TechImprovementDTO
+	if err := json.Unmarshal(b, &d); err != nil {
 		return nil
 	}
-	if len(arrDTO) == 0 {
-		return nil
+	return &readmodels.TechImprovement{
+		Type:     readmodels.ImprovementType(d.Type),
+		Value:    d.Value,
+		MaxLevel: d.MaxLevel,
 	}
-	out := make([]readmodels.TechnologyEffect, 0, len(arrDTO))
-	for _, d := range arrDTO {
-		out = append(out, readmodels.TechnologyEffect{EffectType: readmodels.EffectType(d.Type), Value: d.Value})
-	}
-	return out
 }
