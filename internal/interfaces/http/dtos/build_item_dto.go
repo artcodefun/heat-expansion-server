@@ -79,8 +79,7 @@ type ResourcesBuildingDataDTO struct {
 }
 
 type DefenseBuildingDataDTO struct {
-	DefenceBonus   int `json:"defence_bonus"`
-	ShieldStrength int `json:"shield_strength"`
+	DefenceBonus int `json:"defence_bonus"`
 }
 
 type MilitaryBuildingDataDTO struct {
@@ -88,11 +87,10 @@ type MilitaryBuildingDataDTO struct {
 }
 
 type IntelligenceBuildingDataDTO struct {
-	Subtype            IntelligenceSubtype `json:"subtype"`
-	StealthStrength    int                 `json:"stealth_strength"`
-	TargetLocationType SectorType          `json:"target_location_type"`
-	ScanRange          int                 `json:"scan_range"`
-	ScanCooldown       int                 `json:"scan_cooldown"`
+	Subtype         IntelligenceSubtype `json:"subtype"`
+	StealthStrength int                 `json:"stealth_strength"`
+	ScanRange       int                 `json:"scan_range"`
+	ScanCooldown    int                 `json:"scan_cooldown"`
 }
 
 type BuildItemNewDTO struct {
@@ -150,8 +148,7 @@ func mapBuildItemPrototype(proto readmodels.BuildItemPrototype) BuildItemPrototy
 	}
 	if proto.DefenseData != nil {
 		dto.DefenseData = &DefenseBuildingDataDTO{
-			DefenceBonus:   proto.DefenseData.DefenceBonus,
-			ShieldStrength: proto.DefenseData.ShieldStrength,
+			DefenceBonus: proto.DefenseData.DefenceBonus,
 		}
 	}
 	if proto.MilitaryData != nil {
@@ -161,11 +158,10 @@ func mapBuildItemPrototype(proto readmodels.BuildItemPrototype) BuildItemPrototy
 	}
 	if proto.IntelligenceData != nil {
 		dto.IntelligenceData = &IntelligenceBuildingDataDTO{
-			Subtype:            IntelligenceSubtype(proto.IntelligenceData.Subtype),
-			StealthStrength:    proto.IntelligenceData.StealthStrength,
-			TargetLocationType: SectorType(proto.IntelligenceData.TargetLocationType),
-			ScanRange:          proto.IntelligenceData.ScanRange,
-			ScanCooldown:       int(proto.IntelligenceData.ScanCooldown),
+			Subtype:         IntelligenceSubtype(proto.IntelligenceData.Subtype),
+			StealthStrength: proto.IntelligenceData.StealthStrength,
+			ScanRange:       proto.IntelligenceData.ScanRange,
+			ScanCooldown:    int(proto.IntelligenceData.ScanCooldown),
 		}
 	}
 

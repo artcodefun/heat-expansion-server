@@ -67,8 +67,7 @@ func ResourcesBuildingDataFromDTO(d *ResourcesBuildingDataDTO) *domain.Resources
 
 // DefenseBuildingDataDTO represents JSON shape for defense-building data.
 type DefenseBuildingDataDTO struct {
-	DefenceBonus   int `json:"defence_bonus"`
-	ShieldStrength int `json:"shield_strength"`
+	DefenceBonus int `json:"defence_bonus"`
 }
 
 func DefenseBuildingDataDTOFromDomain(d *domain.DefenseBuildingData) *DefenseBuildingDataDTO {
@@ -76,8 +75,7 @@ func DefenseBuildingDataDTOFromDomain(d *domain.DefenseBuildingData) *DefenseBui
 		return nil
 	}
 	return &DefenseBuildingDataDTO{
-		DefenceBonus:   d.DefenceBonus,
-		ShieldStrength: d.ShieldStrength,
+		DefenceBonus: d.DefenceBonus,
 	}
 }
 
@@ -86,8 +84,7 @@ func DefenseBuildingDataFromDTO(d *DefenseBuildingDataDTO) *domain.DefenseBuildi
 		return nil
 	}
 	return &domain.DefenseBuildingData{
-		DefenceBonus:   d.DefenceBonus,
-		ShieldStrength: d.ShieldStrength,
+		DefenceBonus: d.DefenceBonus,
 	}
 }
 
@@ -112,11 +109,10 @@ func MilitaryBuildingDataFromDTO(d *MilitaryBuildingDataDTO) *domain.MilitaryBui
 
 // IntelligenceBuildingDataDTO represents JSON shape for intelligence-building data.
 type IntelligenceBuildingDataDTO struct {
-	Subtype            string `json:"subtype"`
-	StealthStrength    int    `json:"stealth_strength"`
-	TargetLocationType string `json:"target_location_type"`
-	ScanRange          int    `json:"scan_range"`
-	ScanCooldown       int64  `json:"scan_cooldown"`
+	Subtype         string `json:"subtype"`
+	StealthStrength int    `json:"stealth_strength"`
+	ScanRange       int    `json:"scan_range"`
+	ScanCooldown    int64  `json:"scan_cooldown"`
 }
 
 func IntelligenceBuildingDataDTOFromDomain(d *domain.IntelligenceBuildingData) *IntelligenceBuildingDataDTO {
@@ -124,11 +120,10 @@ func IntelligenceBuildingDataDTOFromDomain(d *domain.IntelligenceBuildingData) *
 		return nil
 	}
 	return &IntelligenceBuildingDataDTO{
-		Subtype:            string(d.Subtype),
-		StealthStrength:    d.StealthStrength,
-		TargetLocationType: string(d.TargetLocationType),
-		ScanRange:          d.ScanRange,
-		ScanCooldown:       d.ScanCooldown,
+		Subtype:         string(d.Subtype),
+		StealthStrength: d.StealthStrength,
+		ScanRange:       d.ScanRange,
+		ScanCooldown:    d.ScanCooldown,
 	}
 }
 
@@ -137,10 +132,9 @@ func IntelligenceBuildingDataFromDTO(d *IntelligenceBuildingDataDTO) *domain.Int
 		return nil
 	}
 	return &domain.IntelligenceBuildingData{
-		Subtype:            domain.IntelligenceSubtype(d.Subtype),
-		StealthStrength:    d.StealthStrength,
-		TargetLocationType: domain.LocationType(d.TargetLocationType),
-		ScanRange:          d.ScanRange,
-		ScanCooldown:       d.ScanCooldown,
+		Subtype:         domain.IntelligenceSubtype(d.Subtype),
+		StealthStrength: d.StealthStrength,
+		ScanRange:       d.ScanRange,
+		ScanCooldown:    d.ScanCooldown,
 	}
 }

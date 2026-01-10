@@ -70,8 +70,7 @@ type ResourcesBuildingData struct {
 
 // Defense buildings: e.g., defence bonus, shield strength
 type DefenseBuildingData struct {
-	DefenceBonus   int
-	ShieldStrength int
+	DefenceBonus int
 	// Add more as needed
 }
 
@@ -82,10 +81,9 @@ type MilitaryBuildingData struct {
 
 // Intelligence buildings: e.g., vision range, stealth bonus
 type IntelligenceBuildingData struct {
-	Subtype            IntelligenceSubtype
-	StealthStrength    int
-	TargetLocationType LocationType
-	ScanRange          int
+	Subtype         IntelligenceSubtype
+	StealthStrength int
+	ScanRange       int
 	// ScanCooldown defines how many seconds to wait between automatic scans
 	ScanCooldown int64
 	// Add more as needed

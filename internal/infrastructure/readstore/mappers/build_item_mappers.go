@@ -105,8 +105,7 @@ func defenseBuildingDataFromJSON(nm pqtype.NullRawMessage) *readmodels.DefenseBu
 		return nil
 	}
 	return &readmodels.DefenseBuildingData{
-		DefenceBonus:   d.DefenceBonus,
-		ShieldStrength: d.ShieldStrength,
+		DefenceBonus: d.DefenceBonus,
 	}
 }
 
@@ -130,10 +129,9 @@ func intelligenceBuildingDataFromJSON(nm pqtype.NullRawMessage) *readmodels.Inte
 		return nil
 	}
 	return &readmodels.IntelligenceBuildingData{
-		Subtype:            readmodels.IntelligenceSubtype(d.Subtype),
-		StealthStrength:    d.StealthStrength,
-		TargetLocationType: readmodels.LocationType(d.TargetLocationType),
-		ScanRange:          d.ScanRange,
-		ScanCooldown:       d.ScanCooldown,
+		Subtype:         readmodels.IntelligenceSubtype(d.Subtype),
+		StealthStrength: d.StealthStrength,
+		ScanRange:       d.ScanRange,
+		ScanCooldown:    d.ScanCooldown,
 	}
 }

@@ -117,7 +117,7 @@ const (
 	ConsumableContentsAntimatter ConsumableBoxContents = "ANTIMATTER"
 	ConsumableContentsCrystals   ConsumableBoxContents = "CRYSTALS"
 	ConsumableContentsBuff       ConsumableBoxContents = "BUFF"
-	ConsumableContentsMap        ConsumableBoxContents = "MAP"
+	ConsumableContentsIntel      ConsumableBoxContents = "INTEL"
 	ConsumableContentsDamaged    ConsumableBoxContents = "DAMAGED"
 	ConsumableContentsArtifact   ConsumableBoxContents = "ARTIFACT"
 )

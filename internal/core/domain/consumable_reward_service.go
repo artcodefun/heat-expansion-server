@@ -118,7 +118,7 @@ func (s *ConsumableRewardService) RollSingleReward(
 		itemID := ub.AddStorageItem(proto, nil)
 		return BoxRewardOutcome{Type: contentType, Value: itemID}
 
-	case ConsumableContentsMap:
+	case ConsumableContentsIntel:
 		if len(intelProtos) == 0 {
 			return BoxRewardOutcome{}
 		}
