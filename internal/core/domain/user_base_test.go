@@ -579,6 +579,87 @@ func TestArmy_AllocateArmyToOperation_RemovesFromPresentAndMergesDeployed(t *tes
 	}
 }
 
+func TestArmy_AllocateArmyToOperation_RespectsMaxOperations(t *testing.T) {
+	base := newBaseWithDefaults(34) // recalculateStats() sets DefaultMaxOperations (3)
+	proto := ArmyItemPrototype{ID: 240, Category: ArmyCategoryInfantry, Space: 1}
+
+	base.ArmiesPresent = []ArmyItemPresent{
+		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: proto, Count: 10},
+	}
+	presentID := base.ArmiesPresent[0].ID
+
+	// Use up 3 operation slots
+	for i := 1; i <= 3; i++ {
+		if _, err := base.AllocateArmyToOperation(ArmyDeploymentRequest{PresentItemID: presentID, Count: 1}, i); err != nil {
+			t.Fatalf("allocation for op %d failed: %v", i, err)
+		}
+	}
+
+	// 4th operation should fail
+	if _, err := base.AllocateArmyToOperation(ArmyDeploymentRequest{PresentItemID: presentID, Count: 1}, 4); err == nil {
+		t.Errorf("expected error for exceeding MaxOperations (3), got nil")
+	} else if err.Error() != "maximum number of operations (3) reached" {
+		t.Errorf("unexpected error message: %v", err)
+	}
+
+	// Adding more units to an existing operation (say op 2) should still succeed
+	if _, err := base.AllocateArmyToOperation(ArmyDeploymentRequest{PresentItemID: presentID, Count: 1}, 2); err != nil {
+		t.Errorf("failed to add units to existing operation 2: %v", err)
+	}
+}
+
+func TestStorage_StartIntelDecryption_RespectsMaxDecryptions(t *testing.T) {
+	base := newBaseWithDefaults(35)
+	base.BuildingsPresent = append(base.BuildingsPresent, BuildItemPresent{
+		Prototype: BuildItemPrototype{
+			Category: BuildCategoryControl,
+			ControlData: &ControlBuildingData{
+				Subtype: ControlSubtypeCryptographyLab,
+			},
+		},
+	})
+	base.recalculateStats() // MaxActiveDecryptions = 1
+
+	proto := StorageItemPrototype{
+		ID:        500,
+		IntelData: &IntelStorageData{Type: HiddenLocationTypeUserBase, DecryptionSeconds: 100},
+	}
+
+	item1ID := base.AddStorageItem(proto, nil)
+	item2ID := base.AddStorageItem(proto, nil)
+
+	// first one should start
+	if err := base.StartIntelDecryptionByID(item1ID); err != nil {
+		t.Fatalf("failed to start first decryption: %v", err)
+	}
+
+	// second one should fail
+	if err := base.StartIntelDecryptionByID(item2ID); err == nil {
+		t.Errorf("expected error for exceeding MaxActiveDecryptions (1), got nil")
+	} else if err.Error() != "maximum number of simultaneous intel decryptions (1) reached" {
+		t.Errorf("unexpected error message: %v", err)
+	}
+
+	// Increase limit via tech
+	techProto := TechItemPrototype{
+		ID: 600,
+		Improvement: &TechImprovement{
+			Type:  ImprovementTypeActiveDecryptionsCount,
+			Value: 1,
+		},
+	}
+	base.TechnologiesDone = append(base.TechnologiesDone, TechItemDone{
+		Prototype: techProto,
+		Level:     1,
+	})
+	base.recalculateStats() // MaxActiveDecryptions = 2
+
+	// Now it should work
+	if err := base.StartIntelDecryptionByID(item2ID); err != nil {
+		t.Errorf("failed to start second decryption after tech upgrade: %v", err)
+	}
+}
+
 func TestArmy_ReturnAllDeployedFromOperation_MergesBackAndCleans(t *testing.T) {
 	base := newBaseWithDefaults(33)
 	proto1 := ArmyItemPrototype{ID: 230, Category: ArmyCategoryInfantry}

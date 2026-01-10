@@ -24,6 +24,7 @@ type BaseStatsDTO struct {
 	MaxActiveArtifacts    int     `json:"max_active_artifacts"`
 	MaxBuildingProduction int     `json:"max_building_production"`
 	MaxActiveRestorations int     `json:"max_active_restorations"`
+	MaxActiveDecryptions  int     `json:"max_active_decryptions"`
 }
 
 func BaseStatsDTOFromDomain(s domain.UserBaseStats) BaseStatsDTO {
@@ -49,6 +50,7 @@ func BaseStatsDTOFromDomain(s domain.UserBaseStats) BaseStatsDTO {
 		MaxActiveArtifacts:    s.MaxActiveArtifacts,
 		MaxBuildingProduction: s.MaxBuildingProduction,
 		MaxActiveRestorations: s.MaxActiveRestorations,
+		MaxActiveDecryptions:  s.MaxActiveDecryptions,
 	}
 }
 
@@ -75,6 +77,7 @@ func BaseStatsFromDTO(d BaseStatsDTO, calcTs int64) domain.UserBaseStats {
 		MaxActiveArtifacts:    d.MaxActiveArtifacts,
 		MaxBuildingProduction: d.MaxBuildingProduction,
 		MaxActiveRestorations: d.MaxActiveRestorations,
+		MaxActiveDecryptions:  d.MaxActiveDecryptions,
 		CalculationTimestamp:  calcTs,
 	}
 }

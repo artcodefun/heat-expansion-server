@@ -859,7 +859,20 @@ func (ub *UserBaseModel) StartIntelDecryptionByID(itemID uuid.UUID) error {
 	if !ub.hasControlSubtype(ControlSubtypeCryptographyLab) {
 		return fmt.Errorf("cryptography lab required to start intel decryption")
 	}
+	defer ub.recalculateStats()
 	now := NowUnix()
+
+	// Check current active decryptions count
+	activeCount := 0
+	for _, item := range ub.StorageItemsPresent {
+		if item.IsActive && item.Prototype.IntelData != nil && item.ExpiresAt != nil && *item.ExpiresAt > now {
+			activeCount++
+		}
+	}
+	if activeCount >= ub.Stats.MaxActiveDecryptions {
+		return fmt.Errorf("maximum number of simultaneous intel decryptions (%d) reached", ub.Stats.MaxActiveDecryptions)
+	}
+
 	for i, item := range ub.StorageItemsPresent {
 		if item.ID == itemID && item.Prototype.IntelData != nil {
 			if item.ExpiresAt != nil {
@@ -1055,6 +1068,15 @@ func (ub *UserBaseModel) AllocateArmyToOperation(request ArmyDeploymentRequest, 
 	p := ub.ArmiesPresent[idx]
 	if count < 1 || count > p.Count {
 		return ArmyItemDeployed{}, fmt.Errorf("invalid count %d (available %d)", count, p.Count)
+	}
+
+	// Check MaxOperations limit
+	activeOps := make(map[int]bool)
+	for _, d := range ub.ArmiesDeployed {
+		activeOps[d.OperationID] = true
+	}
+	if !activeOps[operationID] && len(activeOps) >= ub.Stats.MaxOperations {
+		return ArmyItemDeployed{}, fmt.Errorf("maximum number of operations (%d) reached", ub.Stats.MaxOperations)
 	}
 
 	// Decrement/remove from present
@@ -1326,6 +1348,7 @@ const (
 	DefaultMaxActiveArtifacts    = 1
 	DefaultMaxBuildingProduction = 1
 	DefaultMaxActiveRestorations = 1
+	DefaultMaxActiveDecryptions  = 1
 )
 
 // UserBaseStats represents current properties of a base.
@@ -1351,6 +1374,7 @@ type UserBaseStats struct {
 	MaxActiveArtifacts    int
 	MaxBuildingProduction int
 	MaxActiveRestorations int
+	MaxActiveDecryptions  int
 	CalculationTimestamp  int64 // Unix timestamp of last resource calculation
 }
 
@@ -1393,6 +1417,7 @@ func (ub *UserBaseModel) recalculateStats() {
 	stats.MaxActiveArtifacts = DefaultMaxActiveArtifacts
 	stats.MaxBuildingProduction = DefaultMaxBuildingProduction
 	stats.MaxActiveRestorations = DefaultMaxActiveRestorations
+	stats.MaxActiveDecryptions = DefaultMaxActiveDecryptions
 
 	// Aggregate bonuses from present buildings
 	for _, b := range ub.BuildingsPresent {
@@ -1471,6 +1496,8 @@ func (ub *UserBaseModel) recalculateStats() {
 			stats.MaxActiveRestorations += value
 		case ImprovementTypeBuildingProductionCount:
 			stats.MaxBuildingProduction += value
+		case ImprovementTypeActiveDecryptionsCount:
+			stats.MaxActiveDecryptions += value
 		}
 	}
 

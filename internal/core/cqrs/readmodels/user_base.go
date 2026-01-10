@@ -34,7 +34,8 @@ type UserBaseStats struct {
 	MaxActiveBuffs        int
 	MaxActiveArtifacts    int
 	MaxBuildingProduction int
-	MaxActiveRestorations int   // Numeric bonus (prev. DamagedRestorationBonus)
+	MaxActiveRestorations int // Numeric bonus (prev. DamagedRestorationBonus)
+	MaxActiveDecryptions  int
 	CalculationTimestamp  int64 // Unix timestamp of last resource calculation
 }
 

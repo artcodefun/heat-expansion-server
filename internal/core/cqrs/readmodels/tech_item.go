@@ -64,6 +64,7 @@ const (
 	ImprovementTypeActiveArtifactsCount    ImprovementType = "ACTIVE_ARTIFACTS_COUNT"
 	ImprovementTypeActiveRestorationsCount ImprovementType = "ACTIVE_RESTORATIONS_COUNT"
 	ImprovementTypeBuildingProductionCount ImprovementType = "BUILDING_PRODUCTION_COUNT"
+	ImprovementTypeActiveDecryptionsCount  ImprovementType = "ACTIVE_DECRYPTION_COUNT"
 )
 
 // TechImprovement describes a single numeric benefit that scales with technology level.

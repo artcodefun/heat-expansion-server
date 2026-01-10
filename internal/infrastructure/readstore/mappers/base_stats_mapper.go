@@ -28,6 +28,7 @@ func UserBaseStatsFromDTO(dto dtos.BaseStatsDTO, calcTs int64) readmodels.UserBa
 		MaxActiveArtifacts:    dto.MaxActiveArtifacts,
 		MaxBuildingProduction: dto.MaxBuildingProduction,
 		MaxActiveRestorations: dto.MaxActiveRestorations,
+		MaxActiveDecryptions:  dto.MaxActiveDecryptions,
 		CalculationTimestamp:  calcTs,
 	}
 }

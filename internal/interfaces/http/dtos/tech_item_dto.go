@@ -4,8 +4,6 @@ import "github.com/artcodefun/heat-expansion-api/internal/core/cqrs/readmodels"
 
 type TechCategory string
 
-type TechStatus string
-
 // TechCategory enum values
 const (
 	Army     TechCategory = "ARMY"
@@ -14,6 +12,8 @@ const (
 	Politics TechCategory = "POLITICS"
 )
 
+type TechStatus string
+
 // TechStatus enum values
 const (
 	TechNew        TechStatus = "NEW"
@@ -21,10 +21,22 @@ const (
 	TechDone       TechStatus = "DONE"
 )
 
+type ImprovementType string
+
+const (
+	ImprovementTypeSpaceCapacity           ImprovementType = "SPACE_CAPACITY"
+	ImprovementTypeOperationsCount         ImprovementType = "OPERATIONS_COUNT"
+	ImprovementTypeActiveBuffsCount        ImprovementType = "ACTIVE_BUFFS_COUNT"
+	ImprovementTypeActiveArtifactsCount    ImprovementType = "ACTIVE_ARTIFACTS_COUNT"
+	ImprovementTypeActiveRestorationsCount ImprovementType = "ACTIVE_RESTORATIONS_COUNT"
+	ImprovementTypeBuildingProductionCount ImprovementType = "BUILDING_PRODUCTION_COUNT"
+	ImprovementTypeActiveDecryptionsCount  ImprovementType = "ACTIVE_DECRYPTION_COUNT"
+)
+
 type TechImprovementDTO struct {
-	Type     string `json:"type"`
-	Value    int    `json:"value"`
-	MaxLevel *int   `json:"max_level,omitempty"`
+	Type     ImprovementType `json:"type"`
+	Value    int             `json:"value"`
+	MaxLevel *int            `json:"max_level,omitempty"`
 }
 
 type TechItemPrototypeDTO struct {
@@ -67,7 +79,7 @@ func mapTechPrototype(proto readmodels.TechItemPrototype) TechItemPrototypeDTO {
 	var improvement *TechImprovementDTO
 	if proto.Improvement != nil {
 		improvement = &TechImprovementDTO{
-			Type:     string(proto.Improvement.Type),
+			Type:     ImprovementType(proto.Improvement.Type),
 			Value:    proto.Improvement.Value,
 			MaxLevel: proto.Improvement.MaxLevel,
 		}
