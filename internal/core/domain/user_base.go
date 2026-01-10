@@ -266,6 +266,17 @@ func (ub *UserBaseModel) countMilitaryBuildingsForCategory(category ArmyCategory
 	return count
 }
 
+func (ub *UserBaseModel) hasControlSubtype(subtype ControlSubtype) bool {
+	for _, b := range ub.BuildingsPresent {
+		if b.Prototype.Category == BuildCategoryControl &&
+			b.Prototype.ControlData != nil &&
+			b.Prototype.ControlData.Subtype == subtype {
+			return true
+		}
+	}
+	return false
+}
+
 // Returns all army prototypes the user can create based on unlocked technologies and present military buildings
 func (ub *UserBaseModel) AvailableArmies(allPrototypes []*ArmyItemPrototype) []*ArmyItemPrototype {
 	available := []*ArmyItemPrototype{}
@@ -712,6 +723,9 @@ func (ub *UserBaseModel) DeleteExpiredBuffs() int {
 
 // DecryptIntelItemByID completes the decryption process for a specific intel item.
 func (ub *UserBaseModel) DecryptIntelItemByID(itemID uuid.UUID) (HiddenLocationType, error) {
+	if !ub.hasControlSubtype(ControlSubtypeCryptographyLab) {
+		return "", fmt.Errorf("cryptography lab required to decrypt intel")
+	}
 	now := NowUnix()
 	idx := -1
 	for i, item := range ub.StorageItemsPresent {
@@ -739,6 +753,9 @@ func (ub *UserBaseModel) DecryptIntelItemByID(itemID uuid.UUID) (HiddenLocationT
 
 // RestoreDamagedItemByID completes the restoration process for a specific damaged item.
 func (ub *UserBaseModel) RestoreDamagedItemByID(itemID uuid.UUID, armyProtos []*ArmyItemPrototype) error {
+	if !ub.hasControlSubtype(ControlSubtypeRepairCenter) {
+		return fmt.Errorf("repair center required to restore damaged units")
+	}
 	defer ub.recalculateStats()
 	now := NowUnix()
 	idx := -1
@@ -797,6 +814,9 @@ func (ub *UserBaseModel) RestoreDamagedItemByID(itemID uuid.UUID, armyProtos []*
 
 // StartIntelDecryptionByID starts the decryption process for an intel item.
 func (ub *UserBaseModel) StartIntelDecryptionByID(itemID uuid.UUID) error {
+	if !ub.hasControlSubtype(ControlSubtypeCryptographyLab) {
+		return fmt.Errorf("cryptography lab required to start intel decryption")
+	}
 	now := NowUnix()
 	for i, item := range ub.StorageItemsPresent {
 		if item.ID == itemID && item.Prototype.IntelData != nil {
@@ -816,6 +836,9 @@ func (ub *UserBaseModel) StartIntelDecryptionByID(itemID uuid.UUID) error {
 
 // StartDamagedItemRestorationByID starts the restoration process for a damaged item.
 func (ub *UserBaseModel) StartDamagedItemRestorationByID(itemID uuid.UUID, armyProtos []*ArmyItemPrototype) error {
+	if !ub.hasControlSubtype(ControlSubtypeRepairCenter) {
+		return fmt.Errorf("repair center required to start restoration")
+	}
 	defer ub.recalculateStats()
 	now := NowUnix()
 

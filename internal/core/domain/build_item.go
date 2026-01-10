@@ -49,9 +49,10 @@ type ControlBuildingData struct {
 type ControlSubtype string
 
 const (
-	ControlSubtypeRepairCenter     ControlSubtype = "REPAIR_CENTER"
-	ControlSubtypeTraidingTerminal ControlSubtype = "TRADING_TERMINAL"
-	ControlSubtypeMailingTerminal  ControlSubtype = "MAILING_TERMINAL"
+	ControlSubtypeRepairCenter    ControlSubtype = "REPAIR_CENTER"
+	ControlSubtypeTradingTerminal ControlSubtype = "TRADING_TERMINAL"
+	ControlSubtypeMailingTerminal ControlSubtype = "MAILING_TERMINAL"
+	ControlSubtypeCryptographyLab ControlSubtype = "CRYPTOGRAPHY_LAB"
 	// Add more as needed
 )
 

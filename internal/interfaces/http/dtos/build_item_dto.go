@@ -19,6 +19,23 @@ const (
 	Intelligence BuildCategory = "INTELLIGENCE"
 )
 
+type ControlSubtype string
+
+const (
+	ControlSubtypeRepairCenter    ControlSubtype = "REPAIR_CENTER"
+	ControlSubtypeTradingTerminal ControlSubtype = "TRADING_TERMINAL"
+	ControlSubtypeMailingTerminal ControlSubtype = "MAILING_TERMINAL"
+	ControlSubtypeCryptographyLab ControlSubtype = "CRYPTOGRAPHY_LAB"
+)
+
+type IntelligenceSubtype string
+
+const (
+	IntelligenceSubtypeScanner  IntelligenceSubtype = "SCANNER"
+	IntelligenceSubtypeRadar    IntelligenceSubtype = "RADAR"
+	IntelligenceSubtypeCloaking IntelligenceSubtype = "CLOAKING"
+)
+
 // BuildStatus enum values
 const (
 	BuildNew          BuildStatus = "NEW"
@@ -37,6 +54,45 @@ type BuildItemPrototypeDTO struct {
 	Space            int           `json:"space"`
 	ImageURL         string        `json:"image_url"`
 	ProductionTime   int           `json:"production_time"`
+
+	// Category-specific fields
+	ControlData      *ControlBuildingDataDTO      `json:"control_data,omitempty"`
+	ResourcesData    *ResourcesBuildingDataDTO    `json:"resources_data,omitempty"`
+	DefenseData      *DefenseBuildingDataDTO      `json:"defense_data,omitempty"`
+	MilitaryData     *MilitaryBuildingDataDTO     `json:"military_data,omitempty"`
+	IntelligenceData *IntelligenceBuildingDataDTO `json:"intelligence_data,omitempty"`
+}
+
+type ControlBuildingDataDTO struct {
+	Subtype ControlSubtype `json:"subtype"`
+}
+
+type ResourcesBuildingDataDTO struct {
+	CreditsProduction    float64 `json:"credits_production"`
+	IronProduction       float64 `json:"iron_production"`
+	TitaniumProduction   float64 `json:"titanium_production"`
+	AntimatterProduction float64 `json:"antimatter_production"`
+	CreditsCapacity      int     `json:"credits_capacity"`
+	IronCapacity         int     `json:"iron_capacity"`
+	TitaniumCapacity     int     `json:"titanium_capacity"`
+	AntimatterCapacity   int     `json:"antimatter_capacity"`
+}
+
+type DefenseBuildingDataDTO struct {
+	DefenceBonus   int `json:"defence_bonus"`
+	ShieldStrength int `json:"shield_strength"`
+}
+
+type MilitaryBuildingDataDTO struct {
+	UnlockArmyCategory ArmyCategory `json:"unlock_army_category"`
+}
+
+type IntelligenceBuildingDataDTO struct {
+	Subtype            IntelligenceSubtype `json:"subtype"`
+	StealthStrength    int                 `json:"stealth_strength"`
+	TargetLocationType SectorType          `json:"target_location_type"`
+	ScanRange          int                 `json:"scan_range"`
+	ScanCooldown       int                 `json:"scan_cooldown"`
 }
 
 type BuildItemNewDTO struct {
@@ -63,7 +119,7 @@ type BuildItemPresentDTO struct {
 }
 
 func mapBuildItemPrototype(proto readmodels.BuildItemPrototype) BuildItemPrototypeDTO {
-	return BuildItemPrototypeDTO{
+	dto := BuildItemPrototypeDTO{
 		ID:               proto.ID,
 		Name:             proto.Name,
 		Category:         BuildCategory(proto.Category),
@@ -74,6 +130,46 @@ func mapBuildItemPrototype(proto readmodels.BuildItemPrototype) BuildItemPrototy
 		ImageURL:         proto.ImageURL,
 		ProductionTime:   int(proto.ProductionTime),
 	}
+
+	if proto.ControlData != nil {
+		dto.ControlData = &ControlBuildingDataDTO{
+			Subtype: ControlSubtype(proto.ControlData.Subtype),
+		}
+	}
+	if proto.ResourcesData != nil {
+		dto.ResourcesData = &ResourcesBuildingDataDTO{
+			CreditsProduction:    proto.ResourcesData.CreditsProduction,
+			IronProduction:       proto.ResourcesData.IronProduction,
+			TitaniumProduction:   proto.ResourcesData.TitaniumProduction,
+			AntimatterProduction: proto.ResourcesData.AntimatterProduction,
+			CreditsCapacity:      proto.ResourcesData.CreditsCapacity,
+			IronCapacity:         proto.ResourcesData.IronCapacity,
+			TitaniumCapacity:     proto.ResourcesData.TitaniumCapacity,
+			AntimatterCapacity:   proto.ResourcesData.AntimatterCapacity,
+		}
+	}
+	if proto.DefenseData != nil {
+		dto.DefenseData = &DefenseBuildingDataDTO{
+			DefenceBonus:   proto.DefenseData.DefenceBonus,
+			ShieldStrength: proto.DefenseData.ShieldStrength,
+		}
+	}
+	if proto.MilitaryData != nil {
+		dto.MilitaryData = &MilitaryBuildingDataDTO{
+			UnlockArmyCategory: ArmyCategory(proto.MilitaryData.UnlockArmyCategory),
+		}
+	}
+	if proto.IntelligenceData != nil {
+		dto.IntelligenceData = &IntelligenceBuildingDataDTO{
+			Subtype:            IntelligenceSubtype(proto.IntelligenceData.Subtype),
+			StealthStrength:    proto.IntelligenceData.StealthStrength,
+			TargetLocationType: SectorType(proto.IntelligenceData.TargetLocationType),
+			ScanRange:          proto.IntelligenceData.ScanRange,
+			ScanCooldown:       int(proto.IntelligenceData.ScanCooldown),
+		}
+	}
+
+	return dto
 }
 
 func BuildItemsNewFromReadModels(items []*readmodels.BuildItemNew) []BuildItemNewDTO {

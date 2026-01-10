@@ -49,9 +49,10 @@ type ControlBuildingData struct {
 type ControlSubtype string
 
 const (
-	ControlSubtypeRepairCenter     ControlSubtype = "REPAIR_CENTER"
-	ControlSubtypeTraidingTerminal ControlSubtype = "TRADING_TERMINAL"
-	ControlSubtypeMailingTerminal  ControlSubtype = "MAILING_TERMINAL"
+	ControlSubtypeRepairCenter    ControlSubtype = "REPAIR_CENTER"
+	ControlSubtypeTradingTerminal ControlSubtype = "TRADING_TERMINAL"
+	ControlSubtypeMailingTerminal ControlSubtype = "MAILING_TERMINAL"
+	ControlSubtypeCryptographyLab ControlSubtype = "CRYPTOGRAPHY_LAB"
 	// Add more as needed
 )
 
@@ -93,6 +94,7 @@ type IntelligenceBuildingData struct {
 type IntelligenceSubtype string
 
 const (
+	IntelligenceSubtypeScanner  IntelligenceSubtype = "SCANNER"
 	IntelligenceSubtypeRadar    IntelligenceSubtype = "RADAR"
 	IntelligenceSubtypeCloaking IntelligenceSubtype = "CLOAKING"
 	// Add more as needed

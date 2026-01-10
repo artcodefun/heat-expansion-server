@@ -13,6 +13,63 @@ const (
 	StorageCategoryConsumable StorageCategory = "CONSUMABLE"
 )
 
+type BuffType string
+
+const (
+	BuffCreditsProduction  BuffType = "CREDITS_PRODUCTION"
+	BuffIronProduction     BuffType = "IRON_PRODUCTION"
+	BuffTitaniumProduction BuffType = "TITANIUM_PRODUCTION"
+	BuffAttackIncrease     BuffType = "ATTACK_INCREASE"
+	BuffDefenceIncrease    BuffType = "DEFENCE_INCREASE"
+	BuffStealthIncrease    BuffType = "STEALTH_INCREASE"
+	BuffCapacityIncrease   BuffType = "CAPACITY_INCREASE"
+	BuffSpeedIncrease      BuffType = "SPEED_INCREASE"
+	BuffPricesDecrease     BuffType = "PRICES_DECREASE"
+)
+
+type HiddenLocationType string
+
+const (
+	HiddenLocationResourceful HiddenLocationType = "RESOURCEFUL"
+	HiddenLocationDangerous   HiddenLocationType = "DANGEROUS"
+	HiddenLocationUserBase    HiddenLocationType = "USERBASE"
+)
+
+type ArtifactEffectType string
+
+const (
+	ArtifactCreditsProduction  ArtifactEffectType = "CREDITS_PRODUCTION"
+	ArtifactIronProduction     ArtifactEffectType = "IRON_PRODUCTION"
+	ArtifactTitaniumProduction ArtifactEffectType = "TITANIUM_PRODUCTION"
+	ArtifactAttackIncrease     ArtifactEffectType = "ATTACK_INCREASE"
+	ArtifactDefenceIncrease    ArtifactEffectType = "DEFENCE_INCREASE"
+	ArtifactStealthIncrease    ArtifactEffectType = "STEALTH_INCREASE"
+	ArtifactCapacityIncrease   ArtifactEffectType = "CAPACITY_INCREASE"
+	ArtifactSpeedIncrease      ArtifactEffectType = "SPEED_INCREASE"
+	ArtifactPricesDecrease     ArtifactEffectType = "PRICES_DECREASE"
+)
+
+type ConsumableType string
+
+const (
+	ConsumableBox         ConsumableType = "BOX"
+	ConsumableWarpCapsule ConsumableType = "WARP_CAPSULE"
+)
+
+type ConsumableBoxContents string
+
+const (
+	ConsumableContentsCredits    ConsumableBoxContents = "CREDITS"
+	ConsumableContentsIron       ConsumableBoxContents = "IRON"
+	ConsumableContentsTitanium   ConsumableBoxContents = "TITANIUM"
+	ConsumableContentsAntimatter ConsumableBoxContents = "ANTIMATTER"
+	ConsumableContentsCrystals   ConsumableBoxContents = "CRYSTALS"
+	ConsumableContentsBuff       ConsumableBoxContents = "BUFF"
+	ConsumableContentsMap        ConsumableBoxContents = "MAP"
+	ConsumableContentsDamaged    ConsumableBoxContents = "DAMAGED"
+	ConsumableContentsArtifact   ConsumableBoxContents = "ARTIFACT"
+)
+
 type StorageItemPrototypeDTO struct {
 	ID               int             `json:"id"`
 	Name             string          `json:"name"`
@@ -30,14 +87,14 @@ type StorageItemPrototypeDTO struct {
 }
 
 type BuffStorageDataDTO struct {
-	Type            string  `json:"type"`
-	Value           float32 `json:"value"`
-	DurationSeconds int64   `json:"duration_seconds"`
+	Type            BuffType `json:"type"`
+	Value           float32  `json:"value"`
+	DurationSeconds int64    `json:"duration_seconds"`
 }
 
 type IntelStorageDataDTO struct {
-	Type              string `json:"type"`
-	DecryptionSeconds int64  `json:"decryption_seconds"`
+	Type              HiddenLocationType `json:"type"`
+	DecryptionSeconds int64              `json:"decryption_seconds"`
 }
 
 type DamagedStorageDataDTO struct {
@@ -46,14 +103,14 @@ type DamagedStorageDataDTO struct {
 }
 
 type ArtifactStorageDataDTO struct {
-	Type  string  `json:"type"`
-	Value float32 `json:"value"`
+	Type  ArtifactEffectType `json:"type"`
+	Value float32            `json:"value"`
 }
 
 type ConsumableStorageDataDTO struct {
-	Type        string   `json:"type"`
-	BoxContents []string `json:"box_contents"`
-	BoxSize     int      `json:"box_size"`
+	Type        ConsumableType          `json:"type"`
+	BoxContents []ConsumableBoxContents `json:"box_contents"`
+	BoxSize     int                     `json:"box_size"`
 }
 
 type StorageItemPresentDTO struct {
@@ -67,7 +124,7 @@ func mapStorageItemPrototype(proto readmodels.StorageItemPrototype) StorageItemP
 	var buff *BuffStorageDataDTO
 	if proto.BuffData != nil {
 		buff = &BuffStorageDataDTO{
-			Type:            string(proto.BuffData.Type),
+			Type:            BuffType(proto.BuffData.Type),
 			Value:           proto.BuffData.Value,
 			DurationSeconds: proto.BuffData.DurationSeconds,
 		}
@@ -75,7 +132,7 @@ func mapStorageItemPrototype(proto readmodels.StorageItemPrototype) StorageItemP
 	var intel *IntelStorageDataDTO
 	if proto.IntelData != nil {
 		intel = &IntelStorageDataDTO{
-			Type:              string(proto.IntelData.Type),
+			Type:              HiddenLocationType(proto.IntelData.Type),
 			DecryptionSeconds: proto.IntelData.DecryptionSeconds,
 		}
 	}
@@ -89,18 +146,18 @@ func mapStorageItemPrototype(proto readmodels.StorageItemPrototype) StorageItemP
 	var art *ArtifactStorageDataDTO
 	if proto.ArtifactData != nil {
 		art = &ArtifactStorageDataDTO{
-			Type:  string(proto.ArtifactData.Type),
+			Type:  ArtifactEffectType(proto.ArtifactData.Type),
 			Value: proto.ArtifactData.Value,
 		}
 	}
 	var cons *ConsumableStorageDataDTO
 	if proto.ConsumableData != nil {
-		contents := make([]string, len(proto.ConsumableData.BoxContents))
+		contents := make([]ConsumableBoxContents, len(proto.ConsumableData.BoxContents))
 		for i, c := range proto.ConsumableData.BoxContents {
-			contents[i] = string(c)
+			contents[i] = ConsumableBoxContents(c)
 		}
 		cons = &ConsumableStorageDataDTO{
-			Type:        string(proto.ConsumableData.Type),
+			Type:        ConsumableType(proto.ConsumableData.Type),
 			BoxContents: contents,
 			BoxSize:     proto.ConsumableData.BoxSize,
 		}
