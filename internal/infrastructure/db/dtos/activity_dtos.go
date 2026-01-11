@@ -68,10 +68,11 @@ type RadarActivityDTO struct {
 	TargetX    int   `json:"target_x"`
 	TargetY    int   `json:"target_y"`
 	Threat     struct {
-		Attack   int `json:"attack"`
-		Speed    int `json:"speed"`
-		Stealth  int `json:"stealth"`
-		Capacity int `json:"capacity"`
+		Type     string `json:"type"`
+		Attack   int    `json:"attack"`
+		Speed    int    `json:"speed"`
+		Stealth  int    `json:"stealth"`
+		Capacity int    `json:"capacity"`
 	} `json:"threat"`
 }
 
@@ -80,6 +81,7 @@ func RadarActivityDTOFromDomain(r *domain.RadarActivity) *RadarActivityDTO {
 		return nil
 	}
 	dto := &RadarActivityDTO{OpID: r.OpID, DetectedAt: r.DetectedAt, EtaAtBase: r.EtaAtBase, SourceX: r.SourceCoordinates.X, SourceY: r.SourceCoordinates.Y, TargetX: r.TargetCoordinates.X, TargetY: r.TargetCoordinates.Y}
+	dto.Threat.Type = string(r.Threat.Type)
 	dto.Threat.Attack = r.Threat.Attack
 	dto.Threat.Speed = r.Threat.Speed
 	dto.Threat.Stealth = r.Threat.Stealth
@@ -97,6 +99,7 @@ func RadarActivityFromDTO(d *RadarActivityDTO) *domain.RadarActivity {
 		SourceCoordinates: domain.Vector2i{X: d.SourceX, Y: d.SourceY},
 		TargetCoordinates: domain.Vector2i{X: d.TargetX, Y: d.TargetY},
 		Threat: domain.Threat{
+			Type:     domain.ThreatType(d.Threat.Type),
 			Attack:   d.Threat.Attack,
 			Speed:    d.Threat.Speed,
 			Stealth:  d.Threat.Stealth,

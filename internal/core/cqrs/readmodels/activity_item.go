@@ -75,7 +75,15 @@ type RadarActivity struct {
 	Threat            Threat
 }
 
+type ThreatType string
+
+const (
+	ThreatTypeAttack ThreatType = "ATTACK"
+	ThreatTypeSpy    ThreatType = "SPY"
+)
+
 type Threat struct {
+	Type     ThreatType
 	Attack   int
 	Speed    int
 	Stealth  int

@@ -654,6 +654,10 @@ func filterUnitsByCategory(units []MilitaryUnitSnap, cat ArmyCategory) []Militar
 	return out
 }
 
+func (op *MilitaryOperation) TotalAttack() int {
+	return sumAttack(op.Units)
+}
+
 func (op *MilitaryOperation) TotalStealth() int {
 	return sumStealth(op.Units)
 }

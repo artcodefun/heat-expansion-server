@@ -67,7 +67,15 @@ type RadarActivity struct {
 	Threat            Threat
 }
 
+type ThreatType string
+
+const (
+	ThreatTypeAttack ThreatType = "ATTACK"
+	ThreatTypeSpy    ThreatType = "SPY"
+)
+
 type Threat struct {
+	Type     ThreatType
 	Attack   int
 	Speed    int
 	Stealth  int
@@ -136,7 +144,13 @@ func NewActivityFromRadarDetection(baseID int, op *MilitaryOperation) ActivityIt
 			SourceCoordinates: op.SourceCoordinates,
 			TargetCoordinates: op.TargetCoordinates,
 			Threat: Threat{
-				Attack:   sumAttack(op.Units),
+				Type: func() ThreatType {
+					if op.Type == MilitaryOperationTypeSpy {
+						return ThreatTypeSpy
+					}
+					return ThreatTypeAttack
+				}(),
+				Attack:   op.TotalAttack(),
 				Speed:    op.TotalSpeed(),
 				Stealth:  op.TotalStealth(),
 				Capacity: op.TotalCapacity(),

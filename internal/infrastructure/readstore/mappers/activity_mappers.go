@@ -35,6 +35,7 @@ func ActivityItemFromModel(a gen.Activity) readmodels.ActivityItem {
 			SourceCoordinates: readmodels.Vector2i{X: dto.SourceX, Y: dto.SourceY},
 			TargetCoordinates: readmodels.Vector2i{X: dto.TargetX, Y: dto.TargetY},
 			Threat: readmodels.Threat{
+				Type:     readmodels.ThreatType(dto.Threat.Type),
 				Attack:   dto.Threat.Attack,
 				Speed:    dto.Threat.Speed,
 				Stealth:  dto.Threat.Stealth,

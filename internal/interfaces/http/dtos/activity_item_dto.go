@@ -74,11 +74,19 @@ type RadarActivityDTO struct {
 	Threat     ThreatDTO   `json:"threat"`
 }
 
+type ThreatType string
+
+const (
+	ThreatTypeAttack ThreatType = "ATTACK"
+	ThreatTypeSpy    ThreatType = "SPY"
+)
+
 type ThreatDTO struct {
-	Attack   int `json:"attack"`
-	Speed    int `json:"speed"`
-	Stealth  int `json:"stealth"`
-	Capacity int `json:"capacity"`
+	Type     ThreatType `json:"type"`
+	Attack   int        `json:"attack"`
+	Speed    int        `json:"speed"`
+	Stealth  int        `json:"stealth"`
+	Capacity int        `json:"capacity"`
 }
 
 func offenseActivityFromReadModel(offense *readmodels.OffenseActivity) *OffenseActivityDTO {
@@ -142,6 +150,7 @@ func radarActivityFromReadModel(radar *readmodels.RadarActivity) *RadarActivityD
 		Source:     Vector2iFromReadModel(radar.SourceCoordinates),
 		Target:     Vector2iFromReadModel(radar.TargetCoordinates),
 		Threat: ThreatDTO{
+			Type:     ThreatType(radar.Threat.Type),
 			Attack:   radar.Threat.Attack,
 			Speed:    radar.Threat.Speed,
 			Stealth:  radar.Threat.Stealth,
