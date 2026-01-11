@@ -51,7 +51,8 @@ type TechItemDone struct {
 
 // TechItemNew represents a technology prototype not yet researched.
 type TechItemNew struct {
-	Prototype TechItemPrototype
+	Prototype    TechItemPrototype
+	CurrentLevel int // the level reached so far (0 if never researched)
 }
 
 // ImprovementType represents the type of improvement a technology can provide.

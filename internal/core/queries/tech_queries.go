@@ -35,7 +35,7 @@ func (q *TechQueries) ListNewTechItems(ctx cqrs.QueryContext, baseID int) ([]*re
 	for _, p := range available {
 		ids = append(ids, p.ID)
 	}
-	items, err := q.Repo.ListNewTechItemsByPrototypeIDs(ids)
+	items, err := q.Repo.ListNewTechItemsByPrototypeIDs(baseID, ids)
 	return items, repoErr(err)
 }
 func (q *TechQueries) ListInResearchTechItems(ctx cqrs.QueryContext, baseID int) ([]*readmodels.TechItemInProgress, error) {

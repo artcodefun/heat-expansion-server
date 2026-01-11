@@ -12,17 +12,29 @@ type TechReadRepo struct{ q *gen.Queries }
 
 func NewTechReadRepo(q *gen.Queries) *TechReadRepo { return &TechReadRepo{q: q} }
 
-func (r *TechReadRepo) ListNewTechItemsByPrototypeIDs(ids []int) ([]*readmodels.TechItemNew, error) {
+func (r *TechReadRepo) ListNewTechItemsByPrototypeIDs(baseID int, ids []int) ([]*readmodels.TechItemNew, error) {
 	if len(ids) == 0 {
 		return []*readmodels.TechItemNew{}, nil
 	}
+	// Get finished items to find current levels
+	doneRows, err := r.q.ListDoneTechItems(context.Background(), int64(baseID))
+	if err != nil {
+		return nil, err
+	}
+	levels := make(map[int]int)
+	for _, dr := range doneRows {
+		v := mappers.TechItemDoneFromRow(dr)
+		levels[v.Prototype.ID] = v.Level
+	}
+
 	rows, err := r.q.ListTechPrototypesByIDs(context.Background(), mappers.IdsToInt64(ids))
 	if err != nil {
 		return nil, err
 	}
 	out := make([]*readmodels.TechItemNew, 0, len(rows))
 	for _, p := range rows {
-		v := mappers.NewTechItemFromPrototype(p)
+		level := levels[int(p.ID)]
+		v := mappers.NewTechItemFromPrototype(p, level)
 		out = append(out, &v)
 	}
 	return out, nil

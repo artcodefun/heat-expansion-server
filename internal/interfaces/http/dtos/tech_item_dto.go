@@ -53,6 +53,7 @@ type TechItemPrototypeDTO struct {
 
 type TechItemNewDTO struct {
 	TechItemPrototypeDTO
+	CurrentLevel int `json:"current_level"`
 }
 
 type TechItemInProgressDTO struct {
@@ -100,7 +101,10 @@ func mapTechPrototype(proto readmodels.TechItemPrototype) TechItemPrototypeDTO {
 func TechItemsNewFromReadModels(items []*readmodels.TechItemNew) []TechItemNewDTO {
 	out := make([]TechItemNewDTO, 0, len(items))
 	for _, item := range items {
-		out = append(out, TechItemNewDTO{TechItemPrototypeDTO: mapTechPrototype(item.Prototype)})
+		out = append(out, TechItemNewDTO{
+			TechItemPrototypeDTO: mapTechPrototype(item.Prototype),
+			CurrentLevel:         item.CurrentLevel,
+		})
 	}
 	return out
 }

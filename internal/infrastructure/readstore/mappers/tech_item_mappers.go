@@ -29,9 +29,9 @@ func techPrototypeFromParts(id int64, name, category string, unlock sql.NullInt6
 	}
 }
 
-func NewTechItemFromPrototype(p gen.TechItemPrototype) readmodels.TechItemNew {
+func NewTechItemFromPrototype(p gen.TechItemPrototype, level int) readmodels.TechItemNew {
 	proto := techPrototypeFromParts(p.ID, p.Name, p.Category, p.UnlockTechnologyID, p.ShortDescription, p.FullDescription, p.Price, p.ResearchTime, p.ImageUrl, p.Improvement.RawMessage)
-	return readmodels.TechItemNew{Prototype: proto}
+	return readmodels.TechItemNew{Prototype: proto, CurrentLevel: level}
 }
 
 func TechItemInProgressFromRow(r gen.ListInResearchTechItemsRow) readmodels.TechItemInProgress {

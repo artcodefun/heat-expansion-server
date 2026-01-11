@@ -26,7 +26,7 @@ type ActivityReadRepository interface {
 
 // TechReadRepository exposes technology lifecycle projections.
 type TechReadRepository interface {
-	ListNewTechItemsByPrototypeIDs(ids []int) ([]*readmodels.TechItemNew, error)
+	ListNewTechItemsByPrototypeIDs(baseID int, ids []int) ([]*readmodels.TechItemNew, error)
 	ListInResearchTechItems(baseID int) ([]*readmodels.TechItemInProgress, error)
 	ListDoneTechItems(baseID int) ([]*readmodels.TechItemDone, error)
 }
