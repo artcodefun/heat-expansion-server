@@ -143,7 +143,7 @@ func (ub *UserBaseModel) MoveArmyQueue() {
 		if inProd < slots {
 			startDate := now
 			completionDate := startDate + pending.Prototype.ProductionTime
-			crystalsSkipPrice := int(pending.Prototype.ProductionTime / 60)
+			crystalsSkipPrice := max(1, int(pending.Prototype.ProductionTime/60))
 			newProd := ArmyItemInProduction{
 				BaseOwnedItem:     NewBaseOwnedItem(ub.ID),
 				Prototype:         pending.Prototype,

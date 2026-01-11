@@ -92,7 +92,7 @@ func (ub *UserBaseModel) StartTechResearch(proto *TechItemPrototype) error {
 	// Add to in-progress
 	now := NowUnix()
 	completionDate := now + proto.ResearchTime
-	crystalsSkipPrice := int(proto.ResearchTime / 60)
+	crystalsSkipPrice := max(1, int(proto.ResearchTime/60))
 	inProgress := TechItemInProgress{
 		BaseOwnedItem:     NewBaseOwnedItem(ub.ID),
 		Prototype:         *proto,

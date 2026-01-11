@@ -105,7 +105,7 @@ func (ub *UserBaseModel) MoveBuildQueue() {
 		ub.BuildingsPending = ub.BuildingsPending[1:]
 		startDate := now
 		completionDate := startDate + next.Prototype.ProductionTime
-		crystalsSkipPrice := int(next.Prototype.ProductionTime / 60)
+		crystalsSkipPrice := max(1, int(next.Prototype.ProductionTime/60))
 		newProd := BuildItemInProduction{
 			BaseOwnedItem:     NewBaseOwnedItem(ub.ID),
 			Prototype:         next.Prototype,

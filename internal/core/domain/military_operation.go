@@ -173,8 +173,8 @@ func (op *MilitaryOperation) Start() {
 	travelSeconds := computeTravelSecondsBetween(op.SourceCoordinates, op.TargetCoordinates, op.Units)
 	op.OutboundDepartAt = now
 	op.OutboundArriveAt = now + travelSeconds
-	// Base skip price proportional to total travel time (similar to production queues)
-	op.CrystalsSkipPrice = int(travelSeconds / 60)
+	// Base skip price proportional to total travel time (minimum 1 crystal)
+	op.CrystalsSkipPrice = max(1, int(travelSeconds/60))
 	op.Phase = OperationPhaseOutbound
 	op.AddEvent(NewMilitaryOperationStartedEvent(op.ID, op.OutboundArriveAt))
 }
@@ -509,8 +509,8 @@ func (op *MilitaryOperation) StartReturn() {
 	travelSeconds := computeTravelSecondsBetween(op.TargetCoordinates, op.SourceCoordinates, returningUnits)
 	op.ReturnDepartAt = now
 	op.ReturnArriveAt = now + travelSeconds
-	// Recompute skip price for the return leg
-	op.CrystalsSkipPrice = int(travelSeconds / 60)
+	// Recompute skip price for the return leg (minimum 1 crystal)
+	op.CrystalsSkipPrice = max(1, int(travelSeconds/60))
 	op.Phase = OperationPhaseReturning
 	op.AddEvent(NewMilitaryOperationReturnStartedEvent(op.ID, op.ReturnArriveAt))
 }
