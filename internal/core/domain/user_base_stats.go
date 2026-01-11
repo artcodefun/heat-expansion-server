@@ -10,8 +10,6 @@ const (
 	DefaultIronCapacity          = 5000
 	DefaultTitaniumCapacity      = 2500
 	DefaultAntimatterCapacity    = 1000
-	DefaultDefence               = 100
-	DefaultAttack                = 0
 	DefaultMaxSpace              = 50
 	DefaultMaxOperations         = 3
 	DefaultMaxActiveBuffs        = 2
@@ -79,8 +77,6 @@ func (ub *UserBaseModel) recalculateStats() {
 	stats.IronCapacity = DefaultIronCapacity
 	stats.TitaniumCapacity = DefaultTitaniumCapacity
 	stats.AntimatterCapacity = DefaultAntimatterCapacity
-	stats.Defence = DefaultDefence
-	stats.Attack = DefaultAttack
 	stats.MaxSpace = DefaultMaxSpace
 	stats.MaxOperations = DefaultMaxOperations
 	stats.MaxActiveBuffs = DefaultMaxActiveBuffs
