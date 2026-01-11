@@ -18,7 +18,7 @@ func NewTechQueries(repo ports.TechReadRepository, protoRepo ports.TechPrototype
 	return &TechQueries{Repo: repo, ProtoRepo: protoRepo, BaseRepo: baseRepo, Access: access}
 }
 
-func (q *TechQueries) ListNewTechItems(ctx cqrs.QueryContext, baseID int) ([]*readmodels.TechItemNew, error) {
+func (q *TechQueries) ListNewTechItems(ctx cqrs.QueryContext, baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemNew, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return nil, err
 	}
@@ -33,22 +33,24 @@ func (q *TechQueries) ListNewTechItems(ctx cqrs.QueryContext, baseID int) ([]*re
 	available := base.AvailableTechnologies(allProtos)
 	ids := make([]int, 0, len(available))
 	for _, p := range available {
-		ids = append(ids, p.ID)
+		if string(p.Category) == string(category) {
+			ids = append(ids, p.ID)
+		}
 	}
 	items, err := q.Repo.ListNewTechItemsByPrototypeIDs(baseID, ids)
 	return items, repoErr(err)
 }
-func (q *TechQueries) ListInResearchTechItems(ctx cqrs.QueryContext, baseID int) ([]*readmodels.TechItemInProgress, error) {
+func (q *TechQueries) ListInResearchTechItems(ctx cqrs.QueryContext, baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemInProgress, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return nil, err
 	}
-	items, err := q.Repo.ListInResearchTechItems(baseID)
+	items, err := q.Repo.ListInResearchTechItems(baseID, category)
 	return items, repoErr(err)
 }
-func (q *TechQueries) ListDoneTechItems(ctx cqrs.QueryContext, baseID int) ([]*readmodels.TechItemDone, error) {
+func (q *TechQueries) ListDoneTechItems(ctx cqrs.QueryContext, baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemDone, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return nil, err
 	}
-	items, err := q.Repo.ListDoneTechItems(baseID)
+	items, err := q.Repo.ListDoneTechItems(baseID, category)
 	return items, repoErr(err)
 }

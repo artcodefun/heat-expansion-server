@@ -66,6 +66,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listDoneTechItemsStmt, err = db.PrepareContext(ctx, listDoneTechItems); err != nil {
 		return nil, fmt.Errorf("error preparing query ListDoneTechItems: %w", err)
 	}
+	if q.listDoneTechItemsAllStmt, err = db.PrepareContext(ctx, listDoneTechItemsAll); err != nil {
+		return nil, fmt.Errorf("error preparing query ListDoneTechItemsAll: %w", err)
+	}
 	if q.listInProductionArmyItemsStmt, err = db.PrepareContext(ctx, listInProductionArmyItems); err != nil {
 		return nil, fmt.Errorf("error preparing query ListInProductionArmyItems: %w", err)
 	}
@@ -208,6 +211,11 @@ func (q *Queries) Close() error {
 	if q.listDoneTechItemsStmt != nil {
 		if cerr := q.listDoneTechItemsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listDoneTechItemsStmt: %w", cerr)
+		}
+	}
+	if q.listDoneTechItemsAllStmt != nil {
+		if cerr := q.listDoneTechItemsAllStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listDoneTechItemsAllStmt: %w", cerr)
 		}
 	}
 	if q.listInProductionArmyItemsStmt != nil {
@@ -378,6 +386,7 @@ type Queries struct {
 	listBuildPrototypesByIDsStmt      *sql.Stmt
 	listDefenseActivitiesStmt         *sql.Stmt
 	listDoneTechItemsStmt             *sql.Stmt
+	listDoneTechItemsAllStmt          *sql.Stmt
 	listInProductionArmyItemsStmt     *sql.Stmt
 	listInProductionArmyItemsAllStmt  *sql.Stmt
 	listInProductionBuildItemsStmt    *sql.Stmt
@@ -421,6 +430,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listBuildPrototypesByIDsStmt:      q.listBuildPrototypesByIDsStmt,
 		listDefenseActivitiesStmt:         q.listDefenseActivitiesStmt,
 		listDoneTechItemsStmt:             q.listDoneTechItemsStmt,
+		listDoneTechItemsAllStmt:          q.listDoneTechItemsAllStmt,
 		listInProductionArmyItemsStmt:     q.listInProductionArmyItemsStmt,
 		listInProductionArmyItemsAllStmt:  q.listInProductionArmyItemsAllStmt,
 		listInProductionBuildItemsStmt:    q.listInProductionBuildItemsStmt,

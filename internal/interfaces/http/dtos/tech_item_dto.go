@@ -1,6 +1,10 @@
 package dtos
 
-import "github.com/artcodefun/heat-expansion-api/internal/core/cqrs/readmodels"
+import (
+	"strings"
+
+	"github.com/artcodefun/heat-expansion-api/internal/core/cqrs/readmodels"
+)
 
 type TechCategory string
 
@@ -74,6 +78,10 @@ type TechItemCombinedDTO struct {
 	New        []TechItemNewDTO        `json:"new"`
 	InProgress []TechItemInProgressDTO `json:"in_progress"`
 	Done       []TechItemDoneDTO       `json:"done"`
+}
+
+func TechCategoryFromDTO(c string) readmodels.TechCategory {
+	return readmodels.TechCategory(strings.ToUpper(strings.TrimSpace(c)))
 }
 
 func mapTechPrototype(proto readmodels.TechItemPrototype) TechItemPrototypeDTO {

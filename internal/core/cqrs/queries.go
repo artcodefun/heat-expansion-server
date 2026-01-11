@@ -38,14 +38,14 @@ type ArmyQueries interface {
 
 // TechQueries: technology research lifecycle.
 type TechQueries interface {
-	ListNewTechItems(ctx QueryContext, baseID int) ([]*readmodels.TechItemNew, error)
-	ListInResearchTechItems(ctx QueryContext, baseID int) ([]*readmodels.TechItemInProgress, error)
-	ListDoneTechItems(ctx QueryContext, baseID int) ([]*readmodels.TechItemDone, error)
+	ListNewTechItems(ctx QueryContext, baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemNew, error)
+	ListInResearchTechItems(ctx QueryContext, baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemInProgress, error)
+	ListDoneTechItems(ctx QueryContext, baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemDone, error)
 }
 
 // StorageQueries: storage & buffs.
 type StorageQueries interface {
-	ListPresentStorageItems(ctx QueryContext, baseID int) ([]*readmodels.StorageItemPresent, error)
+	ListPresentStorageItems(ctx QueryContext, baseID int, category readmodels.StorageCategory) ([]*readmodels.StorageItemPresent, error)
 	// Buffs may be represented via storage prototypes with BuffData activated; adjust as needed.
 }
 

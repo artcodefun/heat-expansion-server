@@ -1,6 +1,10 @@
 package dtos
 
-import "github.com/artcodefun/heat-expansion-api/internal/core/cqrs/readmodels"
+import (
+	"strings"
+
+	"github.com/artcodefun/heat-expansion-api/internal/core/cqrs/readmodels"
+)
 
 type StorageCategory string
 
@@ -118,6 +122,10 @@ type StorageItemPresentDTO struct {
 	Prototype StorageItemPrototypeDTO `json:"prototype"`
 	ExpiresAt *int64                  `json:"expires_at,omitempty"`
 	IsActive  bool                    `json:"is_active"`
+}
+
+func StorageCategoryFromDTO(c string) readmodels.StorageCategory {
+	return readmodels.StorageCategory(strings.ToUpper(strings.TrimSpace(c)))
 }
 
 func mapStorageItemPrototype(proto readmodels.StorageItemPrototype) StorageItemPrototypeDTO {

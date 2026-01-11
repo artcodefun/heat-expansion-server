@@ -24,7 +24,8 @@ func (h *TechHandler) ListNew(c *gin.Context) {
 		return
 	}
 	ctx := queryCtx(c)
-	items, err := h.queries.ListNewTechItems(ctx, req.Uri.BaseID)
+	category := dtos.TechCategoryFromDTO(req.Query.Category)
+	items, err := h.queries.ListNewTechItems(ctx, req.Uri.BaseID, category)
 	if handleCoreErr(c, err) {
 		return
 	}
@@ -38,7 +39,8 @@ func (h *TechHandler) ListInProgress(c *gin.Context) {
 		return
 	}
 	ctx := queryCtx(c)
-	items, err := h.queries.ListInResearchTechItems(ctx, req.Uri.BaseID)
+	category := dtos.TechCategoryFromDTO(req.Query.Category)
+	items, err := h.queries.ListInResearchTechItems(ctx, req.Uri.BaseID, category)
 	if handleCoreErr(c, err) {
 		return
 	}
@@ -52,7 +54,8 @@ func (h *TechHandler) ListDone(c *gin.Context) {
 		return
 	}
 	ctx := queryCtx(c)
-	items, err := h.queries.ListDoneTechItems(ctx, req.Uri.BaseID)
+	category := dtos.TechCategoryFromDTO(req.Query.Category)
+	items, err := h.queries.ListDoneTechItems(ctx, req.Uri.BaseID, category)
 	if handleCoreErr(c, err) {
 		return
 	}

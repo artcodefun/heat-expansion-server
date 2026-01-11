@@ -27,8 +27,8 @@ type ActivityReadRepository interface {
 // TechReadRepository exposes technology lifecycle projections.
 type TechReadRepository interface {
 	ListNewTechItemsByPrototypeIDs(baseID int, ids []int) ([]*readmodels.TechItemNew, error)
-	ListInResearchTechItems(baseID int) ([]*readmodels.TechItemInProgress, error)
-	ListDoneTechItems(baseID int) ([]*readmodels.TechItemDone, error)
+	ListInResearchTechItems(baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemInProgress, error)
+	ListDoneTechItems(baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemDone, error)
 }
 
 // OperationReadRepository exposes military operation projections.
@@ -47,7 +47,7 @@ type SectorReadRepository interface {
 
 // StorageReadRepository exposes storage item / buff projections.
 type StorageReadRepository interface {
-	ListPresentStorageItems(baseID int) ([]*readmodels.StorageItemPresent, error)
+	ListPresentStorageItems(baseID int, category readmodels.StorageCategory) ([]*readmodels.StorageItemPresent, error)
 }
 
 // BaseReadRepository provides read-only access to base state.

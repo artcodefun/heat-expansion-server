@@ -19,9 +19,14 @@ const listDoneTechItems = `-- name: ListDoneTechItems :many
 SELECT bti.id, bti.base_id, bti.prototype_id, bti.status, bti.done_data, p.id AS proto_id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.research_time, p.image_url, p.improvement
 FROM base_tech_items bti
 JOIN tech_item_prototypes p ON p.id = bti.prototype_id
-WHERE bti.base_id = $1 AND bti.status = 'DONE'
+WHERE bti.base_id = $1 AND p.category = $2 AND bti.status = 'DONE'
 ORDER BY p.id
 `
+
+type ListDoneTechItemsParams struct {
+	BaseID   int64  `json:"base_id"`
+	Category string `json:"category"`
+}
 
 type ListDoneTechItemsRow struct {
 	ID                 uuid.UUID             `json:"id"`
@@ -41,8 +46,8 @@ type ListDoneTechItemsRow struct {
 	Improvement        pqtype.NullRawMessage `json:"improvement"`
 }
 
-func (q *Queries) ListDoneTechItems(ctx context.Context, baseID int64) ([]ListDoneTechItemsRow, error) {
-	rows, err := q.query(ctx, q.listDoneTechItemsStmt, listDoneTechItems, baseID)
+func (q *Queries) ListDoneTechItems(ctx context.Context, arg ListDoneTechItemsParams) ([]ListDoneTechItemsRow, error) {
+	rows, err := q.query(ctx, q.listDoneTechItemsStmt, listDoneTechItems, arg.BaseID, arg.Category)
 	if err != nil {
 		return nil, err
 	}
@@ -80,13 +85,83 @@ func (q *Queries) ListDoneTechItems(ctx context.Context, baseID int64) ([]ListDo
 	return items, nil
 }
 
+const listDoneTechItemsAll = `-- name: ListDoneTechItemsAll :many
+SELECT bti.id, bti.base_id, bti.prototype_id, bti.status, bti.done_data, p.id AS proto_id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.research_time, p.image_url, p.improvement
+FROM base_tech_items bti
+JOIN tech_item_prototypes p ON p.id = bti.prototype_id
+WHERE bti.base_id = $1 AND bti.status = 'DONE'
+ORDER BY p.id
+`
+
+type ListDoneTechItemsAllRow struct {
+	ID                 uuid.UUID             `json:"id"`
+	BaseID             int64                 `json:"base_id"`
+	PrototypeID        int64                 `json:"prototype_id"`
+	Status             string                `json:"status"`
+	DoneData           pqtype.NullRawMessage `json:"done_data"`
+	ProtoID            int64                 `json:"proto_id"`
+	Name               string                `json:"name"`
+	Category           string                `json:"category"`
+	UnlockTechnologyID sql.NullInt64         `json:"unlock_technology_id"`
+	ShortDescription   sql.NullString        `json:"short_description"`
+	FullDescription    sql.NullString        `json:"full_description"`
+	Price              json.RawMessage       `json:"price"`
+	ResearchTime       int64                 `json:"research_time"`
+	ImageUrl           sql.NullString        `json:"image_url"`
+	Improvement        pqtype.NullRawMessage `json:"improvement"`
+}
+
+func (q *Queries) ListDoneTechItemsAll(ctx context.Context, baseID int64) ([]ListDoneTechItemsAllRow, error) {
+	rows, err := q.query(ctx, q.listDoneTechItemsAllStmt, listDoneTechItemsAll, baseID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListDoneTechItemsAllRow{}
+	for rows.Next() {
+		var i ListDoneTechItemsAllRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.BaseID,
+			&i.PrototypeID,
+			&i.Status,
+			&i.DoneData,
+			&i.ProtoID,
+			&i.Name,
+			&i.Category,
+			&i.UnlockTechnologyID,
+			&i.ShortDescription,
+			&i.FullDescription,
+			&i.Price,
+			&i.ResearchTime,
+			&i.ImageUrl,
+			&i.Improvement,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listInResearchTechItems = `-- name: ListInResearchTechItems :many
 SELECT bti.id, bti.base_id, bti.prototype_id, bti.status, bti.in_progress_data, p.id AS proto_id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.research_time, p.image_url, p.improvement
 FROM base_tech_items bti
 JOIN tech_item_prototypes p ON p.id = bti.prototype_id
-WHERE bti.base_id = $1 AND bti.status = 'IN_PROGRESS'
+WHERE bti.base_id = $1 AND p.category = $2 AND bti.status = 'IN_PROGRESS'
 ORDER BY (bti.in_progress_data->>'completion_date')::bigint ASC NULLS LAST
 `
+
+type ListInResearchTechItemsParams struct {
+	BaseID   int64  `json:"base_id"`
+	Category string `json:"category"`
+}
 
 type ListInResearchTechItemsRow struct {
 	ID                 uuid.UUID             `json:"id"`
@@ -106,8 +181,8 @@ type ListInResearchTechItemsRow struct {
 	Improvement        pqtype.NullRawMessage `json:"improvement"`
 }
 
-func (q *Queries) ListInResearchTechItems(ctx context.Context, baseID int64) ([]ListInResearchTechItemsRow, error) {
-	rows, err := q.query(ctx, q.listInResearchTechItemsStmt, listInResearchTechItems, baseID)
+func (q *Queries) ListInResearchTechItems(ctx context.Context, arg ListInResearchTechItemsParams) ([]ListInResearchTechItemsRow, error) {
+	rows, err := q.query(ctx, q.listInResearchTechItemsStmt, listInResearchTechItems, arg.BaseID, arg.Category)
 	if err != nil {
 		return nil, err
 	}

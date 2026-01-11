@@ -61,6 +61,19 @@ func TechItemDoneFromRow(r gen.ListDoneTechItemsRow) readmodels.TechItemDone {
 	}
 }
 
+func TechItemDoneFromAllRow(r gen.ListDoneTechItemsAllRow) readmodels.TechItemDone {
+	var jd dtos.TechDoneDTO
+	if r.DoneData.Valid {
+		_ = json.Unmarshal(r.DoneData.RawMessage, &jd)
+	}
+	return readmodels.TechItemDone{
+		BaseOwnedItem: readmodels.BaseOwnedItem{ID: r.ID, UserBaseID: int(r.BaseID)},
+		Prototype:     techPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ResearchTime, r.ImageUrl, r.Improvement.RawMessage),
+		ResearchedAt:  jd.ResearchedAt,
+		Level:         jd.Level,
+	}
+}
+
 func techImprovementFromJSON(b []byte) *readmodels.TechImprovement {
 	if len(b) == 0 {
 		return nil

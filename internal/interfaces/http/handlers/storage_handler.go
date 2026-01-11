@@ -24,7 +24,8 @@ func (h *StorageHandler) ListPresent(c *gin.Context) {
 		return
 	}
 	ctx := queryCtx(c)
-	items, err := h.queries.ListPresentStorageItems(ctx, req.Uri.BaseID)
+	category := dtos.StorageCategoryFromDTO(req.Query.Category)
+	items, err := h.queries.ListPresentStorageItems(ctx, req.Uri.BaseID, category)
 	if handleCoreErr(c, err) {
 		return
 	}

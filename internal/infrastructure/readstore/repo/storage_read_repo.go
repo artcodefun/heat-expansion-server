@@ -12,8 +12,11 @@ type StorageReadRepo struct{ q *gen.Queries }
 
 func NewStorageReadRepo(q *gen.Queries) *StorageReadRepo { return &StorageReadRepo{q: q} }
 
-func (r *StorageReadRepo) ListPresentStorageItems(baseID int) ([]*readmodels.StorageItemPresent, error) {
-	rows, err := r.q.ListPresentStorageItems(context.Background(), int64(baseID))
+func (r *StorageReadRepo) ListPresentStorageItems(baseID int, category readmodels.StorageCategory) ([]*readmodels.StorageItemPresent, error) {
+	rows, err := r.q.ListPresentStorageItems(context.Background(), gen.ListPresentStorageItemsParams{
+		BaseID:   int64(baseID),
+		Category: string(category),
+	})
 	if err != nil {
 		return nil, err
 	}

@@ -17,13 +17,13 @@ func (r *TechReadRepo) ListNewTechItemsByPrototypeIDs(baseID int, ids []int) ([]
 		return []*readmodels.TechItemNew{}, nil
 	}
 	// Get finished items to find current levels
-	doneRows, err := r.q.ListDoneTechItems(context.Background(), int64(baseID))
+	doneRows, err := r.q.ListDoneTechItemsAll(context.Background(), int64(baseID))
 	if err != nil {
 		return nil, err
 	}
 	levels := make(map[int]int)
 	for _, dr := range doneRows {
-		v := mappers.TechItemDoneFromRow(dr)
+		v := mappers.TechItemDoneFromAllRow(dr)
 		levels[v.Prototype.ID] = v.Level
 	}
 
@@ -40,8 +40,11 @@ func (r *TechReadRepo) ListNewTechItemsByPrototypeIDs(baseID int, ids []int) ([]
 	return out, nil
 }
 
-func (r *TechReadRepo) ListInResearchTechItems(baseID int) ([]*readmodels.TechItemInProgress, error) {
-	rows, err := r.q.ListInResearchTechItems(context.Background(), int64(baseID))
+func (r *TechReadRepo) ListInResearchTechItems(baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemInProgress, error) {
+	rows, err := r.q.ListInResearchTechItems(context.Background(), gen.ListInResearchTechItemsParams{
+		BaseID:   int64(baseID),
+		Category: string(category),
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -53,8 +56,11 @@ func (r *TechReadRepo) ListInResearchTechItems(baseID int) ([]*readmodels.TechIt
 	return out, nil
 }
 
-func (r *TechReadRepo) ListDoneTechItems(baseID int) ([]*readmodels.TechItemDone, error) {
-	rows, err := r.q.ListDoneTechItems(context.Background(), int64(baseID))
+func (r *TechReadRepo) ListDoneTechItems(baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemDone, error) {
+	rows, err := r.q.ListDoneTechItems(context.Background(), gen.ListDoneTechItemsParams{
+		BaseID:   int64(baseID),
+		Category: string(category),
+	})
 	if err != nil {
 		return nil, err
 	}
