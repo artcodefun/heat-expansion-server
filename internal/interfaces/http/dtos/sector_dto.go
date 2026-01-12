@@ -8,7 +8,6 @@ type SectorType string
 const (
 	Home        SectorType = "HOME"
 	Unknown     SectorType = "UNKNOWN"
-	Signal      SectorType = "SIGNAL"
 	UserBase    SectorType = "BASE"
 	Empty       SectorType = "EMPTY"
 	Resourceful SectorType = "RESOURCEFUL"
