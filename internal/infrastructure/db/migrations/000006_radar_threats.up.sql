@@ -4,6 +4,8 @@ CREATE TABLE radar_threats (
     operation_id       BIGINT        NOT NULL REFERENCES military_operations(id) ON DELETE CASCADE,
     owner_base_id      BIGINT        NOT NULL REFERENCES user_bases(id) ON DELETE CASCADE,
     detected_at        BIGINT        NOT NULL,
+    detected_x         INTEGER       NOT NULL,
+    detected_y         INTEGER       NOT NULL,
     source_x           INTEGER       NOT NULL,
     source_y           INTEGER       NOT NULL,
     target_x           INTEGER       NOT NULL,

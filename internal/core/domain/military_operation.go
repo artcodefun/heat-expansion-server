@@ -568,6 +568,42 @@ func (op *MilitaryOperation) Cancel() error {
 	return nil
 }
 
+func (op *MilitaryOperation) CurrentCoordinates() Vector2i {
+	at := NowUnix()
+	switch op.Phase {
+	case OperationPhasePending:
+		return op.SourceCoordinates
+	case OperationPhaseOutbound:
+		return lerpCoordinates(op.SourceCoordinates, op.TargetCoordinates, op.OutboundDepartAt, op.OutboundArriveAt, at)
+	case OperationPhaseReturning:
+		return lerpCoordinates(op.TargetCoordinates, op.SourceCoordinates, op.ReturnDepartAt, op.ReturnArriveAt, at)
+	case OperationPhaseAtTarget, OperationPhaseResolving:
+		return op.TargetCoordinates
+	case OperationPhaseCompleted:
+		return op.SourceCoordinates
+	default:
+		return op.SourceCoordinates
+	}
+}
+
+func lerpCoordinates(s, t Vector2i, startT, endT, at int64) Vector2i {
+	if at <= startT {
+		return s
+	}
+	if at >= endT {
+		return t
+	}
+	duration := endT - startT
+	if duration <= 0 {
+		return t
+	}
+	progress := float64(at-startT) / float64(duration)
+	return Vector2i{
+		X: int(math.Round(float64(s.X) + float64(t.X-s.X)*progress)),
+		Y: int(math.Round(float64(s.Y) + float64(t.Y-s.Y)*progress)),
+	}
+}
+
 // Travel time helpers
 
 // computeTravelSecondsBetween computes travel time as ceil(distance / slowestSpeed).

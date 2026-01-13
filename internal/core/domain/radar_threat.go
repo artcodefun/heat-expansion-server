@@ -22,32 +22,34 @@ const (
 // RadarThreat is an aggregate representing an incoming threat detected by radars.
 type RadarThreat struct {
 	EventProducer
-	ID                 uuid.UUID
-	OperationID        int
-	OwnerBaseID        int
-	DetectedAt         int64
-	SourceCoordinates  Vector2i
-	TargetCoordinates  Vector2i
-	EstimatedArrivalAt int64
-	ArrivalAt          *int64
-	Type               ThreatType
-	Status             ThreatStatus
-	Attack             int
-	Speed              int
-	Stealth            int
-	Capacity           int
+	ID                  uuid.UUID
+	OperationID         int
+	OwnerBaseID         int
+	DetectedAt          int64
+	DetectedCoordinates Vector2i
+	SourceCoordinates   Vector2i
+	TargetCoordinates   Vector2i
+	EstimatedArrivalAt  int64
+	ArrivalAt           *int64
+	Type                ThreatType
+	Status              ThreatStatus
+	Attack              int
+	Speed               int
+	Stealth             int
+	Capacity            int
 }
 
 func NewRadarThreat(op *MilitaryOperation, ownerBaseID int) *RadarThreat {
 	rt := &RadarThreat{
-		ID:                 uuid.Must(uuid.NewV7()),
-		OperationID:        op.ID,
-		OwnerBaseID:        ownerBaseID,
-		DetectedAt:         NowUnix(),
-		SourceCoordinates:  op.SourceCoordinates,
-		TargetCoordinates:  op.TargetCoordinates,
-		EstimatedArrivalAt: op.OutboundArriveAt,
-		ArrivalAt:          nil,
+		ID:                  uuid.Must(uuid.NewV7()),
+		OperationID:         op.ID,
+		OwnerBaseID:         ownerBaseID,
+		DetectedAt:          NowUnix(),
+		DetectedCoordinates: op.CurrentCoordinates(),
+		SourceCoordinates:   op.SourceCoordinates,
+		TargetCoordinates:   op.TargetCoordinates,
+		EstimatedArrivalAt:  op.OutboundArriveAt,
+		ArrivalAt:           nil,
 		Type: func() ThreatType {
 			if op.Type == MilitaryOperationTypeSpy {
 				return ThreatTypeSpy

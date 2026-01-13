@@ -18,18 +18,19 @@ const (
 )
 
 type RadarThreat struct {
-	ID                 uuid.UUID
-	OperationID        int
-	OwnerBaseID        int
-	DetectedAt         int64
-	SourceCoordinates  Vector2i
-	TargetCoordinates  Vector2i
-	EstimatedArrivalAt int64
-	ArrivalAt          *int64
-	Type               ThreatType
-	Status             ThreatStatus
-	Attack             int
-	Speed              int
-	Stealth            int
-	Capacity           int
+	ID                  uuid.UUID
+	OperationID         int
+	OwnerBaseID         int
+	DetectedAt          int64
+	DetectedCoordinates Vector2i
+	SourceCoordinates   Vector2i
+	TargetCoordinates   Vector2i
+	EstimatedArrivalAt  int64
+	ArrivalAt           *int64
+	Type                ThreatType
+	Status              ThreatStatus
+	Attack              int
+	Speed               int
+	Stealth             int
+	Capacity            int
 }

@@ -1,9 +1,10 @@
 -- name: InsertRadarThreat :one
 INSERT INTO radar_threats (
-    id, operation_id, owner_base_id, detected_at, source_x, source_y, target_x, target_y,
+    id, operation_id, owner_base_id, detected_at, detected_x, detected_y,
+    source_x, source_y, target_x, target_y,
     estimated_arrival_at, arrival_at, type, status, attack, speed, stealth, capacity
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18
 ) RETURNING *;
 
 -- name: UpdateRadarThreat :one

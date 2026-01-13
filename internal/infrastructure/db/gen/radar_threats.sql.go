@@ -13,7 +13,7 @@ import (
 )
 
 const getRadarThreat = `-- name: GetRadarThreat :one
-SELECT id, operation_id, owner_base_id, detected_at, source_x, source_y, target_x, target_y, estimated_arrival_at, arrival_at, type, status, attack, speed, stealth, capacity FROM radar_threats WHERE id = $1 LIMIT 1
+SELECT id, operation_id, owner_base_id, detected_at, detected_x, detected_y, source_x, source_y, target_x, target_y, estimated_arrival_at, arrival_at, type, status, attack, speed, stealth, capacity FROM radar_threats WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetRadarThreat(ctx context.Context, id uuid.UUID) (RadarThreat, error) {
@@ -24,6 +24,8 @@ func (q *Queries) GetRadarThreat(ctx context.Context, id uuid.UUID) (RadarThreat
 		&i.OperationID,
 		&i.OwnerBaseID,
 		&i.DetectedAt,
+		&i.DetectedX,
+		&i.DetectedY,
 		&i.SourceX,
 		&i.SourceY,
 		&i.TargetX,
@@ -41,7 +43,7 @@ func (q *Queries) GetRadarThreat(ctx context.Context, id uuid.UUID) (RadarThreat
 }
 
 const getRadarThreatByOperationID = `-- name: GetRadarThreatByOperationID :one
-SELECT id, operation_id, owner_base_id, detected_at, source_x, source_y, target_x, target_y, estimated_arrival_at, arrival_at, type, status, attack, speed, stealth, capacity FROM radar_threats WHERE operation_id = $1 LIMIT 1
+SELECT id, operation_id, owner_base_id, detected_at, detected_x, detected_y, source_x, source_y, target_x, target_y, estimated_arrival_at, arrival_at, type, status, attack, speed, stealth, capacity FROM radar_threats WHERE operation_id = $1 LIMIT 1
 `
 
 func (q *Queries) GetRadarThreatByOperationID(ctx context.Context, operationID int64) (RadarThreat, error) {
@@ -52,6 +54,8 @@ func (q *Queries) GetRadarThreatByOperationID(ctx context.Context, operationID i
 		&i.OperationID,
 		&i.OwnerBaseID,
 		&i.DetectedAt,
+		&i.DetectedX,
+		&i.DetectedY,
 		&i.SourceX,
 		&i.SourceY,
 		&i.TargetX,
@@ -70,11 +74,12 @@ func (q *Queries) GetRadarThreatByOperationID(ctx context.Context, operationID i
 
 const insertRadarThreat = `-- name: InsertRadarThreat :one
 INSERT INTO radar_threats (
-    id, operation_id, owner_base_id, detected_at, source_x, source_y, target_x, target_y,
+    id, operation_id, owner_base_id, detected_at, detected_x, detected_y,
+    source_x, source_y, target_x, target_y,
     estimated_arrival_at, arrival_at, type, status, attack, speed, stealth, capacity
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
-) RETURNING id, operation_id, owner_base_id, detected_at, source_x, source_y, target_x, target_y, estimated_arrival_at, arrival_at, type, status, attack, speed, stealth, capacity
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18
+) RETURNING id, operation_id, owner_base_id, detected_at, detected_x, detected_y, source_x, source_y, target_x, target_y, estimated_arrival_at, arrival_at, type, status, attack, speed, stealth, capacity
 `
 
 type InsertRadarThreatParams struct {
@@ -82,6 +87,8 @@ type InsertRadarThreatParams struct {
 	OperationID        int64         `json:"operation_id"`
 	OwnerBaseID        int64         `json:"owner_base_id"`
 	DetectedAt         int64         `json:"detected_at"`
+	DetectedX          int32         `json:"detected_x"`
+	DetectedY          int32         `json:"detected_y"`
 	SourceX            int32         `json:"source_x"`
 	SourceY            int32         `json:"source_y"`
 	TargetX            int32         `json:"target_x"`
@@ -102,6 +109,8 @@ func (q *Queries) InsertRadarThreat(ctx context.Context, arg InsertRadarThreatPa
 		arg.OperationID,
 		arg.OwnerBaseID,
 		arg.DetectedAt,
+		arg.DetectedX,
+		arg.DetectedY,
 		arg.SourceX,
 		arg.SourceY,
 		arg.TargetX,
@@ -121,6 +130,8 @@ func (q *Queries) InsertRadarThreat(ctx context.Context, arg InsertRadarThreatPa
 		&i.OperationID,
 		&i.OwnerBaseID,
 		&i.DetectedAt,
+		&i.DetectedX,
+		&i.DetectedY,
 		&i.SourceX,
 		&i.SourceY,
 		&i.TargetX,
@@ -161,7 +172,7 @@ SET estimated_arrival_at = $2,
     arrival_at = $3,
     status = $4
 WHERE id = $1
-RETURNING id, operation_id, owner_base_id, detected_at, source_x, source_y, target_x, target_y, estimated_arrival_at, arrival_at, type, status, attack, speed, stealth, capacity
+RETURNING id, operation_id, owner_base_id, detected_at, detected_x, detected_y, source_x, source_y, target_x, target_y, estimated_arrival_at, arrival_at, type, status, attack, speed, stealth, capacity
 `
 
 type UpdateRadarThreatParams struct {
@@ -184,6 +195,8 @@ func (q *Queries) UpdateRadarThreat(ctx context.Context, arg UpdateRadarThreatPa
 		&i.OperationID,
 		&i.OwnerBaseID,
 		&i.DetectedAt,
+		&i.DetectedX,
+		&i.DetectedY,
 		&i.SourceX,
 		&i.SourceY,
 		&i.TargetX,

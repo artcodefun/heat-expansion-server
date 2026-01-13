@@ -154,6 +154,8 @@ type RadarThreat struct {
 	OperationID        int64         `json:"operation_id"`
 	OwnerBaseID        int64         `json:"owner_base_id"`
 	DetectedAt         int64         `json:"detected_at"`
+	DetectedX          int32         `json:"detected_x"`
+	DetectedY          int32         `json:"detected_y"`
 	SourceX            int32         `json:"source_x"`
 	SourceY            int32         `json:"source_y"`
 	TargetX            int32         `json:"target_x"`

@@ -12,7 +12,7 @@ import (
 )
 
 const getRadarThreat = `-- name: GetRadarThreat :one
-SELECT id, operation_id, owner_base_id, detected_at, source_x, source_y, target_x, target_y, estimated_arrival_at, arrival_at, type, status, attack, speed, stealth, capacity FROM radar_threats WHERE id = $1 LIMIT 1
+SELECT id, operation_id, owner_base_id, detected_at, detected_x, detected_y, source_x, source_y, target_x, target_y, estimated_arrival_at, arrival_at, type, status, attack, speed, stealth, capacity FROM radar_threats WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetRadarThreat(ctx context.Context, id uuid.UUID) (RadarThreat, error) {
@@ -23,6 +23,8 @@ func (q *Queries) GetRadarThreat(ctx context.Context, id uuid.UUID) (RadarThreat
 		&i.OperationID,
 		&i.OwnerBaseID,
 		&i.DetectedAt,
+		&i.DetectedX,
+		&i.DetectedY,
 		&i.SourceX,
 		&i.SourceY,
 		&i.TargetX,
@@ -40,7 +42,7 @@ func (q *Queries) GetRadarThreat(ctx context.Context, id uuid.UUID) (RadarThreat
 }
 
 const listIncomingThreats = `-- name: ListIncomingThreats :many
-SELECT id, operation_id, owner_base_id, detected_at, source_x, source_y, target_x, target_y, estimated_arrival_at, arrival_at, type, status, attack, speed, stealth, capacity FROM radar_threats WHERE owner_base_id = $1 AND status = 'ARRIVING' ORDER BY estimated_arrival_at ASC
+SELECT id, operation_id, owner_base_id, detected_at, detected_x, detected_y, source_x, source_y, target_x, target_y, estimated_arrival_at, arrival_at, type, status, attack, speed, stealth, capacity FROM radar_threats WHERE owner_base_id = $1 AND status = 'ARRIVING' ORDER BY estimated_arrival_at ASC
 `
 
 func (q *Queries) ListIncomingThreats(ctx context.Context, ownerBaseID int64) ([]RadarThreat, error) {
@@ -57,6 +59,8 @@ func (q *Queries) ListIncomingThreats(ctx context.Context, ownerBaseID int64) ([
 			&i.OperationID,
 			&i.OwnerBaseID,
 			&i.DetectedAt,
+			&i.DetectedX,
+			&i.DetectedY,
 			&i.SourceX,
 			&i.SourceY,
 			&i.TargetX,
