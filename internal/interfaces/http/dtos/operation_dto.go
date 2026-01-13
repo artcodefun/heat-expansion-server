@@ -152,6 +152,16 @@ func defenseStructuresFromReadModel(structs []readmodels.DefenseStructureSnap) [
 	return out
 }
 
+func trophiesFromReadModel(trophies []readmodels.TrophyStorageItem) []TrophyStorageItemDTO {
+	out := make([]TrophyStorageItemDTO, 0, len(trophies))
+	for _, t := range trophies {
+		out = append(out, TrophyStorageItemDTO{
+			Prototype: mapStorageItemPrototype(t.Prototype),
+		})
+	}
+	return out
+}
+
 func spyResultFromReadModel(res *readmodels.SpyResult) *SpyResultDTO {
 	if res == nil {
 		return nil
@@ -168,24 +178,16 @@ func attackResultFromReadModel(res *readmodels.AttackResult) *AttackResultDTO {
 	if res == nil {
 		return nil
 	}
-	dto := &AttackResultDTO{
+	return &AttackResultDTO{
 		Outcome:             AttackOutcome(res.Outcome),
 		AttackerRemaining:   militaryUnitsFromReadModel(res.AttackerRemaining),
 		DefenderRemaining:   militaryUnitsFromReadModel(res.DefenderRemaining),
 		RemainingStructures: defenseStructuresFromReadModel(res.RemainingStructures),
 		Loot:                PriceModelFromReadModel(res.Loot),
+		Trophies:            trophiesFromReadModel(res.Trophies),
 		DefendersBefore:     militaryUnitsFromReadModel(res.DefendersBefore),
 		StructuresBefore:    defenseStructuresFromReadModel(res.StructuresBefore),
 	}
-	if len(res.Trophies) > 0 {
-		dto.Trophies = make([]TrophyStorageItemDTO, 0, len(res.Trophies))
-		for _, t := range res.Trophies {
-			dto.Trophies = append(dto.Trophies, TrophyStorageItemDTO{
-				Prototype: mapStorageItemPrototype(t.Prototype),
-			})
-		}
-	}
-	return dto
 }
 
 func OperationFromReadModel(m *readmodels.MilitaryOperation) MilitaryOperationDTO {
