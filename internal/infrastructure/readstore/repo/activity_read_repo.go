@@ -14,10 +14,11 @@ type ActivityReadRepo struct {
 	q       *gen.Queries
 	ops     ports.OperationReadRepository
 	sectors ports.SectorReadRepository
+	radar   ports.RadarReadRepository
 }
 
-func NewActivityReadRepo(q *gen.Queries, ops ports.OperationReadRepository, sectors ports.SectorReadRepository) *ActivityReadRepo {
-	return &ActivityReadRepo{q: q, ops: ops, sectors: sectors}
+func NewActivityReadRepo(q *gen.Queries, ops ports.OperationReadRepository, sectors ports.SectorReadRepository, radar ports.RadarReadRepository) *ActivityReadRepo {
+	return &ActivityReadRepo{q: q, ops: ops, sectors: sectors, radar: radar}
 }
 
 func (r *ActivityReadRepo) ListOffenseActivities(baseID int, subtype readmodels.OffenseActivitySubtype, limit int) ([]*readmodels.ActivityItem, error) {
@@ -146,6 +147,15 @@ func (r *ActivityReadRepo) enrichActivity(v *readmodels.ActivityItem) error {
 		}
 		if err == nil {
 			v.Scan.Report = report
+		}
+	}
+	if v.Radar != nil {
+		threat, err := r.radar.GetRadarThreat(v.Radar.ThreatID)
+		if err != nil && !errors.Is(err, ports.ErrNotFound) {
+			return err
+		}
+		if err == nil {
+			v.Radar.Threat = threat
 		}
 	}
 	return nil

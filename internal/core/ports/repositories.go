@@ -170,6 +170,17 @@ type TechPrototypeRepository interface {
 	Tx(tx Transaction) TechPrototypeRepository
 }
 
+// RadarThreatRepository defines the interface for radar threat persistence.
+type RadarThreatRepository interface {
+	Create(threat *domain.RadarThreat) error
+	Update(threat *domain.RadarThreat) error
+	FindByID(id uuid.UUID) (*domain.RadarThreat, error)
+	FindByOperationID(opID int) (*domain.RadarThreat, error)
+	RadarThreatExists(ownerBaseID int, opID int) (bool, error)
+	// Tx returns a repository instance bound to the provided transaction.
+	Tx(tx Transaction) RadarThreatRepository
+}
+
 // MilitaryOperationRepository defines persistence for military operations.
 type MilitaryOperationRepository interface {
 	Create(op *domain.MilitaryOperation) error
@@ -185,8 +196,6 @@ type MilitaryOperationRepository interface {
 // ActivityRepository defines persistence for activity items (append-only feed).
 type ActivityRepository interface {
 	Create(item *domain.ActivityItem) error
-	// RadarActivityExists checks if a radar activity already exists for the given base and operation.
-	RadarActivityExists(baseID int, operationID int) (bool, error)
 	// Tx returns a repository instance bound to the provided transaction.
 	Tx(tx Transaction) ActivityRepository
 }

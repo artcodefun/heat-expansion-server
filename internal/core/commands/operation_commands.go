@@ -112,6 +112,73 @@ func (c *OperationCommands) CreateMilitaryOperation(ctx cqrs.CommandContext, opT
 	return createdOp, nil
 }
 
+func (c *OperationCommands) CancelMilitaryOperation(ctx cqrs.CommandContext, operationID int) error {
+	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
+		oRepo := c.OperationRepo.Tx(tx)
+		op, err := oRepo.FindByIDForUpdate(operationID)
+		if err != nil {
+			return repoErr(err)
+		}
+
+		if err := c.Access.EnsureBaseOwnership(ctx.UserID, op.SourceBaseID); err != nil {
+			return err
+		}
+
+		if err := op.Cancel(); err != nil {
+			return cqrs.NewDomainError(err)
+		}
+
+		if err := oRepo.Update(op); err != nil {
+			return err
+		}
+		if err := c.Outbox.Tx(tx).Save(op.EventProducer.PullEvents()); err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
+}
+
+// SpeedUpOperationWithCrystals allows a user to spend crystals to fast-forward
+// an in-flight military operation (outbound or returning) to its arrival.
+func (c *OperationCommands) SpeedUpOperationWithCrystals(ctx cqrs.CommandContext, operationID int) error {
+	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
+		oRepo := c.OperationRepo.Tx(tx)
+		uRepo := c.UserRepo.Tx(tx)
+
+		op, err := oRepo.FindByIDForUpdate(operationID)
+		if err != nil {
+			return repoErr(err)
+		}
+
+		// Ensure the caller owns the source base for this operation.
+		if err := c.Access.EnsureBaseOwnership(ctx.UserID, op.SourceBaseID); err != nil {
+			return err
+		}
+
+		user, err := uRepo.FindByIDForUpdate(ctx.UserID)
+		if err != nil {
+			return repoErr(err)
+		}
+
+		if err := c.crystalService.SpeedUpOperation(user, op); err != nil {
+			return cqrs.NewDomainError(err)
+		}
+
+		if err := uRepo.Update(user); err != nil {
+			return err
+		}
+		if err := oRepo.Update(op); err != nil {
+			return err
+		}
+		if err := c.Outbox.Tx(tx).Save(op.EventProducer.PullEvents()); err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
+}
+
 func (c *OperationCommands) HandleUpdateMilitaryOperationJob(cmd ports.UpdateMilitaryOperationJob) error {
 	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
 		oRepo := c.OperationRepo.Tx(tx)
@@ -294,46 +361,6 @@ func (c *OperationCommands) HandleMilitaryOperationReturnArrivedEvent(event doma
 			return err
 		}
 		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
-			return err
-		}
-		return nil
-	})
-	return err
-}
-
-// SpeedUpOperationWithCrystals allows a user to spend crystals to fast-forward
-// an in-flight military operation (outbound or returning) to its arrival.
-func (c *OperationCommands) SpeedUpOperationWithCrystals(ctx cqrs.CommandContext, operationID int) error {
-	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
-		oRepo := c.OperationRepo.Tx(tx)
-		uRepo := c.UserRepo.Tx(tx)
-
-		op, err := oRepo.FindByIDForUpdate(operationID)
-		if err != nil {
-			return repoErr(err)
-		}
-
-		// Ensure the caller owns the source base for this operation.
-		if err := c.Access.EnsureBaseOwnership(ctx.UserID, op.SourceBaseID); err != nil {
-			return err
-		}
-
-		user, err := uRepo.FindByIDForUpdate(ctx.UserID)
-		if err != nil {
-			return repoErr(err)
-		}
-
-		if err := c.crystalService.SpeedUpOperation(user, op); err != nil {
-			return cqrs.NewDomainError(err)
-		}
-
-		if err := uRepo.Update(user); err != nil {
-			return err
-		}
-		if err := oRepo.Update(op); err != nil {
-			return err
-		}
-		if err := c.Outbox.Tx(tx).Save(op.EventProducer.PullEvents()); err != nil {
 			return err
 		}
 		return nil

@@ -1,6 +1,8 @@
 package dtos
 
-import "github.com/artcodefun/heat-expansion-api/internal/core/cqrs/readmodels"
+import (
+	"github.com/artcodefun/heat-expansion-api/internal/core/cqrs/readmodels"
+)
 
 // ActivityKind mirrors readmodels.ActivityKind for HTTP.
 type ActivityKind string
@@ -64,29 +66,10 @@ type ScanActivityDTO struct {
 	Report   *SectorDTO `json:"report,omitempty"`
 }
 
-// RadarActivityDTO presents a detected incoming hostility (placeholder for future wiring).
+// RadarActivityDTO presents a link to a stateful radar threat.
 type RadarActivityDTO struct {
-	OpID       int         `json:"opId"`
-	DetectedAt int64       `json:"detectedAt"`
-	EtaAtBase  int64       `json:"etaAtBase"`
-	Source     Vector2iDTO `json:"source"`
-	Target     Vector2iDTO `json:"target"`
-	Threat     ThreatDTO   `json:"threat"`
-}
-
-type ThreatType string
-
-const (
-	ThreatTypeAttack ThreatType = "ATTACK"
-	ThreatTypeSpy    ThreatType = "SPY"
-)
-
-type ThreatDTO struct {
-	Type     ThreatType `json:"type"`
-	Attack   int        `json:"attack"`
-	Speed    int        `json:"speed"`
-	Stealth  int        `json:"stealth"`
-	Capacity int        `json:"capacity"`
+	ThreatID string          `json:"threatId"`
+	Threat   *RadarThreatDTO `json:"threat,omitempty"`
 }
 
 func offenseActivityFromReadModel(offense *readmodels.OffenseActivity) *OffenseActivityDTO {
@@ -143,20 +126,14 @@ func radarActivityFromReadModel(radar *readmodels.RadarActivity) *RadarActivityD
 	if radar == nil {
 		return nil
 	}
-	return &RadarActivityDTO{
-		OpID:       radar.OpID,
-		DetectedAt: radar.DetectedAt,
-		EtaAtBase:  radar.EtaAtBase,
-		Source:     Vector2iFromReadModel(radar.SourceCoordinates),
-		Target:     Vector2iFromReadModel(radar.TargetCoordinates),
-		Threat: ThreatDTO{
-			Type:     ThreatType(radar.Threat.Type),
-			Attack:   radar.Threat.Attack,
-			Speed:    radar.Threat.Speed,
-			Stealth:  radar.Threat.Stealth,
-			Capacity: radar.Threat.Capacity,
-		},
+	dto := &RadarActivityDTO{
+		ThreatID: radar.ThreatID.String(),
 	}
+	if radar.Threat != nil {
+		t := RadarThreatFromReadModel(radar.Threat)
+		dto.Threat = &t
+	}
+	return dto
 }
 
 func ActivityItemDTOFromReadModel(a *readmodels.ActivityItem) ActivityItemDTO {

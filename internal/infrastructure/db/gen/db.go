@@ -120,6 +120,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getPendingScheduledJobByKindPayloadStmt, err = db.PrepareContext(ctx, getPendingScheduledJobByKindPayload); err != nil {
 		return nil, fmt.Errorf("error preparing query GetPendingScheduledJobByKindPayload: %w", err)
 	}
+	if q.getRadarThreatStmt, err = db.PrepareContext(ctx, getRadarThreat); err != nil {
+		return nil, fmt.Errorf("error preparing query GetRadarThreat: %w", err)
+	}
+	if q.getRadarThreatByOperationIDStmt, err = db.PrepareContext(ctx, getRadarThreatByOperationID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetRadarThreatByOperationID: %w", err)
+	}
 	if q.getResourceLocationByIDStmt, err = db.PrepareContext(ctx, getResourceLocationByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetResourceLocationByID: %w", err)
 	}
@@ -173,6 +179,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.insertOutboxEventStmt, err = db.PrepareContext(ctx, insertOutboxEvent); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertOutboxEvent: %w", err)
+	}
+	if q.insertRadarThreatStmt, err = db.PrepareContext(ctx, insertRadarThreat); err != nil {
+		return nil, fmt.Errorf("error preparing query InsertRadarThreat: %w", err)
 	}
 	if q.insertResourceLocationStmt, err = db.PrepareContext(ctx, insertResourceLocation); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertResourceLocation: %w", err)
@@ -249,8 +258,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.markScheduledJobDispatchedStmt, err = db.PrepareContext(ctx, markScheduledJobDispatched); err != nil {
 		return nil, fmt.Errorf("error preparing query MarkScheduledJobDispatched: %w", err)
 	}
-	if q.radarActivityExistsStmt, err = db.PrepareContext(ctx, radarActivityExists); err != nil {
-		return nil, fmt.Errorf("error preparing query RadarActivityExists: %w", err)
+	if q.radarThreatExistsStmt, err = db.PrepareContext(ctx, radarThreatExists); err != nil {
+		return nil, fmt.Errorf("error preparing query RadarThreatExists: %w", err)
 	}
 	if q.recentReportExistsByScannerStmt, err = db.PrepareContext(ctx, recentReportExistsByScanner); err != nil {
 		return nil, fmt.Errorf("error preparing query RecentReportExistsByScanner: %w", err)
@@ -263,6 +272,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.updateMilitaryOperationStmt, err = db.PrepareContext(ctx, updateMilitaryOperation); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateMilitaryOperation: %w", err)
+	}
+	if q.updateRadarThreatStmt, err = db.PrepareContext(ctx, updateRadarThreat); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateRadarThreat: %w", err)
 	}
 	if q.updateResourceLocationStmt, err = db.PrepareContext(ctx, updateResourceLocation); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateResourceLocation: %w", err)
@@ -438,6 +450,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getPendingScheduledJobByKindPayloadStmt: %w", cerr)
 		}
 	}
+	if q.getRadarThreatStmt != nil {
+		if cerr := q.getRadarThreatStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getRadarThreatStmt: %w", cerr)
+		}
+	}
+	if q.getRadarThreatByOperationIDStmt != nil {
+		if cerr := q.getRadarThreatByOperationIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getRadarThreatByOperationIDStmt: %w", cerr)
+		}
+	}
 	if q.getResourceLocationByIDStmt != nil {
 		if cerr := q.getResourceLocationByIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getResourceLocationByIDStmt: %w", cerr)
@@ -526,6 +548,11 @@ func (q *Queries) Close() error {
 	if q.insertOutboxEventStmt != nil {
 		if cerr := q.insertOutboxEventStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing insertOutboxEventStmt: %w", cerr)
+		}
+	}
+	if q.insertRadarThreatStmt != nil {
+		if cerr := q.insertRadarThreatStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing insertRadarThreatStmt: %w", cerr)
 		}
 	}
 	if q.insertResourceLocationStmt != nil {
@@ -653,9 +680,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing markScheduledJobDispatchedStmt: %w", cerr)
 		}
 	}
-	if q.radarActivityExistsStmt != nil {
-		if cerr := q.radarActivityExistsStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing radarActivityExistsStmt: %w", cerr)
+	if q.radarThreatExistsStmt != nil {
+		if cerr := q.radarThreatExistsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing radarThreatExistsStmt: %w", cerr)
 		}
 	}
 	if q.recentReportExistsByScannerStmt != nil {
@@ -676,6 +703,11 @@ func (q *Queries) Close() error {
 	if q.updateMilitaryOperationStmt != nil {
 		if cerr := q.updateMilitaryOperationStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateMilitaryOperationStmt: %w", cerr)
+		}
+	}
+	if q.updateRadarThreatStmt != nil {
+		if cerr := q.updateRadarThreatStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateRadarThreatStmt: %w", cerr)
 		}
 	}
 	if q.updateResourceLocationStmt != nil {
@@ -764,6 +796,8 @@ type Queries struct {
 	getMilitaryOperationByIDForUpdateStmt     *sql.Stmt
 	getNextScheduledJobStmt                   *sql.Stmt
 	getPendingScheduledJobByKindPayloadStmt   *sql.Stmt
+	getRadarThreatStmt                        *sql.Stmt
+	getRadarThreatByOperationIDStmt           *sql.Stmt
 	getResourceLocationByIDStmt               *sql.Stmt
 	getResourceLocationBySectorStmt           *sql.Stmt
 	getResourceLocationBySectorForUpdateStmt  *sql.Stmt
@@ -782,6 +816,7 @@ type Queries struct {
 	insertDangerousLocationStmt               *sql.Stmt
 	insertMilitaryOperationStmt               *sql.Stmt
 	insertOutboxEventStmt                     *sql.Stmt
+	insertRadarThreatStmt                     *sql.Stmt
 	insertResourceLocationStmt                *sql.Stmt
 	insertScanReportStmt                      *sql.Stmt
 	insertScheduledJobStmt                    *sql.Stmt
@@ -807,11 +842,12 @@ type Queries struct {
 	lockScheduledJobsTableStmt                *sql.Stmt
 	markOutboxEventPublishedStmt              *sql.Stmt
 	markScheduledJobDispatchedStmt            *sql.Stmt
-	radarActivityExistsStmt                   *sql.Stmt
+	radarThreatExistsStmt                     *sql.Stmt
 	recentReportExistsByScannerStmt           *sql.Stmt
 	updateBaseStmt                            *sql.Stmt
 	updateDangerousLocationStmt               *sql.Stmt
 	updateMilitaryOperationStmt               *sql.Stmt
+	updateRadarThreatStmt                     *sql.Stmt
 	updateResourceLocationStmt                *sql.Stmt
 	updateSectorStmt                          *sql.Stmt
 	updateUserStmt                            *sql.Stmt
@@ -853,6 +889,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getMilitaryOperationByIDForUpdateStmt:     q.getMilitaryOperationByIDForUpdateStmt,
 		getNextScheduledJobStmt:                   q.getNextScheduledJobStmt,
 		getPendingScheduledJobByKindPayloadStmt:   q.getPendingScheduledJobByKindPayloadStmt,
+		getRadarThreatStmt:                        q.getRadarThreatStmt,
+		getRadarThreatByOperationIDStmt:           q.getRadarThreatByOperationIDStmt,
 		getResourceLocationByIDStmt:               q.getResourceLocationByIDStmt,
 		getResourceLocationBySectorStmt:           q.getResourceLocationBySectorStmt,
 		getResourceLocationBySectorForUpdateStmt:  q.getResourceLocationBySectorForUpdateStmt,
@@ -871,6 +909,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		insertDangerousLocationStmt:               q.insertDangerousLocationStmt,
 		insertMilitaryOperationStmt:               q.insertMilitaryOperationStmt,
 		insertOutboxEventStmt:                     q.insertOutboxEventStmt,
+		insertRadarThreatStmt:                     q.insertRadarThreatStmt,
 		insertResourceLocationStmt:                q.insertResourceLocationStmt,
 		insertScanReportStmt:                      q.insertScanReportStmt,
 		insertScheduledJobStmt:                    q.insertScheduledJobStmt,
@@ -896,11 +935,12 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		lockScheduledJobsTableStmt:                q.lockScheduledJobsTableStmt,
 		markOutboxEventPublishedStmt:              q.markOutboxEventPublishedStmt,
 		markScheduledJobDispatchedStmt:            q.markScheduledJobDispatchedStmt,
-		radarActivityExistsStmt:                   q.radarActivityExistsStmt,
+		radarThreatExistsStmt:                     q.radarThreatExistsStmt,
 		recentReportExistsByScannerStmt:           q.recentReportExistsByScannerStmt,
 		updateBaseStmt:                            q.updateBaseStmt,
 		updateDangerousLocationStmt:               q.updateDangerousLocationStmt,
 		updateMilitaryOperationStmt:               q.updateMilitaryOperationStmt,
+		updateRadarThreatStmt:                     q.updateRadarThreatStmt,
 		updateResourceLocationStmt:                q.updateResourceLocationStmt,
 		updateSectorStmt:                          q.updateSectorStmt,
 		updateUserStmt:                            q.updateUserStmt,

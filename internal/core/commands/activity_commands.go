@@ -6,15 +6,23 @@ import (
 )
 
 type ActivityCommands struct {
-	ActivityRepo  ports.ActivityRepository
-	OperationRepo ports.MilitaryOperationRepository
-	SectorRepo    ports.SectorRepository
-	UserBaseRepo  ports.UserBaseRepository
-	ScanRepo      ports.ScanReportRepository
+	ActivityRepo    ports.ActivityRepository
+	OperationRepo   ports.MilitaryOperationRepository
+	RadarThreatRepo ports.RadarThreatRepository
+	SectorRepo      ports.SectorRepository
+	UserBaseRepo    ports.UserBaseRepository
+	ScanRepo        ports.ScanReportRepository
 }
 
-func NewActivityCommands(activityRepo ports.ActivityRepository, opRepo ports.MilitaryOperationRepository, sectorRepo ports.SectorRepository, baseRepo ports.UserBaseRepository, scanRepo ports.ScanReportRepository) *ActivityCommands {
-	return &ActivityCommands{ActivityRepo: activityRepo, OperationRepo: opRepo, SectorRepo: sectorRepo, UserBaseRepo: baseRepo, ScanRepo: scanRepo}
+func NewActivityCommands(activityRepo ports.ActivityRepository, opRepo ports.MilitaryOperationRepository, radarThreatRepo ports.RadarThreatRepository, sectorRepo ports.SectorRepository, baseRepo ports.UserBaseRepository, scanRepo ports.ScanReportRepository) *ActivityCommands {
+	return &ActivityCommands{
+		ActivityRepo:    activityRepo,
+		OperationRepo:   opRepo,
+		RadarThreatRepo: radarThreatRepo,
+		SectorRepo:      sectorRepo,
+		UserBaseRepo:    baseRepo,
+		ScanRepo:        scanRepo,
+	}
 }
 
 func (c *ActivityCommands) HandleMilitaryOperationStartedEvent(event domain.MilitaryOperationStartedEvent) error {
@@ -52,6 +60,17 @@ func (c *ActivityCommands) HandleScanReportCreatedEvent(event domain.ScanReportC
 	if err != nil {
 		return err
 	}
+
 	item := domain.NewActivityFromScan(event.BaseID, report)
 	return c.ActivityRepo.Create(&item)
+}
+
+func (c *ActivityCommands) HandleRadarThreatDetectedEvent(event domain.RadarThreatDetectedEvent) error {
+	threat, err := c.RadarThreatRepo.FindByID(event.RadarThreatID)
+	if err != nil {
+		return err
+	}
+
+	activity := domain.NewActivityFromRadarThreat(threat)
+	return c.ActivityRepo.Create(&activity)
 }

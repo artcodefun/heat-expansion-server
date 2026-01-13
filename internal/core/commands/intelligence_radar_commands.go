@@ -8,22 +8,22 @@ import (
 )
 
 type IntelligenceRadarCommands struct {
-	BaseRepo     ports.UserBaseRepository
-	OpRepo       ports.MilitaryOperationRepository
-	ActivityRepo ports.ActivityRepository
-	Scheduler    ports.Scheduler
-	Outbox       ports.OutboxEventRepository
-	TxMgr        ports.TransactionManager
+	BaseRepo        ports.UserBaseRepository
+	OpRepo          ports.MilitaryOperationRepository
+	RadarThreatRepo ports.RadarThreatRepository
+	Scheduler       ports.Scheduler
+	Outbox          ports.OutboxEventRepository
+	TxMgr           ports.TransactionManager
 }
 
-func NewIntelligenceRadarCommands(baseRepo ports.UserBaseRepository, opRepo ports.MilitaryOperationRepository, activityRepo ports.ActivityRepository, scheduler ports.Scheduler, outbox ports.OutboxEventRepository, txMgr ports.TransactionManager) *IntelligenceRadarCommands {
+func NewIntelligenceRadarCommands(baseRepo ports.UserBaseRepository, opRepo ports.MilitaryOperationRepository, radarThreatRepo ports.RadarThreatRepository, scheduler ports.Scheduler, outbox ports.OutboxEventRepository, txMgr ports.TransactionManager) *IntelligenceRadarCommands {
 	return &IntelligenceRadarCommands{
-		BaseRepo:     baseRepo,
-		OpRepo:       opRepo,
-		ActivityRepo: activityRepo,
-		Scheduler:    scheduler,
-		Outbox:       outbox,
-		TxMgr:        txMgr,
+		BaseRepo:        baseRepo,
+		OpRepo:          opRepo,
+		RadarThreatRepo: radarThreatRepo,
+		Scheduler:       scheduler,
+		Outbox:          outbox,
+		TxMgr:           txMgr,
 	}
 }
 
@@ -65,8 +65,8 @@ func (c *IntelligenceRadarCommands) HandleMilitaryOperationStartedEvent(event do
 
 func (c *IntelligenceRadarCommands) HandleIntelligenceRadarJob(job ports.IntelligenceRadarJob) error {
 	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
-		// 1. Idempotency: skip if radar activity already exists for this op
-		exists, err := c.ActivityRepo.Tx(tx).RadarActivityExists(job.BaseID, job.OperationID)
+		// 1. Idempotency: skip if radar threat already exists for this base and op
+		exists, err := c.RadarThreatRepo.Tx(tx).RadarThreatExists(job.BaseID, job.OperationID)
 		if err != nil || exists {
 			return err
 		}
@@ -86,11 +86,6 @@ func (c *IntelligenceRadarCommands) HandleIntelligenceRadarJob(job ports.Intelli
 			return err
 		}
 
-		// Check if op is stealthy and if we have enough radar strength to see it
-		if op.TotalStealth() > 0 && base.TotalRadarStealthStrength() <= op.TotalStealth() {
-			return nil
-		}
-
 		hasRadar := false
 		for _, b := range base.BuildingsPresent {
 			if b.Prototype.IntelligenceData != nil && b.Prototype.IntelligenceData.Subtype == domain.IntelligenceSubtypeRadar {
@@ -102,13 +97,18 @@ func (c *IntelligenceRadarCommands) HandleIntelligenceRadarJob(job ports.Intelli
 			return nil
 		}
 
-		// 3. Create Radar Activity
-		activity := domain.NewActivityFromRadarDetection(job.BaseID, op)
-		if err := c.ActivityRepo.Tx(tx).Create(&activity); err != nil {
+		// Check if op is stealthy and if we have enough radar strength to see it
+		if op.TotalStealth() > 0 && base.TotalRadarStealthStrength() <= op.TotalStealth() {
+			return nil
+		}
+
+		// 3. Create Radar Threat
+		threat := domain.NewRadarThreat(op, job.BaseID)
+		if err := c.RadarThreatRepo.Tx(tx).Create(threat); err != nil {
 			return err
 		}
 
-		// Radars don't reschedule; they are triggered by incoming events
-		return nil
+		// 4. Save events to outbox
+		return c.Outbox.Tx(tx).Save(threat.PullEvents())
 	})
 }

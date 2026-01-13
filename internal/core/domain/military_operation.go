@@ -545,12 +545,27 @@ func (op *MilitaryOperation) UpdatePhaseBasedOnTime() {
 	}
 }
 
-// Cancel marks the operation canceled and optionally starts immediate return if outbound or at target.
-func (op *MilitaryOperation) Cancel(startReturn bool) {
+// Cancel marks the operation canceled if it is still in transit (Pending or Outbound).
+// Once it reaches the target or starts resolving, it can no longer be canceled.
+func (op *MilitaryOperation) Cancel() error {
+	if op.Phase != OperationPhasePending && op.Phase != OperationPhaseOutbound {
+		return fmt.Errorf("cannot cancel operation in phase: %s", op.Phase)
+	}
+
 	op.Result = OperationResultCanceled
-	if startReturn && (op.Phase == OperationPhaseOutbound || op.Phase == OperationPhaseAtTarget || op.Phase == OperationPhaseResolving) {
+	op.AddEvent(NewMilitaryOperationCancelledEvent(op.ID))
+
+	if op.Phase == OperationPhasePending {
+		// If it hasn't even started moving, it just finishes immediately.
+		op.Phase = OperationPhaseCompleted
+		op.CompletedAt = NowUnix()
+		// This event handles returning units to the base in the command handler.
+		op.AddEvent(NewMilitaryOperationReturnArrivedEvent(op.ID))
+	} else if op.Phase == OperationPhaseOutbound {
 		op.StartReturn()
 	}
+
+	return nil
 }
 
 // Travel time helpers

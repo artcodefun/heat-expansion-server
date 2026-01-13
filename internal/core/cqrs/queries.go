@@ -71,3 +71,8 @@ type OperationQueries interface {
 	ListOperationsByBase(ctx QueryContext, baseID int) ([]*readmodels.MilitaryOperation, error)
 	ListActiveOperations(ctx QueryContext, baseID int) ([]*readmodels.MilitaryOperation, error)
 }
+
+// RadarQueries: incoming threats tracking.
+type RadarQueries interface {
+	ListIncomingThreats(ctx QueryContext, baseID int) ([]*readmodels.RadarThreat, error)
+}

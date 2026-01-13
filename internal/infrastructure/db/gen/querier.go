@@ -50,6 +50,8 @@ type Querier interface {
 	GetMilitaryOperationByIDForUpdate(ctx context.Context, id int64) (MilitaryOperation, error)
 	GetNextScheduledJob(ctx context.Context) (ScheduledJob, error)
 	GetPendingScheduledJobByKindPayload(ctx context.Context, arg GetPendingScheduledJobByKindPayloadParams) (ScheduledJob, error)
+	GetRadarThreat(ctx context.Context, id uuid.UUID) (RadarThreat, error)
+	GetRadarThreatByOperationID(ctx context.Context, operationID int64) (RadarThreat, error)
 	// Resource locations queries
 	GetResourceLocationByID(ctx context.Context, id int64) (ResourceLocation, error)
 	GetResourceLocationBySector(ctx context.Context, arg GetResourceLocationBySectorParams) (ResourceLocation, error)
@@ -73,6 +75,7 @@ type Querier interface {
 	InsertMilitaryOperation(ctx context.Context, arg InsertMilitaryOperationParams) (int64, error)
 	// Outbox domain events queries
 	InsertOutboxEvent(ctx context.Context, arg InsertOutboxEventParams) (int64, error)
+	InsertRadarThreat(ctx context.Context, arg InsertRadarThreatParams) (RadarThreat, error)
 	InsertResourceLocation(ctx context.Context, arg InsertResourceLocationParams) (int64, error)
 	// Scan report queries
 	InsertScanReport(ctx context.Context, arg InsertScanReportParams) (int64, error)
@@ -105,11 +108,12 @@ type Querier interface {
 	LockScheduledJobsTable(ctx context.Context) error
 	MarkOutboxEventPublished(ctx context.Context, arg MarkOutboxEventPublishedParams) error
 	MarkScheduledJobDispatched(ctx context.Context, arg MarkScheduledJobDispatchedParams) error
-	RadarActivityExists(ctx context.Context, arg RadarActivityExistsParams) (bool, error)
+	RadarThreatExists(ctx context.Context, arg RadarThreatExistsParams) (bool, error)
 	RecentReportExistsByScanner(ctx context.Context, arg RecentReportExistsByScannerParams) (bool, error)
 	UpdateBase(ctx context.Context, arg UpdateBaseParams) (UserBasis, error)
 	UpdateDangerousLocation(ctx context.Context, arg UpdateDangerousLocationParams) error
 	UpdateMilitaryOperation(ctx context.Context, arg UpdateMilitaryOperationParams) error
+	UpdateRadarThreat(ctx context.Context, arg UpdateRadarThreatParams) (RadarThreat, error)
 	UpdateResourceLocation(ctx context.Context, arg UpdateResourceLocationParams) error
 	UpdateSector(ctx context.Context, arg UpdateSectorParams) (Sector, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error

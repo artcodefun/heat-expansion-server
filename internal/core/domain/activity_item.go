@@ -1,5 +1,7 @@
 package domain
 
+import "github.com/google/uuid"
+
 // ActivityKind enumerates the kinds of activities the system can present.
 type ActivityKind string
 
@@ -59,27 +61,7 @@ type ScanActivity struct {
 
 // RadarActivity represents a detected incoming hostility (future wiring).
 type RadarActivity struct {
-	OpID              int
-	DetectedAt        int64
-	EtaAtBase         int64
-	SourceCoordinates Vector2i
-	TargetCoordinates Vector2i
-	Threat            Threat
-}
-
-type ThreatType string
-
-const (
-	ThreatTypeAttack ThreatType = "ATTACK"
-	ThreatTypeSpy    ThreatType = "SPY"
-)
-
-type Threat struct {
-	Type     ThreatType
-	Attack   int
-	Speed    int
-	Stealth  int
-	Capacity int
+	ThreatID uuid.UUID
 }
 
 // Helpers to build ActivityItem from domain entities
@@ -131,30 +113,14 @@ func NewActivityFromScan(baseID int, r *SectorScanReport) ActivityItem {
 	}
 }
 
-func NewActivityFromRadarDetection(baseID int, op *MilitaryOperation) ActivityItem {
+func NewActivityFromRadarThreat(t *RadarThreat) ActivityItem {
 	return ActivityItem{
 		ID:        0,
 		Kind:      ActivityKindRadar,
 		CreatedAt: NowUnix(),
-		BaseID:    baseID,
+		BaseID:    t.OwnerBaseID,
 		Radar: &RadarActivity{
-			OpID:              op.ID,
-			DetectedAt:        NowUnix(),
-			EtaAtBase:         op.OutboundArriveAt,
-			SourceCoordinates: op.SourceCoordinates,
-			TargetCoordinates: op.TargetCoordinates,
-			Threat: Threat{
-				Type: func() ThreatType {
-					if op.Type == MilitaryOperationTypeSpy {
-						return ThreatTypeSpy
-					}
-					return ThreatTypeAttack
-				}(),
-				Attack:   op.TotalAttack(),
-				Speed:    op.TotalSpeed(),
-				Stealth:  op.TotalStealth(),
-				Capacity: op.TotalCapacity(),
-			},
+			ThreatID: t.ID,
 		},
 	}
 }

@@ -95,6 +95,19 @@ func (h *OperationHandler) SpeedUp(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+// Cancel handles POST /operations/:operationId/cancel.
+func (h *OperationHandler) Cancel(c *gin.Context) {
+	var req dtos.OperationCancelRequest
+	if !bindRequest(c, &req) {
+		return
+	}
+	ctx := commandCtx(c)
+	if err := h.commands.CancelMilitaryOperation(ctx, req.Uri.OperationID); handleCoreErr(c, err) {
+		return
+	}
+	c.Status(http.StatusOK)
+}
+
 // Create handles POST /operations.
 func (h *OperationHandler) Create(c *gin.Context) {
 	var req dtos.OperationCreateRequest

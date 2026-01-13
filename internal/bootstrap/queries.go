@@ -12,6 +12,7 @@ type Queries struct {
 	Sector    *queries.SectorQueries
 	Operation *queries.OperationQueries
 	Activity  *queries.ActivityQueries
+	Radar     *queries.RadarQueries
 	User      *queries.UserQueries
 }
 
@@ -27,6 +28,7 @@ func NewQueries(a *Adapters, as *AppServices) *Queries {
 		Sector:    queries.NewSectorQueries(a.SectorRead, as.Access),
 		Operation: queries.NewOperationQueries(a.OperationRead, as.Access),
 		Activity:  queries.NewActivityQueries(a.ActivityRead, as.Access),
+		Radar:     queries.NewRadarQueries(a.RadarRead, as.Access),
 		User:      queries.NewUserQueries(a.UserRead),
 	}
 }

@@ -31,6 +31,7 @@ type Queries struct {
 	Tech      cqrs.TechQueries
 	Storage   cqrs.StorageQueries
 	Sector    cqrs.SectorQueries
+	Radar     cqrs.RadarQueries
 	Operation cqrs.OperationQueries
 	Activity  cqrs.ActivityQueries
 }
@@ -48,6 +49,7 @@ func NewRouter(cmd Commands, qry Queries, tokenProvider ports.TokenProvider) *gi
 	techHandler := handlers.NewTechHandler(qry.Tech, cmd.Tech)
 	storageHandler := handlers.NewStorageHandler(qry.Storage, cmd.Storage)
 	sectorHandler := handlers.NewSectorHandler(qry.Sector)
+	radarHandler := handlers.NewRadarHandler(qry.Radar)
 	operationHandler := handlers.NewOperationHandler(qry.Operation, cmd.Operation)
 	activityHandler := handlers.NewActivityHandler(qry.Activity)
 
@@ -130,6 +132,9 @@ func NewRouter(cmd Commands, qry Queries, tokenProvider ports.TokenProvider) *gi
 			sectors.GET("/scans/before", sectorHandler.GetLatestScanBefore)
 		}
 
+		// Radar threats
+		api.GET("/bases/:baseId/threats", radarHandler.ListIncomingThreats)
+
 		// Operations
 		operations := api.Group("/operations")
 		{
@@ -137,6 +142,7 @@ func NewRouter(cmd Commands, qry Queries, tokenProvider ports.TokenProvider) *gi
 			operations.GET("/bases/:baseId", operationHandler.ListByBase)
 			operations.GET("/bases/:baseId/active", operationHandler.ListActive)
 			operations.POST("/:operationId/speed-up", operationHandler.SpeedUp)
+			operations.POST("/:operationId/cancel", operationHandler.Cancel)
 			operations.POST("", operationHandler.Create)
 		}
 

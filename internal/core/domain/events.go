@@ -452,6 +452,18 @@ func NewMilitaryOperationReturnArrivedEvent(operationID int) MilitaryOperationRe
 	}
 }
 
+type MilitaryOperationCancelledEvent struct {
+	BasicEvent
+	OperationID int
+}
+
+func NewMilitaryOperationCancelledEvent(operationID int) MilitaryOperationCancelledEvent {
+	return MilitaryOperationCancelledEvent{
+		BasicEvent:  NewBasicEvent(),
+		OperationID: operationID,
+	}
+}
+
 // Scan report-related domain events
 
 // ScanReportCreatedEvent is emitted when a SectorScanReport has been persisted and is visible to the domain.
@@ -469,5 +481,23 @@ func NewScanReportCreatedEvent(reportID int, baseID int, sourceOperationID int) 
 		ReportID:          reportID,
 		BaseID:            baseID,
 		SourceOperationID: sourceOperationID,
+	}
+}
+
+// Radar-related domain events
+
+type RadarThreatDetectedEvent struct {
+	BasicEvent
+	RadarThreatID uuid.UUID
+	OwnerBaseID   int
+	OperationID   int
+}
+
+func NewRadarThreatDetectedEvent(threatID uuid.UUID, baseID int, opID int) RadarThreatDetectedEvent {
+	return RadarThreatDetectedEvent{
+		BasicEvent:    NewBasicEvent(),
+		RadarThreatID: threatID,
+		OwnerBaseID:   baseID,
+		OperationID:   opID,
 	}
 }

@@ -1,5 +1,7 @@
 package readmodels
 
+import "github.com/google/uuid"
+
 // ActivityKind enumerates the kinds of activities the system can present.
 type ActivityKind string
 
@@ -65,27 +67,8 @@ type ScanActivity struct {
 	Report *SectorScanReport
 }
 
-// RadarActivity represents a detected incoming hostility (future wiring).
+// RadarActivity represents a link to a stateful radar threat.
 type RadarActivity struct {
-	OpID              int
-	DetectedAt        int64
-	EtaAtBase         int64
-	SourceCoordinates Vector2i
-	TargetCoordinates Vector2i
-	Threat            Threat
-}
-
-type ThreatType string
-
-const (
-	ThreatTypeAttack ThreatType = "ATTACK"
-	ThreatTypeSpy    ThreatType = "SPY"
-)
-
-type Threat struct {
-	Type     ThreatType
-	Attack   int
-	Speed    int
-	Stealth  int
-	Capacity int
+	ThreatID uuid.UUID
+	Threat   *RadarThreat
 }

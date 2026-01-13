@@ -46,3 +46,18 @@ func toNullInt64ZeroAsNull(v int) sql.NullInt64 {
 	}
 	return sql.NullInt64{Int64: int64(v), Valid: true}
 }
+
+func int64PtrToNullInt64(p *int64) sql.NullInt64 {
+	if p == nil {
+		return sql.NullInt64{Valid: false}
+	}
+	return sql.NullInt64{Int64: *p, Valid: true}
+}
+
+func nullInt64ToInt64Ptr(n sql.NullInt64) *int64 {
+	if !n.Valid {
+		return nil
+	}
+	v := n.Int64
+	return &v
+}

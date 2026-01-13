@@ -1,6 +1,9 @@
 package ports
 
-import "github.com/artcodefun/heat-expansion-api/internal/core/cqrs/readmodels"
+import (
+	"github.com/artcodefun/heat-expansion-api/internal/core/cqrs/readmodels"
+	"github.com/google/uuid"
+)
 
 // BuildingReadRepository exposes lifecycle-segmented build item projections.
 type BuildingReadRepository interface {
@@ -62,4 +65,10 @@ type ArmyReadRepository interface {
 	ListPendingArmyItems(baseID int, category readmodels.ArmyCategory) ([]*readmodels.ArmyItemPending, error)
 	ListInProductionArmyItems(baseID int, category readmodels.ArmyCategory) ([]*readmodels.ArmyItemInProduction, error)
 	ListPresentArmyItems(baseID int, category readmodels.ArmyCategory) ([]*readmodels.ArmyItemPresent, error)
+}
+
+// RadarReadRepository provides read-only access to radar threats.
+type RadarReadRepository interface {
+	GetRadarThreat(id uuid.UUID) (*readmodels.RadarThreat, error)
+	ListIncomingThreats(baseID int) ([]*readmodels.RadarThreat, error)
 }

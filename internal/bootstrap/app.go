@@ -83,6 +83,7 @@ func NewApp() *App {
 		Tech:      queries.Tech,
 		Storage:   queries.Storage,
 		Sector:    queries.Sector,
+		Radar:     queries.Radar,
 		Operation: queries.Operation,
 		Activity:  queries.Activity,
 	}

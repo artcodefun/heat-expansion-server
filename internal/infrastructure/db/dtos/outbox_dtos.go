@@ -546,6 +546,19 @@ func MilitaryOperationReturnArrivedEventFromDTO(d MilitaryOperationReturnArrived
 	return domain.NewMilitaryOperationReturnArrivedEvent(d.OperationID)
 }
 
+type MilitaryOperationCancelledEventDTO struct {
+	OccurredAt  int64 `json:"occurred_at"`
+	OperationID int   `json:"operation_id"`
+}
+
+func MilitaryOperationCancelledEventDTOFromDomain(e domain.MilitaryOperationCancelledEvent) MilitaryOperationCancelledEventDTO {
+	return MilitaryOperationCancelledEventDTO{OccurredAt: e.OccurredAt(), OperationID: e.OperationID}
+}
+
+func MilitaryOperationCancelledEventFromDTO(d MilitaryOperationCancelledEventDTO) domain.MilitaryOperationCancelledEvent {
+	return domain.NewMilitaryOperationCancelledEvent(d.OperationID)
+}
+
 type ScanReportCreatedEventDTO struct {
 	OccurredAt        int64 `json:"occurred_at"`
 	ReportID          int   `json:"report_id"`
@@ -559,4 +572,24 @@ func ScanReportCreatedEventDTOFromDomain(e domain.ScanReportCreatedEvent) ScanRe
 
 func ScanReportCreatedEventFromDTO(d ScanReportCreatedEventDTO) domain.ScanReportCreatedEvent {
 	return domain.NewScanReportCreatedEvent(d.ReportID, d.BaseID, d.SourceOperationID)
+}
+
+type RadarThreatDetectedEventDTO struct {
+	OccurredAt    int64     `json:"occurred_at"`
+	RadarThreatID uuid.UUID `json:"radar_threat_id"`
+	OwnerBaseID   int       `json:"owner_base_id"`
+	OperationID   int       `json:"operation_id"`
+}
+
+func RadarThreatDetectedEventDTOFromDomain(e domain.RadarThreatDetectedEvent) RadarThreatDetectedEventDTO {
+	return RadarThreatDetectedEventDTO{
+		OccurredAt:    e.OccurredAt(),
+		RadarThreatID: e.RadarThreatID,
+		OwnerBaseID:   e.OwnerBaseID,
+		OperationID:   e.OperationID,
+	}
+}
+
+func RadarThreatDetectedEventFromDTO(d RadarThreatDetectedEventDTO) domain.RadarThreatDetectedEvent {
+	return domain.NewRadarThreatDetectedEvent(d.RadarThreatID, d.OwnerBaseID, d.OperationID)
 }

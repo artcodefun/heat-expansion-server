@@ -7,6 +7,8 @@ package gen
 import (
 	"context"
 	"database/sql"
+
+	"github.com/google/uuid"
 )
 
 type Querier interface {
@@ -15,6 +17,7 @@ type Querier interface {
 	GetLatestScanBefore(ctx context.Context, arg GetLatestScanBeforeParams) (ScanReport, error)
 	// Military operations queries
 	GetOperation(ctx context.Context, id int64) (MilitaryOperation, error)
+	GetRadarThreat(ctx context.Context, id uuid.UUID) (RadarThreat, error)
 	GetScanReportByID(ctx context.Context, arg GetScanReportByIDParams) (ScanReport, error)
 	GetScanReportByOperationID(ctx context.Context, sourceOperationID sql.NullInt64) (ScanReport, error)
 	// Sector scan report queries
@@ -37,6 +40,7 @@ type Querier interface {
 	ListInProductionBuildItems(ctx context.Context, arg ListInProductionBuildItemsParams) ([]ListInProductionBuildItemsRow, error)
 	ListInProductionBuildItemsAll(ctx context.Context, baseID int64) ([]ListInProductionBuildItemsAllRow, error)
 	ListInResearchTechItems(ctx context.Context, arg ListInResearchTechItemsParams) ([]ListInResearchTechItemsRow, error)
+	ListIncomingThreats(ctx context.Context, ownerBaseID int64) ([]RadarThreat, error)
 	ListOffenseActivities(ctx context.Context, arg ListOffenseActivitiesParams) ([]Activity, error)
 	ListOperationsByBase(ctx context.Context, sourceBaseID int64) ([]MilitaryOperation, error)
 	ListPendingArmyItems(ctx context.Context, arg ListPendingArmyItemsParams) ([]ListPendingArmyItemsRow, error)

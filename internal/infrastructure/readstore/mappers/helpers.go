@@ -39,3 +39,11 @@ func IdsToInt64(ids []int) []int64 {
 	}
 	return out
 }
+
+func nullInt64ToInt64Ptr(n sql.NullInt64) *int64 {
+	if !n.Valid {
+		return nil
+	}
+	v := n.Int64
+	return &v
+}

@@ -33,6 +33,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getOperationStmt, err = db.PrepareContext(ctx, getOperation); err != nil {
 		return nil, fmt.Errorf("error preparing query GetOperation: %w", err)
 	}
+	if q.getRadarThreatStmt, err = db.PrepareContext(ctx, getRadarThreat); err != nil {
+		return nil, fmt.Errorf("error preparing query GetRadarThreat: %w", err)
+	}
 	if q.getScanReportByIDStmt, err = db.PrepareContext(ctx, getScanReportByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetScanReportByID: %w", err)
 	}
@@ -83,6 +86,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.listInResearchTechItemsStmt, err = db.PrepareContext(ctx, listInResearchTechItems); err != nil {
 		return nil, fmt.Errorf("error preparing query ListInResearchTechItems: %w", err)
+	}
+	if q.listIncomingThreatsStmt, err = db.PrepareContext(ctx, listIncomingThreats); err != nil {
+		return nil, fmt.Errorf("error preparing query ListIncomingThreats: %w", err)
 	}
 	if q.listOffenseActivitiesStmt, err = db.PrepareContext(ctx, listOffenseActivities); err != nil {
 		return nil, fmt.Errorf("error preparing query ListOffenseActivities: %w", err)
@@ -156,6 +162,11 @@ func (q *Queries) Close() error {
 	if q.getOperationStmt != nil {
 		if cerr := q.getOperationStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getOperationStmt: %w", cerr)
+		}
+	}
+	if q.getRadarThreatStmt != nil {
+		if cerr := q.getRadarThreatStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getRadarThreatStmt: %w", cerr)
 		}
 	}
 	if q.getScanReportByIDStmt != nil {
@@ -241,6 +252,11 @@ func (q *Queries) Close() error {
 	if q.listInResearchTechItemsStmt != nil {
 		if cerr := q.listInResearchTechItemsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listInResearchTechItemsStmt: %w", cerr)
+		}
+	}
+	if q.listIncomingThreatsStmt != nil {
+		if cerr := q.listIncomingThreatsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listIncomingThreatsStmt: %w", cerr)
 		}
 	}
 	if q.listOffenseActivitiesStmt != nil {
@@ -375,6 +391,7 @@ type Queries struct {
 	getBaseStatsStmt                  *sql.Stmt
 	getLatestScanBeforeStmt           *sql.Stmt
 	getOperationStmt                  *sql.Stmt
+	getRadarThreatStmt                *sql.Stmt
 	getScanReportByIDStmt             *sql.Stmt
 	getScanReportByOperationIDStmt    *sql.Stmt
 	getScansNearStmt                  *sql.Stmt
@@ -392,6 +409,7 @@ type Queries struct {
 	listInProductionBuildItemsStmt    *sql.Stmt
 	listInProductionBuildItemsAllStmt *sql.Stmt
 	listInResearchTechItemsStmt       *sql.Stmt
+	listIncomingThreatsStmt           *sql.Stmt
 	listOffenseActivitiesStmt         *sql.Stmt
 	listOperationsByBaseStmt          *sql.Stmt
 	listPendingArmyItemsStmt          *sql.Stmt
@@ -419,6 +437,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getBaseStatsStmt:                  q.getBaseStatsStmt,
 		getLatestScanBeforeStmt:           q.getLatestScanBeforeStmt,
 		getOperationStmt:                  q.getOperationStmt,
+		getRadarThreatStmt:                q.getRadarThreatStmt,
 		getScanReportByIDStmt:             q.getScanReportByIDStmt,
 		getScanReportByOperationIDStmt:    q.getScanReportByOperationIDStmt,
 		getScansNearStmt:                  q.getScansNearStmt,
@@ -436,6 +455,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listInProductionBuildItemsStmt:    q.listInProductionBuildItemsStmt,
 		listInProductionBuildItemsAllStmt: q.listInProductionBuildItemsAllStmt,
 		listInResearchTechItemsStmt:       q.listInResearchTechItemsStmt,
+		listIncomingThreatsStmt:           q.listIncomingThreatsStmt,
 		listOffenseActivitiesStmt:         q.listOffenseActivitiesStmt,
 		listOperationsByBaseStmt:          q.listOperationsByBaseStmt,
 		listPendingArmyItemsStmt:          q.listPendingArmyItemsStmt,

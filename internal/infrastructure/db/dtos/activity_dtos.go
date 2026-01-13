@@ -1,6 +1,9 @@
 package dtos
 
-import "github.com/artcodefun/heat-expansion-api/internal/core/domain"
+import (
+	"github.com/artcodefun/heat-expansion-api/internal/core/domain"
+	"github.com/google/uuid"
+)
 
 // OffenseActivityDTO mirrors the JSON structure stored for offensive activities.
 type OffenseActivityDTO struct {
@@ -60,50 +63,20 @@ func ScanActivityFromDTO(d *ScanActivityDTO) *domain.ScanActivity {
 
 // RadarActivityDTO mirrors the JSON structure stored for radar activities.
 type RadarActivityDTO struct {
-	OpID       int   `json:"op_id"`
-	DetectedAt int64 `json:"detected_at"`
-	EtaAtBase  int64 `json:"eta_at_base"`
-	SourceX    int   `json:"source_x"`
-	SourceY    int   `json:"source_y"`
-	TargetX    int   `json:"target_x"`
-	TargetY    int   `json:"target_y"`
-	Threat     struct {
-		Type     string `json:"type"`
-		Attack   int    `json:"attack"`
-		Speed    int    `json:"speed"`
-		Stealth  int    `json:"stealth"`
-		Capacity int    `json:"capacity"`
-	} `json:"threat"`
+	ThreatID uuid.UUID `json:"threat_id"`
 }
 
 func RadarActivityDTOFromDomain(r *domain.RadarActivity) *RadarActivityDTO {
 	if r == nil {
 		return nil
 	}
-	dto := &RadarActivityDTO{OpID: r.OpID, DetectedAt: r.DetectedAt, EtaAtBase: r.EtaAtBase, SourceX: r.SourceCoordinates.X, SourceY: r.SourceCoordinates.Y, TargetX: r.TargetCoordinates.X, TargetY: r.TargetCoordinates.Y}
-	dto.Threat.Type = string(r.Threat.Type)
-	dto.Threat.Attack = r.Threat.Attack
-	dto.Threat.Speed = r.Threat.Speed
-	dto.Threat.Stealth = r.Threat.Stealth
-	dto.Threat.Capacity = r.Threat.Capacity
-	return dto
+	return &RadarActivityDTO{ThreatID: r.ThreatID}
 }
 func RadarActivityFromDTO(d *RadarActivityDTO) *domain.RadarActivity {
 	if d == nil {
 		return nil
 	}
 	return &domain.RadarActivity{
-		OpID:              d.OpID,
-		DetectedAt:        d.DetectedAt,
-		EtaAtBase:         d.EtaAtBase,
-		SourceCoordinates: domain.Vector2i{X: d.SourceX, Y: d.SourceY},
-		TargetCoordinates: domain.Vector2i{X: d.TargetX, Y: d.TargetY},
-		Threat: domain.Threat{
-			Type:     domain.ThreatType(d.Threat.Type),
-			Attack:   d.Threat.Attack,
-			Speed:    d.Threat.Speed,
-			Stealth:  d.Threat.Stealth,
-			Capacity: d.Threat.Capacity,
-		},
+		ThreatID: d.ThreatID,
 	}
 }

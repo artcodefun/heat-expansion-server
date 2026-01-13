@@ -41,7 +41,14 @@ func WireCommandEvents(c *Commands, pub ports.EventPublisher) {
 			}
 			return c.Activity.HandleMilitaryOperationStartedEvent(ev)
 		case domain.MilitaryOperationArrivedEvent:
-			return c.Operation.HandleMilitaryOperationArrivedEvent(ev)
+			if err := c.Operation.HandleMilitaryOperationArrivedEvent(ev); err != nil {
+				return err
+			}
+			return c.RadarThreat.HandleMilitaryOperationArrivedEvent(ev)
+		case domain.MilitaryOperationCancelledEvent:
+			return c.RadarThreat.HandleMilitaryOperationCancelledEvent(ev)
+		case domain.RadarThreatDetectedEvent:
+			return c.Activity.HandleRadarThreatDetectedEvent(ev)
 		case domain.MilitaryOperationResolvedEvent:
 			return c.Activity.HandleMilitaryOperationResolvedEvent(ev)
 		case domain.MilitaryOperationReturnStartedEvent:

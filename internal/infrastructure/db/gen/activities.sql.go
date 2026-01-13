@@ -107,24 +107,3 @@ func (q *Queries) ListActivitiesByBase(ctx context.Context, arg ListActivitiesBy
 	}
 	return items, nil
 }
-
-const radarActivityExists = `-- name: RadarActivityExists :one
-SELECT EXISTS (
-    SELECT 1 FROM activities
-    WHERE base_id = $1
-      AND kind = 'RADAR'
-      AND (radar_data->>'OpID')::INT = $2::INT
-)
-`
-
-type RadarActivityExistsParams struct {
-	BaseID      int64 `json:"base_id"`
-	OperationID int32 `json:"operation_id"`
-}
-
-func (q *Queries) RadarActivityExists(ctx context.Context, arg RadarActivityExistsParams) (bool, error) {
-	row := q.queryRow(ctx, q.radarActivityExistsStmt, radarActivityExists, arg.BaseID, arg.OperationID)
-	var exists bool
-	err := row.Scan(&exists)
-	return exists, err
-}

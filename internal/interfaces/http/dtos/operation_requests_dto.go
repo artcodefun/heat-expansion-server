@@ -12,6 +12,9 @@ type OperationGetRequest = Request[operationURI, None, None]
 // OperationSpeedUpRequest binds the operation ID path parameter for speed-up.
 type OperationSpeedUpRequest = Request[operationURI, None, None]
 
+// OperationCancelRequest binds the operation ID path parameter for cancellation.
+type OperationCancelRequest = Request[operationURI, None, None]
+
 // OperationByBaseRequest binds a baseId path parameter for listing operations.
 // Used for GET /operations/bases/:baseId.
 type OperationByBaseRequest = Request[BaseURI, None, None]

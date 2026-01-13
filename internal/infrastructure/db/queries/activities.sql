@@ -20,11 +20,3 @@ RETURNING id;
 
 -- name: DeleteActivitiesByBase :exec
 DELETE FROM activities WHERE base_id = @base_id;
-
--- name: RadarActivityExists :one
-SELECT EXISTS (
-    SELECT 1 FROM activities
-    WHERE base_id = @base_id
-      AND kind = 'RADAR'
-      AND (radar_data->>'OpID')::INT = @operation_id::INT
-);

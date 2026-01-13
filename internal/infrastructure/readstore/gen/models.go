@@ -149,6 +149,25 @@ type MilitaryOperation struct {
 	AttackResult      pqtype.NullRawMessage `json:"attack_result"`
 }
 
+type RadarThreat struct {
+	ID                 uuid.UUID     `json:"id"`
+	OperationID        int64         `json:"operation_id"`
+	OwnerBaseID        int64         `json:"owner_base_id"`
+	DetectedAt         int64         `json:"detected_at"`
+	SourceX            int32         `json:"source_x"`
+	SourceY            int32         `json:"source_y"`
+	TargetX            int32         `json:"target_x"`
+	TargetY            int32         `json:"target_y"`
+	EstimatedArrivalAt int64         `json:"estimated_arrival_at"`
+	ArrivalAt          sql.NullInt64 `json:"arrival_at"`
+	Type               string        `json:"type"`
+	Status             string        `json:"status"`
+	Attack             int32         `json:"attack"`
+	Speed              int32         `json:"speed"`
+	Stealth            int32         `json:"stealth"`
+	Capacity           int32         `json:"capacity"`
+}
+
 type ResourceLocation struct {
 	ID                     int64           `json:"id"`
 	SectorX                int32           `json:"sector_x"`

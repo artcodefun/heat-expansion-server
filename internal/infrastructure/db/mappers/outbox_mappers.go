@@ -163,7 +163,9 @@ const (
 	evKindMilitaryOperationResolved      = "MILITARY_OPERATION_RESOLVED"
 	evKindMilitaryOperationReturnStarted = "MILITARY_OPERATION_RETURN_STARTED"
 	evKindMilitaryOperationReturnArrived = "MILITARY_OPERATION_RETURN_ARRIVED"
+	evKindMilitaryOperationCancelled     = "MILITARY_OPERATION_CANCELLED"
 	evKindScanReportCreated              = "SCAN_REPORT_CREATED"
+	evKindRadarThreatDetected            = "RADAR_THREAT_DETECTED"
 )
 
 // EncodeEvent converts a typed DomainEvent into a kind label and JSON payload
@@ -259,10 +261,16 @@ func EncodeEvent(ev domain.DomainEvent) (kind string, payload []byte, err error)
 	case domain.MilitaryOperationReturnArrivedEvent:
 		payload, err = json.Marshal(dtos.MilitaryOperationReturnArrivedEventDTOFromDomain(e))
 		return evKindMilitaryOperationReturnArrived, payload, err
+	case domain.MilitaryOperationCancelledEvent:
+		payload, err = json.Marshal(dtos.MilitaryOperationCancelledEventDTOFromDomain(e))
+		return evKindMilitaryOperationCancelled, payload, err
 
 	case domain.ScanReportCreatedEvent:
 		payload, err = json.Marshal(dtos.ScanReportCreatedEventDTOFromDomain(e))
 		return evKindScanReportCreated, payload, err
+	case domain.RadarThreatDetectedEvent:
+		payload, err = json.Marshal(dtos.RadarThreatDetectedEventDTOFromDomain(e))
+		return evKindRadarThreatDetected, payload, err
 
 	default:
 		return "", nil, errors.New("unsupported domain event type")
@@ -451,6 +459,12 @@ func DecodeEvent(kind string, payload []byte) (domain.DomainEvent, error) {
 			return nil, err
 		}
 		return dtos.MilitaryOperationReturnArrivedEventFromDTO(dto), nil
+	case evKindMilitaryOperationCancelled:
+		var dto dtos.MilitaryOperationCancelledEventDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.MilitaryOperationCancelledEventFromDTO(dto), nil
 
 	case evKindScanReportCreated:
 		var dto dtos.ScanReportCreatedEventDTO
@@ -458,6 +472,13 @@ func DecodeEvent(kind string, payload []byte) (domain.DomainEvent, error) {
 			return nil, err
 		}
 		return dtos.ScanReportCreatedEventFromDTO(dto), nil
+
+	case evKindRadarThreatDetected:
+		var dto dtos.RadarThreatDetectedEventDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.RadarThreatDetectedEventFromDTO(dto), nil
 
 	default:
 		return nil, errors.New("unknown domain event kind")
