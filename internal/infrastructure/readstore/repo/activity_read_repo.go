@@ -109,16 +109,6 @@ func (r *ActivityReadRepo) enrichActivity(v *readmodels.ActivityItem) error {
 		}
 		if err == nil {
 			v.Offense.Operation = op
-			// Enrich with prior opponent scan if coordinates and timeline are available.
-			if op.TargetCoordinates != (readmodels.Vector2i{}) && op.OutboundDepartAt > 0 {
-				report, err := r.sectors.GetLatestScanBefore(v.BaseID, op.TargetCoordinates.X, op.TargetCoordinates.Y, op.OutboundDepartAt)
-				if err != nil && !errors.Is(err, ports.ErrNotFound) {
-					return err
-				}
-				if err == nil {
-					v.Offense.PriorOpponentScan = report
-				}
-			}
 		}
 	}
 	if v.Defense != nil {
@@ -127,10 +117,19 @@ func (r *ActivityReadRepo) enrichActivity(v *readmodels.ActivityItem) error {
 			return err
 		}
 		if err == nil {
-			v.Defense.Operation = op
-			// Enrich with prior opponent scan if coordinates and timeline are available.
-			if op.SourceCoordinates != (readmodels.Vector2i{}) && op.OutboundDepartAt > 0 {
-				report, err := r.sectors.GetLatestScanBefore(v.BaseID, op.SourceCoordinates.X, op.SourceCoordinates.Y, op.OutboundDepartAt)
+			v.Defense.Offender = &readmodels.OffenderInfo{
+				Type:              op.Type,
+				SourceCoordinates: op.SourceCoordinates,
+				TargetCoordinates: op.TargetCoordinates,
+				ContactDate:       op.OutboundArriveAt,
+				Result:            op.Result,
+				Units:             op.Units,
+				SpyResult:         op.SpyResult,
+				AttackResult:      op.AttackResult,
+			}
+			// Enrich with prior opponent scan for the defender (scan of the offender's source coordinates)
+			if op.SourceCoordinates != (readmodels.Vector2i{}) && op.OutboundArriveAt > 0 {
+				report, err := r.sectors.GetLatestScanBefore(v.BaseID, op.SourceCoordinates.X, op.SourceCoordinates.Y, op.OutboundArriveAt)
 				if err != nil && !errors.Is(err, ports.ErrNotFound) {
 					return err
 				}

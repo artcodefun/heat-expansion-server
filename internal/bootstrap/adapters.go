@@ -67,8 +67,8 @@ func NewAdapters(db *sql.DB, jwtSecret, contentDir, staticBaseURL string) (*Adap
 	tokens := security.NewSimpleTokenProvider(jwtSecret)
 	generator := contentgen.NewSimpleGenerator(contentDir, staticBaseURL)
 
-	opRead := readrepo.NewOperationReadRepo(rq)
 	sectorRead := readrepo.NewSectorReadRepo(rq)
+	opRead := readrepo.NewOperationReadRepo(rq, sectorRead)
 	radarRead := readrepo.NewRadarThreatReadRepo(rq)
 	activityRead := readrepo.NewActivityReadRepo(rq, opRead, sectorRead, radarRead)
 

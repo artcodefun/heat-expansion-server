@@ -117,9 +117,10 @@ type MilitaryOperationDTO struct {
 	SpyResult          *SpyResultDTO     `json:"spy_result,omitempty"`
 	AttackResult       *AttackResultDTO  `json:"attack_result,omitempty"`
 	ProducedScanReport *SectorDTO        `json:"produced_scan_report,omitempty"`
+	PriorScanReport    *SectorDTO        `json:"prior_scan_report,omitempty"`
 }
 
-func militaryUnitsFromReadModel(units []readmodels.MilitaryUnitSnap) []MilitaryUnitDTO {
+func MilitaryUnitsFromReadModel(units []readmodels.MilitaryUnitSnap) []MilitaryUnitDTO {
 	out := make([]MilitaryUnitDTO, 0, len(units))
 	for _, unit := range units {
 		out = append(out, MilitaryUnitDTO{
@@ -162,30 +163,30 @@ func trophiesFromReadModel(trophies []readmodels.TrophyStorageItem) []TrophyStor
 	return out
 }
 
-func spyResultFromReadModel(res *readmodels.SpyResult) *SpyResultDTO {
+func SpyResultFromReadModel(res *readmodels.SpyResult) *SpyResultDTO {
 	if res == nil {
 		return nil
 	}
 	return &SpyResultDTO{
 		Outcome:           SpyOutcome(res.Outcome),
-		AttackerRemaining: militaryUnitsFromReadModel(res.AttackerRemaining),
-		DefenderRemaining: militaryUnitsFromReadModel(res.DefenderRemaining),
-		DefendersBefore:   militaryUnitsFromReadModel(res.DefendersBefore),
+		AttackerRemaining: MilitaryUnitsFromReadModel(res.AttackerRemaining),
+		DefenderRemaining: MilitaryUnitsFromReadModel(res.DefenderRemaining),
+		DefendersBefore:   MilitaryUnitsFromReadModel(res.DefendersBefore),
 	}
 }
 
-func attackResultFromReadModel(res *readmodels.AttackResult) *AttackResultDTO {
+func AttackResultFromReadModel(res *readmodels.AttackResult) *AttackResultDTO {
 	if res == nil {
 		return nil
 	}
 	return &AttackResultDTO{
 		Outcome:             AttackOutcome(res.Outcome),
-		AttackerRemaining:   militaryUnitsFromReadModel(res.AttackerRemaining),
-		DefenderRemaining:   militaryUnitsFromReadModel(res.DefenderRemaining),
+		AttackerRemaining:   MilitaryUnitsFromReadModel(res.AttackerRemaining),
+		DefenderRemaining:   MilitaryUnitsFromReadModel(res.DefenderRemaining),
 		RemainingStructures: defenseStructuresFromReadModel(res.RemainingStructures),
 		Loot:                PriceModelFromReadModel(res.Loot),
 		Trophies:            trophiesFromReadModel(res.Trophies),
-		DefendersBefore:     militaryUnitsFromReadModel(res.DefendersBefore),
+		DefendersBefore:     MilitaryUnitsFromReadModel(res.DefendersBefore),
 		StructuresBefore:    defenseStructuresFromReadModel(res.StructuresBefore),
 	}
 }
@@ -205,13 +206,17 @@ func OperationFromReadModel(m *readmodels.MilitaryOperation) MilitaryOperationDT
 		ReturnArriveAt:    m.ReturnArriveAt,
 		CompletedAt:       m.CompletedAt,
 		CrystalsSkipPrice: m.CrystalsSkipPrice,
-		Units:             militaryUnitsFromReadModel(m.Units),
-		SpyResult:         spyResultFromReadModel(m.SpyResult),
-		AttackResult:      attackResultFromReadModel(m.AttackResult),
+		Units:             MilitaryUnitsFromReadModel(m.Units),
+		SpyResult:         SpyResultFromReadModel(m.SpyResult),
+		AttackResult:      AttackResultFromReadModel(m.AttackResult),
 	}
 	if m.ProducedScanReport != nil {
 		report := SectorScanReportFromReadModel(m.ProducedScanReport)
 		dto.ProducedScanReport = &report
+	}
+	if m.PriorScanReport != nil {
+		report := SectorScanReportFromReadModel(m.PriorScanReport)
+		dto.PriorScanReport = &report
 	}
 	return dto
 }

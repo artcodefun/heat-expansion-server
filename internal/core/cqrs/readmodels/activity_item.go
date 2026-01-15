@@ -39,8 +39,19 @@ type OffenseActivity struct {
 	OpID    int
 	Subtype OffenseActivitySubtype
 
-	Operation         *MilitaryOperation
-	PriorOpponentScan *SectorScanReport
+	Operation *MilitaryOperation
+}
+
+// OffenderInfo provides a restricted view of an attacking operation for the defender.
+type OffenderInfo struct {
+	Type              MilitaryOperationType
+	SourceCoordinates Vector2i
+	TargetCoordinates Vector2i
+	ContactDate       int64
+	Result            MilitaryOperationResult
+	Units             []MilitaryUnitSnap
+	SpyResult         *SpyResult
+	AttackResult      *AttackResult
 }
 
 // DefenseActivitySubtype specifies the subtype of a defensive activity.
@@ -56,7 +67,7 @@ type DefenseActivity struct {
 	OpID    int
 	Subtype DefenseActivitySubtype
 
-	Operation         *MilitaryOperation
+	Offender          *OffenderInfo
 	PriorOpponentScan *SectorScanReport
 }
 

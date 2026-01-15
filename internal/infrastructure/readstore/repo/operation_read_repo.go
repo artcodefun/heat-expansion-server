@@ -12,11 +12,12 @@ import (
 )
 
 type OperationReadRepo struct {
-	q *gen.Queries
+	q       *gen.Queries
+	sectors ports.SectorReadRepository
 }
 
-func NewOperationReadRepo(rq *gen.Queries) *OperationReadRepo {
-	return &OperationReadRepo{q: rq}
+func NewOperationReadRepo(rq *gen.Queries, sectors ports.SectorReadRepository) *OperationReadRepo {
+	return &OperationReadRepo{q: rq, sectors: sectors}
 }
 
 func (r *OperationReadRepo) GetOperation(opID int) (*readmodels.MilitaryOperation, error) {
@@ -90,14 +91,22 @@ func (r *OperationReadRepo) enrichOperation(v *readmodels.MilitaryOperation, arm
 
 	// 3. Fetch produced scan report if any
 	reportRow, err := r.q.GetScanReportByOperationID(context.Background(), sql.NullInt64{Int64: int64(v.ID), Valid: true})
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil
-		}
+	if err == nil {
+		report := mappers.SectorScanReportFromModel(reportRow)
+		v.ProducedScanReport = &report
+	} else if !errors.Is(err, sql.ErrNoRows) {
 		return err
 	}
-	report := mappers.SectorScanReportFromModel(reportRow)
-	v.ProducedScanReport = &report
+
+	// 4. Fetch prior scan report if coordinates and timeline are available.
+	if v.TargetCoordinates != (readmodels.Vector2i{}) && v.OutboundDepartAt > 0 {
+		report, err := r.sectors.GetLatestScanBefore(v.SourceBaseID, v.TargetCoordinates.X, v.TargetCoordinates.Y, v.OutboundDepartAt)
+		if err == nil {
+			v.PriorScanReport = report
+		} else if !errors.Is(err, ports.ErrNotFound) {
+			return err
+		}
+	}
 	return nil
 }
 

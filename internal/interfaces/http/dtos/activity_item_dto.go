@@ -46,17 +46,28 @@ type ActivityItemDTO struct {
 
 // OffenseActivityDTO mirrors readmodels.OffenseActivity.
 type OffenseActivityDTO struct {
-	OpID              int                    `json:"opId"`
-	Subtype           OffenseActivitySubtype `json:"subtype"`
-	Operation         *MilitaryOperationDTO  `json:"operation,omitempty"`
-	PriorOpponentScan *SectorDTO             `json:"priorOpponentScan,omitempty"`
+	OpID      int                    `json:"opId"`
+	Subtype   OffenseActivitySubtype `json:"subtype"`
+	Operation *MilitaryOperationDTO  `json:"operation,omitempty"`
+}
+
+// OffenderInfoDTO provides a restricted view of an attacking operation for the defender.
+type OffenderInfoDTO struct {
+	Type              OperationType     `json:"type"`
+	SourceCoordinates Vector2iDTO       `json:"sourceCoordinates"`
+	TargetCoordinates Vector2iDTO       `json:"targetCoordinates"`
+	ContactDate       int64             `json:"contactDate"`
+	Result            OperationResult   `json:"result"`
+	Units             []MilitaryUnitDTO `json:"units"`
+	SpyResult         *SpyResultDTO     `json:"spyResult,omitempty"`
+	AttackResult      *AttackResultDTO  `json:"attackResult,omitempty"`
 }
 
 // DefenseActivityDTO mirrors readmodels.DefenseActivity.
 type DefenseActivityDTO struct {
 	OpID              int                    `json:"opId"`
 	Subtype           DefenseActivitySubtype `json:"subtype"`
-	Operation         *MilitaryOperationDTO  `json:"operation,omitempty"`
+	Offender          *OffenderInfoDTO       `json:"offender,omitempty"`
 	PriorOpponentScan *SectorDTO             `json:"priorOpponentScan,omitempty"`
 }
 
@@ -84,11 +95,23 @@ func offenseActivityFromReadModel(offense *readmodels.OffenseActivity) *OffenseA
 		m := OperationFromReadModel(offense.Operation)
 		dto.Operation = &m
 	}
-	if offense.PriorOpponentScan != nil {
-		report := SectorScanReportFromReadModel(offense.PriorOpponentScan)
-		dto.PriorOpponentScan = &report
-	}
 	return dto
+}
+
+func offenderInfoFromReadModel(o *readmodels.OffenderInfo) *OffenderInfoDTO {
+	if o == nil {
+		return nil
+	}
+	return &OffenderInfoDTO{
+		Type:              OperationType(o.Type),
+		SourceCoordinates: Vector2iDTO{X: o.SourceCoordinates.X, Y: o.SourceCoordinates.Y},
+		TargetCoordinates: Vector2iDTO{X: o.TargetCoordinates.X, Y: o.TargetCoordinates.Y},
+		ContactDate:       o.ContactDate,
+		Result:            OperationResult(o.Result),
+		Units:             MilitaryUnitsFromReadModel(o.Units),
+		SpyResult:         SpyResultFromReadModel(o.SpyResult),
+		AttackResult:      AttackResultFromReadModel(o.AttackResult),
+	}
 }
 
 func defenseActivityFromReadModel(defense *readmodels.DefenseActivity) *DefenseActivityDTO {
@@ -99,9 +122,9 @@ func defenseActivityFromReadModel(defense *readmodels.DefenseActivity) *DefenseA
 		OpID:    defense.OpID,
 		Subtype: DefenseActivitySubtype(defense.Subtype),
 	}
-	if defense.Operation != nil {
-		m := OperationFromReadModel(defense.Operation)
-		dto.Operation = &m
+	if defense.Offender != nil {
+		o := offenderInfoFromReadModel(defense.Offender)
+		dto.Offender = o
 	}
 	if defense.PriorOpponentScan != nil {
 		report := SectorScanReportFromReadModel(defense.PriorOpponentScan)
