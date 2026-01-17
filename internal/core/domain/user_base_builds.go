@@ -228,6 +228,26 @@ func (ub *UserBaseModel) TotalRadarStealthStrength() int {
 	return total
 }
 
+func (ub *UserBaseModel) TotalCloakingStealthStrength() int {
+	total := 0
+	for _, b := range ub.BuildingsPresent {
+		if b.Prototype.IntelligenceData != nil && b.Prototype.IntelligenceData.Subtype == IntelligenceSubtypeCloaking {
+			total += b.Prototype.IntelligenceData.StealthStrength
+		}
+	}
+	return total
+}
+
+func (ub *UserBaseModel) TotalInterceptionStealthStrength() int {
+	total := 0
+	for _, b := range ub.BuildingsPresent {
+		if b.Prototype.IntelligenceData != nil && b.Prototype.IntelligenceData.Subtype == IntelligenceSubtypeScanInterceptor {
+			total += b.Prototype.IntelligenceData.StealthStrength
+		}
+	}
+	return total
+}
+
 // ApplyRemainingDefensiveStructures adjusts defensive BuildingsPresent to match the
 // remaining structures (by PrototypeID). Non-defensive buildings are left untouched.
 func (ub *UserBaseModel) ApplyRemainingDefensiveStructures(remaining []DefenseStructureSnap) {

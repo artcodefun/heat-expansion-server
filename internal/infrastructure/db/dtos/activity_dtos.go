@@ -45,20 +45,63 @@ func DefenseActivityFromDTO(d *DefenseActivityDTO) *domain.DefenseActivity {
 
 // ScanActivityDTO mirrors the JSON structure stored for scan activities.
 type ScanActivityDTO struct {
-	ReportID int `json:"report_id"`
+	Subtype   string            `json:"subtype"`
+	ReportID  *int              `json:"report_id,omitempty"`
+	Intercept *ScanInterceptDTO `json:"intercept,omitempty"`
+}
+
+type ScanInterceptDTO struct {
+	ScannedCoordinates     Vector2iDTO  `json:"scanned_coordinates"`
+	ScanPenetratedCloaking bool         `json:"scan_penetrated_cloaking"`
+	PossibleSource         *Vector2iDTO `json:"possible_source,omitempty"`
+	UncertaintyRadius      int          `json:"uncertainty_radius"`
 }
 
 func ScanActivityDTOFromDomain(s *domain.ScanActivity) *ScanActivityDTO {
 	if s == nil {
 		return nil
 	}
-	return &ScanActivityDTO{ReportID: s.ReportID}
+	dto := &ScanActivityDTO{
+		Subtype:  string(s.Subtype),
+		ReportID: s.ReportID,
+	}
+	if s.Intercept != nil {
+		dto.Intercept = &ScanInterceptDTO{
+			ScannedCoordinates:     Vector2iDTOFromDomain(s.Intercept.ScannedCoordinates),
+			ScanPenetratedCloaking: s.Intercept.ScanPenetratedCloaking,
+			UncertaintyRadius:      s.Intercept.UncertaintyRadius,
+		}
+		if s.Intercept.PossibleSource != nil {
+			src := Vector2iDTOFromDomain(*s.Intercept.PossibleSource)
+			dto.Intercept.PossibleSource = &src
+		}
+	}
+	return dto
 }
+
 func ScanActivityFromDTO(d *ScanActivityDTO) *domain.ScanActivity {
 	if d == nil {
 		return nil
 	}
-	return &domain.ScanActivity{ReportID: d.ReportID}
+	res := &domain.ScanActivity{
+		Subtype:  domain.ScanActivitySubtype(d.Subtype),
+		ReportID: d.ReportID,
+	}
+	if d.Intercept != nil {
+		res.Intercept = &domain.ScanInterceptInfo{
+			ScannedCoordinates:     d.Intercept.ScannedCoordinates.ToDomain(),
+			ScanPenetratedCloaking: d.Intercept.ScanPenetratedCloaking,
+			PossibleSource: func() *domain.Vector2i {
+				if d.Intercept.PossibleSource == nil {
+					return nil
+				}
+				v := d.Intercept.PossibleSource.ToDomain()
+				return &v
+			}(),
+			UncertaintyRadius: d.Intercept.UncertaintyRadius,
+		}
+	}
+	return res
 }
 
 // RadarActivityDTO mirrors the JSON structure stored for radar activities.

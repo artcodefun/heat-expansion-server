@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"math"
+
 	"github.com/google/uuid"
 )
 
@@ -19,6 +21,12 @@ const (
 type Vector2i struct {
 	X int
 	Y int
+}
+
+func (v Vector2i) DistanceTo(other Vector2i) float64 {
+	dx := float64(v.X - other.X)
+	dy := float64(v.Y - other.Y)
+	return math.Sqrt(dx*dx + dy*dy)
 }
 
 // SectorModel represents static sector info.

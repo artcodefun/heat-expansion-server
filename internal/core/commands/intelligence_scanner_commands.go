@@ -16,6 +16,7 @@ type IntelligenceScannerCommands struct {
 	DangerousRepo     ports.DangerousLocationRepository
 	ScanReportRepo    ports.ScanReportRepository
 	SectorProvisioner *services.SectorProvisioningService
+	intelService      *domain.IntelligenceService
 	Scheduler         ports.Scheduler
 	Outbox            ports.OutboxEventRepository
 	TxMgr             ports.TransactionManager
@@ -29,6 +30,7 @@ func NewIntelligenceScannerCommands(baseRepo ports.UserBaseRepository, sectorRep
 		DangerousRepo:     dangerRepo,
 		ScanReportRepo:    scanRepo,
 		SectorProvisioner: provisioner,
+		intelService:      domain.NewIntelligenceService(),
 		Scheduler:         scheduler,
 		Outbox:            outbox,
 		TxMgr:             txMgr,
@@ -87,6 +89,10 @@ func (c *IntelligenceScannerCommands) HandleIntelligenceScanJob(job ports.Intell
 	if periodSec <= 0 {
 		periodSec = 3600
 	}
+	scanStrength := scannerProto.IntelligenceData.StealthStrength
+	if scanStrength <= 0 {
+		scanStrength = 100
+	}
 
 	target := randomSectorInRange(base.Coordinates, rangeTiles)
 	sector, err := c.SectorRepo.FindByCoordinates(target.X, target.Y)
@@ -103,10 +109,15 @@ func (c *IntelligenceScannerCommands) HandleIntelligenceScanJob(job ports.Intell
 
 	occType, _ := c.SectorRepo.GetLocationTypeByCoordinates(sector.Coordinates.X, sector.Coordinates.Y)
 	var report *domain.SectorScanReport
+
 	switch occType {
 	case domain.LocationTypeUserBase:
 		defenderBase, _ := c.BaseRepo.FindByCoordinates(sector.Coordinates.X, sector.Coordinates.Y)
-		report = domain.NewSectorScanReportFromUserBase(base.ID, sector, defenderBase)
+		if c.intelService.ResolveScanVisibility(scanStrength, defenderBase) {
+			report = domain.NewSectorScanReportFromUserBase(base.ID, sector, defenderBase)
+		} else {
+			report = domain.NewSectorScanReportFromUserBase(base.ID, sector, nil)
+		}
 	case domain.LocationTypeResourceful:
 		res, _ := c.ResourceRepo.FindByCoordinates(sector.Coordinates.X, sector.Coordinates.Y)
 		report = domain.NewSectorScanReportFromResourceLocation(base.ID, sector, res)

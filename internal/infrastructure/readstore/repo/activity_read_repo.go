@@ -139,8 +139,8 @@ func (r *ActivityReadRepo) enrichActivity(v *readmodels.ActivityItem) error {
 			}
 		}
 	}
-	if v.Scan != nil {
-		report, err := r.sectors.GetScanReportByID(v.BaseID, v.Scan.ReportID)
+	if v.Scan != nil && v.Scan.ReportID != nil {
+		report, err := r.sectors.GetScanReportByID(v.BaseID, *v.Scan.ReportID)
 		if err != nil && !errors.Is(err, ports.ErrNotFound) {
 			return err
 		}

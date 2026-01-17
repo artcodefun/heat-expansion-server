@@ -1,6 +1,8 @@
 package bootstrap
 
-import "github.com/artcodefun/heat-expansion-api/internal/core/services"
+import (
+	"github.com/artcodefun/heat-expansion-api/internal/core/services"
+)
 
 // AppServices aggregates application-level services that are shared across
 // commands, queries and other bootstrap wiring.

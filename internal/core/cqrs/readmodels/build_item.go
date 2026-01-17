@@ -92,9 +92,10 @@ type IntelligenceBuildingData struct {
 type IntelligenceSubtype string
 
 const (
-	IntelligenceSubtypeScanner  IntelligenceSubtype = "SCANNER"
-	IntelligenceSubtypeRadar    IntelligenceSubtype = "RADAR"
-	IntelligenceSubtypeCloaking IntelligenceSubtype = "CLOAKING"
+	IntelligenceSubtypeScanner         IntelligenceSubtype = "SCANNER"
+	IntelligenceSubtypeRadar           IntelligenceSubtype = "RADAR"
+	IntelligenceSubtypeCloaking        IntelligenceSubtype = "CLOAKING"
+	IntelligenceSubtypeScanInterceptor IntelligenceSubtype = "SCAN_INTERCEPTOR"
 	// Add more as needed
 )
 

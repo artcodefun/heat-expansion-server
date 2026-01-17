@@ -54,9 +54,35 @@ type DefenseActivity struct {
 	Subtype DefenseActivitySubtype
 }
 
-// ScanActivity wraps a SectorScanReport into the activity stream.
+// ScanActivitySubtype specifies the subtype of a scan-related activity.
+type ScanActivitySubtype string
+
+const (
+	ScanActivitySubtypeReportProduced       ScanActivitySubtype = "REPORT_PRODUCED"
+	ScanActivitySubtypeExternalScanDetected ScanActivitySubtype = "EXTERNAL_SCAN_DETECTED"
+)
+
+// ScanInterceptInfo represents detected hostile scanning with optional triangulation.
+type ScanInterceptInfo struct {
+	// ScannedCoordinates is the sector that was targeted by the attacker scan.
+	ScannedCoordinates Vector2i
+
+	// ScanPenetratedCloaking indicates whether the attacker scan successfully
+	// obtained accurate intel despite defender cloaking.
+	ScanPenetratedCloaking bool
+
+	// PossibleSource is a vague estimate of scan origin (optional).
+	PossibleSource *Vector2i
+
+	// UncertaintyRadius defines how imprecise PossibleSource is (0 => unknown / not triangulated).
+	UncertaintyRadius int
+}
+
+// ScanActivity wraps scan-related events into the activity stream.
 type ScanActivity struct {
-	ReportID int
+	Subtype   ScanActivitySubtype
+	ReportID  *int
+	Intercept *ScanInterceptInfo
 }
 
 // RadarActivity represents a detected incoming hostility (future wiring).
@@ -103,13 +129,32 @@ func NewActivityFromDefenseOperation(baseID int, op *MilitaryOperation) Activity
 }
 
 func NewActivityFromScan(baseID int, r *SectorScanReport) ActivityItem {
+	rid := r.ID
 	return ActivityItem{
 		ID:        0, // assigned by persistence layer
 		Kind:      ActivityKindScan,
 		CreatedAt: NowUnix(),
 		BaseID:    baseID,
-		// Category removed
-		Scan: &ScanActivity{ReportID: r.ID},
+		Scan: &ScanActivity{
+			Subtype:  ScanActivitySubtypeReportProduced,
+			ReportID: &rid,
+		},
+	}
+}
+
+func NewActivityFromScanIntercept(
+	baseID int,
+	info ScanInterceptInfo,
+) ActivityItem {
+	return ActivityItem{
+		ID:        0,
+		Kind:      ActivityKindScan,
+		CreatedAt: NowUnix(),
+		BaseID:    baseID,
+		Scan: &ScanActivity{
+			Subtype:   ScanActivitySubtypeExternalScanDetected,
+			Intercept: &info,
+		},
 	}
 }
 

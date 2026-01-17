@@ -71,10 +71,28 @@ type DefenseActivityDTO struct {
 	PriorOpponentScan *SectorDTO             `json:"priorOpponentScan,omitempty"`
 }
 
+// ScanActivitySubtype mirrors readmodels.ScanActivitySubtype.
+type ScanActivitySubtype string
+
+const (
+	ScanActivitySubtypeReportProduced       ScanActivitySubtype = "REPORT_PRODUCED"
+	ScanActivitySubtypeExternalScanDetected ScanActivitySubtype = "EXTERNAL_SCAN_DETECTED"
+)
+
+// ScanInterceptInfoDTO mirrors readmodels.ScanInterceptInfo.
+type ScanInterceptInfoDTO struct {
+	ScannedCoordinates     Vector2iDTO  `json:"scannedCoordinates"`
+	ScanPenetratedCloaking bool         `json:"scanPenetratedCloaking"`
+	PossibleSource         *Vector2iDTO `json:"possibleSource,omitempty"`
+	UncertaintyRadius      int          `json:"uncertaintyRadius"`
+}
+
 // ScanActivityDTO mirrors readmodels.ScanActivity, embedding the full scan report readmodel.
 type ScanActivityDTO struct {
-	ReportID int        `json:"reportId"`
-	Report   *SectorDTO `json:"report,omitempty"`
+	Subtype   ScanActivitySubtype   `json:"subtype"`
+	ReportID  *int                  `json:"reportId,omitempty"`
+	Intercept *ScanInterceptInfoDTO `json:"intercept,omitempty"`
+	Report    *SectorDTO            `json:"report,omitempty"`
 }
 
 // RadarActivityDTO presents a link to a stateful radar threat.
@@ -137,7 +155,21 @@ func scanActivityFromReadModel(scan *readmodels.ScanActivity) *ScanActivityDTO {
 	if scan == nil {
 		return nil
 	}
-	dto := &ScanActivityDTO{ReportID: scan.ReportID}
+	dto := &ScanActivityDTO{
+		Subtype:  ScanActivitySubtype(scan.Subtype),
+		ReportID: scan.ReportID,
+	}
+	if scan.Intercept != nil {
+		dto.Intercept = &ScanInterceptInfoDTO{
+			ScannedCoordinates:     Vector2iFromReadModel(scan.Intercept.ScannedCoordinates),
+			ScanPenetratedCloaking: scan.Intercept.ScanPenetratedCloaking,
+			UncertaintyRadius:      scan.Intercept.UncertaintyRadius,
+		}
+		if scan.Intercept.PossibleSource != nil {
+			src := Vector2iFromReadModel(*scan.Intercept.PossibleSource)
+			dto.Intercept.PossibleSource = &src
+		}
+	}
 	if scan.Report != nil {
 		report := SectorScanReportFromReadModel(scan.Report)
 		dto.Report = &report

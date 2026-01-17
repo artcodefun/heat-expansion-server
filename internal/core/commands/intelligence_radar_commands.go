@@ -11,6 +11,7 @@ type IntelligenceRadarCommands struct {
 	BaseRepo        ports.UserBaseRepository
 	OpRepo          ports.MilitaryOperationRepository
 	RadarThreatRepo ports.RadarThreatRepository
+	intelService    *domain.IntelligenceService
 	Scheduler       ports.Scheduler
 	Outbox          ports.OutboxEventRepository
 	TxMgr           ports.TransactionManager
@@ -21,6 +22,7 @@ func NewIntelligenceRadarCommands(baseRepo ports.UserBaseRepository, opRepo port
 		BaseRepo:        baseRepo,
 		OpRepo:          opRepo,
 		RadarThreatRepo: radarThreatRepo,
+		intelService:    domain.NewIntelligenceService(),
 		Scheduler:       scheduler,
 		Outbox:          outbox,
 		TxMgr:           txMgr,
@@ -86,19 +88,7 @@ func (c *IntelligenceRadarCommands) HandleIntelligenceRadarJob(job ports.Intelli
 			return err
 		}
 
-		hasRadar := false
-		for _, b := range base.BuildingsPresent {
-			if b.Prototype.IntelligenceData != nil && b.Prototype.IntelligenceData.Subtype == domain.IntelligenceSubtypeRadar {
-				hasRadar = true
-				break
-			}
-		}
-		if !hasRadar {
-			return nil
-		}
-
-		// Check if op is stealthy and if we have enough radar strength to see it
-		if op.TotalStealth() > 0 && base.TotalRadarStealthStrength() <= op.TotalStealth() {
+		if !c.intelService.ResolveRadarDetection(base, op) {
 			return nil
 		}
 

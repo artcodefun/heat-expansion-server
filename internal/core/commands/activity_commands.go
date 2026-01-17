@@ -12,9 +12,19 @@ type ActivityCommands struct {
 	SectorRepo      ports.SectorRepository
 	UserBaseRepo    ports.UserBaseRepository
 	ScanRepo        ports.ScanReportRepository
+	intelService    *domain.IntelligenceService
+	TxMgr           ports.TransactionManager
 }
 
-func NewActivityCommands(activityRepo ports.ActivityRepository, opRepo ports.MilitaryOperationRepository, radarThreatRepo ports.RadarThreatRepository, sectorRepo ports.SectorRepository, baseRepo ports.UserBaseRepository, scanRepo ports.ScanReportRepository) *ActivityCommands {
+func NewActivityCommands(
+	activityRepo ports.ActivityRepository,
+	opRepo ports.MilitaryOperationRepository,
+	radarThreatRepo ports.RadarThreatRepository,
+	sectorRepo ports.SectorRepository,
+	baseRepo ports.UserBaseRepository,
+	scanRepo ports.ScanReportRepository,
+	txMgr ports.TransactionManager,
+) *ActivityCommands {
 	return &ActivityCommands{
 		ActivityRepo:    activityRepo,
 		OperationRepo:   opRepo,
@@ -22,6 +32,8 @@ func NewActivityCommands(activityRepo ports.ActivityRepository, opRepo ports.Mil
 		SectorRepo:      sectorRepo,
 		UserBaseRepo:    baseRepo,
 		ScanRepo:        scanRepo,
+		intelService:    domain.NewIntelligenceService(),
+		TxMgr:           txMgr,
 	}
 }
 
@@ -61,8 +73,35 @@ func (c *ActivityCommands) HandleScanReportCreatedEvent(event domain.ScanReportC
 		return err
 	}
 
-	item := domain.NewActivityFromScan(event.BaseID, report)
-	return c.ActivityRepo.Create(&item)
+	attackerActivity := domain.NewActivityFromScan(event.BaseID, report)
+
+	// Defender side detection
+	var defenderActivity *domain.ActivityItem
+	occType, _ := c.SectorRepo.GetLocationTypeByCoordinates(report.Coordinates.X, report.Coordinates.Y)
+	if occType == domain.LocationTypeUserBase {
+		defenderBase, err := c.UserBaseRepo.FindByCoordinates(report.Coordinates.X, report.Coordinates.Y)
+		attackerBase, _ := c.UserBaseRepo.FindByID(event.BaseID)
+
+		if err == nil && defenderBase != nil && attackerBase != nil {
+			interceptInfo := c.intelService.TriangulateScanSource(attackerBase.Coordinates, defenderBase, !report.IsCloaked)
+
+			da := domain.NewActivityFromScanIntercept(defenderBase.ID, interceptInfo)
+			defenderActivity = &da
+		}
+	}
+
+	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
+		repo := c.ActivityRepo.Tx(tx)
+		if err := repo.Create(&attackerActivity); err != nil {
+			return err
+		}
+		if defenderActivity != nil {
+			if err := repo.Create(defenderActivity); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
 
 func (c *ActivityCommands) HandleRadarThreatDetectedEvent(event domain.RadarThreatDetectedEvent) error {

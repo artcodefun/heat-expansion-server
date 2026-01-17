@@ -23,7 +23,21 @@ func ActivityItemFromModel(a gen.Activity) readmodels.ActivityItem {
 	if a.ScanData.Valid {
 		var dto dtos.ScanActivityDTO
 		_ = json.Unmarshal(a.ScanData.RawMessage, &dto)
-		item.Scan = &readmodels.ScanActivity{ReportID: dto.ReportID}
+		item.Scan = &readmodels.ScanActivity{
+			Subtype:  readmodels.ScanActivitySubtype(dto.Subtype),
+			ReportID: dto.ReportID,
+		}
+		if dto.Intercept != nil {
+			item.Scan.Intercept = &readmodels.ScanInterceptInfo{
+				ScannedCoordinates:     readmodels.Vector2i{X: dto.Intercept.ScannedCoordinates.X, Y: dto.Intercept.ScannedCoordinates.Y},
+				ScanPenetratedCloaking: dto.Intercept.ScanPenetratedCloaking,
+				UncertaintyRadius:      dto.Intercept.UncertaintyRadius,
+			}
+			if dto.Intercept.PossibleSource != nil {
+				src := readmodels.Vector2i{X: dto.Intercept.PossibleSource.X, Y: dto.Intercept.PossibleSource.Y}
+				item.Scan.Intercept.PossibleSource = &src
+			}
+		}
 	}
 	if a.RadarData.Valid {
 		var dto dtos.RadarActivityDTO

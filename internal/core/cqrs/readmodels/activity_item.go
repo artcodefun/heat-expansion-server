@@ -71,9 +71,27 @@ type DefenseActivity struct {
 	PriorOpponentScan *SectorScanReport
 }
 
-// ScanActivity wraps a SectorScanReport into the activity stream.
+// ScanActivitySubtype specifies the subtype of a scan-related activity.
+type ScanActivitySubtype string
+
+const (
+	ScanActivitySubtypeReportProduced       ScanActivitySubtype = "REPORT_PRODUCED"
+	ScanActivitySubtypeExternalScanDetected ScanActivitySubtype = "EXTERNAL_SCAN_DETECTED"
+)
+
+// ScanInterceptInfo represents detected hostile scanning with optional triangulation.
+type ScanInterceptInfo struct {
+	ScannedCoordinates     Vector2i
+	ScanPenetratedCloaking bool
+	PossibleSource         *Vector2i
+	UncertaintyRadius      int
+}
+
+// ScanActivity wraps scan-related events into the activity stream.
 type ScanActivity struct {
-	ReportID int
+	Subtype   ScanActivitySubtype
+	ReportID  *int
+	Intercept *ScanInterceptInfo
 
 	Report *SectorScanReport
 }
