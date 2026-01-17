@@ -53,8 +53,8 @@ func (r *ActivityReadRepo) ListDefenseActivities(baseID int, subtype readmodels.
 	return out, nil
 }
 
-func (r *ActivityReadRepo) ListScanActivities(baseID int, limit int) ([]*readmodels.ActivityItem, error) {
-	rows, err := r.q.ListScanActivities(context.Background(), gen.ListScanActivitiesParams{BaseID: int64(baseID), Limit: int32(limit)})
+func (r *ActivityReadRepo) ListScanActivities(baseID int, subtype readmodels.ScanActivitySubtype, limit int) ([]*readmodels.ActivityItem, error) {
+	rows, err := r.q.ListScanActivities(context.Background(), gen.ListScanActivitiesParams{BaseID: int64(baseID), Column2: string(subtype), Limit: int32(limit)})
 	if err != nil {
 		return nil, err
 	}

@@ -32,11 +32,11 @@ func (q *ActivityQueries) ListDefenseActivities(ctx cqrs.QueryContext, baseID in
 	return items, repoErr(err)
 }
 
-func (q *ActivityQueries) ListScanActivities(ctx cqrs.QueryContext, baseID int, limit int) ([]*readmodels.ActivityItem, error) {
+func (q *ActivityQueries) ListScanActivities(ctx cqrs.QueryContext, baseID int, subtype readmodels.ScanActivitySubtype, limit int) ([]*readmodels.ActivityItem, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
 		return nil, err
 	}
-	items, err := q.Repo.ListScanActivities(baseID, limit)
+	items, err := q.Repo.ListScanActivities(baseID, subtype, limit)
 	return items, repoErr(err)
 }
 

@@ -22,7 +22,7 @@ type UserReadRepository interface {
 type ActivityReadRepository interface {
 	ListOffenseActivities(baseID int, subtype readmodels.OffenseActivitySubtype, limit int) ([]*readmodels.ActivityItem, error)
 	ListDefenseActivities(baseID int, subtype readmodels.DefenseActivitySubtype, limit int) ([]*readmodels.ActivityItem, error)
-	ListScanActivities(baseID int, limit int) ([]*readmodels.ActivityItem, error)
+	ListScanActivities(baseID int, subtype readmodels.ScanActivitySubtype, limit int) ([]*readmodels.ActivityItem, error)
 	ListRadarActivities(baseID int, limit int) ([]*readmodels.ActivityItem, error)
 	ListTradeActivities(baseID int, limit int) ([]*readmodels.ActivityItem, error)
 }

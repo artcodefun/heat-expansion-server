@@ -46,12 +46,12 @@ func (h *ActivityHandler) ListDefense(c *gin.Context) {
 
 // ListScan handles GET /bases/:baseId/activities/scan.
 func (h *ActivityHandler) ListScan(c *gin.Context) {
-	var req dtos.ActivityListRequest
+	var req dtos.ScanActivityListRequest
 	if !bindRequest(c, &req) {
 		return
 	}
 	ctx := queryCtx(c)
-	activities, err := h.queries.ListScanActivities(ctx, req.Uri.BaseID, req.Query.Limit)
+	activities, err := h.queries.ListScanActivities(ctx, req.Uri.BaseID, req.Query.Subtype, req.Query.Limit)
 	if handleCoreErr(c, err) {
 		return
 	}

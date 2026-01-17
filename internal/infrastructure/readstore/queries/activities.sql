@@ -18,8 +18,9 @@ LIMIT $3;
 SELECT id, kind, created_at, base_id, offense_data, defense_data, scan_data, radar_data, trade_data
 FROM activities
 WHERE base_id = $1 AND kind = 'SCAN'
+  AND ($2 = '' OR scan_data->>'subtype' = $2)
 ORDER BY created_at DESC
-LIMIT $2;
+LIMIT $3;
 
 -- name: ListRadarActivities :many
 SELECT id, kind, created_at, base_id, offense_data, defense_data, scan_data, radar_data, trade_data

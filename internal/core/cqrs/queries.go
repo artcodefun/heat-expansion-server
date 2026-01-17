@@ -60,7 +60,7 @@ type SectorQueries interface {
 type ActivityQueries interface {
 	ListOffenseActivities(ctx QueryContext, baseID int, subtype readmodels.OffenseActivitySubtype, limit int) ([]*readmodels.ActivityItem, error)
 	ListDefenseActivities(ctx QueryContext, baseID int, subtype readmodels.DefenseActivitySubtype, limit int) ([]*readmodels.ActivityItem, error)
-	ListScanActivities(ctx QueryContext, baseID int, limit int) ([]*readmodels.ActivityItem, error)
+	ListScanActivities(ctx QueryContext, baseID int, subtype readmodels.ScanActivitySubtype, limit int) ([]*readmodels.ActivityItem, error)
 	ListRadarActivities(ctx QueryContext, baseID int, limit int) ([]*readmodels.ActivityItem, error)
 	ListTradeActivities(ctx QueryContext, baseID int, limit int) ([]*readmodels.ActivityItem, error)
 }

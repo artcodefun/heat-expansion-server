@@ -21,6 +21,12 @@ type DefenseActivityListQuery struct {
 	Subtype readmodels.DefenseActivitySubtype `form:"subtype" binding:"omitempty,oneof=ATTACK SPY"`
 }
 
+// ScanActivityListQuery adds subtype filtering for scan activities.
+type ScanActivityListQuery struct {
+	Limit   int                            `form:"limit,default=20" binding:"omitempty,min=1"`
+	Subtype readmodels.ScanActivitySubtype `form:"subtype" binding:"omitempty,oneof=REPORT_PRODUCED EXTERNAL_SCAN_DETECTED"`
+}
+
 // ActivityListRequest bundles the URI and query params for activity listing endpoints.
 type ActivityListRequest = Request[BaseURI, ListActivitiesQuery, None]
 
@@ -29,3 +35,6 @@ type OffenseActivityListRequest = Request[BaseURI, OffenseActivityListQuery, Non
 
 // DefenseActivityListRequest bundles the URI and query params for defensive activity listing.
 type DefenseActivityListRequest = Request[BaseURI, DefenseActivityListQuery, None]
+
+// ScanActivityListRequest bundles the URI and query params for scan activity listing.
+type ScanActivityListRequest = Request[BaseURI, ScanActivityListQuery, None]
