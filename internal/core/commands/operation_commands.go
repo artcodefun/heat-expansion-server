@@ -280,9 +280,9 @@ func (_ *OperationCommands) resolveOperationAtTarget(
 		}
 		if op.Result == domain.OperationResultSuccess {
 			if op.Type == domain.MilitaryOperationTypeSpy && op.SpyResult != nil && op.SpyResult.Outcome == domain.SpyOutcomeBlockedByCloaking {
-				report = domain.NewSectorScanReportFromUserBase(op.SourceBaseID, op.TargetCoordinates, nil, domain.LocationDetails{})
+				report = domain.NewSectorScanReportFromUserBase(op.SourceBaseID, sector, nil)
 			} else {
-				report = domain.NewSectorScanReportFromUserBase(op.SourceBaseID, op.TargetCoordinates, base, domain.LocationDetails{})
+				report = domain.NewSectorScanReportFromUserBase(op.SourceBaseID, sector, base)
 			}
 		}
 	case domain.LocationTypeResourceful:
@@ -296,9 +296,9 @@ func (_ *OperationCommands) resolveOperationAtTarget(
 		}
 		if op.Result == domain.OperationResultSuccess {
 			if op.Type == domain.MilitaryOperationTypeSpy && op.SpyResult != nil && op.SpyResult.Outcome == domain.SpyOutcomeBlockedByCloaking {
-				report = domain.NewSectorScanReportFromResourceLocation(op.SourceBaseID, op.TargetCoordinates, nil, domain.LocationDetails{})
+				report = domain.NewSectorScanReportFromResourceLocation(op.SourceBaseID, sector, nil)
 			} else {
-				report = domain.NewSectorScanReportFromResourceLocation(op.SourceBaseID, op.TargetCoordinates, res, domain.LocationDetails{})
+				report = domain.NewSectorScanReportFromResourceLocation(op.SourceBaseID, sector, res)
 			}
 		}
 	case domain.LocationTypeDangerous:
@@ -312,14 +312,14 @@ func (_ *OperationCommands) resolveOperationAtTarget(
 		}
 		if op.Result == domain.OperationResultSuccess {
 			if op.Type == domain.MilitaryOperationTypeSpy && op.SpyResult != nil && op.SpyResult.Outcome == domain.SpyOutcomeBlockedByCloaking {
-				report = domain.NewSectorScanReportFromDangerousLocation(op.SourceBaseID, op.TargetCoordinates, nil, domain.LocationDetails{})
+				report = domain.NewSectorScanReportFromDangerousLocation(op.SourceBaseID, sector, nil)
 			} else {
-				report = domain.NewSectorScanReportFromDangerousLocation(op.SourceBaseID, op.TargetCoordinates, dl, domain.LocationDetails{})
+				report = domain.NewSectorScanReportFromDangerousLocation(op.SourceBaseID, sector, dl)
 			}
 		}
 	case domain.LocationTypeEmpty:
 		svc.ResolveAgainstEmptySector(sector)
-		report = domain.NewSectorScanReportFromEmptySector(op.SourceBaseID, op.TargetCoordinates, sector)
+		report = domain.NewSectorScanReportFromEmptySector(op.SourceBaseID, sector)
 	default:
 		return nil, fmt.Errorf("unsupported sector classification")
 	}

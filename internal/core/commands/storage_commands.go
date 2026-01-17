@@ -11,6 +11,7 @@ import (
 type StorageCommands struct {
 	BaseRepo           ports.UserBaseRepository
 	UserRepo           ports.UserRepository
+	SectorRepo         ports.SectorRepository
 	StoragePrototypes  ports.StoragePrototypeRepository
 	ArmyPrototypes     ports.ArmyPrototypeRepository
 	ResourceLocations  ports.ResourceLocationRepository
@@ -26,6 +27,7 @@ type StorageCommands struct {
 func NewStorageCommands(
 	baseRepo ports.UserBaseRepository,
 	userRepo ports.UserRepository,
+	sectorRepo ports.SectorRepository,
 	storageProtos ports.StoragePrototypeRepository,
 	armyProtos ports.ArmyPrototypeRepository,
 	resourceLocs ports.ResourceLocationRepository,
@@ -39,6 +41,7 @@ func NewStorageCommands(
 	return &StorageCommands{
 		BaseRepo:           baseRepo,
 		UserRepo:           userRepo,
+		SectorRepo:         sectorRepo,
 		StoragePrototypes:  storageProtos,
 		ArmyPrototypes:     armyProtos,
 		ResourceLocations:  resourceLocs,
@@ -351,17 +354,26 @@ func (c *StorageCommands) HandleDecryptIntelItemJob(cmd ports.DecryptIntelItemJo
 		case domain.HiddenLocationTypeResourceful:
 			loc, err := c.ResourceLocations.Tx(tx).FindClosest(base.Coordinates.X, base.Coordinates.Y)
 			if err == nil {
-				report = domain.NewSectorScanReportFromResourceLocation(base.ID, loc.Coordinates, loc, domain.LocationDetails{})
+				sector, _ := c.SectorRepo.Tx(tx).FindByCoordinates(loc.Coordinates.X, loc.Coordinates.Y)
+				if sector != nil {
+					report = domain.NewSectorScanReportFromResourceLocation(base.ID, sector, loc)
+				}
 			}
 		case domain.HiddenLocationTypeDangerous:
 			loc, err := c.DangerousLocations.Tx(tx).FindClosest(base.Coordinates.X, base.Coordinates.Y)
 			if err == nil {
-				report = domain.NewSectorScanReportFromDangerousLocation(base.ID, loc.Coordinates, loc, domain.LocationDetails{})
+				sector, _ := c.SectorRepo.Tx(tx).FindByCoordinates(loc.Coordinates.X, loc.Coordinates.Y)
+				if sector != nil {
+					report = domain.NewSectorScanReportFromDangerousLocation(base.ID, sector, loc)
+				}
 			}
 		case domain.HiddenLocationTypeUserBase:
 			target, err := c.BaseRepo.Tx(tx).FindClosest(base.Coordinates.X, base.Coordinates.Y)
 			if err == nil {
-				report = domain.NewSectorScanReportFromUserBase(base.ID, target.Coordinates, target, domain.LocationDetails{})
+				sector, _ := c.SectorRepo.Tx(tx).FindByCoordinates(target.Coordinates.X, target.Coordinates.Y)
+				if sector != nil {
+					report = domain.NewSectorScanReportFromUserBase(base.ID, sector, target)
+				}
 			}
 		}
 

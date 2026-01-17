@@ -106,15 +106,15 @@ func (c *IntelligenceScannerCommands) HandleIntelligenceScanJob(job ports.Intell
 	switch occType {
 	case domain.LocationTypeUserBase:
 		defenderBase, _ := c.BaseRepo.FindByCoordinates(sector.Coordinates.X, sector.Coordinates.Y)
-		report = domain.NewSectorScanReportFromUserBase(base.ID, sector.Coordinates, defenderBase, domain.LocationDetails{})
+		report = domain.NewSectorScanReportFromUserBase(base.ID, sector, defenderBase)
 	case domain.LocationTypeResourceful:
 		res, _ := c.ResourceRepo.FindByCoordinates(sector.Coordinates.X, sector.Coordinates.Y)
-		report = domain.NewSectorScanReportFromResourceLocation(base.ID, sector.Coordinates, res, domain.LocationDetails{})
+		report = domain.NewSectorScanReportFromResourceLocation(base.ID, sector, res)
 	case domain.LocationTypeDangerous:
 		dl, _ := c.DangerousRepo.FindByCoordinates(sector.Coordinates.X, sector.Coordinates.Y)
-		report = domain.NewSectorScanReportFromDangerousLocation(base.ID, sector.Coordinates, dl, domain.LocationDetails{})
+		report = domain.NewSectorScanReportFromDangerousLocation(base.ID, sector, dl)
 	case domain.LocationTypeEmpty:
-		report = domain.NewSectorScanReportFromEmptySector(base.ID, sector.Coordinates, sector)
+		report = domain.NewSectorScanReportFromEmptySector(base.ID, sector)
 	default:
 		c.reschedule(job, periodSec)
 		return nil
