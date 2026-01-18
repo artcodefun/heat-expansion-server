@@ -29,12 +29,12 @@ func techPrototypeFromParts(id int64, name, category string, unlock sql.NullInt6
 	}
 }
 
-func NewTechItemFromPrototype(p gen.TechItemPrototype, level int) readmodels.TechItemNew {
+func NewTechItemFromPrototype(p gen.TechItemPrototype, currentLevel int) readmodels.TechItemNew {
 	proto := techPrototypeFromParts(p.ID, p.Name, p.Category, p.UnlockTechnologyID, p.ShortDescription, p.FullDescription, p.Price, p.ResearchTime, p.ImageUrl, p.Improvement.RawMessage)
-	return readmodels.TechItemNew{Prototype: proto, CurrentLevel: level}
+	return readmodels.TechItemNew{Prototype: proto, CurrentLevel: currentLevel}
 }
 
-func TechItemInProgressFromRow(r gen.ListInResearchTechItemsRow) readmodels.TechItemInProgress {
+func TechItemInProgressFromRow(r gen.ListInResearchTechItemsRow, currentLevel int) readmodels.TechItemInProgress {
 	var jd dtos.TechInProgressDTO
 	if r.InProgressData.Valid {
 		_ = json.Unmarshal(r.InProgressData.RawMessage, &jd)
@@ -45,6 +45,7 @@ func TechItemInProgressFromRow(r gen.ListInResearchTechItemsRow) readmodels.Tech
 		StartDate:         jd.StartDate,
 		CompletionDate:    jd.CompletionDate,
 		CrystalsSkipPrice: jd.CrystalsSkipPrice,
+		CurrentLevel:      currentLevel,
 	}
 }
 

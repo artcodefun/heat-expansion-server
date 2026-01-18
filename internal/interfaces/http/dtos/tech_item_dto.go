@@ -66,6 +66,7 @@ type TechItemInProgressDTO struct {
 	StartDate         int                  `json:"start_date"`
 	CompletionDate    int                  `json:"completion_date"`
 	CrystalsSkipPrice int                  `json:"crystals_skip_price"`
+	CurrentLevel      int                  `json:"current_level"`
 }
 
 type TechItemDoneDTO struct {
@@ -126,6 +127,7 @@ func TechItemsInProgressFromReadModels(items []*readmodels.TechItemInProgress) [
 			StartDate:         int(item.StartDate),
 			CompletionDate:    int(item.CompletionDate),
 			CrystalsSkipPrice: item.CrystalsSkipPrice,
+			CurrentLevel:      item.CurrentLevel,
 		})
 	}
 	return out

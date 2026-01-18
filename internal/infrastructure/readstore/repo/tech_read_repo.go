@@ -41,6 +41,17 @@ func (r *TechReadRepo) ListNewTechItemsByPrototypeIDs(baseID int, ids []int) ([]
 }
 
 func (r *TechReadRepo) ListInResearchTechItems(baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemInProgress, error) {
+	// Get finished items to find current levels
+	doneRows, err := r.q.ListDoneTechItemsAll(context.Background(), int64(baseID))
+	if err != nil {
+		return nil, err
+	}
+	levels := make(map[int]int)
+	for _, dr := range doneRows {
+		v := mappers.TechItemDoneFromAllRow(dr)
+		levels[v.Prototype.ID] = v.Level
+	}
+
 	rows, err := r.q.ListInResearchTechItems(context.Background(), gen.ListInResearchTechItemsParams{
 		BaseID:   int64(baseID),
 		Category: string(category),
@@ -50,7 +61,8 @@ func (r *TechReadRepo) ListInResearchTechItems(baseID int, category readmodels.T
 	}
 	out := make([]*readmodels.TechItemInProgress, 0, len(rows))
 	for _, r0 := range rows {
-		v := mappers.TechItemInProgressFromRow(r0)
+		level := levels[int(r0.PrototypeID)]
+		v := mappers.TechItemInProgressFromRow(r0, level)
 		out = append(out, &v)
 	}
 	return out, nil

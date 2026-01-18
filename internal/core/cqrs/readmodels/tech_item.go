@@ -39,6 +39,7 @@ type TechItemInProgress struct {
 	StartDate         int64
 	CompletionDate    int64
 	CrystalsSkipPrice int
+	CurrentLevel      int // the level reached so far (0 if never researched)
 }
 
 // TechItemDone represents a completed tech item.
