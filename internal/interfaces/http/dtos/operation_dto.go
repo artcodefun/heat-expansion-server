@@ -220,3 +220,11 @@ func OperationFromReadModel(m *readmodels.MilitaryOperation) MilitaryOperationDT
 	}
 	return dto
 }
+
+func OperationsFromReadModels(items []*readmodels.MilitaryOperation) []MilitaryOperationDTO {
+	out := make([]MilitaryOperationDTO, 0, len(items))
+	for _, item := range items {
+		out = append(out, OperationFromReadModel(item))
+	}
+	return out
+}

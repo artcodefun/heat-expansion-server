@@ -139,11 +139,11 @@ func NewRouter(cmd Commands, qry Queries, tokenProvider ports.TokenProvider) *gi
 		api.GET("/bases/:baseId/threats", radarHandler.ListIncomingThreats)
 
 		// Operations
-		operations := api.Group("/operations")
+		operations := api.Group("/bases/:baseId/operations")
 		{
+			operations.GET("", operationHandler.ListByBase)
+			operations.GET("/active", operationHandler.ListActive)
 			operations.GET("/:operationId", operationHandler.GetOperation)
-			operations.GET("/bases/:baseId", operationHandler.ListByBase)
-			operations.GET("/bases/:baseId/active", operationHandler.ListActive)
 			operations.POST("/:operationId/speed-up", operationHandler.SpeedUp)
 			operations.POST("/:operationId/cancel", operationHandler.Cancel)
 			operations.POST("", operationHandler.Create)

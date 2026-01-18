@@ -3,6 +3,7 @@ package dtos
 import "strings"
 
 type operationURI struct {
+	BaseURI
 	OperationID int `uri:"operationId" binding:"required,min=1"`
 }
 
@@ -16,11 +17,11 @@ type OperationSpeedUpRequest = Request[operationURI, None, None]
 type OperationCancelRequest = Request[operationURI, None, None]
 
 // OperationByBaseRequest binds a baseId path parameter for listing operations.
-// Used for GET /operations/bases/:baseId.
+// Used for GET /bases/:baseId/operations.
 type OperationByBaseRequest = Request[BaseURI, None, None]
 
 // OperationActiveByBaseRequest binds a baseId path parameter for listing active operations.
-// Used for GET /operations/bases/:baseId/active.
+// Used for GET /bases/:baseId/operations/active.
 type OperationActiveByBaseRequest = Request[BaseURI, None, None]
 
 // ArmyDeploymentRequestDTO represents a deployed unit in the create operation payload.
@@ -32,16 +33,15 @@ type ArmyDeploymentRequestDTO struct {
 
 // operationCreateBody is the JSON payload for creating a military operation.
 type operationCreateBody struct {
-	Type         OperationType `json:"type" binding:"required,operation_type"`
-	SourceBaseID int           `json:"source_base_id" binding:"required,min=1"`
-	TargetX      *int          `json:"target_x" binding:"required"`
-	TargetY      *int          `json:"target_y" binding:"required"`
+	Type    OperationType `json:"type" binding:"required,operation_type"`
+	TargetX *int          `json:"target_x" binding:"required"`
+	TargetY *int          `json:"target_y" binding:"required"`
 	// Deployed contains army stacks to send, identified by prototype IDs.
 	Deployed []ArmyDeploymentRequestDTO `json:"deployed" binding:"required,dive"`
 }
 
-// OperationCreateRequest binds the create operation body payload.
-type OperationCreateRequest = Request[None, None, operationCreateBody]
+// OperationCreateRequest binds the create operation body payload and source base URI.
+type OperationCreateRequest = Request[BaseURI, None, operationCreateBody]
 
 // IsValidOperationType returns true when value matches one of the known
 // OperationType constants. Comparison is case-insensitive.

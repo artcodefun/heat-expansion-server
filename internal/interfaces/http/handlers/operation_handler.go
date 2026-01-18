@@ -32,7 +32,7 @@ func parseOperationType(raw string) (domain.MilitaryOperationType, bool) {
 	}
 }
 
-// GetOperation handles GET /operations/:operationId.
+// GetOperation handles GET /bases/:baseId/operations/:operationId.
 func (h *OperationHandler) GetOperation(c *gin.Context) {
 	var req dtos.OperationGetRequest
 	if !bindRequest(c, &req) {
@@ -46,7 +46,7 @@ func (h *OperationHandler) GetOperation(c *gin.Context) {
 	c.JSON(http.StatusOK, dtos.OperationFromReadModel(op))
 }
 
-// ListByBase handles GET /operations/bases/:baseId.
+// ListByBase handles GET /bases/:baseId/operations.
 func (h *OperationHandler) ListByBase(c *gin.Context) {
 	var req dtos.OperationByBaseRequest
 	if !bindRequest(c, &req) {
@@ -57,14 +57,10 @@ func (h *OperationHandler) ListByBase(c *gin.Context) {
 	if handleCoreErr(c, err) {
 		return
 	}
-	resp := make([]dtos.MilitaryOperationDTO, 0, len(ops))
-	for _, item := range ops {
-		resp = append(resp, dtos.OperationFromReadModel(item))
-	}
-	c.JSON(http.StatusOK, resp)
+	c.JSON(http.StatusOK, dtos.OperationsFromReadModels(ops))
 }
 
-// ListActive handles GET /operations/bases/:baseId/active.
+// ListActive handles GET /bases/:baseId/operations/active.
 func (h *OperationHandler) ListActive(c *gin.Context) {
 	var req dtos.OperationActiveByBaseRequest
 	if !bindRequest(c, &req) {
@@ -75,14 +71,10 @@ func (h *OperationHandler) ListActive(c *gin.Context) {
 	if handleCoreErr(c, err) {
 		return
 	}
-	resp := make([]dtos.MilitaryOperationDTO, 0, len(ops))
-	for _, item := range ops {
-		resp = append(resp, dtos.OperationFromReadModel(item))
-	}
-	c.JSON(http.StatusOK, resp)
+	c.JSON(http.StatusOK, dtos.OperationsFromReadModels(ops))
 }
 
-// SpeedUp handles POST /operations/:operationId/speed-up.
+// SpeedUp handles POST /bases/:baseId/operations/:operationId/speed-up.
 func (h *OperationHandler) SpeedUp(c *gin.Context) {
 	var req dtos.OperationSpeedUpRequest
 	if !bindRequest(c, &req) {
@@ -95,7 +87,7 @@ func (h *OperationHandler) SpeedUp(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-// Cancel handles POST /operations/:operationId/cancel.
+// Cancel handles POST /bases/:baseId/operations/:operationId/cancel.
 func (h *OperationHandler) Cancel(c *gin.Context) {
 	var req dtos.OperationCancelRequest
 	if !bindRequest(c, &req) {
@@ -108,7 +100,7 @@ func (h *OperationHandler) Cancel(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-// Create handles POST /operations.
+// Create handles POST /bases/:baseId/operations.
 func (h *OperationHandler) Create(c *gin.Context) {
 	var req dtos.OperationCreateRequest
 	if !bindRequest(c, &req) {
@@ -128,7 +120,7 @@ func (h *OperationHandler) Create(c *gin.Context) {
 			Count:         d.Count,
 		})
 	}
-	op, err := h.commands.CreateMilitaryOperation(ctx, opType, req.Body.SourceBaseID, *req.Body.TargetX, *req.Body.TargetY, deployments)
+	op, err := h.commands.CreateMilitaryOperation(ctx, opType, req.Uri.BaseID, *req.Body.TargetX, *req.Body.TargetY, deployments)
 	if handleCoreErr(c, err) {
 		return
 	}
