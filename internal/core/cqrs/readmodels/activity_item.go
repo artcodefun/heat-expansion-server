@@ -15,7 +15,7 @@ const (
 
 // ActivityItem is a domain projection used by the Activities use case.
 type ActivityItem struct {
-	ID        int
+	ID        uuid.UUID
 	Kind      ActivityKind
 	CreatedAt int64
 	BaseID    int

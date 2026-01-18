@@ -57,6 +57,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteDangerousLocationStmt, err = db.PrepareContext(ctx, deleteDangerousLocation); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteDangerousLocation: %w", err)
 	}
+	if q.deleteExpiredAlertsStmt, err = db.PrepareContext(ctx, deleteExpiredAlerts); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteExpiredAlerts: %w", err)
+	}
 	if q.deleteMilitaryOperationStmt, err = db.PrepareContext(ctx, deleteMilitaryOperation); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteMilitaryOperation: %w", err)
 	}
@@ -159,6 +162,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.insertActivityStmt, err = db.PrepareContext(ctx, insertActivity); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertActivity: %w", err)
 	}
+	if q.insertAlertStmt, err = db.PrepareContext(ctx, insertAlert); err != nil {
+		return nil, fmt.Errorf("error preparing query InsertAlert: %w", err)
+	}
 	if q.insertBaseArmyItemStmt, err = db.PrepareContext(ctx, insertBaseArmyItem); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertBaseArmyItem: %w", err)
 	}
@@ -197,6 +203,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.listActivitiesByBaseStmt, err = db.PrepareContext(ctx, listActivitiesByBase); err != nil {
 		return nil, fmt.Errorf("error preparing query ListActivitiesByBase: %w", err)
+	}
+	if q.listAlertsByBaseStmt, err = db.PrepareContext(ctx, listAlertsByBase); err != nil {
+		return nil, fmt.Errorf("error preparing query ListAlertsByBase: %w", err)
 	}
 	if q.listAllBasesStmt, err = db.PrepareContext(ctx, listAllBases); err != nil {
 		return nil, fmt.Errorf("error preparing query ListAllBases: %w", err)
@@ -251,6 +260,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.lockScheduledJobsTableStmt, err = db.PrepareContext(ctx, lockScheduledJobsTable); err != nil {
 		return nil, fmt.Errorf("error preparing query LockScheduledJobsTable: %w", err)
+	}
+	if q.markAllAlertsAsReadStmt, err = db.PrepareContext(ctx, markAllAlertsAsRead); err != nil {
+		return nil, fmt.Errorf("error preparing query MarkAllAlertsAsRead: %w", err)
 	}
 	if q.markOutboxEventPublishedStmt, err = db.PrepareContext(ctx, markOutboxEventPublished); err != nil {
 		return nil, fmt.Errorf("error preparing query MarkOutboxEventPublished: %w", err)
@@ -343,6 +355,11 @@ func (q *Queries) Close() error {
 	if q.deleteDangerousLocationStmt != nil {
 		if cerr := q.deleteDangerousLocationStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteDangerousLocationStmt: %w", cerr)
+		}
+	}
+	if q.deleteExpiredAlertsStmt != nil {
+		if cerr := q.deleteExpiredAlertsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteExpiredAlertsStmt: %w", cerr)
 		}
 	}
 	if q.deleteMilitaryOperationStmt != nil {
@@ -515,6 +532,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing insertActivityStmt: %w", cerr)
 		}
 	}
+	if q.insertAlertStmt != nil {
+		if cerr := q.insertAlertStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing insertAlertStmt: %w", cerr)
+		}
+	}
 	if q.insertBaseArmyItemStmt != nil {
 		if cerr := q.insertBaseArmyItemStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing insertBaseArmyItemStmt: %w", cerr)
@@ -578,6 +600,11 @@ func (q *Queries) Close() error {
 	if q.listActivitiesByBaseStmt != nil {
 		if cerr := q.listActivitiesByBaseStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listActivitiesByBaseStmt: %w", cerr)
+		}
+	}
+	if q.listAlertsByBaseStmt != nil {
+		if cerr := q.listAlertsByBaseStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listAlertsByBaseStmt: %w", cerr)
 		}
 	}
 	if q.listAllBasesStmt != nil {
@@ -668,6 +695,11 @@ func (q *Queries) Close() error {
 	if q.lockScheduledJobsTableStmt != nil {
 		if cerr := q.lockScheduledJobsTableStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing lockScheduledJobsTableStmt: %w", cerr)
+		}
+	}
+	if q.markAllAlertsAsReadStmt != nil {
+		if cerr := q.markAllAlertsAsReadStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing markAllAlertsAsReadStmt: %w", cerr)
 		}
 	}
 	if q.markOutboxEventPublishedStmt != nil {
@@ -775,6 +807,7 @@ type Queries struct {
 	deleteBaseStorageItemsByBaseStmt          *sql.Stmt
 	deleteBaseTechItemsByBaseStmt             *sql.Stmt
 	deleteDangerousLocationStmt               *sql.Stmt
+	deleteExpiredAlertsStmt                   *sql.Stmt
 	deleteMilitaryOperationStmt               *sql.Stmt
 	deleteResourceLocationStmt                *sql.Stmt
 	deleteScanReportStmt                      *sql.Stmt
@@ -809,6 +842,7 @@ type Queries struct {
 	getUserByEmailStmt                        *sql.Stmt
 	getUserByIDStmt                           *sql.Stmt
 	insertActivityStmt                        *sql.Stmt
+	insertAlertStmt                           *sql.Stmt
 	insertBaseArmyItemStmt                    *sql.Stmt
 	insertBaseBuildItemStmt                   *sql.Stmt
 	insertBaseStorageItemStmt                 *sql.Stmt
@@ -822,6 +856,7 @@ type Queries struct {
 	insertScheduledJobStmt                    *sql.Stmt
 	insertUserStmt                            *sql.Stmt
 	listActivitiesByBaseStmt                  *sql.Stmt
+	listAlertsByBaseStmt                      *sql.Stmt
 	listAllBasesStmt                          *sql.Stmt
 	listArmyPrototypesStmt                    *sql.Stmt
 	listBaseArmyItemsStmt                     *sql.Stmt
@@ -840,6 +875,7 @@ type Queries struct {
 	listTechPrototypesStmt                    *sql.Stmt
 	listUsersStmt                             *sql.Stmt
 	lockScheduledJobsTableStmt                *sql.Stmt
+	markAllAlertsAsReadStmt                   *sql.Stmt
 	markOutboxEventPublishedStmt              *sql.Stmt
 	markScheduledJobDispatchedStmt            *sql.Stmt
 	radarThreatExistsStmt                     *sql.Stmt
@@ -868,6 +904,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		deleteBaseStorageItemsByBaseStmt:          q.deleteBaseStorageItemsByBaseStmt,
 		deleteBaseTechItemsByBaseStmt:             q.deleteBaseTechItemsByBaseStmt,
 		deleteDangerousLocationStmt:               q.deleteDangerousLocationStmt,
+		deleteExpiredAlertsStmt:                   q.deleteExpiredAlertsStmt,
 		deleteMilitaryOperationStmt:               q.deleteMilitaryOperationStmt,
 		deleteResourceLocationStmt:                q.deleteResourceLocationStmt,
 		deleteScanReportStmt:                      q.deleteScanReportStmt,
@@ -902,6 +939,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getUserByEmailStmt:                        q.getUserByEmailStmt,
 		getUserByIDStmt:                           q.getUserByIDStmt,
 		insertActivityStmt:                        q.insertActivityStmt,
+		insertAlertStmt:                           q.insertAlertStmt,
 		insertBaseArmyItemStmt:                    q.insertBaseArmyItemStmt,
 		insertBaseBuildItemStmt:                   q.insertBaseBuildItemStmt,
 		insertBaseStorageItemStmt:                 q.insertBaseStorageItemStmt,
@@ -915,6 +953,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		insertScheduledJobStmt:                    q.insertScheduledJobStmt,
 		insertUserStmt:                            q.insertUserStmt,
 		listActivitiesByBaseStmt:                  q.listActivitiesByBaseStmt,
+		listAlertsByBaseStmt:                      q.listAlertsByBaseStmt,
 		listAllBasesStmt:                          q.listAllBasesStmt,
 		listArmyPrototypesStmt:                    q.listArmyPrototypesStmt,
 		listBaseArmyItemsStmt:                     q.listBaseArmyItemsStmt,
@@ -933,6 +972,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listTechPrototypesStmt:                    q.listTechPrototypesStmt,
 		listUsersStmt:                             q.listUsersStmt,
 		lockScheduledJobsTableStmt:                q.lockScheduledJobsTableStmt,
+		markAllAlertsAsReadStmt:                   q.markAllAlertsAsReadStmt,
 		markOutboxEventPublishedStmt:              q.markOutboxEventPublishedStmt,
 		markScheduledJobDispatchedStmt:            q.markScheduledJobDispatchedStmt,
 		radarThreatExistsStmt:                     q.radarThreatExistsStmt,

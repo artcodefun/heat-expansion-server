@@ -16,6 +16,8 @@ func WireCommandEvents(c *Commands, pub ports.EventPublisher) {
 	}
 	p.Listen(func(e domain.DomainEvent) error {
 		switch ev := e.(type) {
+		case domain.ActivityCreatedEvent:
+			return c.Alert.HandleActivityCreatedEvent(ev)
 		case domain.UserAccountCreatedEvent:
 			return c.Base.HandleUserAccountCreatedEvent(ev)
 		case domain.BuildingProductionStartedEvent:

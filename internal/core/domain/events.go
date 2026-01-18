@@ -501,3 +501,23 @@ func NewRadarThreatDetectedEvent(threatID uuid.UUID, baseID int, opID int) Radar
 		OperationID:   opID,
 	}
 }
+
+// Activity-related domain events
+
+type ActivityCreatedEvent struct {
+	BasicEvent
+	ActivityID uuid.UUID
+	BaseID     int
+	Kind       ActivityKind
+	Subtype    string
+}
+
+func NewActivityCreatedEvent(activityID uuid.UUID, baseID int, kind ActivityKind, subtype string) ActivityCreatedEvent {
+	return ActivityCreatedEvent{
+		BasicEvent: NewBasicEvent(),
+		ActivityID: activityID,
+		BaseID:     baseID,
+		Kind:       kind,
+		Subtype:    subtype,
+	}
+}

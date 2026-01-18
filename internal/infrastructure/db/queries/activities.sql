@@ -10,10 +10,10 @@ LIMIT $1 OFFSET $2;
 
 -- name: InsertActivity :one
 INSERT INTO activities (
-    kind, created_at, base_id,
+    id, kind, created_at, base_id,
     offense_data, defense_data, scan_data, radar_data, trade_data
 ) VALUES (
-    @kind, @created_at, @base_id,
+    @id, @kind, @created_at, @base_id,
     @offense_data, @defense_data, @scan_data, @radar_data, @trade_data
 )
 RETURNING id;

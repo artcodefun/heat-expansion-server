@@ -13,6 +13,7 @@ type ActivityCommands struct {
 	UserBaseRepo    ports.UserBaseRepository
 	ScanRepo        ports.ScanReportRepository
 	intelService    *domain.IntelligenceService
+	OutboxEvents    ports.OutboxEventRepository
 	TxMgr           ports.TransactionManager
 }
 
@@ -23,6 +24,7 @@ func NewActivityCommands(
 	sectorRepo ports.SectorRepository,
 	baseRepo ports.UserBaseRepository,
 	scanRepo ports.ScanReportRepository,
+	outboxEvents ports.OutboxEventRepository,
 	txMgr ports.TransactionManager,
 ) *ActivityCommands {
 	return &ActivityCommands{
@@ -33,6 +35,7 @@ func NewActivityCommands(
 		UserBaseRepo:    baseRepo,
 		ScanRepo:        scanRepo,
 		intelService:    domain.NewIntelligenceService(),
+		OutboxEvents:    outboxEvents,
 		TxMgr:           txMgr,
 	}
 }
@@ -44,7 +47,12 @@ func (c *ActivityCommands) HandleMilitaryOperationStartedEvent(event domain.Mili
 	}
 
 	item := domain.NewActivityFromOffenseOperation(op.SourceBaseID, op)
-	return c.ActivityRepo.Create(&item)
+	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
+		if err := c.ActivityRepo.Tx(tx).Create(&item); err != nil {
+			return err
+		}
+		return c.OutboxEvents.Tx(tx).Save(item.PullEvents())
+	})
 }
 
 func (c *ActivityCommands) HandleMilitaryOperationResolvedEvent(event domain.MilitaryOperationResolvedEvent) error {
@@ -64,7 +72,12 @@ func (c *ActivityCommands) HandleMilitaryOperationResolvedEvent(event domain.Mil
 	if ts := event.OccurredAt(); ts != 0 {
 		item.CreatedAt = ts
 	}
-	return c.ActivityRepo.Create(&item)
+	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
+		if err := c.ActivityRepo.Tx(tx).Create(&item); err != nil {
+			return err
+		}
+		return c.OutboxEvents.Tx(tx).Save(item.PullEvents())
+	})
 }
 
 func (c *ActivityCommands) HandleScanReportCreatedEvent(event domain.ScanReportCreatedEvent) error {
@@ -92,11 +105,20 @@ func (c *ActivityCommands) HandleScanReportCreatedEvent(event domain.ScanReportC
 
 	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
 		repo := c.ActivityRepo.Tx(tx)
+		outbox := c.OutboxEvents.Tx(tx)
+
 		if err := repo.Create(&attackerActivity); err != nil {
 			return err
 		}
+		if err := outbox.Save(attackerActivity.PullEvents()); err != nil {
+			return err
+		}
+
 		if defenderActivity != nil {
 			if err := repo.Create(defenderActivity); err != nil {
+				return err
+			}
+			if err := outbox.Save(defenderActivity.PullEvents()); err != nil {
 				return err
 			}
 		}
@@ -111,5 +133,10 @@ func (c *ActivityCommands) HandleRadarThreatDetectedEvent(event domain.RadarThre
 	}
 
 	activity := domain.NewActivityFromRadarThreat(threat)
-	return c.ActivityRepo.Create(&activity)
+	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
+		if err := c.ActivityRepo.Tx(tx).Create(&activity); err != nil {
+			return err
+		}
+		return c.OutboxEvents.Tx(tx).Save(activity.PullEvents())
+	})
 }

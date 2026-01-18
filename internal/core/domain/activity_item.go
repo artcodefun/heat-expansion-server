@@ -15,7 +15,9 @@ const (
 
 // ActivityItem is a domain projection used by the Activities use case.
 type ActivityItem struct {
-	ID        int
+	EventProducer
+
+	ID        uuid.UUID
 	Kind      ActivityKind
 	CreatedAt int64
 	BaseID    int
@@ -92,80 +94,80 @@ type RadarActivity struct {
 
 // Helpers to build ActivityItem from domain entities
 
-func NewActivityFromOffenseOperation(baseID int, op *MilitaryOperation) ActivityItem {
-	return ActivityItem{
-		ID:        0,
-		Kind:      ActivityKindOffense,
+func newEmptyActivity(kind ActivityKind, baseID int, subtype string) ActivityItem {
+	id := uuid.Must(uuid.NewV7())
+	item := ActivityItem{
+		ID:        id,
+		Kind:      kind,
 		CreatedAt: NowUnix(),
 		BaseID:    baseID,
-		Offense: &OffenseActivity{
-			OpID: op.ID,
-			Subtype: func() OffenseActivitySubtype {
-				if op.Type == MilitaryOperationTypeSpy {
-					return OffenseActivitySubtypeSpy
-				}
-				return OffenseActivitySubtypeAttack
-			}(),
-		},
 	}
+	item.AddEvent(NewActivityCreatedEvent(id, baseID, kind, subtype))
+	return item
+}
+
+func NewActivityFromOffenseOperation(baseID int, op *MilitaryOperation) ActivityItem {
+	subtype := func() OffenseActivitySubtype {
+		if op.Type == MilitaryOperationTypeSpy {
+			return OffenseActivitySubtypeSpy
+		}
+		return OffenseActivitySubtypeAttack
+	}()
+
+	item := newEmptyActivity(ActivityKindOffense, baseID, string(subtype))
+	item.Offense = &OffenseActivity{
+		OpID:    op.ID,
+		Subtype: subtype,
+	}
+	return item
 }
 
 func NewActivityFromDefenseOperation(baseID int, op *MilitaryOperation) ActivityItem {
-	return ActivityItem{
-		ID:        0,
-		Kind:      ActivityKindDefense,
-		CreatedAt: NowUnix(),
-		BaseID:    baseID,
-		Defense: &DefenseActivity{
-			OpID: op.ID,
-			Subtype: func() DefenseActivitySubtype {
-				if op.Type == MilitaryOperationTypeSpy {
-					return DefenseActivitySubtypeSpy
-				}
-				return DefenseActivitySubtypeAttack
-			}(),
-		},
+	subtype := func() DefenseActivitySubtype {
+		if op.Type == MilitaryOperationTypeSpy {
+			return DefenseActivitySubtypeSpy
+		}
+		return DefenseActivitySubtypeAttack
+	}()
+
+	item := newEmptyActivity(ActivityKindDefense, baseID, string(subtype))
+	item.Defense = &DefenseActivity{
+		OpID:    op.ID,
+		Subtype: subtype,
 	}
+	return item
 }
 
 func NewActivityFromScan(baseID int, r *SectorScanReport) ActivityItem {
 	rid := r.ID
-	return ActivityItem{
-		ID:        0, // assigned by persistence layer
-		Kind:      ActivityKindScan,
-		CreatedAt: NowUnix(),
-		BaseID:    baseID,
-		Scan: &ScanActivity{
-			Subtype:  ScanActivitySubtypeReportProduced,
-			ReportID: &rid,
-		},
+	subtype := ScanActivitySubtypeReportProduced
+	item := newEmptyActivity(ActivityKindScan, baseID, string(subtype))
+
+	item.Scan = &ScanActivity{
+		Subtype:  subtype,
+		ReportID: &rid,
 	}
+	return item
 }
 
 func NewActivityFromScanIntercept(
 	baseID int,
 	info ScanInterceptInfo,
 ) ActivityItem {
-	return ActivityItem{
-		ID:        0,
-		Kind:      ActivityKindScan,
-		CreatedAt: NowUnix(),
-		BaseID:    baseID,
-		Scan: &ScanActivity{
-			Subtype:   ScanActivitySubtypeExternalScanDetected,
-			Intercept: &info,
-		},
+	subtype := ScanActivitySubtypeExternalScanDetected
+	item := newEmptyActivity(ActivityKindScan, baseID, string(subtype))
+
+	item.Scan = &ScanActivity{
+		Subtype:   subtype,
+		Intercept: &info,
 	}
+	return item
 }
 
 func NewActivityFromRadarThreat(t *RadarThreat) ActivityItem {
-	return ActivityItem{
-		ID:        0,
-		Kind:      ActivityKindRadar,
-		CreatedAt: NowUnix(),
-		BaseID:    t.OwnerBaseID,
-		Radar: &RadarActivity{
-			ThreatID: t.ID,
-		},
+	item := newEmptyActivity(ActivityKindRadar, t.OwnerBaseID, "")
+	item.Radar = &RadarActivity{
+		ThreatID: t.ID,
 	}
+	return item
 }

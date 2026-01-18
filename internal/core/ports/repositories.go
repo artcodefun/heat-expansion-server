@@ -199,3 +199,12 @@ type ActivityRepository interface {
 	// Tx returns a repository instance bound to the provided transaction.
 	Tx(tx Transaction) ActivityRepository
 }
+
+// AlertRepository defines persistence for high-priority notifications.
+type AlertRepository interface {
+	Create(alert *domain.Alert) error
+	MarkAllAsRead(baseID int) error
+	DeleteExpired(now int64) error
+	// Tx returns a repository instance bound to the provided transaction.
+	Tx(tx Transaction) AlertRepository
+}

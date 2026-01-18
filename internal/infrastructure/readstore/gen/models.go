@@ -13,7 +13,7 @@ import (
 )
 
 type Activity struct {
-	ID          int64                 `json:"id"`
+	ID          uuid.UUID             `json:"id"`
 	Kind        string                `json:"kind"`
 	CreatedAt   int64                 `json:"created_at"`
 	BaseID      int64                 `json:"base_id"`
@@ -22,6 +22,18 @@ type Activity struct {
 	ScanData    pqtype.NullRawMessage `json:"scan_data"`
 	RadarData   pqtype.NullRawMessage `json:"radar_data"`
 	TradeData   pqtype.NullRawMessage `json:"trade_data"`
+}
+
+type Alert struct {
+	ID         uuid.UUID     `json:"id"`
+	BaseID     int64         `json:"base_id"`
+	ActivityID uuid.NullUUID `json:"activity_id"`
+	Kind       string        `json:"kind"`
+	Title      string        `json:"title"`
+	Content    string        `json:"content"`
+	IsRead     bool          `json:"is_read"`
+	CreatedAt  int64         `json:"created_at"`
+	ExpiresAt  int64         `json:"expires_at"`
 }
 
 type ArmyItemPrototype struct {

@@ -145,7 +145,7 @@ CREATE INDEX idx_scan_reports_sector_coords ON scan_reports(sector_x, sector_y);
 
 -- Activities (append-only feed; payload captures subtype-specific data)
 CREATE TABLE activities (
-    id          BIGSERIAL PRIMARY KEY,
+    id          UUID PRIMARY KEY,
     kind        TEXT   NOT NULL,
     created_at  BIGINT NOT NULL,
     base_id     BIGINT NOT NULL REFERENCES user_bases(id) ON DELETE CASCADE,

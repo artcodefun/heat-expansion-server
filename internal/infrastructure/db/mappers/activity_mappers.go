@@ -15,6 +15,7 @@ func InsertActivityParamsFromDomain(a *domain.ActivityItem) gen.InsertActivityPa
 	radarDTO := dtos.RadarActivityDTOFromDomain(a.Radar)
 
 	return gen.InsertActivityParams{
+		ID:          a.ID,
 		Kind:        string(a.Kind),
 		CreatedAt:   a.CreatedAt,
 		BaseID:      int64(a.BaseID),

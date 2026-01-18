@@ -62,3 +62,8 @@ type OperationCommands interface {
 	CancelMilitaryOperation(ctx CommandContext, operationID int) error
 	SpeedUpOperationWithCrystals(ctx CommandContext, operationID int) error
 }
+
+// AlertCommands encapsulates alert notifications management.
+type AlertCommands interface {
+	MarkAllAsRead(baseID int, userID int) error
+}

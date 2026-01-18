@@ -14,6 +14,7 @@ type Queries struct {
 	Activity  *queries.ActivityQueries
 	Radar     *queries.RadarQueries
 	User      *queries.UserQueries
+	Alert     *queries.AlertQueries
 }
 
 // NewQueries builds query facades using read repositories and shared services.
@@ -30,5 +31,5 @@ func NewQueries(a *Adapters, as *AppServices) *Queries {
 		Activity:  queries.NewActivityQueries(a.ActivityRead, as.Access),
 		Radar:     queries.NewRadarQueries(a.RadarRead, as.Access),
 		User:      queries.NewUserQueries(a.UserRead),
-	}
+		Alert:     queries.NewAlertQueries(a.AlertRead, as.Access)}
 }

@@ -48,6 +48,12 @@ type SectorReadRepository interface {
 	GetLatestScanBefore(baseID, x, y int, before int64) (*readmodels.SectorScanReport, error)
 }
 
+// AlertReadRepository provides high-priority notification projections.
+type AlertReadRepository interface {
+	ListActiveAlerts(baseID int) ([]*readmodels.AlertItem, error)
+	GetUnreadAlertsCount(baseID int) (int, error)
+}
+
 // StorageReadRepository exposes storage item / buff projections.
 type StorageReadRepository interface {
 	ListPresentStorageItems(baseID int, category readmodels.StorageCategory) ([]*readmodels.StorageItemPresent, error)

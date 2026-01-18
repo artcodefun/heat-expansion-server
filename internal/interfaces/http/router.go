@@ -20,6 +20,7 @@ type Commands struct {
 	Tech      cqrs.TechCommands
 	Storage   cqrs.StorageCommands
 	Operation cqrs.OperationCommands
+	Alert     cqrs.AlertCommands
 }
 
 // Queries groups CQRS query interfaces needed by HTTP handlers.
@@ -34,6 +35,7 @@ type Queries struct {
 	Radar     cqrs.RadarQueries
 	Operation cqrs.OperationQueries
 	Activity  cqrs.ActivityQueries
+	Alert     cqrs.AlertQueries
 }
 
 // NewRouter constructs the Gin engine, registers middleware and routes.
@@ -52,6 +54,7 @@ func NewRouter(cmd Commands, qry Queries, tokenProvider ports.TokenProvider) *gi
 	radarHandler := handlers.NewRadarHandler(qry.Radar)
 	operationHandler := handlers.NewOperationHandler(qry.Operation, cmd.Operation)
 	activityHandler := handlers.NewActivityHandler(qry.Activity)
+	alertHandler := handlers.NewAlertHandler(qry.Alert, cmd.Alert)
 
 	// Global routes
 	r.GET("/health", HealthHandler)
@@ -154,6 +157,14 @@ func NewRouter(cmd Commands, qry Queries, tokenProvider ports.TokenProvider) *gi
 			activities.GET("/scan", activityHandler.ListScan)
 			activities.GET("/radar", activityHandler.ListRadar)
 			activities.GET("/trade", activityHandler.ListTrade)
+		}
+
+		// Alerts
+		alerts := api.Group("/bases/:baseId/alerts")
+		{
+			alerts.GET("", alertHandler.ListActive)
+			alerts.GET("/unread-count", alertHandler.GetUnreadCount)
+			alerts.POST("/read-all", alertHandler.MarkAllAsRead)
 		}
 	}
 

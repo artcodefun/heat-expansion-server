@@ -166,6 +166,7 @@ const (
 	evKindMilitaryOperationCancelled     = "MILITARY_OPERATION_CANCELLED"
 	evKindScanReportCreated              = "SCAN_REPORT_CREATED"
 	evKindRadarThreatDetected            = "RADAR_THREAT_DETECTED"
+	evKindActivityCreated                = "ACTIVITY_CREATED"
 )
 
 // EncodeEvent converts a typed DomainEvent into a kind label and JSON payload
@@ -271,6 +272,10 @@ func EncodeEvent(ev domain.DomainEvent) (kind string, payload []byte, err error)
 	case domain.RadarThreatDetectedEvent:
 		payload, err = json.Marshal(dtos.RadarThreatDetectedEventDTOFromDomain(e))
 		return evKindRadarThreatDetected, payload, err
+
+	case domain.ActivityCreatedEvent:
+		payload, err = json.Marshal(dtos.ActivityCreatedEventDTOFromDomain(e))
+		return evKindActivityCreated, payload, err
 
 	default:
 		return "", nil, errors.New("unsupported domain event type")
@@ -479,6 +484,13 @@ func DecodeEvent(kind string, payload []byte) (domain.DomainEvent, error) {
 			return nil, err
 		}
 		return dtos.RadarThreatDetectedEventFromDTO(dto), nil
+
+	case evKindActivityCreated:
+		var dto dtos.ActivityCreatedEventDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.ActivityCreatedEventFromDTO(dto), nil
 
 	default:
 		return nil, errors.New("unknown domain event kind")

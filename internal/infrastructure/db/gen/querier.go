@@ -25,6 +25,7 @@ type Querier interface {
 	DeleteBaseStorageItemsByBase(ctx context.Context, baseID int64) error
 	DeleteBaseTechItemsByBase(ctx context.Context, baseID int64) error
 	DeleteDangerousLocation(ctx context.Context, id int64) error
+	DeleteExpiredAlerts(ctx context.Context, expiresAt int64) error
 	DeleteMilitaryOperation(ctx context.Context, id int64) error
 	DeleteResourceLocation(ctx context.Context, id int64) error
 	DeleteScanReport(ctx context.Context, id int64) error
@@ -66,7 +67,8 @@ type Querier interface {
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	// Users queries
 	GetUserByID(ctx context.Context, id int64) (User, error)
-	InsertActivity(ctx context.Context, arg InsertActivityParams) (int64, error)
+	InsertActivity(ctx context.Context, arg InsertActivityParams) (uuid.UUID, error)
+	InsertAlert(ctx context.Context, arg InsertAlertParams) error
 	InsertBaseArmyItem(ctx context.Context, arg InsertBaseArmyItemParams) (uuid.UUID, error)
 	InsertBaseBuildItem(ctx context.Context, arg InsertBaseBuildItemParams) (uuid.UUID, error)
 	InsertBaseStorageItem(ctx context.Context, arg InsertBaseStorageItemParams) (uuid.UUID, error)
@@ -84,6 +86,7 @@ type Querier interface {
 	InsertUser(ctx context.Context, arg InsertUserParams) (int64, error)
 	// Activities queries
 	ListActivitiesByBase(ctx context.Context, arg ListActivitiesByBaseParams) ([]Activity, error)
+	ListAlertsByBase(ctx context.Context, arg ListAlertsByBaseParams) ([]Alert, error)
 	ListAllBases(ctx context.Context) ([]UserBasis, error)
 	ListArmyPrototypes(ctx context.Context) ([]ArmyItemPrototype, error)
 	// Base army items queries
@@ -106,6 +109,7 @@ type Querier interface {
 	ListTechPrototypes(ctx context.Context) ([]TechItemPrototype, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
 	LockScheduledJobsTable(ctx context.Context) error
+	MarkAllAlertsAsRead(ctx context.Context, baseID int64) error
 	MarkOutboxEventPublished(ctx context.Context, arg MarkOutboxEventPublishedParams) error
 	MarkScheduledJobDispatched(ctx context.Context, arg MarkScheduledJobDispatchedParams) error
 	RadarThreatExists(ctx context.Context, arg RadarThreatExistsParams) (bool, error)

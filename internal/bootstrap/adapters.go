@@ -31,6 +31,7 @@ type Adapters struct {
 	Activities         ports.ActivityRepository
 	RadarThreats       ports.RadarThreatRepository
 	OutboxEvents       ports.OutboxEventRepository
+	Alerts             ports.AlertRepository
 
 	// Read Repositories (read-store / projections)
 	BaseRead      ports.BaseReadRepository
@@ -43,6 +44,7 @@ type Adapters struct {
 	SectorRead    ports.SectorReadRepository
 	RadarRead     ports.RadarReadRepository
 	UserRead      ports.UserReadRepository
+	AlertRead     ports.AlertReadRepository
 
 	// Infra
 	TxMgr     ports.TransactionManager
@@ -90,6 +92,7 @@ func NewAdapters(db *sql.DB, jwtSecret, contentDir, staticBaseURL string) (*Adap
 		Activities:         repo.NewActivityRepo(q),
 		RadarThreats:       repo.NewRadarThreatRepo(q),
 		OutboxEvents:       repo.NewOutboxEventRepo(q),
+		Alerts:             repo.NewAlertRepository(q),
 		// Read side
 		BaseRead:      readrepo.NewBaseReadRepo(rq),
 		BuildingRead:  readrepo.NewBuildReadRepo(rq),
@@ -101,6 +104,7 @@ func NewAdapters(db *sql.DB, jwtSecret, contentDir, staticBaseURL string) (*Adap
 		SectorRead:    sectorRead,
 		RadarRead:     radarRead,
 		UserRead:      readrepo.NewUserReadRepo(rq),
+		AlertRead:     readrepo.NewAlertReadRepository(rq),
 		TxMgr:         txMgr,
 		Events:        publisher,
 		Scheduler:     scheduler,

@@ -76,3 +76,9 @@ type OperationQueries interface {
 type RadarQueries interface {
 	ListIncomingThreats(ctx QueryContext, baseID int) ([]*readmodels.RadarThreat, error)
 }
+
+// AlertQueries: high-priority notification feed.
+type AlertQueries interface {
+	ListActiveAlerts(ctx QueryContext, baseID int) ([]*readmodels.AlertItem, error)
+	GetUnreadAlertsCount(ctx QueryContext, baseID int) (int, error)
+}

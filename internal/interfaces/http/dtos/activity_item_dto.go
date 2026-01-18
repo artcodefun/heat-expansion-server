@@ -2,6 +2,7 @@ package dtos
 
 import (
 	"github.com/artcodefun/heat-expansion-api/internal/core/cqrs/readmodels"
+	"github.com/google/uuid"
 )
 
 // ActivityKind mirrors readmodels.ActivityKind for HTTP.
@@ -33,7 +34,7 @@ const (
 
 // ActivityItemDTO is a unified envelope for different activity kinds.
 type ActivityItemDTO struct {
-	ID        int          `json:"id"`
+	ID        uuid.UUID    `json:"id"`
 	Kind      ActivityKind `json:"kind"`
 	CreatedAt int64        `json:"createdAt"`
 	BaseID    int          `json:"baseId"`

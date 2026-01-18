@@ -12,6 +12,7 @@ import (
 )
 
 type Querier interface {
+	CountUnreadAlertsByBase(ctx context.Context, arg CountUnreadAlertsByBaseParams) (int64, error)
 	// Base stats only (read repository no longer hydrates full overview)
 	GetBaseStats(ctx context.Context, id int64) (GetBaseStatsRow, error)
 	GetLatestScanBefore(ctx context.Context, arg GetLatestScanBeforeParams) (ScanReport, error)
@@ -25,6 +26,7 @@ type Querier interface {
 	// Readstore user profile queries
 	GetUserProfile(ctx context.Context, id int64) (User, error)
 	ListActiveOperations(ctx context.Context, sourceBaseID int64) ([]MilitaryOperation, error)
+	ListAlertsByBase(ctx context.Context, arg ListAlertsByBaseParams) ([]Alert, error)
 	// Prototypes queries for read-store
 	ListArmyPrototypes(ctx context.Context) ([]ArmyItemPrototype, error)
 	// Army items lifecycle queries

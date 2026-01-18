@@ -74,6 +74,7 @@ func NewApp() *App {
 		Tech:      commands.Tech,
 		Storage:   commands.Storage,
 		Operation: commands.Operation,
+		Alert:     commands.Alert,
 	}
 	httpQueries := httpapi.Queries{
 		User:      queries.User,
@@ -86,6 +87,7 @@ func NewApp() *App {
 		Radar:     queries.Radar,
 		Operation: queries.Operation,
 		Activity:  queries.Activity,
+		Alert:     queries.Alert,
 	}
 	router := httpapi.NewRouter(httpCommands, httpQueries, adapters.Tokens)
 	httpServer := httpapi.NewServer(router)

@@ -9,7 +9,7 @@ import (
 )
 
 func ActivityItemFromModel(a gen.Activity) readmodels.ActivityItem {
-	item := readmodels.ActivityItem{ID: int(a.ID), Kind: readmodels.ActivityKind(a.Kind), CreatedAt: a.CreatedAt, BaseID: int(a.BaseID)}
+	item := readmodels.ActivityItem{ID: a.ID, Kind: readmodels.ActivityKind(a.Kind), CreatedAt: a.CreatedAt, BaseID: int(a.BaseID)}
 	if a.OffenseData.Valid {
 		var dto dtos.OffenseActivityDTO
 		_ = json.Unmarshal(a.OffenseData.RawMessage, &dto)

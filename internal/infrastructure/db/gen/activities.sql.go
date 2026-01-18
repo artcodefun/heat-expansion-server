@@ -8,6 +8,7 @@ package gen
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/sqlc-dev/pqtype"
 )
 
@@ -22,16 +23,17 @@ func (q *Queries) DeleteActivitiesByBase(ctx context.Context, baseID int64) erro
 
 const insertActivity = `-- name: InsertActivity :one
 INSERT INTO activities (
-    kind, created_at, base_id,
+    id, kind, created_at, base_id,
     offense_data, defense_data, scan_data, radar_data, trade_data
 ) VALUES (
-    $1, $2, $3,
-    $4, $5, $6, $7, $8
+    $1, $2, $3, $4,
+    $5, $6, $7, $8, $9
 )
 RETURNING id
 `
 
 type InsertActivityParams struct {
+	ID          uuid.UUID             `json:"id"`
 	Kind        string                `json:"kind"`
 	CreatedAt   int64                 `json:"created_at"`
 	BaseID      int64                 `json:"base_id"`
@@ -42,8 +44,9 @@ type InsertActivityParams struct {
 	TradeData   pqtype.NullRawMessage `json:"trade_data"`
 }
 
-func (q *Queries) InsertActivity(ctx context.Context, arg InsertActivityParams) (int64, error) {
+func (q *Queries) InsertActivity(ctx context.Context, arg InsertActivityParams) (uuid.UUID, error) {
 	row := q.queryRow(ctx, q.insertActivityStmt, insertActivity,
+		arg.ID,
 		arg.Kind,
 		arg.CreatedAt,
 		arg.BaseID,
@@ -53,7 +56,7 @@ func (q *Queries) InsertActivity(ctx context.Context, arg InsertActivityParams) 
 		arg.RadarData,
 		arg.TradeData,
 	)
-	var id int64
+	var id uuid.UUID
 	err := row.Scan(&id)
 	return id, err
 }
