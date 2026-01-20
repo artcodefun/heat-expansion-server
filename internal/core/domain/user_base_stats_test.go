@@ -9,7 +9,7 @@ func TestStats_Recalculate_DefaultValues(t *testing.T) {
 	stats := base.Stats
 
 	if stats.Credits != 1000 {
-		t.Errorf("expected 1000 credits, got %d", stats.Credits)
+		t.Errorf("expected 1000 credits, got %v", stats.Credits)
 	}
 	if stats.CreditsCapacity != DefaultCreditsCapacity {
 		t.Errorf("expected %d capacity, got %d", DefaultCreditsCapacity, stats.CreditsCapacity)
@@ -64,13 +64,13 @@ func TestStats_ProductionOverTime(t *testing.T) {
 
 	// 10 seconds * 10 credits/sec = 100 credits
 	if base.Stats.Credits != 100 {
-		t.Errorf("expected 100 credits, got %d", base.Stats.Credits)
+		t.Errorf("expected 100 credits, got %v", base.Stats.Credits)
 	}
 }
 
 func TestStats_Production_ClampedToCapacity(t *testing.T) {
 	base := newBaseWithDefaults(1)
-	base.Stats.Credits = DefaultCreditsCapacity - 50
+	base.Stats.Credits = float64(DefaultCreditsCapacity - 50)
 	base.Stats.CalculationTimestamp = NowUnix() - 100 // a long time ago
 
 	base.BuildingsPresent = append(base.BuildingsPresent, BuildItemPresent{
@@ -83,8 +83,8 @@ func TestStats_Production_ClampedToCapacity(t *testing.T) {
 
 	base.recalculateStats()
 
-	if base.Stats.Credits != DefaultCreditsCapacity {
-		t.Errorf("expected credits clamped to %d, got %d", DefaultCreditsCapacity, base.Stats.Credits)
+	if base.Stats.Credits != float64(DefaultCreditsCapacity) {
+		t.Errorf("expected credits clamped to %d, got %v", DefaultCreditsCapacity, base.Stats.Credits)
 	}
 }
 
@@ -116,11 +116,11 @@ func TestStats_CreditAndDeductLoot(t *testing.T) {
 
 	base.DeductLoot(loot)
 	if base.Stats.Credits != 500 || base.Stats.Iron != 800 {
-		t.Errorf("DeductLoot failed: credits=%d, iron=%d", base.Stats.Credits, base.Stats.Iron)
+		t.Errorf("DeductLoot failed: credits=%v, iron=%v", base.Stats.Credits, base.Stats.Iron)
 	}
 
 	base.CreditLoot(loot)
 	if base.Stats.Credits != 1000 || base.Stats.Iron != 1000 {
-		t.Errorf("CreditLoot failed: credits=%d, iron=%d", base.Stats.Credits, base.Stats.Iron)
+		t.Errorf("CreditLoot failed: credits=%v, iron=%v", base.Stats.Credits, base.Stats.Iron)
 	}
 }

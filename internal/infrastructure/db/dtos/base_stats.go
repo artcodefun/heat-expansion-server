@@ -3,16 +3,16 @@ package dtos
 import "github.com/artcodefun/heat-expansion-api/internal/core/domain"
 
 type BaseStatsDTO struct {
-	Credits               int     `json:"credits"`
+	Credits               float64 `json:"credits"`
 	CreditsCapacity       int     `json:"credits_capacity"`
 	CreditsProduction     float64 `json:"credits_production"`
-	Iron                  int     `json:"iron"`
+	Iron                  float64 `json:"iron"`
 	IronCapacity          int     `json:"iron_capacity"`
 	IronProduction        float64 `json:"iron_production"`
-	Titanium              int     `json:"titanium"`
+	Titanium              float64 `json:"titanium"`
 	TitaniumCapacity      int     `json:"titanium_capacity"`
 	TitaniumProduction    float64 `json:"titanium_production"`
-	Antimatter            int     `json:"antimatter"`
+	Antimatter            float64 `json:"antimatter"`
 	AntimatterCapacity    int     `json:"antimatter_capacity"`
 	AntimatterProduction  float64 `json:"antimatter_production"`
 	Defence               int     `json:"defence"`

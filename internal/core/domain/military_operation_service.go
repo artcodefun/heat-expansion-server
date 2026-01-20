@@ -31,10 +31,10 @@ func (s MilitaryOperationService) ResolveAgainstUserBase(defender *UserBaseModel
 		// Resolve using operation's domain logic
 		// Compute available resource pool at target for loot calculation inside operation
 		available := PriceModel{
-			Credits:    maxInt(defender.Stats.Credits, 0),
-			Iron:       maxInt(defender.Stats.Iron, 0),
-			Titanium:   maxInt(defender.Stats.Titanium, 0),
-			Antimatter: maxInt(defender.Stats.Antimatter, 0),
+			Credits:    int(max(0, defender.Stats.Credits)),
+			Iron:       int(max(0, defender.Stats.Iron)),
+			Titanium:   int(max(0, defender.Stats.Titanium)),
+			Antimatter: int(max(0, defender.Stats.Antimatter)),
 		}
 		res := s.Operation.ResolveAttack(defenders, structures, available, nil)
 

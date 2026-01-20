@@ -51,23 +51,11 @@ func (ub *UserBaseModel) QueueArmy(proto *ArmyItemPrototype, count int) error {
 		Titanium:   proto.Price.Titanium * count,
 		Antimatter: proto.Price.Antimatter * count,
 	}
-	if totalPrice.Credits > ub.Stats.Credits {
-		return fmt.Errorf("not enough credits")
-	}
-	if totalPrice.Iron > ub.Stats.Iron {
-		return fmt.Errorf("not enough iron")
-	}
-	if totalPrice.Titanium > ub.Stats.Titanium {
-		return fmt.Errorf("not enough titanium")
-	}
-	if totalPrice.Antimatter > ub.Stats.Antimatter {
-		return fmt.Errorf("not enough antimatter")
+	if err := ub.Stats.CheckResources(totalPrice); err != nil {
+		return err
 	}
 	// Subtract price
-	ub.Stats.Credits -= totalPrice.Credits
-	ub.Stats.Iron -= totalPrice.Iron
-	ub.Stats.Titanium -= totalPrice.Titanium
-	ub.Stats.Antimatter -= totalPrice.Antimatter
+	ub.Stats.SubtractResources(totalPrice)
 	// Add to pending (merge with existing batch if same prototype)
 	found := false
 	for i, p := range ub.ArmiesPending {
@@ -185,10 +173,13 @@ func (ub *UserBaseModel) CancelPendingArmyByID(itemID uuid.UUID, count int) erro
 		return fmt.Errorf("invalid cancel count: %d (pending count: %d)", count, item.Count)
 	}
 	// Refund resources for the canceled amount
-	ub.Stats.Credits += item.Prototype.Price.Credits * count
-	ub.Stats.Iron += item.Prototype.Price.Iron * count
-	ub.Stats.Titanium += item.Prototype.Price.Titanium * count
-	ub.Stats.Antimatter += item.Prototype.Price.Antimatter * count
+	refund := PriceModel{
+		Credits:    item.Prototype.Price.Credits * count,
+		Iron:       item.Prototype.Price.Iron * count,
+		Titanium:   item.Prototype.Price.Titanium * count,
+		Antimatter: item.Prototype.Price.Antimatter * count,
+	}
+	ub.CreditLoot(refund)
 	if count == item.Count {
 		// Remove from pending
 		ub.ArmiesPending = append(ub.ArmiesPending[:idx], ub.ArmiesPending[idx+1:]...)
@@ -241,10 +232,13 @@ func (ub *UserBaseModel) DeletePresentArmyByID(itemID uuid.UUID, count int) erro
 		return fmt.Errorf("invalid delete count: %d (present count: %d)", count, item.Count)
 	}
 	// Refund resources for the deleted amount
-	ub.Stats.Credits += item.Refund.Credits * count
-	ub.Stats.Iron += item.Refund.Iron * count
-	ub.Stats.Titanium += item.Refund.Titanium * count
-	ub.Stats.Antimatter += item.Refund.Antimatter * count
+	refund := PriceModel{
+		Credits:    item.Refund.Credits * count,
+		Iron:       item.Refund.Iron * count,
+		Titanium:   item.Refund.Titanium * count,
+		Antimatter: item.Refund.Antimatter * count,
+	}
+	ub.CreditLoot(refund)
 	if count == item.Count {
 		// Remove from present
 		ub.ArmiesPresent = append(ub.ArmiesPresent[:idx], ub.ArmiesPresent[idx+1:]...)

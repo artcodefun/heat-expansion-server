@@ -93,10 +93,10 @@ func NewSectorScanReportFromUserBase(baseID int, targetSector *SectorModel, base
 		return &SectorScanReport{BaseID: baseID, Coordinates: targetSector.Coordinates, CreatedAt: NowUnix(), IsCloaked: true, Type: LocationTypeUserBase, Details: targetSector.Details}
 	}
 	info := ScanInfo{
-		Credits:    base.Stats.Credits,
-		Iron:       base.Stats.Iron,
-		Titanium:   base.Stats.Titanium,
-		Antimatter: base.Stats.Antimatter,
+		Credits:    int(base.Stats.Credits),
+		Iron:       int(base.Stats.Iron),
+		Titanium:   int(base.Stats.Titanium),
+		Antimatter: int(base.Stats.Antimatter),
 		Defence:    base.Stats.Defence,
 		Attack:     base.Stats.Attack,
 		Space:      base.Stats.Space,

@@ -21,16 +21,16 @@ const (
 
 // UserBaseStats represents current properties of a base.
 type UserBaseStats struct {
-	Credits               int
+	Credits               float64
 	CreditsCapacity       int
 	CreditsProduction     float64
-	Iron                  int
+	Iron                  float64
 	IronCapacity          int
 	IronProduction        float64
-	Titanium              int
+	Titanium              float64
 	TitaniumCapacity      int
 	TitaniumProduction    float64
-	Antimatter            int
+	Antimatter            float64
 	AntimatterCapacity    int
 	AntimatterProduction  float64
 	Defence               int
@@ -47,26 +47,26 @@ type UserBaseStats struct {
 }
 
 func (s *UserBaseStats) CheckResources(price PriceModel) error {
-	if price.Credits > s.Credits {
+	if float64(price.Credits) > s.Credits {
 		return fmt.Errorf("insufficient credits")
 	}
-	if price.Iron > s.Iron {
+	if float64(price.Iron) > s.Iron {
 		return fmt.Errorf("insufficient iron")
 	}
-	if price.Titanium > s.Titanium {
+	if float64(price.Titanium) > s.Titanium {
 		return fmt.Errorf("insufficient titanium")
 	}
-	if price.Antimatter > s.Antimatter {
+	if float64(price.Antimatter) > s.Antimatter {
 		return fmt.Errorf("insufficient antimatter")
 	}
 	return nil
 }
 
 func (s *UserBaseStats) SubtractResources(price PriceModel) {
-	s.Credits -= price.Credits
-	s.Iron -= price.Iron
-	s.Titanium -= price.Titanium
-	s.Antimatter -= price.Antimatter
+	s.Credits -= float64(price.Credits)
+	s.Iron -= float64(price.Iron)
+	s.Titanium -= float64(price.Titanium)
+	s.Antimatter -= float64(price.Antimatter)
 }
 
 // RecalculateStats updates the UserBaseStats based on present items and default constants.
@@ -183,24 +183,24 @@ func (ub *UserBaseModel) recalculateStats() {
 	delta := now - prevStats.CalculationTimestamp
 
 	if delta > 0 {
-		stats.Credits = prevStats.Credits + int(stats.CreditsProduction*float64(delta))
-		if stats.Credits > stats.CreditsCapacity {
-			stats.Credits = stats.CreditsCapacity
+		stats.Credits = prevStats.Credits + (stats.CreditsProduction * float64(delta))
+		if stats.Credits > float64(stats.CreditsCapacity) {
+			stats.Credits = float64(stats.CreditsCapacity)
 		}
 
-		stats.Iron = prevStats.Iron + int(stats.IronProduction*float64(delta))
-		if stats.Iron > stats.IronCapacity {
-			stats.Iron = stats.IronCapacity
+		stats.Iron = prevStats.Iron + (stats.IronProduction * float64(delta))
+		if stats.Iron > float64(stats.IronCapacity) {
+			stats.Iron = float64(stats.IronCapacity)
 		}
 
-		stats.Titanium = prevStats.Titanium + int(stats.TitaniumProduction*float64(delta))
-		if stats.Titanium > stats.TitaniumCapacity {
-			stats.Titanium = stats.TitaniumCapacity
+		stats.Titanium = prevStats.Titanium + (stats.TitaniumProduction * float64(delta))
+		if stats.Titanium > float64(stats.TitaniumCapacity) {
+			stats.Titanium = float64(stats.TitaniumCapacity)
 		}
 
-		stats.Antimatter = prevStats.Antimatter + int(stats.AntimatterProduction*float64(delta))
-		if stats.Antimatter > stats.AntimatterCapacity {
-			stats.Antimatter = stats.AntimatterCapacity
+		stats.Antimatter = prevStats.Antimatter + (stats.AntimatterProduction * float64(delta))
+		if stats.Antimatter > float64(stats.AntimatterCapacity) {
+			stats.Antimatter = float64(stats.AntimatterCapacity)
 		}
 	} else {
 		stats.Credits = prevStats.Credits
@@ -216,31 +216,31 @@ func (ub *UserBaseModel) recalculateStats() {
 // DeductLoot subtracts the provided loot from the base's resources, clamped at zero.
 func (ub *UserBaseModel) DeductLoot(loot PriceModel) {
 	if loot.Credits > 0 {
-		ub.Stats.Credits = maxInt(ub.Stats.Credits-loot.Credits, 0)
+		ub.Stats.Credits = max(ub.Stats.Credits-float64(loot.Credits), 0)
 	}
 	if loot.Iron > 0 {
-		ub.Stats.Iron = maxInt(ub.Stats.Iron-loot.Iron, 0)
+		ub.Stats.Iron = max(ub.Stats.Iron-float64(loot.Iron), 0)
 	}
 	if loot.Titanium > 0 {
-		ub.Stats.Titanium = maxInt(ub.Stats.Titanium-loot.Titanium, 0)
+		ub.Stats.Titanium = max(ub.Stats.Titanium-float64(loot.Titanium), 0)
 	}
 	if loot.Antimatter > 0 {
-		ub.Stats.Antimatter = maxInt(ub.Stats.Antimatter-loot.Antimatter, 0)
+		ub.Stats.Antimatter = max(ub.Stats.Antimatter-float64(loot.Antimatter), 0)
 	}
 }
 
 // CreditLoot adds the provided loot to the base's resources, clamped by capacities.
 func (ub *UserBaseModel) CreditLoot(loot PriceModel) {
 	if loot.Credits > 0 {
-		ub.Stats.Credits = min(ub.Stats.Credits+loot.Credits, ub.Stats.CreditsCapacity)
+		ub.Stats.Credits = min(ub.Stats.Credits+float64(loot.Credits), float64(ub.Stats.CreditsCapacity))
 	}
 	if loot.Iron > 0 {
-		ub.Stats.Iron = min(ub.Stats.Iron+loot.Iron, ub.Stats.IronCapacity)
+		ub.Stats.Iron = min(ub.Stats.Iron+float64(loot.Iron), float64(ub.Stats.IronCapacity))
 	}
 	if loot.Titanium > 0 {
-		ub.Stats.Titanium = min(ub.Stats.Titanium+loot.Titanium, ub.Stats.TitaniumCapacity)
+		ub.Stats.Titanium = min(ub.Stats.Titanium+float64(loot.Titanium), float64(ub.Stats.TitaniumCapacity))
 	}
 	if loot.Antimatter > 0 {
-		ub.Stats.Antimatter = min(ub.Stats.Antimatter+loot.Antimatter, ub.Stats.AntimatterCapacity)
+		ub.Stats.Antimatter = min(ub.Stats.Antimatter+float64(loot.Antimatter), float64(ub.Stats.AntimatterCapacity))
 	}
 }

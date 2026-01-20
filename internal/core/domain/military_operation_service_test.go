@@ -73,7 +73,7 @@ func TestResolveAgainstUserBase_Attack_AppliesLootAndSurvivors(t *testing.T) {
 		t.Fatalf("loot total should be non-negative, got %d", lootTotal)
 	}
 	initial := 10 + 5 + 3 + 2
-	remaining := defender.Stats.Credits + defender.Stats.Iron + defender.Stats.Titanium + defender.Stats.Antimatter
+	remaining := int(defender.Stats.Credits + defender.Stats.Iron + defender.Stats.Titanium + defender.Stats.Antimatter)
 	if initial-remaining != lootTotal {
 		t.Fatalf("expected defender resource sum decrease by %d, got %d", lootTotal, initial-remaining)
 	}

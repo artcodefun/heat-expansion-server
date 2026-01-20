@@ -72,23 +72,11 @@ func (ub *UserBaseModel) StartTechResearch(proto *TechItemPrototype) error {
 	}
 
 	// Validate resources
-	if proto.Price.Credits > ub.Stats.Credits {
-		return fmt.Errorf("not enough credits")
-	}
-	if proto.Price.Iron > ub.Stats.Iron {
-		return fmt.Errorf("not enough iron")
-	}
-	if proto.Price.Titanium > ub.Stats.Titanium {
-		return fmt.Errorf("not enough titanium")
-	}
-	if proto.Price.Antimatter > ub.Stats.Antimatter {
-		return fmt.Errorf("not enough antimatter")
+	if err := ub.Stats.CheckResources(proto.Price); err != nil {
+		return err
 	}
 	// Subtract price
-	ub.Stats.Credits -= proto.Price.Credits
-	ub.Stats.Iron -= proto.Price.Iron
-	ub.Stats.Titanium -= proto.Price.Titanium
-	ub.Stats.Antimatter -= proto.Price.Antimatter
+	ub.Stats.SubtractResources(proto.Price)
 	// Add to in-progress
 	now := NowUnix()
 	completionDate := now + proto.ResearchTime

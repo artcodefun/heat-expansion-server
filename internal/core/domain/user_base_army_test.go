@@ -161,7 +161,7 @@ func TestArmy_CancelPendingArmyByID_RefundsAndEmitsEvent(t *testing.T) {
 		Space:          1,
 	}
 	// Mimic post-QueueArmy debit for count=5
-	base.Stats.Credits -= proto.Price.Credits * 5
+	base.Stats.Credits -= float64(proto.Price.Credits * 5)
 	base.ArmiesPending = []ArmyItemPending{{
 		BaseOwnedItem: NewBaseOwnedItem(base.ID),
 		Prototype:     proto,

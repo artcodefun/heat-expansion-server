@@ -43,23 +43,11 @@ func (ub *UserBaseModel) AddToBuildQueue(proto *BuildItemPrototype) error {
 	}
 
 	// Validate resources (example: credits, iron, titanium, antimatter)
-	if proto.Price.Credits > ub.Stats.Credits {
-		return fmt.Errorf("not enough credits")
-	}
-	if proto.Price.Iron > ub.Stats.Iron {
-		return fmt.Errorf("not enough iron")
-	}
-	if proto.Price.Titanium > ub.Stats.Titanium {
-		return fmt.Errorf("not enough titanium")
-	}
-	if proto.Price.Antimatter > ub.Stats.Antimatter {
-		return fmt.Errorf("not enough antimatter")
+	if err := ub.Stats.CheckResources(proto.Price); err != nil {
+		return err
 	}
 	// Subtract price from resources
-	ub.Stats.Credits -= proto.Price.Credits
-	ub.Stats.Iron -= proto.Price.Iron
-	ub.Stats.Titanium -= proto.Price.Titanium
-	ub.Stats.Antimatter -= proto.Price.Antimatter
+	ub.Stats.SubtractResources(proto.Price)
 
 	// Always add to pending
 	pendingItem := BuildItemPending{
@@ -136,10 +124,7 @@ func (ub *UserBaseModel) CancelPendingBuildingByID(itemID uuid.UUID) error {
 	}
 	item := ub.BuildingsPending[idx]
 	// Refund resources
-	ub.Stats.Credits += item.Prototype.Price.Credits
-	ub.Stats.Iron += item.Prototype.Price.Iron
-	ub.Stats.Titanium += item.Prototype.Price.Titanium
-	ub.Stats.Antimatter += item.Prototype.Price.Antimatter
+	ub.CreditLoot(item.Prototype.Price)
 	// Remove from pending
 	ub.BuildingsPending = append(ub.BuildingsPending[:idx], ub.BuildingsPending[idx+1:]...)
 	// Optionally emit event for cancellation
@@ -184,10 +169,7 @@ func (ub *UserBaseModel) DeletePresentBuildingByID(itemID uuid.UUID) error {
 		return fmt.Errorf("present building with ID %s not found", itemID)
 	}
 	// Refund resources to base from item's Refund field
-	ub.Stats.Credits += item.Refund.Credits
-	ub.Stats.Iron += item.Refund.Iron
-	ub.Stats.Titanium += item.Refund.Titanium
-	ub.Stats.Antimatter += item.Refund.Antimatter
+	ub.CreditLoot(item.Refund)
 	// Remove from present
 	ub.BuildingsPresent = append(ub.BuildingsPresent[:idx], ub.BuildingsPresent[idx+1:]...)
 	// Emit event for deletion

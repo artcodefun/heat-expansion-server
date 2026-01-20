@@ -194,7 +194,7 @@ func TestOperation_Attack_UserBase_LootAndDeduction(t *testing.T) {
 		t.Fatalf("unexpected loot sum: %d", lootSum)
 	}
 	// Defender resources reduced by exactly loot sum
-	afterSum := def.Stats.Credits + def.Stats.Iron + def.Stats.Titanium + def.Stats.Antimatter
+	afterSum := int(def.Stats.Credits + def.Stats.Iron + def.Stats.Titanium + def.Stats.Antimatter)
 	if before := 10 + 8 + 4 + 2; before-afterSum != lootSum {
 		t.Fatalf("expected defender resource sum decrease by %d, got %d", lootSum, before-afterSum)
 	}
