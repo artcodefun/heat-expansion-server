@@ -11,7 +11,7 @@ import (
 )
 
 // Prototype parts conversion
-func buildPrototypeFromParts(id int64, name, category string, unlock sql.NullInt64, short, full sql.NullString, price []byte, productionTime int64, space int32, imageURL sql.NullString,
+func buildPrototypeFromParts(id int64, name, category, faction string, unlock sql.NullInt64, short, full sql.NullString, price []byte, productionTime int64, space int32, imageURL sql.NullString,
 	control, resources, defense, military, intelligence pqtype.NullRawMessage) readmodels.BuildItemPrototype {
 	var unlockPtr *int
 	if unlock.Valid {
@@ -22,6 +22,7 @@ func buildPrototypeFromParts(id int64, name, category string, unlock sql.NullInt
 		ID:                 int(id),
 		Name:               name,
 		Category:           readmodels.BuildCategory(category),
+		Faction:            faction,
 		UnlockTechnologyID: unlockPtr,
 		ShortDescription:   nullString(short),
 		FullDescription:    nullString(full),
@@ -38,12 +39,12 @@ func buildPrototypeFromParts(id int64, name, category string, unlock sql.NullInt
 }
 
 func NewBuildItemFromPrototype(p gen.BuildItemPrototype) readmodels.BuildItemNew {
-	proto := buildPrototypeFromParts(p.ID, p.Name, p.Category, p.UnlockTechnologyID, p.ShortDescription, p.FullDescription, p.Price, p.ProductionTime, p.Space, p.ImageUrl, p.ControlData, p.ResourcesData, p.DefenseData, p.MilitaryData, p.IntelligenceData)
+	proto := buildPrototypeFromParts(p.ID, p.Name, p.Category, p.Faction, p.UnlockTechnologyID, p.ShortDescription, p.FullDescription, p.Price, p.ProductionTime, p.Space, p.ImageUrl, p.ControlData, p.ResourcesData, p.DefenseData, p.MilitaryData, p.IntelligenceData)
 	return readmodels.BuildItemNew{Prototype: proto}
 }
 
 func BuildItemPendingFromRow(r gen.ListPendingBuildItemsRow) readmodels.BuildItemPending {
-	return readmodels.BuildItemPending{BaseOwnedItem: readmodels.BaseOwnedItem{ID: r.ID, UserBaseID: int(r.BaseID)}, Prototype: buildPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ProductionTime, r.Space, r.ImageUrl, r.ControlData, r.ResourcesData, r.DefenseData, r.MilitaryData, r.IntelligenceData)}
+	return readmodels.BuildItemPending{BaseOwnedItem: readmodels.BaseOwnedItem{ID: r.ID, UserBaseID: int(r.BaseID)}, Prototype: buildPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.Faction, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ProductionTime, r.Space, r.ImageUrl, r.ControlData, r.ResourcesData, r.DefenseData, r.MilitaryData, r.IntelligenceData)}
 }
 
 func BuildItemInProductionFromRow(r gen.ListInProductionBuildItemsRow) readmodels.BuildItemInProduction {
@@ -51,7 +52,7 @@ func BuildItemInProductionFromRow(r gen.ListInProductionBuildItemsRow) readmodel
 	if r.InProdData.Valid {
 		_ = json.Unmarshal(r.InProdData.RawMessage, &jd)
 	}
-	return readmodels.BuildItemInProduction{BaseOwnedItem: readmodels.BaseOwnedItem{ID: r.ID, UserBaseID: int(r.BaseID)}, Prototype: buildPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ProductionTime, r.Space, r.ImageUrl, r.ControlData, r.ResourcesData, r.DefenseData, r.MilitaryData, r.IntelligenceData), StartDate: jd.StartDate, CompletionDate: jd.CompletionDate, CrystalsSkipPrice: jd.CrystalsSkipPrice}
+	return readmodels.BuildItemInProduction{BaseOwnedItem: readmodels.BaseOwnedItem{ID: r.ID, UserBaseID: int(r.BaseID)}, Prototype: buildPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.Faction, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ProductionTime, r.Space, r.ImageUrl, r.ControlData, r.ResourcesData, r.DefenseData, r.MilitaryData, r.IntelligenceData), StartDate: jd.StartDate, CompletionDate: jd.CompletionDate, CrystalsSkipPrice: jd.CrystalsSkipPrice}
 }
 
 func BuildItemPresentFromRow(r gen.ListPresentBuildItemsRow) readmodels.BuildItemPresent {
@@ -60,7 +61,7 @@ func BuildItemPresentFromRow(r gen.ListPresentBuildItemsRow) readmodels.BuildIte
 		_ = json.Unmarshal(r.PresentData.RawMessage, &jd)
 	}
 	refund := readmodels.PriceModel{Credits: jd.Refund.Credits, Iron: jd.Refund.Iron, Titanium: jd.Refund.Titanium, Antimatter: jd.Refund.Antimatter}
-	return readmodels.BuildItemPresent{BaseOwnedItem: readmodels.BaseOwnedItem{ID: r.ID, UserBaseID: int(r.BaseID)}, Prototype: buildPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ProductionTime, r.Space, r.ImageUrl, r.ControlData, r.ResourcesData, r.DefenseData, r.MilitaryData, r.IntelligenceData), Refund: refund}
+	return readmodels.BuildItemPresent{BaseOwnedItem: readmodels.BaseOwnedItem{ID: r.ID, UserBaseID: int(r.BaseID)}, Prototype: buildPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.Faction, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ProductionTime, r.Space, r.ImageUrl, r.ControlData, r.ResourcesData, r.DefenseData, r.MilitaryData, r.IntelligenceData), Refund: refund}
 }
 
 // Build prototype detail helpers: JSONB (DTO shape) -> readmodels.* data

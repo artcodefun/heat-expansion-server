@@ -126,12 +126,13 @@ func (s MilitaryOperationService) ResolveAgainstDangerousLocation(loc *Dangerous
 			s.Attacker.TrimDeployedToSurvivors(s.Operation.ID, res.AttackerRemaining)
 			loc.ApplyDefenderArmyRemaining(res.DefenderRemaining)
 			loc.ApplyRemainingDefensiveStructures(res.RemainingStructures)
-			// Deduct loot from location resources
-			loc.DeductLoot(res.Loot)
+
 			// Clear trophies if they were taken
 			if len(res.Trophies) > 0 {
 				loc.Trophies = nil
 			}
+			// Deduct loot from location resources (emits Drained if empty)
+			loc.DeductLoot(res.Loot)
 		}
 	case MilitaryOperationTypeSpy:
 		allDefenders := loc.MaterializeDefenderArmySnapshot()

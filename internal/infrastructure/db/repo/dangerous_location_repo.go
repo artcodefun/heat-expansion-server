@@ -117,6 +117,13 @@ func (r *DangerousLocationRepo) Delete(id int) error {
 	return r.q.DeleteDangerousLocation(context.Background(), int64(id))
 }
 
+func (r *DangerousLocationRepo) DeleteByCoordinates(x, y int) error {
+	return r.q.DeleteDangerousLocationBySector(context.Background(), gen.DeleteDangerousLocationBySectorParams{
+		SectorX: int32(x),
+		SectorY: int32(y),
+	})
+}
+
 func (r *DangerousLocationRepo) loadPrototypes(ctx context.Context) (map[int]*domain.ArmyItemPrototype, map[int]*domain.BuildItemPrototype, error) {
 	// For now, load all of them as they are relatively few. In a larger game, we'd fetch only needed ones.
 	armyList, err := r.armyProtoRepo.FindAllPrototypes()

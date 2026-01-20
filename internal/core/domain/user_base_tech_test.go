@@ -29,7 +29,7 @@ func TestTech_StartAndSpeedUp_EmitsEvents(t *testing.T) {
 		t.Fatalf("expected 1 tech in progress, got %d", got)
 	}
 	// resources should be debited by tech price
-	if base.Stats.Credits != 10_000-250 {
+	if base.Stats.Credits != 1000-250 {
 		t.Fatalf("unexpected credits after StartTechResearch: %+v", base.Stats)
 	}
 

@@ -20,8 +20,22 @@ func (q *Queries) DeleteDangerousLocation(ctx context.Context, id int64) error {
 	return err
 }
 
+const deleteDangerousLocationBySector = `-- name: DeleteDangerousLocationBySector :exec
+DELETE FROM dangerous_locations WHERE sector_x = $1 AND sector_y = $2
+`
+
+type DeleteDangerousLocationBySectorParams struct {
+	SectorX int32 `json:"sector_x"`
+	SectorY int32 `json:"sector_y"`
+}
+
+func (q *Queries) DeleteDangerousLocationBySector(ctx context.Context, arg DeleteDangerousLocationBySectorParams) error {
+	_, err := q.exec(ctx, q.deleteDangerousLocationBySectorStmt, deleteDangerousLocationBySector, arg.SectorX, arg.SectorY)
+	return err
+}
+
 const findClosestDangerousLocation = `-- name: FindClosestDangerousLocation :one
-SELECT id, sector_x, sector_y, danger_level, name, description, image_url,
+SELECT id, sector_x, sector_y, defender_faction, total_worth, name, description, image_url,
        resources, resources_calc_timestamp, armies, buildings, trophies
 FROM dangerous_locations
 ORDER BY (sector_x - $1)^2 + (sector_y - $2)^2 ASC
@@ -40,7 +54,8 @@ func (q *Queries) FindClosestDangerousLocation(ctx context.Context, arg FindClos
 		&i.ID,
 		&i.SectorX,
 		&i.SectorY,
-		&i.DangerLevel,
+		&i.DefenderFaction,
+		&i.TotalWorth,
 		&i.Name,
 		&i.Description,
 		&i.ImageUrl,
@@ -55,7 +70,7 @@ func (q *Queries) FindClosestDangerousLocation(ctx context.Context, arg FindClos
 
 const getDangerousLocationByID = `-- name: GetDangerousLocationByID :one
 
-SELECT id, sector_x, sector_y, danger_level, name, description, image_url,
+SELECT id, sector_x, sector_y, defender_faction, total_worth, name, description, image_url,
        resources, resources_calc_timestamp, armies, buildings, trophies
 FROM dangerous_locations
 WHERE id = $1
@@ -69,7 +84,8 @@ func (q *Queries) GetDangerousLocationByID(ctx context.Context, id int64) (Dange
 		&i.ID,
 		&i.SectorX,
 		&i.SectorY,
-		&i.DangerLevel,
+		&i.DefenderFaction,
+		&i.TotalWorth,
 		&i.Name,
 		&i.Description,
 		&i.ImageUrl,
@@ -83,7 +99,7 @@ func (q *Queries) GetDangerousLocationByID(ctx context.Context, id int64) (Dange
 }
 
 const getDangerousLocationBySector = `-- name: GetDangerousLocationBySector :one
-SELECT id, sector_x, sector_y, danger_level, name, description, image_url,
+SELECT id, sector_x, sector_y, defender_faction, total_worth, name, description, image_url,
        resources, resources_calc_timestamp, armies, buildings, trophies
 FROM dangerous_locations
 WHERE sector_x = $1 AND sector_y = $2
@@ -101,7 +117,8 @@ func (q *Queries) GetDangerousLocationBySector(ctx context.Context, arg GetDange
 		&i.ID,
 		&i.SectorX,
 		&i.SectorY,
-		&i.DangerLevel,
+		&i.DefenderFaction,
+		&i.TotalWorth,
 		&i.Name,
 		&i.Description,
 		&i.ImageUrl,
@@ -115,7 +132,7 @@ func (q *Queries) GetDangerousLocationBySector(ctx context.Context, arg GetDange
 }
 
 const getDangerousLocationBySectorForUpdate = `-- name: GetDangerousLocationBySectorForUpdate :one
-SELECT id, sector_x, sector_y, danger_level, name, description, image_url,
+SELECT id, sector_x, sector_y, defender_faction, total_worth, name, description, image_url,
        resources, resources_calc_timestamp, armies, buildings, trophies
 FROM dangerous_locations
 WHERE sector_x = $1 AND sector_y = $2
@@ -134,7 +151,8 @@ func (q *Queries) GetDangerousLocationBySectorForUpdate(ctx context.Context, arg
 		&i.ID,
 		&i.SectorX,
 		&i.SectorY,
-		&i.DangerLevel,
+		&i.DefenderFaction,
+		&i.TotalWorth,
 		&i.Name,
 		&i.Description,
 		&i.ImageUrl,
@@ -149,11 +167,11 @@ func (q *Queries) GetDangerousLocationBySectorForUpdate(ctx context.Context, arg
 
 const insertDangerousLocation = `-- name: InsertDangerousLocation :one
 INSERT INTO dangerous_locations (
-    sector_x, sector_y, danger_level, name, description, image_url,
+    sector_x, sector_y, defender_faction, total_worth, name, description, image_url,
     resources, resources_calc_timestamp, armies, buildings, trophies
 ) VALUES (
-    $1, $2, $3, $4, $5, $6,
-    $7, $8, $9, $10, $11
+    $1, $2, $3, $4, $5, $6, $7,
+    $8, $9, $10, $11, $12
 )
 RETURNING id
 `
@@ -161,7 +179,8 @@ RETURNING id
 type InsertDangerousLocationParams struct {
 	SectorX                int32           `json:"sector_x"`
 	SectorY                int32           `json:"sector_y"`
-	DangerLevel            int32           `json:"danger_level"`
+	DefenderFaction        string          `json:"defender_faction"`
+	TotalWorth             int32           `json:"total_worth"`
 	Name                   sql.NullString  `json:"name"`
 	Description            sql.NullString  `json:"description"`
 	ImageUrl               sql.NullString  `json:"image_url"`
@@ -176,7 +195,8 @@ func (q *Queries) InsertDangerousLocation(ctx context.Context, arg InsertDangero
 	row := q.queryRow(ctx, q.insertDangerousLocationStmt, insertDangerousLocation,
 		arg.SectorX,
 		arg.SectorY,
-		arg.DangerLevel,
+		arg.DefenderFaction,
+		arg.TotalWorth,
 		arg.Name,
 		arg.Description,
 		arg.ImageUrl,
@@ -193,20 +213,22 @@ func (q *Queries) InsertDangerousLocation(ctx context.Context, arg InsertDangero
 
 const updateDangerousLocation = `-- name: UpdateDangerousLocation :exec
 UPDATE dangerous_locations
-SET danger_level = $1,
-    name = $2,
-    description = $3,
-    image_url = $4,
-    resources = $5,
-    resources_calc_timestamp = $6,
-    armies = $7,
-    buildings = $8,
-    trophies = $9
-WHERE id = $10
+SET defender_faction = $1,
+    total_worth = $2,
+    name = $3,
+    description = $4,
+    image_url = $5,
+    resources = $6,
+    resources_calc_timestamp = $7,
+    armies = $8,
+    buildings = $9,
+    trophies = $10
+WHERE id = $11
 `
 
 type UpdateDangerousLocationParams struct {
-	DangerLevel            int32           `json:"danger_level"`
+	DefenderFaction        string          `json:"defender_faction"`
+	TotalWorth             int32           `json:"total_worth"`
 	Name                   sql.NullString  `json:"name"`
 	Description            sql.NullString  `json:"description"`
 	ImageUrl               sql.NullString  `json:"image_url"`
@@ -220,7 +242,8 @@ type UpdateDangerousLocationParams struct {
 
 func (q *Queries) UpdateDangerousLocation(ctx context.Context, arg UpdateDangerousLocationParams) error {
 	_, err := q.exec(ctx, q.updateDangerousLocationStmt, updateDangerousLocation,
-		arg.DangerLevel,
+		arg.DefenderFaction,
+		arg.TotalWorth,
 		arg.Name,
 		arg.Description,
 		arg.ImageUrl,

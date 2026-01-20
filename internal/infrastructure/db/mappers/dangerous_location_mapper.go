@@ -39,9 +39,10 @@ func DangerousLocationFromDB(r gen.DangerousLocation, armyProtos map[int]*domain
 	}
 
 	return &domain.DangerousLocationModel{
-		ID:          int(r.ID),
-		Coordinates: domain.Vector2i{X: int(r.SectorX), Y: int(r.SectorY)},
-		DangerLevel: int(r.DangerLevel),
+		ID:              int(r.ID),
+		Coordinates:     domain.Vector2i{X: int(r.SectorX), Y: int(r.SectorY)},
+		DefenderFaction: domain.Faction(r.DefenderFaction),
+		TotalWorth:      int(r.TotalWorth),
 		LocationDetails: domain.LocationDetails{
 			Name:        nullStringToString(&r.Name.String, r.Name.Valid),
 			Description: nullStringToString(&r.Description.String, r.Description.Valid),
@@ -74,7 +75,8 @@ func InsertDangerousLocationParamsFromDomain(loc *domain.DangerousLocationModel)
 	return gen.InsertDangerousLocationParams{
 		SectorX:                int32(loc.Coordinates.X),
 		SectorY:                int32(loc.Coordinates.Y),
-		DangerLevel:            int32(loc.DangerLevel),
+		DefenderFaction:        string(loc.DefenderFaction),
+		TotalWorth:             int32(loc.TotalWorth),
 		Name:                   toNullString(loc.Name),
 		Description:            toNullString(loc.Description),
 		ImageUrl:               toNullString(loc.ImageURL),
@@ -105,7 +107,8 @@ func UpdateDangerousLocationParamsFromDomain(loc *domain.DangerousLocationModel)
 	trophiesJSON, _ := json.Marshal(trophyDTOs)
 	return gen.UpdateDangerousLocationParams{
 		ID:                     int64(loc.ID),
-		DangerLevel:            int32(loc.DangerLevel),
+		DefenderFaction:        string(loc.DefenderFaction),
+		TotalWorth:             int32(loc.TotalWorth),
 		Name:                   toNullString(loc.Name),
 		Description:            toNullString(loc.Description),
 		ImageUrl:               toNullString(loc.ImageURL),

@@ -32,15 +32,16 @@ func ResourceLocationFromDB(r gen.ResourceLocation, armyProtos map[int]*domain.A
 	}
 
 	return &domain.ResourceLocationModel{
-		ID:          int(r.ID),
-		Coordinates: domain.Vector2i{X: int(r.SectorX), Y: int(r.SectorY)},
+		ID:              int(r.ID),
+		Coordinates:     domain.Vector2i{X: int(r.SectorX), Y: int(r.SectorY)},
+		DefenderFaction: domain.Faction(r.DefenderFaction),
 		LocationDetails: domain.LocationDetails{
 			Name:        nullStringToString(&r.Name.String, r.Name.Valid),
 			Description: nullStringToString(&r.Description.String, r.Description.Valid),
 			ImageURL:    nullStringToString(&r.ImageUrl.String, r.ImageUrl.Valid),
 		},
-		Type:                r.Type,
-		Amount:              int(r.Amount),
+		Type:                domain.ResourceType(r.ResourceType),
+		TotalWorth:          int(r.TotalWorth),
 		Resources:           res,
 		DefendingArmies:     armies,
 		DefendingStructures: structs,
@@ -62,8 +63,9 @@ func InsertResourceLocationParamsFromDomain(loc *domain.ResourceLocationModel) g
 	return gen.InsertResourceLocationParams{
 		SectorX:                int32(loc.Coordinates.X),
 		SectorY:                int32(loc.Coordinates.Y),
-		Type:                   loc.Type,
-		Amount:                 int32(loc.Amount),
+		ResourceType:           string(loc.Type),
+		DefenderFaction:        string(loc.DefenderFaction),
+		TotalWorth:             int32(loc.TotalWorth),
 		Name:                   toNullString(loc.Name),
 		Description:            toNullString(loc.Description),
 		ImageUrl:               toNullString(loc.ImageURL),
@@ -88,8 +90,9 @@ func UpdateResourceLocationParamsFromDomain(loc *domain.ResourceLocationModel) g
 	buildingsJSON, _ := json.Marshal(structsDTO)
 	return gen.UpdateResourceLocationParams{
 		ID:                     int64(loc.ID),
-		Type:                   loc.Type,
-		Amount:                 int32(loc.Amount),
+		ResourceType:           string(loc.Type),
+		DefenderFaction:        string(loc.DefenderFaction),
+		TotalWorth:             int32(loc.TotalWorth),
 		Name:                   toNullString(loc.Name),
 		Description:            toNullString(loc.Description),
 		ImageUrl:               toNullString(loc.ImageURL),

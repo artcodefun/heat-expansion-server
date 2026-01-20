@@ -12,7 +12,6 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"github.com/artcodefun/heat-expansion-api/internal/core/ports"
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/jobs"
 	httpapi "github.com/artcodefun/heat-expansion-api/internal/interfaces/http"
 )
@@ -138,9 +137,7 @@ func (a *App) Run() {
 	}()
 
 	// Seed initial world generation job (after short delay) if not already present.
-	if s, ok := a.Adapters.Scheduler.(*jobs.DBScheduler); ok {
-		_ = s.EnsureScheduled(ports.SpawnNearbyLocationsJob{}, time.Now().Unix()+10)
-	}
+	// This is now handled per-base via UserBaseCreatedEvent and historical migrations.
 
 	addr := fmt.Sprintf(":%s", a.Port)
 	fmt.Printf("Listening on %s\n", addr)

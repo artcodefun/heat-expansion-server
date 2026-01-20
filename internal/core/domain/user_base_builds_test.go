@@ -12,7 +12,7 @@ func TestBuilding_MoveAndSpeedUpProduction_EmitsEvents(t *testing.T) {
 		ID:             1,
 		Name:           "Mine",
 		Category:       BuildCategoryResources,
-		Price:          PriceModel{Credits: 100, Iron: 50, Titanium: 30, Antimatter: 20},
+		Price:          PriceModel{Credits: 100, Iron: 50, Titanium: 10, Antimatter: 1},
 		ProductionTime: 120,
 		Space:          2,
 	}
@@ -25,7 +25,7 @@ func TestBuilding_MoveAndSpeedUpProduction_EmitsEvents(t *testing.T) {
 		t.Fatalf("expected 1 building in production, got %d", got)
 	}
 	// resources should be debited exactly by prototype price
-	if base.Stats.Credits != 10_000-100 || base.Stats.Iron != 10_000-50 || base.Stats.Titanium != 10_000-30 || base.Stats.Antimatter != 10_000-20 {
+	if base.Stats.Credits != 1000-100 || base.Stats.Iron != 250-50 || base.Stats.Titanium != 50-10 || base.Stats.Antimatter != 3-1 {
 		t.Fatalf("unexpected stats after AddToBuildQueue: %+v", base.Stats)
 	}
 	// space usage should reflect the building's space
@@ -136,7 +136,7 @@ func TestBuilding_AddToBuildQueue_NotEnoughSpace(t *testing.T) {
 	if len(base.BuildingsPending) != 0 || len(base.BuildingsInProduction) != 0 {
 		t.Fatalf("expected no buildings queued or in production after space error")
 	}
-	if base.Stats.Credits != 10_000 || base.Stats.Iron != 10_000 || base.Stats.Titanium != 10_000 || base.Stats.Antimatter != 10_000 {
+	if base.Stats.Credits != 1000 || base.Stats.Iron != 250 || base.Stats.Titanium != 50 || base.Stats.Antimatter != 3 {
 		t.Fatalf("expected resources to remain unchanged after space error, got %+v", base.Stats)
 	}
 }

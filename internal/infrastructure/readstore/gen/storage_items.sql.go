@@ -16,7 +16,7 @@ import (
 
 const listPresentStorageItems = `-- name: ListPresentStorageItems :many
 
-SELECT bsi.id, bsi.base_id, bsi.prototype_id, bsi.status, bsi.present_data, bsi.state, p.id AS proto_id, p.name, p.category, p.short_description, p.full_description, p.image_url, p.buff_data, p.intel_data, p.damaged_data, p.artifact_data, p.consumable_data
+SELECT bsi.id, bsi.base_id, bsi.prototype_id, bsi.status, bsi.present_data, bsi.state, p.id AS proto_id, p.name, p.category, p.estimated_worth, p.short_description, p.full_description, p.image_url, p.buff_data, p.intel_data, p.damaged_data, p.artifact_data, p.consumable_data
 FROM base_storage_items bsi
 JOIN storage_item_prototypes p ON p.id = bsi.prototype_id
 WHERE bsi.base_id = $1 AND p.category = $2 AND bsi.status = 'PRESENT'
@@ -38,6 +38,7 @@ type ListPresentStorageItemsRow struct {
 	ProtoID          int64                 `json:"proto_id"`
 	Name             string                `json:"name"`
 	Category         string                `json:"category"`
+	EstimatedWorth   int32                 `json:"estimated_worth"`
 	ShortDescription sql.NullString        `json:"short_description"`
 	FullDescription  sql.NullString        `json:"full_description"`
 	ImageUrl         sql.NullString        `json:"image_url"`
@@ -68,6 +69,7 @@ func (q *Queries) ListPresentStorageItems(ctx context.Context, arg ListPresentSt
 			&i.ProtoID,
 			&i.Name,
 			&i.Category,
+			&i.EstimatedWorth,
 			&i.ShortDescription,
 			&i.FullDescription,
 			&i.ImageUrl,

@@ -2,10 +2,12 @@ package domain
 
 // DangerousLocationModel represents a dangerous site in a sector.
 type DangerousLocationModel struct {
-	ID          int
-	Coordinates Vector2i
+	EventProducer
+	ID              int
+	Coordinates     Vector2i
+	DefenderFaction Faction
 	LocationDetails
-	DangerLevel int
+	TotalWorth int // Rough worth in credits
 	// ...other dangerous location-specific fields
 
 	// Available resources at this location (lootable pool)
@@ -19,9 +21,79 @@ type DangerousLocationModel struct {
 	Trophies []TrophyStorageItem
 }
 
+// NewDangerousLocation creates and initializes a DangerousLocationModel.
+func NewDangerousLocation(
+	coords Vector2i,
+	faction Faction,
+	totalWorth int,
+	storageProtos []*StorageItemPrototype,
+	armyProtos []*ArmyItemPrototype,
+	buildProtos []*BuildItemPrototype,
+) *DangerousLocationModel {
+	loc := &DangerousLocationModel{
+		Coordinates:     coords,
+		DefenderFaction: faction,
+		TotalWorth:      totalWorth,
+	}
+	loc.FillTrophiesAndResources(storageProtos)
+	loc.FillDefenders(armyProtos, buildProtos)
+	return loc
+}
+
+// CheckIfDrained checks if resources, trophies, and defenders are all empty and emits an event if so.
+func (dl *DangerousLocationModel) CheckIfDrained() {
+	if !dl.Resources.IsEmpty() || len(dl.Trophies) > 0 {
+		return
+	}
+	for _, stack := range dl.DefendingArmies {
+		if stack.Count > 0 {
+			return
+		}
+	}
+	for _, stack := range dl.DefendingStructures {
+		if stack.Count > 0 {
+			return
+		}
+	}
+	dl.AddEvent(NewLocationDrainedEvent(dl.Coordinates.X, dl.Coordinates.Y, LocationTypeDangerous))
+}
+
 // TrophyStorageItem represents a special item granted when a dangerous location is defeated.
 type TrophyStorageItem struct {
 	PrototypeID int
+}
+
+// FillTrophiesAndResources populates the location with trophies from a pool and fills the rest with resources.
+func (dl *DangerousLocationModel) FillTrophiesAndResources(availableTrophies []*StorageItemPrototype) {
+	totalBudget := float64(dl.TotalWorth)
+	trophyBudget := totalBudget * 0.8
+	resourceBudget := totalBudget * 0.2
+
+	spentOnTrophies := 0.0
+
+	// 1. Try to pick trophies that fit in the 80% budget
+	// Shuffling or better selection logic could be applied here.
+	for _, p := range availableTrophies {
+		worth := float64(p.EstimatedWorth)
+		if worth > 0 && worth <= (trophyBudget-spentOnTrophies) {
+			dl.Trophies = append(dl.Trophies, TrophyStorageItem{
+				PrototypeID: p.ID,
+			})
+			spentOnTrophies += worth
+		}
+	}
+
+	// 2. Any remainder from the trophy budget is added to the resource budget (20%)
+	remainingTrophyBudget := trophyBudget - spentOnTrophies
+	totalResourceBudget := resourceBudget + remainingTrophyBudget
+
+	// 3. Fill the resources using the helper
+	dl.Resources.FillFromBudget(totalResourceBudget, "", 0)
+}
+
+// FillDefenders populates the location with defenders based on its TotalWorth and Faction.
+func (dl *DangerousLocationModel) FillDefenders(armyProtos []*ArmyItemPrototype, buildProtos []*BuildItemPrototype) {
+	FillDefenders(&dl.DefendingArmies, &dl.DefendingStructures, dl.DefenderFaction, dl.TotalWorth, armyProtos, buildProtos)
 }
 
 // MaterializeDefenderArmySnapshot builds battle-ready snapshots using current prototype values.
@@ -96,4 +168,6 @@ func (dl *DangerousLocationModel) DeductLoot(loot PriceModel) {
 	dl.Resources.Iron = maxInt(dl.Resources.Iron-loot.Iron, 0)
 	dl.Resources.Titanium = maxInt(dl.Resources.Titanium-loot.Titanium, 0)
 	dl.Resources.Antimatter = maxInt(dl.Resources.Antimatter-loot.Antimatter, 0)
+
+	dl.CheckIfDrained()
 }

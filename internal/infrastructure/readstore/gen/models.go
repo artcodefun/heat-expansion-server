@@ -40,6 +40,7 @@ type ArmyItemPrototype struct {
 	ID                 int64           `json:"id"`
 	Name               string          `json:"name"`
 	Category           string          `json:"category"`
+	Faction            string          `json:"faction"`
 	UnlockTechnologyID sql.NullInt64   `json:"unlock_technology_id"`
 	ShortDescription   sql.NullString  `json:"short_description"`
 	FullDescription    sql.NullString  `json:"full_description"`
@@ -101,6 +102,7 @@ type BuildItemPrototype struct {
 	ID                 int64                 `json:"id"`
 	Name               string                `json:"name"`
 	Category           string                `json:"category"`
+	Faction            string                `json:"faction"`
 	UnlockTechnologyID sql.NullInt64         `json:"unlock_technology_id"`
 	ShortDescription   sql.NullString        `json:"short_description"`
 	FullDescription    sql.NullString        `json:"full_description"`
@@ -119,7 +121,8 @@ type DangerousLocation struct {
 	ID                     int64           `json:"id"`
 	SectorX                int32           `json:"sector_x"`
 	SectorY                int32           `json:"sector_y"`
-	DangerLevel            int32           `json:"danger_level"`
+	DefenderFaction        string          `json:"defender_faction"`
+	TotalWorth             int32           `json:"total_worth"`
 	Name                   sql.NullString  `json:"name"`
 	Description            sql.NullString  `json:"description"`
 	ImageUrl               sql.NullString  `json:"image_url"`
@@ -186,8 +189,9 @@ type ResourceLocation struct {
 	ID                     int64           `json:"id"`
 	SectorX                int32           `json:"sector_x"`
 	SectorY                int32           `json:"sector_y"`
-	Type                   string          `json:"type"`
-	Amount                 int32           `json:"amount"`
+	ResourceType           string          `json:"resource_type"`
+	DefenderFaction        string          `json:"defender_faction"`
+	TotalWorth             int32           `json:"total_worth"`
 	Name                   sql.NullString  `json:"name"`
 	Description            sql.NullString  `json:"description"`
 	ImageUrl               sql.NullString  `json:"image_url"`
@@ -237,6 +241,7 @@ type StorageItemPrototype struct {
 	ID               int64                 `json:"id"`
 	Name             string                `json:"name"`
 	Category         string                `json:"category"`
+	EstimatedWorth   int32                 `json:"estimated_worth"`
 	ShortDescription sql.NullString        `json:"short_description"`
 	FullDescription  sql.NullString        `json:"full_description"`
 	ImageUrl         sql.NullString        `json:"image_url"`

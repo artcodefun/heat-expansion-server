@@ -13,6 +13,8 @@ import (
 type Querier interface {
 	ClaimDueScheduledJobs(ctx context.Context, arg ClaimDueScheduledJobsParams) ([]ScheduledJob, error)
 	ClaimUnpublishedOutboxEvents(ctx context.Context, limit int32) ([]DomainEvent, error)
+	CountDangerousLocationsInRange(ctx context.Context, arg CountDangerousLocationsInRangeParams) (int64, error)
+	CountResourcefulLocationsInRange(ctx context.Context, arg CountResourcefulLocationsInRangeParams) (int64, error)
 	// User bases queries
 	CreateBase(ctx context.Context, arg CreateBaseParams) (UserBasis, error)
 	// Sector queries
@@ -25,9 +27,11 @@ type Querier interface {
 	DeleteBaseStorageItemsByBase(ctx context.Context, baseID int64) error
 	DeleteBaseTechItemsByBase(ctx context.Context, baseID int64) error
 	DeleteDangerousLocation(ctx context.Context, id int64) error
+	DeleteDangerousLocationBySector(ctx context.Context, arg DeleteDangerousLocationBySectorParams) error
 	DeleteExpiredAlerts(ctx context.Context, expiresAt int64) error
 	DeleteMilitaryOperation(ctx context.Context, id int64) error
 	DeleteResourceLocation(ctx context.Context, id int64) error
+	DeleteResourceLocationBySector(ctx context.Context, arg DeleteResourceLocationBySectorParams) error
 	DeleteScanReport(ctx context.Context, id int64) error
 	FindClosestBase(ctx context.Context, arg FindClosestBaseParams) (UserBasis, error)
 	FindClosestDangerousLocation(ctx context.Context, arg FindClosestDangerousLocationParams) (DangerousLocation, error)

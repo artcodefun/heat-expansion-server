@@ -6,12 +6,12 @@ import (
 
 // Default capacities and stats for UserBaseStats
 const (
-	DefaultCreditsCapacity       = 10000
-	DefaultIronCapacity          = 5000
-	DefaultTitaniumCapacity      = 2500
-	DefaultAntimatterCapacity    = 1000
-	DefaultMaxSpace              = 50
-	DefaultMaxOperations         = 3
+	DefaultCreditsCapacity       = 1000
+	DefaultIronCapacity          = 250
+	DefaultTitaniumCapacity      = 50
+	DefaultAntimatterCapacity    = 3
+	DefaultMaxSpace              = 100
+	DefaultMaxOperations         = 2
 	DefaultMaxActiveBuffs        = 2
 	DefaultMaxActiveArtifacts    = 1
 	DefaultMaxBuildingProduction = 1

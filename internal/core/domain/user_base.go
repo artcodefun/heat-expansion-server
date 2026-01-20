@@ -51,6 +51,14 @@ func NewUserBaseModel(baseID int, userID int, coords Vector2i) *UserBaseModel {
 	return ub
 }
 
+// EmitCreated records a domain event indicating this base has been created.
+func (ub *UserBaseModel) EmitCreated() {
+	if ub == nil || ub.ID <= 0 {
+		return
+	}
+	ub.AddEvent(NewUserBaseCreatedEvent(ub.ID, ub.UserID))
+}
+
 // BaseOwnedItem is embedded in all items that belong to a user base.
 type BaseOwnedItem struct {
 	ID         uuid.UUID

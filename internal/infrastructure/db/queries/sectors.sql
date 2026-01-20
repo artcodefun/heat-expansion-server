@@ -49,3 +49,19 @@ SELECT CASE
     ) THEN 'DANGEROUS'
     ELSE 'EMPTY'
 END AS location_type;
+
+-- name: CountResourcefulLocationsInRange :one
+SELECT COUNT(*) FROM resource_locations
+WHERE sector_x >= (sqlc.arg('center_x')::int - sqlc.arg('radius')::int)
+  AND sector_x <= (sqlc.arg('center_x')::int + sqlc.arg('radius')::int)
+  AND sector_y >= (sqlc.arg('center_y')::int - sqlc.arg('radius')::int)
+  AND sector_y <= (sqlc.arg('center_y')::int + sqlc.arg('radius')::int)
+  AND (sector_x - sqlc.arg('center_x')::int)^2 + (sector_y - sqlc.arg('center_y')::int)^2 <= (sqlc.arg('radius')::int * sqlc.arg('radius')::int);
+
+-- name: CountDangerousLocationsInRange :one
+SELECT COUNT(*) FROM dangerous_locations
+WHERE sector_x >= (sqlc.arg('center_x')::int - sqlc.arg('radius')::int)
+  AND sector_x <= (sqlc.arg('center_x')::int + sqlc.arg('radius')::int)
+  AND sector_y >= (sqlc.arg('center_y')::int - sqlc.arg('radius')::int)
+  AND sector_y <= (sqlc.arg('center_y')::int + sqlc.arg('radius')::int)
+  AND (sector_x - sqlc.arg('center_x')::int)^2 + (sector_y - sqlc.arg('center_y')::int)^2 <= (sqlc.arg('radius')::int * sqlc.arg('radius')::int);

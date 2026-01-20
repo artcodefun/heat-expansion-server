@@ -20,8 +20,22 @@ func (q *Queries) DeleteResourceLocation(ctx context.Context, id int64) error {
 	return err
 }
 
+const deleteResourceLocationBySector = `-- name: DeleteResourceLocationBySector :exec
+DELETE FROM resource_locations WHERE sector_x = $1 AND sector_y = $2
+`
+
+type DeleteResourceLocationBySectorParams struct {
+	SectorX int32 `json:"sector_x"`
+	SectorY int32 `json:"sector_y"`
+}
+
+func (q *Queries) DeleteResourceLocationBySector(ctx context.Context, arg DeleteResourceLocationBySectorParams) error {
+	_, err := q.exec(ctx, q.deleteResourceLocationBySectorStmt, deleteResourceLocationBySector, arg.SectorX, arg.SectorY)
+	return err
+}
+
 const findClosestResourceLocation = `-- name: FindClosestResourceLocation :one
-SELECT id, sector_x, sector_y, type, amount, name, description, image_url,
+SELECT id, sector_x, sector_y, resource_type, defender_faction, total_worth, name, description, image_url,
        resources, resources_calc_timestamp, armies, buildings
 FROM resource_locations
 ORDER BY (sector_x - $1)^2 + (sector_y - $2)^2 ASC
@@ -40,8 +54,9 @@ func (q *Queries) FindClosestResourceLocation(ctx context.Context, arg FindClose
 		&i.ID,
 		&i.SectorX,
 		&i.SectorY,
-		&i.Type,
-		&i.Amount,
+		&i.ResourceType,
+		&i.DefenderFaction,
+		&i.TotalWorth,
 		&i.Name,
 		&i.Description,
 		&i.ImageUrl,
@@ -55,7 +70,7 @@ func (q *Queries) FindClosestResourceLocation(ctx context.Context, arg FindClose
 
 const getResourceLocationByID = `-- name: GetResourceLocationByID :one
 
-SELECT id, sector_x, sector_y, type, amount, name, description, image_url,
+SELECT id, sector_x, sector_y, resource_type, defender_faction, total_worth, name, description, image_url,
        resources, resources_calc_timestamp, armies, buildings
 FROM resource_locations
 WHERE id = $1
@@ -69,8 +84,9 @@ func (q *Queries) GetResourceLocationByID(ctx context.Context, id int64) (Resour
 		&i.ID,
 		&i.SectorX,
 		&i.SectorY,
-		&i.Type,
-		&i.Amount,
+		&i.ResourceType,
+		&i.DefenderFaction,
+		&i.TotalWorth,
 		&i.Name,
 		&i.Description,
 		&i.ImageUrl,
@@ -83,7 +99,7 @@ func (q *Queries) GetResourceLocationByID(ctx context.Context, id int64) (Resour
 }
 
 const getResourceLocationBySector = `-- name: GetResourceLocationBySector :one
-SELECT id, sector_x, sector_y, type, amount, name, description, image_url,
+SELECT id, sector_x, sector_y, resource_type, defender_faction, total_worth, name, description, image_url,
        resources, resources_calc_timestamp, armies, buildings
 FROM resource_locations
 WHERE sector_x = $1 AND sector_y = $2
@@ -101,8 +117,9 @@ func (q *Queries) GetResourceLocationBySector(ctx context.Context, arg GetResour
 		&i.ID,
 		&i.SectorX,
 		&i.SectorY,
-		&i.Type,
-		&i.Amount,
+		&i.ResourceType,
+		&i.DefenderFaction,
+		&i.TotalWorth,
 		&i.Name,
 		&i.Description,
 		&i.ImageUrl,
@@ -115,7 +132,7 @@ func (q *Queries) GetResourceLocationBySector(ctx context.Context, arg GetResour
 }
 
 const getResourceLocationBySectorForUpdate = `-- name: GetResourceLocationBySectorForUpdate :one
-SELECT id, sector_x, sector_y, type, amount, name, description, image_url,
+SELECT id, sector_x, sector_y, resource_type, defender_faction, total_worth, name, description, image_url,
        resources, resources_calc_timestamp, armies, buildings
 FROM resource_locations
 WHERE sector_x = $1 AND sector_y = $2
@@ -134,8 +151,9 @@ func (q *Queries) GetResourceLocationBySectorForUpdate(ctx context.Context, arg 
 		&i.ID,
 		&i.SectorX,
 		&i.SectorY,
-		&i.Type,
-		&i.Amount,
+		&i.ResourceType,
+		&i.DefenderFaction,
+		&i.TotalWorth,
 		&i.Name,
 		&i.Description,
 		&i.ImageUrl,
@@ -149,11 +167,11 @@ func (q *Queries) GetResourceLocationBySectorForUpdate(ctx context.Context, arg 
 
 const insertResourceLocation = `-- name: InsertResourceLocation :one
 INSERT INTO resource_locations (
-    sector_x, sector_y, type, amount, name, description, image_url,
+    sector_x, sector_y, resource_type, defender_faction, total_worth, name, description, image_url,
     resources, resources_calc_timestamp, armies, buildings
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7,
-    $8, $9, $10, $11
+    $1, $2, $3, $4, $5, $6, $7, $8,
+    $9, $10, $11, $12
 )
 RETURNING id
 `
@@ -161,8 +179,9 @@ RETURNING id
 type InsertResourceLocationParams struct {
 	SectorX                int32           `json:"sector_x"`
 	SectorY                int32           `json:"sector_y"`
-	Type                   string          `json:"type"`
-	Amount                 int32           `json:"amount"`
+	ResourceType           string          `json:"resource_type"`
+	DefenderFaction        string          `json:"defender_faction"`
+	TotalWorth             int32           `json:"total_worth"`
 	Name                   sql.NullString  `json:"name"`
 	Description            sql.NullString  `json:"description"`
 	ImageUrl               sql.NullString  `json:"image_url"`
@@ -176,8 +195,9 @@ func (q *Queries) InsertResourceLocation(ctx context.Context, arg InsertResource
 	row := q.queryRow(ctx, q.insertResourceLocationStmt, insertResourceLocation,
 		arg.SectorX,
 		arg.SectorY,
-		arg.Type,
-		arg.Amount,
+		arg.ResourceType,
+		arg.DefenderFaction,
+		arg.TotalWorth,
 		arg.Name,
 		arg.Description,
 		arg.ImageUrl,
@@ -193,21 +213,23 @@ func (q *Queries) InsertResourceLocation(ctx context.Context, arg InsertResource
 
 const updateResourceLocation = `-- name: UpdateResourceLocation :exec
 UPDATE resource_locations
-SET type = $1,
-    amount = $2,
-    name = $3,
-    description = $4,
-    image_url = $5,
-    resources = $6,
-    resources_calc_timestamp = $7,
-    armies = $8,
-    buildings = $9
-WHERE id = $10
+SET resource_type = $1,
+    defender_faction = $2,
+    total_worth = $3,
+    name = $4,
+    description = $5,
+    image_url = $6,
+    resources = $7,
+    resources_calc_timestamp = $8,
+    armies = $9,
+    buildings = $10
+WHERE id = $11
 `
 
 type UpdateResourceLocationParams struct {
-	Type                   string          `json:"type"`
-	Amount                 int32           `json:"amount"`
+	ResourceType           string          `json:"resource_type"`
+	DefenderFaction        string          `json:"defender_faction"`
+	TotalWorth             int32           `json:"total_worth"`
 	Name                   sql.NullString  `json:"name"`
 	Description            sql.NullString  `json:"description"`
 	ImageUrl               sql.NullString  `json:"image_url"`
@@ -220,8 +242,9 @@ type UpdateResourceLocationParams struct {
 
 func (q *Queries) UpdateResourceLocation(ctx context.Context, arg UpdateResourceLocationParams) error {
 	_, err := q.exec(ctx, q.updateResourceLocationStmt, updateResourceLocation,
-		arg.Type,
-		arg.Amount,
+		arg.ResourceType,
+		arg.DefenderFaction,
+		arg.TotalWorth,
 		arg.Name,
 		arg.Description,
 		arg.ImageUrl,

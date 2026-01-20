@@ -14,6 +14,9 @@ type WorldGenerationCommands struct {
 	Sectors              ports.SectorRepository
 	ResourceLocations    ports.ResourceLocationRepository
 	DangerousLocations   ports.DangerousLocationRepository
+	StoragePrototypes    ports.StoragePrototypeRepository
+	ArmyPrototypes       ports.ArmyPrototypeRepository
+	BuildPrototypes      ports.BuildPrototypeRepository
 	Content              ports.ContentGenerator
 	Provisioner          *services.SectorProvisioningService
 	Scheduler            ports.Scheduler
@@ -25,56 +28,85 @@ type WorldGenerationCommands struct {
 	SpawnAttemptsPerJob  int
 }
 
-func NewWorldGenerationCommands(bases ports.UserBaseRepository, sectors ports.SectorRepository, res ports.ResourceLocationRepository, dang ports.DangerousLocationRepository, content ports.ContentGenerator, provisioner *services.SectorProvisioningService, scheduler ports.Scheduler, txMgr ports.TransactionManager) *WorldGenerationCommands {
-	return &WorldGenerationCommands{UserBases: bases, Sectors: sectors, ResourceLocations: res, DangerousLocations: dang, Content: content, Provisioner: provisioner, Scheduler: scheduler, TxMgr: txMgr, SpawnRadius: 10, MaxResourcefulNearby: 12, MaxDangerousNearby: 6, RespawnPeriodSeconds: 3600, SpawnAttemptsPerJob: 20}
+func NewWorldGenerationCommands(
+	bases ports.UserBaseRepository,
+	sectors ports.SectorRepository,
+	res ports.ResourceLocationRepository,
+	dang ports.DangerousLocationRepository,
+	storage ports.StoragePrototypeRepository,
+	army ports.ArmyPrototypeRepository,
+	build ports.BuildPrototypeRepository,
+	content ports.ContentGenerator,
+	provisioner *services.SectorProvisioningService,
+	scheduler ports.Scheduler,
+	txMgr ports.TransactionManager,
+) *WorldGenerationCommands {
+	return &WorldGenerationCommands{
+		UserBases:            bases,
+		Sectors:              sectors,
+		ResourceLocations:    res,
+		DangerousLocations:   dang,
+		StoragePrototypes:    storage,
+		ArmyPrototypes:       army,
+		BuildPrototypes:      build,
+		Content:              content,
+		Provisioner:          provisioner,
+		Scheduler:            scheduler,
+		TxMgr:                txMgr,
+		SpawnRadius:          10,
+		MaxResourcefulNearby: 12,
+		MaxDangerousNearby:   6,
+		RespawnPeriodSeconds: 3600,
+		SpawnAttemptsPerJob:  20,
+	}
 }
 
 func (c *WorldGenerationCommands) HandleSpawnNearbyLocationsJob(job ports.SpawnNearbyLocationsJob) error {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	bases, err := c.UserBases.FindAll()
-	if err != nil || len(bases) == 0 {
-		c.reschedule()
+
+	if job.BaseID == 0 {
 		return nil
 	}
-	base := bases[r.Intn(len(bases))]
-	baseSector, err := c.Sectors.FindByCoordinates(base.Coordinates.X, base.Coordinates.Y)
-	if err != nil || baseSector == nil {
-		c.reschedule()
-		return nil
-	}
-	sectors, err := c.Sectors.FindAll()
+
+	base, err := c.UserBases.FindByID(job.BaseID)
 	if err != nil {
-		c.reschedule()
+		// If base is gone, stop rescheduling
 		return nil
 	}
-	r2 := c.SpawnRadius * c.SpawnRadius
-	resourceCount := 0
-	dangerousCount := 0
-	for _, s := range sectors {
-		dx := s.Coordinates.X - baseSector.Coordinates.X
-		dy := s.Coordinates.Y - baseSector.Coordinates.Y
-		if dx*dx+dy*dy <= r2 {
-			lt, _ := c.Sectors.GetLocationTypeByCoordinates(s.Coordinates.X, s.Coordinates.Y)
-			switch lt {
-			case domain.LocationTypeResourceful:
-				resourceCount++
-			case domain.LocationTypeDangerous:
-				dangerousCount++
-			}
-		}
+
+	center := base.Coordinates
+
+	// 2. Count locations in range using SQL
+	resourceCount, dangerousCount, err := c.Sectors.CountLocationsInRange(center.X, center.Y, c.SpawnRadius)
+	if err != nil {
+		c.reschedule(job.BaseID)
+		return nil
 	}
+
 	if resourceCount >= c.MaxResourcefulNearby && dangerousCount >= c.MaxDangerousNearby {
-		c.reschedule()
+		c.reschedule(job.BaseID)
 		return nil
 	}
+
+	// Development scaling: Use MaxSpace as a proxy for base level (default is 100)
+	scaleFactor := float64(base.Stats.MaxSpace) / float64(domain.DefaultMaxSpace)
+	if scaleFactor < 1.0 {
+		scaleFactor = 1.0
+	}
+
+	storageProtos, _ := c.StoragePrototypes.FindAllPrototypes()
+	armyProtos, _ := c.ArmyPrototypes.FindAllPrototypes()
+	buildProtos, _ := c.BuildPrototypes.FindAllPrototypes()
+
+	r2 := c.SpawnRadius * c.SpawnRadius
 	for i := 0; i < c.SpawnAttemptsPerJob; i++ {
 		dx := r.Intn(2*c.SpawnRadius+1) - c.SpawnRadius
 		dy := r.Intn(2*c.SpawnRadius+1) - c.SpawnRadius
 		if dx*dx+dy*dy > r2 {
 			continue
 		}
-		targetX := baseSector.Coordinates.X + dx
-		targetY := baseSector.Coordinates.Y + dy
+		targetX := center.X + dx
+		targetY := center.Y + dy
 		tSector, _ := c.Sectors.FindByCoordinates(targetX, targetY)
 		if tSector == nil {
 			_ = c.TxMgr.WithTx(func(tx ports.Transaction) error {
@@ -89,17 +121,63 @@ func (c *WorldGenerationCommands) HandleSpawnNearbyLocationsJob(job ports.SpawnN
 		}
 		roll := r.Float64()
 		if resourceCount < c.MaxResourcefulNearby && (roll < 0.7 || dangerousCount >= c.MaxDangerousNearby) {
-			loc := &domain.ResourceLocationModel{Coordinates: tSector.Coordinates, Type: "GENERIC_NODE", Amount: 0, Resources: domain.LocationResourceStats{Credits: r.Intn(500) + 100, Iron: r.Intn(400) + 80, Titanium: r.Intn(300) + 60, Antimatter: r.Intn(200) + 40, CalculationTimestamp: domain.NowUnix()}}
+			resTypes := []domain.ResourceType{domain.ResourceTypeCredits, domain.ResourceTypeIron, domain.ResourceTypeTitanium, domain.ResourceTypeAntimatter}
+			resType := resTypes[r.Intn(len(resTypes))]
+
+			// Assign faction associated with the resource
+			faction := domain.FactionMarauders
+			switch resType {
+			case domain.ResourceTypeIron:
+				faction = domain.FactionFerrousSwarm
+			case domain.ResourceTypeTitanium:
+				faction = domain.FactionTitanArachnids
+			case domain.ResourceTypeAntimatter:
+				faction = domain.FactionVoidEcho
+			}
+
+			worth := int(float64(500+r.Intn(1000)) * scaleFactor)
+			loc := domain.NewResourceLocation(
+				tSector.Coordinates,
+				resType,
+				faction,
+				worth,
+				armyProtos,
+				buildProtos,
+			)
+
 			_ = c.persistResourceful(loc)
 			break
 		} else if dangerousCount < c.MaxDangerousNearby {
-			loc := &domain.DangerousLocationModel{Coordinates: tSector.Coordinates, DangerLevel: 1, Resources: domain.LocationResourceStats{Credits: r.Intn(600) + 150, Iron: r.Intn(500) + 120, Titanium: r.Intn(400) + 90, Antimatter: r.Intn(300) + 70, CalculationTimestamp: domain.NowUnix()}}
+			// Pick a random dangerous NPC faction
+			dangFactions := []domain.Faction{
+				domain.FactionCustodianProtocol,
+				domain.FactionScorchWalkers,
+				domain.FactionObsidianSentinels,
+				domain.FactionNeuralWormApex,
+			}
+			faction := dangFactions[r.Intn(len(dangFactions))]
+
+			worth := int(float64(1000+r.Intn(2000)) * scaleFactor)
+			loc := domain.NewDangerousLocation(
+				tSector.Coordinates,
+				faction,
+				worth,
+				storageProtos,
+				armyProtos,
+				buildProtos,
+			)
+
 			_ = c.persistDangerous(loc)
 			break
 		}
 	}
-	c.reschedule()
+	c.reschedule(job.BaseID)
 	return nil
+}
+
+func (c *WorldGenerationCommands) HandleUserBaseCreatedEvent(ev domain.UserBaseCreatedEvent) error {
+	jitter := int64(rand.Intn(60))
+	return c.Scheduler.Schedule(ports.SpawnNearbyLocationsJob{BaseID: ev.BaseID}, time.Now().Unix()+jitter)
 }
 
 func (c *WorldGenerationCommands) persistResourceful(loc *domain.ResourceLocationModel) error {
@@ -118,7 +196,26 @@ func (c *WorldGenerationCommands) persistDangerous(loc *domain.DangerousLocation
 	})
 }
 
-func (c *WorldGenerationCommands) reschedule() {
+func (c *WorldGenerationCommands) HandleLocationDrainedEvent(event domain.LocationDrainedEvent) error {
+	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
+		// 1. Delete the location record
+		var err error
+		if event.Type == domain.LocationTypeResourceful {
+			err = c.ResourceLocations.Tx(tx).DeleteByCoordinates(event.X, event.Y)
+		} else {
+			err = c.DangerousLocations.Tx(tx).DeleteByCoordinates(event.X, event.Y)
+		}
+		if err != nil {
+			return err
+		}
+
+		// Note: We don't need to update the sector table because location presence
+		// is checked via EXISTS on resource/dangerous tables.
+		return nil
+	})
+}
+
+func (c *WorldGenerationCommands) reschedule(baseID int) {
 	jitter := int64(rand.Intn(300))
-	_ = c.Scheduler.Schedule(ports.SpawnNearbyLocationsJob{}, time.Now().Unix()+c.RespawnPeriodSeconds+jitter)
+	_ = c.Scheduler.Schedule(ports.SpawnNearbyLocationsJob{BaseID: baseID}, time.Now().Unix()+c.RespawnPeriodSeconds+jitter)
 }

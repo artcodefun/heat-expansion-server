@@ -8,8 +8,8 @@ func TestStats_Recalculate_DefaultValues(t *testing.T) {
 	base := newBaseWithDefaults(1)
 	stats := base.Stats
 
-	if stats.Credits != 10000 {
-		t.Errorf("expected 10000 credits, got %d", stats.Credits)
+	if stats.Credits != 1000 {
+		t.Errorf("expected 1000 credits, got %d", stats.Credits)
 	}
 	if stats.CreditsCapacity != DefaultCreditsCapacity {
 		t.Errorf("expected %d capacity, got %d", DefaultCreditsCapacity, stats.CreditsCapacity)
@@ -107,6 +107,8 @@ func TestStats_CheckResources(t *testing.T) {
 
 func TestStats_CreditAndDeductLoot(t *testing.T) {
 	base := newBaseWithDefaults(1)
+	base.Stats.CreditsCapacity = 2000
+	base.Stats.IronCapacity = 2000
 	base.Stats.Credits = 1000
 	base.Stats.Iron = 1000
 

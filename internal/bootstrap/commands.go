@@ -23,7 +23,7 @@ type Commands struct {
 
 func NewCommands(a *Adapters, as *AppServices) *Commands {
 	return &Commands{
-		Base:        commands.NewBaseCommands(a.UserBases, a.Sectors, a.Content, as.Provisioner, a.TxMgr),
+		Base:        commands.NewBaseCommands(a.UserBases, a.Sectors, a.Content, as.Provisioner, a.OutboxEvents, a.TxMgr),
 		Army:        commands.NewArmyCommands(a.UserBases, a.ArmyPrototypes, a.Users, a.OutboxEvents, a.Scheduler, a.TxMgr, as.Access),
 		Building:    commands.NewBuildingCommands(a.UserBases, a.BuildPrototypes, a.Users, a.OutboxEvents, a.Scheduler, a.TxMgr, as.Access),
 		Tech:        commands.NewTechCommands(a.UserBases, a.TechPrototypes, a.Users, a.OutboxEvents, a.Scheduler, a.TxMgr, as.Access),
@@ -34,7 +34,7 @@ func NewCommands(a *Adapters, as *AppServices) *Commands {
 		RadarThreat: commands.NewRadarThreatCommands(a.RadarThreats, a.OutboxEvents, a.TxMgr),
 		User:        commands.NewUserCommands(a.Users, a.Hasher, a.Tokens, a.OutboxEvents, a.TxMgr),
 		Activity:    commands.NewActivityCommands(a.Activities, a.MilitaryOps, a.RadarThreats, a.Sectors, a.UserBases, a.ScanReports, a.OutboxEvents, a.TxMgr),
-		World:       commands.NewWorldGenerationCommands(a.UserBases, a.Sectors, a.ResourceLocations, a.DangerousLocations, a.Content, as.Provisioner, a.Scheduler, a.TxMgr),
+		World:       commands.NewWorldGenerationCommands(a.UserBases, a.Sectors, a.ResourceLocations, a.DangerousLocations, a.StoragePrototypes, a.ArmyPrototypes, a.BuildPrototypes, a.Content, as.Provisioner, a.Scheduler, a.TxMgr),
 		Alert:       commands.NewAlertCommands(a.Alerts, as.Access),
 	}
 }

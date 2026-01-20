@@ -223,7 +223,7 @@ func (c *OperationCommands) HandleMilitaryOperationArrivedEvent(event domain.Mil
 			return err
 		}
 		svc := domain.NewMilitaryOperationService(op, attackerBase)
-		report, err := c.resolveOperationAtTarget(op, sector, svc, sRepo, bRepo, rRepo, dRepo)
+		events, report, err := c.resolveOperationAtTarget(op, sector, svc, sRepo, bRepo, rRepo, dRepo)
 		if err != nil {
 			return err
 		}
@@ -241,6 +241,7 @@ func (c *OperationCommands) HandleMilitaryOperationArrivedEvent(event domain.Mil
 		}
 		var allEvents []domain.DomainEvent
 		allEvents = append(allEvents, op.EventProducer.PullEvents()...)
+		allEvents = append(allEvents, events...)
 		if report != nil {
 			allEvents = append(allEvents, report.EventProducer.PullEvents()...)
 		}
@@ -262,22 +263,24 @@ func (_ *OperationCommands) resolveOperationAtTarget(
 	bRepo ports.UserBaseRepository,
 	rRepo ports.ResourceLocationRepository,
 	dRepo ports.DangerousLocationRepository,
-) (*domain.SectorScanReport, error) {
+) ([]domain.DomainEvent, *domain.SectorScanReport, error) {
 	occType, err := sRepo.GetLocationTypeByCoordinates(sector.Coordinates.X, sector.Coordinates.Y)
 	if err != nil {
-		return nil, repoErr(err)
+		return nil, nil, repoErr(err)
 	}
 	var report *domain.SectorScanReport
+	var events []domain.DomainEvent
 	switch occType {
 	case domain.LocationTypeUserBase:
 		base, err := bRepo.FindByCoordinatesForUpdate(op.TargetCoordinates.X, op.TargetCoordinates.Y)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		svc.ResolveAgainstUserBase(base)
 		if err := bRepo.Update(base); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
+		events = append(events, base.EventProducer.PullEvents()...)
 		if op.Result == domain.OperationResultSuccess {
 			if op.Type == domain.MilitaryOperationTypeSpy && op.SpyResult != nil && op.SpyResult.Outcome == domain.SpyOutcomeBlockedByCloaking {
 				report = domain.NewSectorScanReportFromUserBase(op.SourceBaseID, sector, nil)
@@ -288,12 +291,13 @@ func (_ *OperationCommands) resolveOperationAtTarget(
 	case domain.LocationTypeResourceful:
 		res, err := rRepo.FindByCoordinatesForUpdate(op.TargetCoordinates.X, op.TargetCoordinates.Y)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		svc.ResolveAgainstResourceLocation(res)
 		if err := rRepo.Update(res); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
+		events = append(events, res.EventProducer.PullEvents()...)
 		if op.Result == domain.OperationResultSuccess {
 			if op.Type == domain.MilitaryOperationTypeSpy && op.SpyResult != nil && op.SpyResult.Outcome == domain.SpyOutcomeBlockedByCloaking {
 				report = domain.NewSectorScanReportFromResourceLocation(op.SourceBaseID, sector, nil)
@@ -304,12 +308,13 @@ func (_ *OperationCommands) resolveOperationAtTarget(
 	case domain.LocationTypeDangerous:
 		dl, err := dRepo.FindByCoordinatesForUpdate(op.TargetCoordinates.X, op.TargetCoordinates.Y)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		svc.ResolveAgainstDangerousLocation(dl)
 		if err := dRepo.Update(dl); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
+		events = append(events, dl.EventProducer.PullEvents()...)
 		if op.Result == domain.OperationResultSuccess {
 			if op.Type == domain.MilitaryOperationTypeSpy && op.SpyResult != nil && op.SpyResult.Outcome == domain.SpyOutcomeBlockedByCloaking {
 				report = domain.NewSectorScanReportFromDangerousLocation(op.SourceBaseID, sector, nil)
@@ -321,9 +326,9 @@ func (_ *OperationCommands) resolveOperationAtTarget(
 		svc.ResolveAgainstEmptySector(sector)
 		report = domain.NewSectorScanReportFromEmptySector(op.SourceBaseID, sector)
 	default:
-		return nil, fmt.Errorf("unsupported sector classification")
+		return nil, nil, fmt.Errorf("unsupported sector classification")
 	}
-	return report, nil
+	return events, report, nil
 }
 
 func (c *OperationCommands) HandleMilitaryOperationReturnStartedEvent(event domain.MilitaryOperationReturnStartedEvent) error {

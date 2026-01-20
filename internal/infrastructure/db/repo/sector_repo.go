@@ -96,3 +96,21 @@ func (r *SectorRepo) GetLocationTypeByCoordinates(x int, y int) (domain.Location
 	}
 	return domain.LocationType(row), nil
 }
+
+func (r *SectorRepo) CountLocationsInRange(x, y, radius int) (resourceful int, dangerous int, err error) {
+	ctx := context.Background()
+	params := gen.CountResourcefulLocationsInRangeParams{
+		CenterX: int32(x),
+		CenterY: int32(y),
+		Radius:  int32(radius),
+	}
+	rCount, err := r.q.CountResourcefulLocationsInRange(ctx, params)
+	if err != nil {
+		return 0, 0, err
+	}
+	dCount, err := r.q.CountDangerousLocationsInRange(ctx, gen.CountDangerousLocationsInRangeParams(params))
+	if err != nil {
+		return 0, 0, err
+	}
+	return int(rCount), int(dCount), nil
+}

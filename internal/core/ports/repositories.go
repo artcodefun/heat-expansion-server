@@ -37,6 +37,8 @@ type SectorRepository interface {
 	ListOccupiedCoordinates() ([]domain.Vector2i, error)
 	// Derives occupant location type for a sector by coordinates
 	GetLocationTypeByCoordinates(x int, y int) (domain.LocationType, error)
+	// CountLocationsInRange returns the count of resourceful and dangerous locations within a circle radius.
+	CountLocationsInRange(x, y, radius int) (resourceful int, dangerous int, err error)
 	// Tx returns a repository instance bound to the provided transaction.
 	Tx(tx Transaction) SectorRepository
 }
@@ -71,6 +73,7 @@ type ResourceLocationRepository interface {
 	FindClosest(x, y int) (*domain.ResourceLocationModel, error)
 	Update(loc *domain.ResourceLocationModel) error
 	Delete(id int) error
+	DeleteByCoordinates(x, y int) error
 	// Tx returns a repository instance bound to the provided transaction.
 	Tx(tx Transaction) ResourceLocationRepository
 }
@@ -86,6 +89,7 @@ type DangerousLocationRepository interface {
 	FindClosest(x, y int) (*domain.DangerousLocationModel, error)
 	Update(loc *domain.DangerousLocationModel) error
 	Delete(id int) error
+	DeleteByCoordinates(x, y int) error
 	// Tx returns a repository instance bound to the provided transaction.
 	Tx(tx Transaction) DangerousLocationRepository
 }

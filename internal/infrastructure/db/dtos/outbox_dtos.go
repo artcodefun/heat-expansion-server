@@ -97,14 +97,16 @@ func UpdateMilitaryOperationJobFromDTO(d UpdateMilitaryOperationJobDTO) ports.Up
 	return ports.UpdateMilitaryOperationJob{OperationID: d.OperationID}
 }
 
-type SpawnNearbyLocationsJobDTO struct{}
-
-func SpawnNearbyLocationsJobDTOFromDomain(j ports.SpawnNearbyLocationsJob) SpawnNearbyLocationsJobDTO {
-	return SpawnNearbyLocationsJobDTO{}
+type SpawnNearbyLocationsJobDTO struct {
+	BaseID int `json:"base_id"`
 }
 
-func SpawnNearbyLocationsJobFromDTO(SpawnNearbyLocationsJobDTO) ports.SpawnNearbyLocationsJob {
-	return ports.SpawnNearbyLocationsJob{}
+func SpawnNearbyLocationsJobDTOFromDomain(j ports.SpawnNearbyLocationsJob) SpawnNearbyLocationsJobDTO {
+	return SpawnNearbyLocationsJobDTO{BaseID: j.BaseID}
+}
+
+func SpawnNearbyLocationsJobFromDTO(d SpawnNearbyLocationsJobDTO) ports.SpawnNearbyLocationsJob {
+	return ports.SpawnNearbyLocationsJob{BaseID: d.BaseID}
 }
 
 type IntelligenceScanJobDTO struct {
@@ -152,6 +154,35 @@ func UserAccountCreatedEventDTOFromDomain(e domain.UserAccountCreatedEvent) User
 
 func UserAccountCreatedEventFromDTO(d UserAccountCreatedEventDTO) domain.UserAccountCreatedEvent {
 	return domain.NewUserAccountCreatedEvent(d.UserID)
+}
+
+type UserBaseCreatedEventDTO struct {
+	OccurredAt int64 `json:"occurred_at"`
+	BaseID     int   `json:"base_id"`
+	OwnerID    int   `json:"owner_id"`
+}
+
+func UserBaseCreatedEventDTOFromDomain(e domain.UserBaseCreatedEvent) UserBaseCreatedEventDTO {
+	return UserBaseCreatedEventDTO{OccurredAt: e.OccurredAt(), BaseID: e.BaseID, OwnerID: e.OwnerID}
+}
+
+func UserBaseCreatedEventFromDTO(d UserBaseCreatedEventDTO) domain.UserBaseCreatedEvent {
+	return domain.NewUserBaseCreatedEvent(d.BaseID, d.OwnerID)
+}
+
+type LocationDrainedEventDTO struct {
+	OccurredAt int64               `json:"occurred_at"`
+	X          int                 `json:"x"`
+	Y          int                 `json:"y"`
+	Type       domain.LocationType `json:"type"`
+}
+
+func LocationDrainedEventDTOFromDomain(e domain.LocationDrainedEvent) LocationDrainedEventDTO {
+	return LocationDrainedEventDTO{OccurredAt: e.OccurredAt(), X: e.X, Y: e.Y, Type: e.Type}
+}
+
+func LocationDrainedEventFromDTO(d LocationDrainedEventDTO) domain.LocationDrainedEvent {
+	return domain.NewLocationDrainedEvent(d.X, d.Y, d.Type)
 }
 
 type BuildingProductionStartedEventDTO struct {

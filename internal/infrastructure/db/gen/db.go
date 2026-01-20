@@ -30,6 +30,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.claimUnpublishedOutboxEventsStmt, err = db.PrepareContext(ctx, claimUnpublishedOutboxEvents); err != nil {
 		return nil, fmt.Errorf("error preparing query ClaimUnpublishedOutboxEvents: %w", err)
 	}
+	if q.countDangerousLocationsInRangeStmt, err = db.PrepareContext(ctx, countDangerousLocationsInRange); err != nil {
+		return nil, fmt.Errorf("error preparing query CountDangerousLocationsInRange: %w", err)
+	}
+	if q.countResourcefulLocationsInRangeStmt, err = db.PrepareContext(ctx, countResourcefulLocationsInRange); err != nil {
+		return nil, fmt.Errorf("error preparing query CountResourcefulLocationsInRange: %w", err)
+	}
 	if q.createBaseStmt, err = db.PrepareContext(ctx, createBase); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateBase: %w", err)
 	}
@@ -57,6 +63,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteDangerousLocationStmt, err = db.PrepareContext(ctx, deleteDangerousLocation); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteDangerousLocation: %w", err)
 	}
+	if q.deleteDangerousLocationBySectorStmt, err = db.PrepareContext(ctx, deleteDangerousLocationBySector); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteDangerousLocationBySector: %w", err)
+	}
 	if q.deleteExpiredAlertsStmt, err = db.PrepareContext(ctx, deleteExpiredAlerts); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteExpiredAlerts: %w", err)
 	}
@@ -65,6 +74,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.deleteResourceLocationStmt, err = db.PrepareContext(ctx, deleteResourceLocation); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteResourceLocation: %w", err)
+	}
+	if q.deleteResourceLocationBySectorStmt, err = db.PrepareContext(ctx, deleteResourceLocationBySector); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteResourceLocationBySector: %w", err)
 	}
 	if q.deleteScanReportStmt, err = db.PrepareContext(ctx, deleteScanReport); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteScanReport: %w", err)
@@ -312,6 +324,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing claimUnpublishedOutboxEventsStmt: %w", cerr)
 		}
 	}
+	if q.countDangerousLocationsInRangeStmt != nil {
+		if cerr := q.countDangerousLocationsInRangeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countDangerousLocationsInRangeStmt: %w", cerr)
+		}
+	}
+	if q.countResourcefulLocationsInRangeStmt != nil {
+		if cerr := q.countResourcefulLocationsInRangeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countResourcefulLocationsInRangeStmt: %w", cerr)
+		}
+	}
 	if q.createBaseStmt != nil {
 		if cerr := q.createBaseStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createBaseStmt: %w", cerr)
@@ -357,6 +379,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteDangerousLocationStmt: %w", cerr)
 		}
 	}
+	if q.deleteDangerousLocationBySectorStmt != nil {
+		if cerr := q.deleteDangerousLocationBySectorStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteDangerousLocationBySectorStmt: %w", cerr)
+		}
+	}
 	if q.deleteExpiredAlertsStmt != nil {
 		if cerr := q.deleteExpiredAlertsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteExpiredAlertsStmt: %w", cerr)
@@ -370,6 +397,11 @@ func (q *Queries) Close() error {
 	if q.deleteResourceLocationStmt != nil {
 		if cerr := q.deleteResourceLocationStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteResourceLocationStmt: %w", cerr)
+		}
+	}
+	if q.deleteResourceLocationBySectorStmt != nil {
+		if cerr := q.deleteResourceLocationBySectorStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteResourceLocationBySectorStmt: %w", cerr)
 		}
 	}
 	if q.deleteScanReportStmt != nil {
@@ -798,6 +830,8 @@ type Queries struct {
 	tx                                        *sql.Tx
 	claimDueScheduledJobsStmt                 *sql.Stmt
 	claimUnpublishedOutboxEventsStmt          *sql.Stmt
+	countDangerousLocationsInRangeStmt        *sql.Stmt
+	countResourcefulLocationsInRangeStmt      *sql.Stmt
 	createBaseStmt                            *sql.Stmt
 	createSectorStmt                          *sql.Stmt
 	deleteActivitiesByBaseStmt                *sql.Stmt
@@ -807,9 +841,11 @@ type Queries struct {
 	deleteBaseStorageItemsByBaseStmt          *sql.Stmt
 	deleteBaseTechItemsByBaseStmt             *sql.Stmt
 	deleteDangerousLocationStmt               *sql.Stmt
+	deleteDangerousLocationBySectorStmt       *sql.Stmt
 	deleteExpiredAlertsStmt                   *sql.Stmt
 	deleteMilitaryOperationStmt               *sql.Stmt
 	deleteResourceLocationStmt                *sql.Stmt
+	deleteResourceLocationBySectorStmt        *sql.Stmt
 	deleteScanReportStmt                      *sql.Stmt
 	findClosestBaseStmt                       *sql.Stmt
 	findClosestDangerousLocationStmt          *sql.Stmt
@@ -895,6 +931,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		tx:                                        tx,
 		claimDueScheduledJobsStmt:                 q.claimDueScheduledJobsStmt,
 		claimUnpublishedOutboxEventsStmt:          q.claimUnpublishedOutboxEventsStmt,
+		countDangerousLocationsInRangeStmt:        q.countDangerousLocationsInRangeStmt,
+		countResourcefulLocationsInRangeStmt:      q.countResourcefulLocationsInRangeStmt,
 		createBaseStmt:                            q.createBaseStmt,
 		createSectorStmt:                          q.createSectorStmt,
 		deleteActivitiesByBaseStmt:                q.deleteActivitiesByBaseStmt,
@@ -904,9 +942,11 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		deleteBaseStorageItemsByBaseStmt:          q.deleteBaseStorageItemsByBaseStmt,
 		deleteBaseTechItemsByBaseStmt:             q.deleteBaseTechItemsByBaseStmt,
 		deleteDangerousLocationStmt:               q.deleteDangerousLocationStmt,
+		deleteDangerousLocationBySectorStmt:       q.deleteDangerousLocationBySectorStmt,
 		deleteExpiredAlertsStmt:                   q.deleteExpiredAlertsStmt,
 		deleteMilitaryOperationStmt:               q.deleteMilitaryOperationStmt,
 		deleteResourceLocationStmt:                q.deleteResourceLocationStmt,
+		deleteResourceLocationBySectorStmt:        q.deleteResourceLocationBySectorStmt,
 		deleteScanReportStmt:                      q.deleteScanReportStmt,
 		findClosestBaseStmt:                       q.findClosestBaseStmt,
 		findClosestDangerousLocationStmt:          q.findClosestDangerousLocationStmt,

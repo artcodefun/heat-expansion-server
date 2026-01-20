@@ -111,7 +111,7 @@ func TestArmy_QueueArmy_NotEnoughSpace(t *testing.T) {
 	if len(base.ArmiesPending) != 0 || len(base.ArmiesInProduction) != 0 {
 		t.Fatalf("expected no armies queued or in production after space error")
 	}
-	if base.Stats.Credits != 10_000 {
+	if base.Stats.Credits != 1000 {
 		t.Fatalf("expected credits to remain unchanged after army space error, got %+v", base.Stats)
 	}
 	if events := base.PullEvents(); len(events) != 0 {
@@ -139,7 +139,7 @@ func TestArmy_QueueArmy_NotAvailableWithoutBuilding(t *testing.T) {
 	if len(base.ArmiesPending) != 0 || len(base.ArmiesInProduction) != 0 {
 		t.Fatalf("expected no pending or in-production armies after failed QueueArmy")
 	}
-	if base.Stats.Credits != 10_000 {
+	if base.Stats.Credits != 1000 {
 		t.Fatalf("expected credits to remain unchanged after failed QueueArmy, got %+v", base.Stats)
 	}
 	if events := base.PullEvents(); len(events) != 0 {
@@ -173,8 +173,8 @@ func TestArmy_CancelPendingArmyByID_RefundsAndEmitsEvent(t *testing.T) {
 	if err := base.CancelPendingArmyByID(pendingID, 2); err != nil {
 		t.Fatalf("CancelPendingArmyByID error: %v", err)
 	}
-	// credits should now reflect payment for 3 units (10_000 - 10*3)
-	if base.Stats.Credits != 10_000-10*3 {
+	// credits should now reflect payment for 3 units (1000 - 10*3)
+	if base.Stats.Credits != 1000-10*3 {
 		t.Fatalf("unexpected credits after partial cancel: %+v", base.Stats)
 	}
 	if len(base.ArmiesPending) != 1 || base.ArmiesPending[0].Count != 3 {
@@ -201,7 +201,7 @@ func TestArmy_CancelPendingArmyByID_RefundsAndEmitsEvent(t *testing.T) {
 	if len(base.ArmiesPending) != 0 {
 		t.Fatalf("expected no pending armies after full cancel, got %+v", base.ArmiesPending)
 	}
-	if base.Stats.Credits != 10_000 {
+	if base.Stats.Credits != 1000 {
 		t.Fatalf("expected credits fully restored after full cancel, got %+v", base.Stats)
 	}
 }
@@ -393,7 +393,7 @@ func TestArmy_AllocateArmyToOperation_RemovesFromPresentAndMergesDeployed(t *tes
 }
 
 func TestArmy_AllocateArmyToOperation_RespectsMaxOperations(t *testing.T) {
-	base := newBaseWithDefaults(34) // recalculateStats() sets DefaultMaxOperations (3)
+	base := newBaseWithDefaults(34) // recalculateStats() sets DefaultMaxOperations (2)
 	proto := ArmyItemPrototype{ID: 240, Category: ArmyCategoryInfantry, Space: 1}
 
 	base.ArmiesPresent = []ArmyItemPresent{
@@ -401,17 +401,17 @@ func TestArmy_AllocateArmyToOperation_RespectsMaxOperations(t *testing.T) {
 	}
 	presentID := base.ArmiesPresent[0].ID
 
-	// Use up 3 operation slots
-	for i := 1; i <= 3; i++ {
+	// Use up 2 operation slots
+	for i := 1; i <= 2; i++ {
 		if _, err := base.AllocateArmyToOperation(ArmyDeploymentRequest{PresentItemID: presentID, Count: 1}, i); err != nil {
 			t.Fatalf("allocation for op %d failed: %v", i, err)
 		}
 	}
 
-	// 4th operation should fail
-	if _, err := base.AllocateArmyToOperation(ArmyDeploymentRequest{PresentItemID: presentID, Count: 1}, 4); err == nil {
-		t.Errorf("expected error for exceeding MaxOperations (3), got nil")
-	} else if err.Error() != "maximum number of operations (3) reached" {
+	// 3rd operation should fail
+	if _, err := base.AllocateArmyToOperation(ArmyDeploymentRequest{PresentItemID: presentID, Count: 1}, 3); err == nil {
+		t.Errorf("expected error for exceeding MaxOperations (2), got nil")
+	} else if err.Error() != "maximum number of operations (2) reached" {
 		t.Errorf("unexpected error message: %v", err)
 	}
 

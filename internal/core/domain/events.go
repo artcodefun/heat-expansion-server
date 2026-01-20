@@ -27,13 +27,13 @@ type DomainEvent interface {
 
 // BasicEvent carries the timestamp for all domain events.
 type BasicEvent struct {
-	timestamp int64
+	Timestamp int64
 }
 
-func (e BasicEvent) OccurredAt() int64 { return e.timestamp }
+func (e BasicEvent) OccurredAt() int64 { return e.Timestamp }
 
 func NewBasicEvent() BasicEvent {
-	return BasicEvent{timestamp: NowUnix()}
+	return BasicEvent{Timestamp: NowUnix()}
 }
 
 // User account creation event
@@ -46,6 +46,38 @@ func NewUserAccountCreatedEvent(userID int) UserAccountCreatedEvent {
 	return UserAccountCreatedEvent{
 		BasicEvent: NewBasicEvent(),
 		UserID:     userID,
+	}
+}
+
+// User base creation event
+type UserBaseCreatedEvent struct {
+	BasicEvent
+	BaseID  int
+	OwnerID int
+}
+
+func NewUserBaseCreatedEvent(baseID int, ownerID int) UserBaseCreatedEvent {
+	return UserBaseCreatedEvent{
+		BasicEvent: NewBasicEvent(),
+		BaseID:     baseID,
+		OwnerID:    ownerID,
+	}
+}
+
+// LocationDrainedEvent is emitted when a location has no resources, trophies, or defenders left.
+type LocationDrainedEvent struct {
+	BasicEvent
+	X    int
+	Y    int
+	Type LocationType // "RESOURCEFUL" or "DANGEROUS"
+}
+
+func NewLocationDrainedEvent(x, y int, locType LocationType) LocationDrainedEvent {
+	return LocationDrainedEvent{
+		BasicEvent: NewBasicEvent(),
+		X:          x,
+		Y:          y,
+		Type:       locType,
 	}
 }
 

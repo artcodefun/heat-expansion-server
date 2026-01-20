@@ -17,7 +17,7 @@ import (
 
 const listBuildPrototypesByIDs = `-- name: ListBuildPrototypesByIDs :many
 
-SELECT p.id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.control_data, p.resources_data, p.defense_data, p.military_data, p.intelligence_data
+SELECT p.id, p.name, p.category, p.faction, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.control_data, p.resources_data, p.defense_data, p.military_data, p.intelligence_data
 FROM build_item_prototypes p
 WHERE p.id = ANY($1::bigint[])
 ORDER BY p.id
@@ -37,6 +37,7 @@ func (q *Queries) ListBuildPrototypesByIDs(ctx context.Context, dollar_1 []int64
 			&i.ID,
 			&i.Name,
 			&i.Category,
+			&i.Faction,
 			&i.UnlockTechnologyID,
 			&i.ShortDescription,
 			&i.FullDescription,
@@ -64,7 +65,7 @@ func (q *Queries) ListBuildPrototypesByIDs(ctx context.Context, dollar_1 []int64
 }
 
 const listInProductionBuildItems = `-- name: ListInProductionBuildItems :many
-SELECT bbi.id, bbi.base_id, bbi.prototype_id, bbi.status, bbi.in_prod_data, p.id AS proto_id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.control_data, p.resources_data, p.defense_data, p.military_data, p.intelligence_data
+SELECT bbi.id, bbi.base_id, bbi.prototype_id, bbi.status, bbi.in_prod_data, p.id AS proto_id, p.name, p.category, p.faction, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.control_data, p.resources_data, p.defense_data, p.military_data, p.intelligence_data
 FROM base_build_items bbi
 JOIN build_item_prototypes p ON p.id = bbi.prototype_id
 WHERE bbi.base_id = $1 AND p.category = $2 AND bbi.status = 'IN_PRODUCTION'
@@ -85,6 +86,7 @@ type ListInProductionBuildItemsRow struct {
 	ProtoID            int64                 `json:"proto_id"`
 	Name               string                `json:"name"`
 	Category           string                `json:"category"`
+	Faction            string                `json:"faction"`
 	UnlockTechnologyID sql.NullInt64         `json:"unlock_technology_id"`
 	ShortDescription   sql.NullString        `json:"short_description"`
 	FullDescription    sql.NullString        `json:"full_description"`
@@ -117,6 +119,7 @@ func (q *Queries) ListInProductionBuildItems(ctx context.Context, arg ListInProd
 			&i.ProtoID,
 			&i.Name,
 			&i.Category,
+			&i.Faction,
 			&i.UnlockTechnologyID,
 			&i.ShortDescription,
 			&i.FullDescription,
@@ -144,7 +147,7 @@ func (q *Queries) ListInProductionBuildItems(ctx context.Context, arg ListInProd
 }
 
 const listInProductionBuildItemsAll = `-- name: ListInProductionBuildItemsAll :many
-SELECT bbi.id, bbi.base_id, bbi.prototype_id, bbi.status, bbi.in_prod_data, p.id AS proto_id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.control_data, p.resources_data, p.defense_data, p.military_data, p.intelligence_data
+SELECT bbi.id, bbi.base_id, bbi.prototype_id, bbi.status, bbi.in_prod_data, p.id AS proto_id, p.name, p.category, p.faction, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.control_data, p.resources_data, p.defense_data, p.military_data, p.intelligence_data
 FROM base_build_items bbi
 JOIN build_item_prototypes p ON p.id = bbi.prototype_id
 WHERE bbi.base_id = $1 AND bbi.status = 'IN_PRODUCTION'
@@ -160,6 +163,7 @@ type ListInProductionBuildItemsAllRow struct {
 	ProtoID            int64                 `json:"proto_id"`
 	Name               string                `json:"name"`
 	Category           string                `json:"category"`
+	Faction            string                `json:"faction"`
 	UnlockTechnologyID sql.NullInt64         `json:"unlock_technology_id"`
 	ShortDescription   sql.NullString        `json:"short_description"`
 	FullDescription    sql.NullString        `json:"full_description"`
@@ -192,6 +196,7 @@ func (q *Queries) ListInProductionBuildItemsAll(ctx context.Context, baseID int6
 			&i.ProtoID,
 			&i.Name,
 			&i.Category,
+			&i.Faction,
 			&i.UnlockTechnologyID,
 			&i.ShortDescription,
 			&i.FullDescription,
@@ -219,7 +224,7 @@ func (q *Queries) ListInProductionBuildItemsAll(ctx context.Context, baseID int6
 }
 
 const listPendingBuildItems = `-- name: ListPendingBuildItems :many
-SELECT bbi.id, bbi.base_id, bbi.prototype_id, bbi.status, bbi.pending_data, p.id AS proto_id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.control_data, p.resources_data, p.defense_data, p.military_data, p.intelligence_data
+SELECT bbi.id, bbi.base_id, bbi.prototype_id, bbi.status, bbi.pending_data, p.id AS proto_id, p.name, p.category, p.faction, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.control_data, p.resources_data, p.defense_data, p.military_data, p.intelligence_data
 FROM base_build_items bbi
 JOIN build_item_prototypes p ON p.id = bbi.prototype_id
 WHERE bbi.base_id = $1 AND p.category = $2 AND bbi.status = 'PENDING'
@@ -240,6 +245,7 @@ type ListPendingBuildItemsRow struct {
 	ProtoID            int64                 `json:"proto_id"`
 	Name               string                `json:"name"`
 	Category           string                `json:"category"`
+	Faction            string                `json:"faction"`
 	UnlockTechnologyID sql.NullInt64         `json:"unlock_technology_id"`
 	ShortDescription   sql.NullString        `json:"short_description"`
 	FullDescription    sql.NullString        `json:"full_description"`
@@ -272,6 +278,7 @@ func (q *Queries) ListPendingBuildItems(ctx context.Context, arg ListPendingBuil
 			&i.ProtoID,
 			&i.Name,
 			&i.Category,
+			&i.Faction,
 			&i.UnlockTechnologyID,
 			&i.ShortDescription,
 			&i.FullDescription,
@@ -299,7 +306,7 @@ func (q *Queries) ListPendingBuildItems(ctx context.Context, arg ListPendingBuil
 }
 
 const listPendingBuildItemsAll = `-- name: ListPendingBuildItemsAll :many
-SELECT bbi.id, bbi.base_id, bbi.prototype_id, bbi.status, bbi.pending_data, p.id AS proto_id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.control_data, p.resources_data, p.defense_data, p.military_data, p.intelligence_data
+SELECT bbi.id, bbi.base_id, bbi.prototype_id, bbi.status, bbi.pending_data, p.id AS proto_id, p.name, p.category, p.faction, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.control_data, p.resources_data, p.defense_data, p.military_data, p.intelligence_data
 FROM base_build_items bbi
 JOIN build_item_prototypes p ON p.id = bbi.prototype_id
 WHERE bbi.base_id = $1 AND bbi.status = 'PENDING'
@@ -315,6 +322,7 @@ type ListPendingBuildItemsAllRow struct {
 	ProtoID            int64                 `json:"proto_id"`
 	Name               string                `json:"name"`
 	Category           string                `json:"category"`
+	Faction            string                `json:"faction"`
 	UnlockTechnologyID sql.NullInt64         `json:"unlock_technology_id"`
 	ShortDescription   sql.NullString        `json:"short_description"`
 	FullDescription    sql.NullString        `json:"full_description"`
@@ -347,6 +355,7 @@ func (q *Queries) ListPendingBuildItemsAll(ctx context.Context, baseID int64) ([
 			&i.ProtoID,
 			&i.Name,
 			&i.Category,
+			&i.Faction,
 			&i.UnlockTechnologyID,
 			&i.ShortDescription,
 			&i.FullDescription,
@@ -374,7 +383,7 @@ func (q *Queries) ListPendingBuildItemsAll(ctx context.Context, baseID int64) ([
 }
 
 const listPresentBuildItems = `-- name: ListPresentBuildItems :many
-SELECT bbi.id, bbi.base_id, bbi.prototype_id, bbi.status, bbi.present_data, p.id AS proto_id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.control_data, p.resources_data, p.defense_data, p.military_data, p.intelligence_data
+SELECT bbi.id, bbi.base_id, bbi.prototype_id, bbi.status, bbi.present_data, p.id AS proto_id, p.name, p.category, p.faction, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.control_data, p.resources_data, p.defense_data, p.military_data, p.intelligence_data
 FROM base_build_items bbi
 JOIN build_item_prototypes p ON p.id = bbi.prototype_id
 WHERE bbi.base_id = $1 AND p.category = $2 AND bbi.status = 'PRESENT'
@@ -395,6 +404,7 @@ type ListPresentBuildItemsRow struct {
 	ProtoID            int64                 `json:"proto_id"`
 	Name               string                `json:"name"`
 	Category           string                `json:"category"`
+	Faction            string                `json:"faction"`
 	UnlockTechnologyID sql.NullInt64         `json:"unlock_technology_id"`
 	ShortDescription   sql.NullString        `json:"short_description"`
 	FullDescription    sql.NullString        `json:"full_description"`
@@ -427,6 +437,7 @@ func (q *Queries) ListPresentBuildItems(ctx context.Context, arg ListPresentBuil
 			&i.ProtoID,
 			&i.Name,
 			&i.Category,
+			&i.Faction,
 			&i.UnlockTechnologyID,
 			&i.ShortDescription,
 			&i.FullDescription,
@@ -454,7 +465,7 @@ func (q *Queries) ListPresentBuildItems(ctx context.Context, arg ListPresentBuil
 }
 
 const listPresentBuildItemsAll = `-- name: ListPresentBuildItemsAll :many
-SELECT bbi.id, bbi.base_id, bbi.prototype_id, bbi.status, bbi.present_data, p.id AS proto_id, p.name, p.category, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.control_data, p.resources_data, p.defense_data, p.military_data, p.intelligence_data
+SELECT bbi.id, bbi.base_id, bbi.prototype_id, bbi.status, bbi.present_data, p.id AS proto_id, p.name, p.category, p.faction, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.control_data, p.resources_data, p.defense_data, p.military_data, p.intelligence_data
 FROM base_build_items bbi
 JOIN build_item_prototypes p ON p.id = bbi.prototype_id
 WHERE bbi.base_id = $1 AND bbi.status = 'PRESENT'
@@ -470,6 +481,7 @@ type ListPresentBuildItemsAllRow struct {
 	ProtoID            int64                 `json:"proto_id"`
 	Name               string                `json:"name"`
 	Category           string                `json:"category"`
+	Faction            string                `json:"faction"`
 	UnlockTechnologyID sql.NullInt64         `json:"unlock_technology_id"`
 	ShortDescription   sql.NullString        `json:"short_description"`
 	FullDescription    sql.NullString        `json:"full_description"`
@@ -502,6 +514,7 @@ func (q *Queries) ListPresentBuildItemsAll(ctx context.Context, baseID int64) ([
 			&i.ProtoID,
 			&i.Name,
 			&i.Category,
+			&i.Faction,
 			&i.UnlockTechnologyID,
 			&i.ShortDescription,
 			&i.FullDescription,

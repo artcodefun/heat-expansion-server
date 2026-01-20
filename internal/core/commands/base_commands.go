@@ -15,12 +15,13 @@ type BaseCommands struct {
 	SectorRepo        ports.SectorRepository
 	ContentGenerator  ports.ContentGenerator
 	SectorProvisioner *services.SectorProvisioningService
+	Outbox            ports.OutboxEventRepository
 	basePlacement     *domain.BasePlacementService
 	TxMgr             ports.TransactionManager
 }
 
-func NewBaseCommands(userBaseRepo ports.UserBaseRepository, sectorRepo ports.SectorRepository, generator ports.ContentGenerator, provisioner *services.SectorProvisioningService, txMgr ports.TransactionManager) *BaseCommands {
-	return &BaseCommands{UserBaseRepo: userBaseRepo, SectorRepo: sectorRepo, ContentGenerator: generator, SectorProvisioner: provisioner, basePlacement: domain.NewBasePlacementService(), TxMgr: txMgr}
+func NewBaseCommands(userBaseRepo ports.UserBaseRepository, sectorRepo ports.SectorRepository, generator ports.ContentGenerator, provisioner *services.SectorProvisioningService, outbox ports.OutboxEventRepository, txMgr ports.TransactionManager) *BaseCommands {
+	return &BaseCommands{UserBaseRepo: userBaseRepo, SectorRepo: sectorRepo, ContentGenerator: generator, SectorProvisioner: provisioner, Outbox: outbox, basePlacement: domain.NewBasePlacementService(), TxMgr: txMgr}
 }
 
 // CreateBase creates a new base for a user.
@@ -41,7 +42,8 @@ func (c *BaseCommands) CreateBase(ctx cqrs.CommandContext, userID int) error {
 				return err
 			}
 			if created {
-				return nil
+				base.EmitCreated()
+				return c.Outbox.Tx(tx).Save(base.PullEvents())
 			}
 		}
 		return fmt.Errorf("no free sector after attempts")

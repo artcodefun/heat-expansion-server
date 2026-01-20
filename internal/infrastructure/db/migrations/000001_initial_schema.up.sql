@@ -70,14 +70,15 @@ CREATE INDEX idx_ops_target_coords ON military_operations(target_x, target_y);
 
 -- Resource Locations (one per sector)
 CREATE TABLE resource_locations (
-    id               BIGSERIAL PRIMARY KEY,
-    sector_x         INTEGER NOT NULL,
-    sector_y         INTEGER NOT NULL,
-    type             TEXT    NOT NULL,
-    amount           INTEGER NOT NULL DEFAULT 0,
-    name             TEXT,
-    description      TEXT,
-    image_url        TEXT,
+    id                BIGSERIAL PRIMARY KEY,
+    sector_x          INTEGER NOT NULL,
+    sector_y          INTEGER NOT NULL,
+    resource_type     TEXT    NOT NULL,
+    defender_faction  TEXT    NOT NULL,
+    total_worth       INTEGER NOT NULL DEFAULT 0,
+    name              TEXT,
+    description       TEXT,
+    image_url         TEXT,
     -- Resources: {"credits": int, "iron": int, "titanium": int, "antimatter": int}
     resources               JSONB  NOT NULL DEFAULT '{}'::jsonb,
     resources_calc_timestamp BIGINT  NOT NULL DEFAULT 0,
@@ -95,13 +96,14 @@ CREATE INDEX idx_resource_locations_buildings_gin ON resource_locations USING gi
 
 -- Dangerous Locations (one per sector)
 CREATE TABLE dangerous_locations (
-    id               BIGSERIAL PRIMARY KEY,
-    sector_x         INTEGER NOT NULL,
-    sector_y         INTEGER NOT NULL,
-    danger_level     INTEGER NOT NULL DEFAULT 0,
-    name             TEXT,
-    description      TEXT,
-    image_url        TEXT,
+    id                BIGSERIAL PRIMARY KEY,
+    sector_x          INTEGER NOT NULL,
+    sector_y          INTEGER NOT NULL,
+    defender_faction  TEXT    NOT NULL,
+    total_worth       INTEGER NOT NULL DEFAULT 0,
+    name              TEXT,
+    description       TEXT,
+    image_url         TEXT,
     -- Resources: {"credits": int, "iron": int, "titanium": int, "antimatter": int}
     resources               JSONB  NOT NULL DEFAULT '{}'::jsonb,
     resources_calc_timestamp BIGINT  NOT NULL DEFAULT 0,

@@ -10,6 +10,50 @@ import (
 	"database/sql"
 )
 
+const countDangerousLocationsInRange = `-- name: CountDangerousLocationsInRange :one
+SELECT COUNT(*) FROM dangerous_locations
+WHERE sector_x >= ($1::int - $2::int)
+  AND sector_x <= ($1::int + $2::int)
+  AND sector_y >= ($3::int - $2::int)
+  AND sector_y <= ($3::int + $2::int)
+  AND (sector_x - $1::int)^2 + (sector_y - $3::int)^2 <= ($2::int * $2::int)
+`
+
+type CountDangerousLocationsInRangeParams struct {
+	CenterX int32 `json:"center_x"`
+	Radius  int32 `json:"radius"`
+	CenterY int32 `json:"center_y"`
+}
+
+func (q *Queries) CountDangerousLocationsInRange(ctx context.Context, arg CountDangerousLocationsInRangeParams) (int64, error) {
+	row := q.queryRow(ctx, q.countDangerousLocationsInRangeStmt, countDangerousLocationsInRange, arg.CenterX, arg.Radius, arg.CenterY)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countResourcefulLocationsInRange = `-- name: CountResourcefulLocationsInRange :one
+SELECT COUNT(*) FROM resource_locations
+WHERE sector_x >= ($1::int - $2::int)
+  AND sector_x <= ($1::int + $2::int)
+  AND sector_y >= ($3::int - $2::int)
+  AND sector_y <= ($3::int + $2::int)
+  AND (sector_x - $1::int)^2 + (sector_y - $3::int)^2 <= ($2::int * $2::int)
+`
+
+type CountResourcefulLocationsInRangeParams struct {
+	CenterX int32 `json:"center_x"`
+	Radius  int32 `json:"radius"`
+	CenterY int32 `json:"center_y"`
+}
+
+func (q *Queries) CountResourcefulLocationsInRange(ctx context.Context, arg CountResourcefulLocationsInRangeParams) (int64, error) {
+	row := q.queryRow(ctx, q.countResourcefulLocationsInRangeStmt, countResourcefulLocationsInRange, arg.CenterX, arg.Radius, arg.CenterY)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createSector = `-- name: CreateSector :one
 
 INSERT INTO sectors (x, y, name, description, image_url)

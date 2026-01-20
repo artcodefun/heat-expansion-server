@@ -136,6 +136,7 @@ func DecodeJob(kind string, payload []byte) (ports.SchadulableJob, error) {
 // detail of the DB outbox; core code only sees typed events.
 const (
 	evKindUserAccountCreated             = "USER_ACCOUNT_CREATED"
+	evKindUserBaseCreated                = "USER_BASE_CREATED"
 	evKindBuildingProductionStarted      = "BUILDING_PRODUCTION_STARTED"
 	evKindBuildingProductionFinished     = "BUILDING_PRODUCTION_FINISHED"
 	evKindBuildingProductionCancelled    = "BUILDING_PRODUCTION_CANCELLED"
@@ -167,6 +168,7 @@ const (
 	evKindScanReportCreated              = "SCAN_REPORT_CREATED"
 	evKindRadarThreatDetected            = "RADAR_THREAT_DETECTED"
 	evKindActivityCreated                = "ACTIVITY_CREATED"
+	evKindLocationDrained                = "LOCATION_DRAINED"
 )
 
 // EncodeEvent converts a typed DomainEvent into a kind label and JSON payload
@@ -176,6 +178,14 @@ func EncodeEvent(ev domain.DomainEvent) (kind string, payload []byte, err error)
 	case domain.UserAccountCreatedEvent:
 		payload, err = json.Marshal(dtos.UserAccountCreatedEventDTOFromDomain(e))
 		return evKindUserAccountCreated, payload, err
+
+	case domain.UserBaseCreatedEvent:
+		payload, err = json.Marshal(dtos.UserBaseCreatedEventDTOFromDomain(e))
+		return evKindUserBaseCreated, payload, err
+
+	case domain.LocationDrainedEvent:
+		payload, err = json.Marshal(dtos.LocationDrainedEventDTOFromDomain(e))
+		return evKindLocationDrained, payload, err
 
 	case domain.BuildingProductionStartedEvent:
 		payload, err = json.Marshal(dtos.BuildingProductionStartedEventDTOFromDomain(e))
@@ -291,6 +301,20 @@ func DecodeEvent(kind string, payload []byte) (domain.DomainEvent, error) {
 			return nil, err
 		}
 		return dtos.UserAccountCreatedEventFromDTO(dto), nil
+
+	case evKindUserBaseCreated:
+		var dto dtos.UserBaseCreatedEventDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.UserBaseCreatedEventFromDTO(dto), nil
+
+	case evKindLocationDrained:
+		var dto dtos.LocationDrainedEventDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.LocationDrainedEventFromDTO(dto), nil
 
 	case evKindBuildingProductionStarted:
 		var dto dtos.BuildingProductionStartedEventDTO

@@ -41,9 +41,11 @@ type UpdateMilitaryOperationJob struct {
 	OperationID int
 }
 
-// SpawnNearbyLocationsJob triggers spawning of resourceful/dangerous locations near a random user base.
-// The job handler is responsible for rescheduling itself.
-type SpawnNearbyLocationsJob struct{}
+// SpawnNearbyLocationsJob triggers spawning of resourceful/dangerous locations near a specific user base.
+// The job handler is responsible for rescheduling itself for that specific base.
+type SpawnNearbyLocationsJob struct {
+	BaseID int
+}
 
 // IntelligenceScanJob asks the system to perform a periodic scan for a scanner building.
 type IntelligenceScanJob struct {

@@ -16,6 +16,7 @@ type StorageItemPrototype struct {
 	ID               int
 	Name             string
 	Category         StorageCategory
+	EstimatedWorth   int // Rough worth in credits
 	ShortDescription string
 	FullDescription  string
 	ImageURL         string

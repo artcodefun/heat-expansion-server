@@ -11,7 +11,7 @@ import (
 
 const getBuildPrototypeByID = `-- name: GetBuildPrototypeByID :one
 
-SELECT id, name, category, unlock_technology_id, short_description, full_description,
+SELECT id, name, category, faction, unlock_technology_id, short_description, full_description,
        price,
        production_time, space, image_url,
        control_data, resources_data, defense_data, military_data, intelligence_data
@@ -27,6 +27,7 @@ func (q *Queries) GetBuildPrototypeByID(ctx context.Context, id int64) (BuildIte
 		&i.ID,
 		&i.Name,
 		&i.Category,
+		&i.Faction,
 		&i.UnlockTechnologyID,
 		&i.ShortDescription,
 		&i.FullDescription,
@@ -44,7 +45,7 @@ func (q *Queries) GetBuildPrototypeByID(ctx context.Context, id int64) (BuildIte
 }
 
 const listBuildPrototypes = `-- name: ListBuildPrototypes :many
-SELECT id, name, category, unlock_technology_id, short_description, full_description,
+SELECT id, name, category, faction, unlock_technology_id, short_description, full_description,
        price,
        production_time, space, image_url,
        control_data, resources_data, defense_data, military_data, intelligence_data
@@ -65,6 +66,7 @@ func (q *Queries) ListBuildPrototypes(ctx context.Context) ([]BuildItemPrototype
 			&i.ID,
 			&i.Name,
 			&i.Category,
+			&i.Faction,
 			&i.UnlockTechnologyID,
 			&i.ShortDescription,
 			&i.FullDescription,

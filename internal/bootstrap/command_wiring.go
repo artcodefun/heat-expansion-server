@@ -20,6 +20,8 @@ func WireCommandEvents(c *Commands, pub ports.EventPublisher) {
 			return c.Alert.HandleActivityCreatedEvent(ev)
 		case domain.UserAccountCreatedEvent:
 			return c.Base.HandleUserAccountCreatedEvent(ev)
+		case domain.UserBaseCreatedEvent:
+			return c.World.HandleUserBaseCreatedEvent(ev)
 		case domain.BuildingProductionStartedEvent:
 			return c.Building.HandleProductionStartedEvent(&ev)
 		case domain.BuildingProductionFinishedEvent:
@@ -59,6 +61,8 @@ func WireCommandEvents(c *Commands, pub ports.EventPublisher) {
 			return c.Operation.HandleMilitaryOperationReturnArrivedEvent(ev)
 		case domain.ScanReportCreatedEvent:
 			return c.Activity.HandleScanReportCreatedEvent(ev)
+		case domain.LocationDrainedEvent:
+			return c.World.HandleLocationDrainedEvent(ev)
 		}
 		return nil
 	})

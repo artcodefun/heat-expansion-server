@@ -117,6 +117,13 @@ func (r *ResourceLocationRepo) Delete(id int) error {
 	return r.q.DeleteResourceLocation(context.Background(), int64(id))
 }
 
+func (r *ResourceLocationRepo) DeleteByCoordinates(x, y int) error {
+	return r.q.DeleteResourceLocationBySector(context.Background(), gen.DeleteResourceLocationBySectorParams{
+		SectorX: int32(x),
+		SectorY: int32(y),
+	})
+}
+
 func (r *ResourceLocationRepo) loadPrototypes(ctx context.Context) (map[int]*domain.ArmyItemPrototype, map[int]*domain.BuildItemPrototype, error) {
 	armyList, err := r.armyProtoRepo.FindAllPrototypes()
 	if err != nil {

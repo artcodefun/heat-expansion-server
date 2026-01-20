@@ -10,7 +10,7 @@ import (
 )
 
 // Convert prototype row to readmodel prototype
-func armyPrototypeFromParts(id int64, name string, category string, unlock sql.NullInt64, short sql.NullString, full sql.NullString, price []byte, productionTime int64, space int32, imageURL sql.NullString, attack, defence, capacity, stealth, speed int32) readmodels.ArmyItemPrototype {
+func armyPrototypeFromParts(id int64, name string, category string, faction string, unlock sql.NullInt64, short sql.NullString, full sql.NullString, price []byte, productionTime int64, space int32, imageURL sql.NullString, attack, defence, capacity, stealth, speed int32) readmodels.ArmyItemPrototype {
 	var unlockPtr *int
 	if unlock.Valid {
 		v := int(unlock.Int64)
@@ -20,6 +20,7 @@ func armyPrototypeFromParts(id int64, name string, category string, unlock sql.N
 		ID:                 int(id),
 		Name:               name,
 		Category:           readmodels.ArmyCategory(category),
+		Faction:            faction,
 		UnlockTechnologyID: unlockPtr,
 		ShortDescription:   nullString(short),
 		FullDescription:    nullString(full),
@@ -44,7 +45,7 @@ func ArmyItemPendingFromRow(r gen.ListPendingArmyItemsRow) readmodels.ArmyItemPe
 	}
 	return readmodels.ArmyItemPending{
 		BaseOwnedItem: readmodels.BaseOwnedItem{ID: r.ID, UserBaseID: int(r.BaseID)},
-		Prototype:     armyPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ProductionTime, r.Space, r.ImageUrl, r.Attack, r.Defence, r.Capacity, r.Stealth, r.Speed),
+		Prototype:     armyPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.Faction, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ProductionTime, r.Space, r.ImageUrl, r.Attack, r.Defence, r.Capacity, r.Stealth, r.Speed),
 		Count:         count,
 	}
 }
@@ -56,7 +57,7 @@ func ArmyItemInProductionFromRow(r gen.ListInProductionArmyItemsRow) readmodels.
 	}
 	return readmodels.ArmyItemInProduction{
 		BaseOwnedItem:     readmodels.BaseOwnedItem{ID: r.ID, UserBaseID: int(r.BaseID)},
-		Prototype:         armyPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ProductionTime, r.Space, r.ImageUrl, r.Attack, r.Defence, r.Capacity, r.Stealth, r.Speed),
+		Prototype:         armyPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.Faction, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ProductionTime, r.Space, r.ImageUrl, r.Attack, r.Defence, r.Capacity, r.Stealth, r.Speed),
 		StartDate:         jd.StartDate,
 		CompletionDate:    jd.CompletionDate,
 		CrystalsSkipPrice: jd.CrystalsSkipPrice,
@@ -71,13 +72,13 @@ func ArmyItemPresentFromRow(r gen.ListPresentArmyItemsRow) readmodels.ArmyItemPr
 	refund := readmodels.PriceModel{Credits: jd.Refund.Credits, Iron: jd.Refund.Iron, Titanium: jd.Refund.Titanium, Antimatter: jd.Refund.Antimatter}
 	return readmodels.ArmyItemPresent{
 		BaseOwnedItem: readmodels.BaseOwnedItem{ID: r.ID, UserBaseID: int(r.BaseID)},
-		Prototype:     armyPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ProductionTime, r.Space, r.ImageUrl, r.Attack, r.Defence, r.Capacity, r.Stealth, r.Speed),
+		Prototype:     armyPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.Faction, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ProductionTime, r.Space, r.ImageUrl, r.Attack, r.Defence, r.Capacity, r.Stealth, r.Speed),
 		Count:         jd.Count,
 		Refund:        refund,
 	}
 }
 
 func NewArmyItemFromPrototype(p gen.ArmyItemPrototype) readmodels.ArmyItemNew {
-	proto := armyPrototypeFromParts(p.ID, p.Name, p.Category, p.UnlockTechnologyID, p.ShortDescription, p.FullDescription, p.Price, p.ProductionTime, p.Space, p.ImageUrl, p.Attack, p.Defence, p.Capacity, p.Stealth, p.Speed)
+	proto := armyPrototypeFromParts(p.ID, p.Name, p.Category, p.Faction, p.UnlockTechnologyID, p.ShortDescription, p.FullDescription, p.Price, p.ProductionTime, p.Space, p.ImageUrl, p.Attack, p.Defence, p.Capacity, p.Stealth, p.Speed)
 	return readmodels.ArmyItemNew{Prototype: proto}
 }
