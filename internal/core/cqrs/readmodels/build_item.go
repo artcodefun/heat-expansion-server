@@ -51,10 +51,10 @@ type ControlSubtype string
 
 const (
 	ControlSubtypeRepairCenter    ControlSubtype = "REPAIR_CENTER"
-	ControlSubtypeTradingTerminal ControlSubtype = "TRADING_TERMINAL"
-	ControlSubtypeMailingTerminal ControlSubtype = "MAILING_TERMINAL"
 	ControlSubtypeCryptographyLab ControlSubtype = "CRYPTOGRAPHY_LAB"
-	// Add more as needed
+	ControlSubtypeArtifactLab     ControlSubtype = "ARTIFACT_LAB"
+	ControlSubtypeTradingTerminal ControlSubtype = "TRADING_TERMINAL"
+	ControlSubtypeMailingTerminal ControlSubtype = "MAILING_TERMINAL" // Add more as needed
 )
 
 // Resources buildings: e.g., resource production/capacity

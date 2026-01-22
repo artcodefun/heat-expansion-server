@@ -172,6 +172,47 @@ func TestStorage_DeleteStorageItemByID(t *testing.T) {
 	}
 }
 
+func TestStorage_ActivateArtifact_RequiresArtifactLab(t *testing.T) {
+	base := newBaseWithDefaults(40)
+	artifact := StorageItemPresent{
+		BaseOwnedItem: NewBaseOwnedItem(base.ID),
+		Prototype: StorageItemPrototype{
+			ID:           800,
+			Name:         "Ancient Relic",
+			Category:     StorageCategoryArtifact,
+			ArtifactData: &ArtifactStorageData{Type: "CombatBoost", Value: 0.1},
+		},
+	}
+	base.StorageItemsPresent = []StorageItemPresent{artifact}
+
+	// Try to activate without lab - should fail
+	err := base.ActivateArtifactByID(artifact.ID)
+	if err == nil {
+		t.Errorf("expected error when activating artifact without Artifact Lab, got nil")
+	} else if err.Error() != "artifact laboratory required to activate artifacts" {
+		t.Errorf("unexpected error message: %v", err)
+	}
+
+	// Add Artifact Lab
+	base.BuildingsPresent = append(base.BuildingsPresent, BuildItemPresent{
+		Prototype: BuildItemPrototype{
+			Category: BuildCategoryControl,
+			ControlData: &ControlBuildingData{
+				Subtype: ControlSubtypeArtifactLab,
+			},
+		},
+	})
+
+	// Now activation should succeed
+	if err := base.ActivateArtifactByID(artifact.ID); err != nil {
+		t.Fatalf("failed to activate artifact after adding lab: %v", err)
+	}
+
+	if !base.StorageItemsPresent[0].IsActive {
+		t.Errorf("expected artifact to be active")
+	}
+}
+
 func TestStorage_ActivateBuffTwice_ErrorsAndDoesNotDuplicate(t *testing.T) {
 	SetTestNow(t, 21_000)
 	base := newBaseWithDefaults(6)

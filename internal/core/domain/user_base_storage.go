@@ -284,6 +284,9 @@ func (ub *UserBaseModel) StartDamagedItemRestorationByID(itemID uuid.UUID, armyP
 
 // ActivateArtifactByID enables the bonus of an artifact.
 func (ub *UserBaseModel) ActivateArtifactByID(itemID uuid.UUID) error {
+	if !ub.hasControlSubtype(ControlSubtypeArtifactLab) {
+		return fmt.Errorf("artifact laboratory required to activate artifacts")
+	}
 	defer ub.recalculateStats()
 
 	// Check current active artifacts count

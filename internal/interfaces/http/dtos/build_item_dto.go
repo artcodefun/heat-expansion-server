@@ -23,9 +23,10 @@ type ControlSubtype string
 
 const (
 	ControlSubtypeRepairCenter    ControlSubtype = "REPAIR_CENTER"
+	ControlSubtypeCryptographyLab ControlSubtype = "CRYPTOGRAPHY_LAB"
+	ControlSubtypeArtifactLab     ControlSubtype = "ARTIFACT_LAB"
 	ControlSubtypeTradingTerminal ControlSubtype = "TRADING_TERMINAL"
 	ControlSubtypeMailingTerminal ControlSubtype = "MAILING_TERMINAL"
-	ControlSubtypeCryptographyLab ControlSubtype = "CRYPTOGRAPHY_LAB"
 )
 
 type IntelligenceSubtype string
