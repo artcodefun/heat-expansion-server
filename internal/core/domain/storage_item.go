@@ -44,8 +44,6 @@ const (
 	BuffTypeStealthIncrease  BuffType = "STEALTH_INCREASE"
 	BuffTypeCapacityIncrease BuffType = "CAPACITY_INCREASE"
 	BuffTypeSpeedIncrease    BuffType = "SPEED_INCREASE"
-
-	BuffTypePricesDecrease BuffType = "PRICES_DECREASE"
 )
 
 // BuffStorageData defines the properties for temporary stat enhancements.
@@ -90,8 +88,6 @@ const (
 	ArtifactEffectTypeStealthIncrease  ArtifactEffectType = "STEALTH_INCREASE"
 	ArtifactEffectTypeCapacityIncrease ArtifactEffectType = "CAPACITY_INCREASE"
 	ArtifactEffectTypeSpeedIncrease    ArtifactEffectType = "SPEED_INCREASE"
-
-	ArtifactEffectTypePricesDecrease ArtifactEffectType = "PRICES_DECREASE"
 )
 
 // ArtifactStorageData defines the properties for permanent passive items.
@@ -149,8 +145,6 @@ type BaseModifiers struct {
 	StealthMul  float64
 	CapacityMul float64
 	SpeedMul    float64
-
-	PricesMul float64
 }
 
 func IdentityBaseModifiers() BaseModifiers {
@@ -163,7 +157,6 @@ func IdentityBaseModifiers() BaseModifiers {
 		StealthMul:      1,
 		CapacityMul:     1,
 		SpeedMul:        1,
-		PricesMul:       1,
 	}
 }
 
@@ -212,8 +205,6 @@ func (m *BaseModifiers) ApplyBuff(t BuffType, v float64) {
 		m.CapacityMul *= v
 	case BuffTypeSpeedIncrease:
 		m.SpeedMul *= v
-	case BuffTypePricesDecrease:
-		m.PricesMul *= v
 	}
 }
 
@@ -238,7 +229,5 @@ func (m *BaseModifiers) ApplyArtifact(t ArtifactEffectType, v float64) {
 		m.CapacityMul *= v
 	case ArtifactEffectTypeSpeedIncrease:
 		m.SpeedMul *= v
-	case ArtifactEffectTypePricesDecrease:
-		m.PricesMul *= v
 	}
 }

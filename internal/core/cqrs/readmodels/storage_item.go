@@ -42,8 +42,6 @@ const (
 	BuffTypeStealthIncrease  BuffType = "STEALTH_INCREASE"
 	BuffTypeCapacityIncrease BuffType = "CAPACITY_INCREASE"
 	BuffTypeSpeedIncrease    BuffType = "SPEED_INCREASE"
-
-	BuffTypePricesDecrease BuffType = "PRICES_DECREASE"
 )
 
 // BuffStorageData: bonuses for buffs
@@ -88,8 +86,6 @@ const (
 	ArtifactEffectTypeStealthIncrease  ArtifactEffectType = "STEALTH_INCREASE"
 	ArtifactEffectTypeCapacityIncrease ArtifactEffectType = "CAPACITY_INCREASE"
 	ArtifactEffectTypeSpeedIncrease    ArtifactEffectType = "SPEED_INCREASE"
-
-	ArtifactEffectTypePricesDecrease ArtifactEffectType = "PRICES_DECREASE"
 )
 
 // ArtifactStorageData: properties for artifacts

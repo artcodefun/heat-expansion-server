@@ -28,7 +28,6 @@ const (
 	BuffStealthIncrease    BuffType = "STEALTH_INCREASE"
 	BuffCapacityIncrease   BuffType = "CAPACITY_INCREASE"
 	BuffSpeedIncrease      BuffType = "SPEED_INCREASE"
-	BuffPricesDecrease     BuffType = "PRICES_DECREASE"
 )
 
 type HiddenLocationType string
@@ -50,7 +49,6 @@ const (
 	ArtifactStealthIncrease    ArtifactEffectType = "STEALTH_INCREASE"
 	ArtifactCapacityIncrease   ArtifactEffectType = "CAPACITY_INCREASE"
 	ArtifactSpeedIncrease      ArtifactEffectType = "SPEED_INCREASE"
-	ArtifactPricesDecrease     ArtifactEffectType = "PRICES_DECREASE"
 )
 
 type ConsumableType string
