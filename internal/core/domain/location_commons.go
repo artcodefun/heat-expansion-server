@@ -18,11 +18,12 @@ const (
 )
 
 const (
-	WorthCredit        = 1.0
-	WorthIron          = 4.0   // 1000 / 250
-	WorthTitanium      = 20.0  // 1000 / 50
-	WorthAntimatter    = 333.3 // 1000 / 3
-	WorthDefenderPower = 50.0  // 50 credits = 1 defense power
+	WorthCredit             = 1.0
+	WorthIron               = 4.0   // 1000 / 250
+	WorthTitanium           = 20.0  // 1000 / 50
+	WorthAntimatter         = 333.3 // 1000 / 3
+	WorthDefenderPower      = 50.0  // 50 credits = 1 defense power
+	WorthCapacityMultiplier = 10.0  // 1 capacity point = 10 credits worth of volume
 )
 
 // LocationResourceStats represents the available resources at a non-user-base location

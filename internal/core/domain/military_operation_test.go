@@ -165,7 +165,7 @@ func TestOperation_Attack_UserBase_LootAndDeduction(t *testing.T) {
 	SetTestNow(t, 2_000)
 	// Attacking unit with capacity 5
 	units := []MilitaryUnitSnap{
-		{PrototypeID: 2, Category: ArmyCategoryInfantry, Attack: 10, Defence: 5, Capacity: 5, Stealth: 0, Speed: 200, Count: 1},
+		{PrototypeID: 2, Category: ArmyCategoryInfantry, Attack: 10, Defence: 5, Capacity: 7, Stealth: 0, Speed: 200, Count: 1},
 	}
 	op, err := NewAttackOperation(1, 10, Vector2i{0, 0}, Vector2i{1, 0}, units)
 	if err != nil {
@@ -190,8 +190,15 @@ func TestOperation_Attack_UserBase_LootAndDeduction(t *testing.T) {
 	}
 	loot := op.AttackResult.Loot
 	lootSum := loot.Credits + loot.Iron + loot.Titanium + loot.Antimatter
-	if lootSum <= 0 || lootSum > 5 {
-		t.Fatalf("unexpected loot sum: %d", lootSum)
+	// With Capacity 7 and WorthCapacityMultiplier=10, we have 70 volume points.
+	// Greedy looting (Low to High value):
+	// - Credits (Worth 1): takes 10 (vol used: 10, rem: 60)
+	// - Iron (Worth 4): takes 8 (vol used: 32, rem: 28)
+	// - Titanium (Worth 20): fits 1
+	// - Antimatter (Worth 333.3): fits 0
+	// Total items = 10 + 8 + 1 = 19.
+	if lootSum != 19 {
+		t.Fatalf("unexpected loot sum: %d (expected 19 due to least-expensive-first looting)", lootSum)
 	}
 	// Defender resources reduced by exactly loot sum
 	afterSum := int(def.Stats.Credits + def.Stats.Iron + def.Stats.Titanium + def.Stats.Antimatter)

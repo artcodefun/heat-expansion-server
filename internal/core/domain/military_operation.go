@@ -3,7 +3,6 @@ package domain
 import (
 	"fmt"
 	"math"
-	"math/rand"
 )
 
 // MilitaryOperationType represents the type of a military operation.
@@ -721,64 +720,60 @@ func (op *MilitaryOperation) TotalCapacity() int {
 	return sumCapacity(op.Units)
 }
 
-// computeLoadFromLocation randomly fills available carrying capacity using the available
-// resource pool. Allocation is random but bounded by both capacity and available amounts.
-// This is used after resolution, based on attacker survivors.
+// computeLoadFromLocation fills available carrying capacity using the available
+// resource pool, prioritizing lower value resources first (least expensive to most expensive).
+// This incentivizes players to fully loot a location.
+// Carrying capacity is volume-based (WorthCapacityMultiplier * total unit capacity).
 func computeLoadFromLocation(remaining []MilitaryUnitSnap, available PriceModel) PriceModel {
 	capacity := sumCapacity(remaining)
 	if capacity <= 0 {
 		return PriceModel{}
 	}
-	// Clamp available to non-negative
-	pool := PriceModel{
-		Credits:    maxInt(available.Credits, 0),
-		Iron:       maxInt(available.Iron, 0),
-		Titanium:   maxInt(available.Titanium, 0),
-		Antimatter: maxInt(available.Antimatter, 0),
-	}
-	// Quick path: total available smaller than capacity -> take all
-	totalAvail := pool.Credits + pool.Iron + pool.Titanium + pool.Antimatter
-	if totalAvail == 0 {
-		return PriceModel{}
-	}
-	if totalAvail <= capacity {
-		return pool
-	}
-	// Randomly allocate one unit at a time up to capacity.
-	rng := rand.New(rand.NewSource(NowUnixNano()))
+
+	remainingVolume := float64(capacity) * WorthCapacityMultiplier
 	loot := PriceModel{}
-	for taken := 0; taken < capacity; taken++ {
-		currentTotal := pool.Credits + pool.Iron + pool.Titanium + pool.Antimatter
-		if currentTotal == 0 {
-			break
-		}
-		pick := rng.Intn(currentTotal)
-		// Credits bucket
-		if pick < pool.Credits {
-			pool.Credits--
-			loot.Credits++
-			continue
-		}
-		pick -= pool.Credits
-		// Iron bucket
-		if pick < pool.Iron {
-			pool.Iron--
-			loot.Iron++
-			continue
-		}
-		pick -= pool.Iron
-		// Titanium bucket
-		if pick < pool.Titanium {
-			pool.Titanium--
-			loot.Titanium++
-			continue
-		}
-		// Antimatter bucket
-		if pool.Antimatter > 0 {
-			pool.Antimatter--
-			loot.Antimatter++
-		}
+
+	// Use local copies since available is passed by value anyway
+	poolCredits := max(0, available.Credits)
+	poolIron := max(0, available.Iron)
+	poolTitanium := max(0, available.Titanium)
+	poolAntimatter := max(0, available.Antimatter)
+
+	// Take resources in order of increasing value density (Low to High):
+	// Credits (1 worth) -> Iron (4 worth) -> Titanium (20 worth) -> Antimatter (333.3 worth)
+
+	// 1. Credits
+	if poolCredits > 0 && remainingVolume >= WorthCredit {
+		maxAmt := int(remainingVolume / WorthCredit)
+		take := min(poolCredits, maxAmt)
+		loot.Credits = take
+		remainingVolume -= float64(take) * WorthCredit
 	}
+
+	// 2. Iron
+	if poolIron > 0 && remainingVolume >= WorthIron {
+		maxAmt := int(remainingVolume / WorthIron)
+		take := min(poolIron, maxAmt)
+		loot.Iron = take
+		remainingVolume -= float64(take) * WorthIron
+	}
+
+	// 3. Titanium
+	if poolTitanium > 0 && remainingVolume >= WorthTitanium {
+		maxAmt := int(remainingVolume / WorthTitanium)
+		take := min(poolTitanium, maxAmt)
+		loot.Titanium = take
+		remainingVolume -= float64(take) * WorthTitanium
+	}
+
+	// 4. Antimatter
+	if poolAntimatter > 0 && remainingVolume >= WorthAntimatter {
+		maxAmt := int(remainingVolume / WorthAntimatter)
+		take := min(poolAntimatter, maxAmt)
+		loot.Antimatter = take
+		remainingVolume -= float64(take) * WorthAntimatter
+	}
+
 	return loot
 }
 
