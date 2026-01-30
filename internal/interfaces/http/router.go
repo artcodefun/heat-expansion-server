@@ -59,6 +59,9 @@ func NewRouter(cmd Commands, qry Queries, tokenProvider ports.TokenProvider) *gi
 	// Global routes
 	r.GET("/health", HealthHandler)
 
+	// Serve static files
+	r.Static("/assets", "./assets")
+
 	// Public routes (no auth)
 	publicApi := r.Group("/api/v1")
 	{

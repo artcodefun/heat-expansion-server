@@ -22,6 +22,9 @@
 # Environment files
 .env
 
+# Assets
+/assets/
+
 # OS generated files
 .DS_Store
 Thumbs.db

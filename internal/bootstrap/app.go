@@ -22,7 +22,6 @@ type App struct {
 	DBURL         string
 	JWTSecret     string
 	LogLevel      string
-	ContentDir    string
 	StaticBaseURL string
 
 	DB         *sql.DB
@@ -38,10 +37,9 @@ func NewApp() *App {
 	port := os.Getenv("PORT")
 	dbURL := os.Getenv("DB_URL")
 	jwtSecret := os.Getenv("JWT_SECRET")
-	contentDir := os.Getenv("CONTENT_DIR")
 	staticBaseURL := os.Getenv("STATIC_BASE_URL")
 
-	if port == "" || dbURL == "" || jwtSecret == "" || contentDir == "" || staticBaseURL == "" {
+	if port == "" || dbURL == "" || jwtSecret == "" || staticBaseURL == "" {
 		log.Fatal("Missing required environment variables. Please check your .env file.")
 	}
 
@@ -54,7 +52,7 @@ func NewApp() *App {
 	}
 	fmt.Println("Connected to database successfully!")
 
-	adapters, err := NewAdapters(db, jwtSecret, contentDir, staticBaseURL)
+	adapters, err := NewAdapters(db, jwtSecret, staticBaseURL)
 	if err != nil {
 		log.Fatal("Failed to initialize adapters:", err)
 	}
@@ -96,7 +94,6 @@ func NewApp() *App {
 		Port:          port,
 		DBURL:         dbURL,
 		JWTSecret:     jwtSecret,
-		ContentDir:    contentDir,
 		StaticBaseURL: staticBaseURL,
 		DB:            db,
 		Adapters:      adapters,
@@ -111,7 +108,6 @@ func (a *App) Run() {
 	fmt.Printf("Starting server on port %s\n", a.Port)
 	fmt.Printf("Connecting to DB: %s\n", a.DBURL)
 	fmt.Println("JWT secret configured")
-	fmt.Printf("Content dir: %s\n", a.ContentDir)
 	fmt.Printf("Static base URL: %s\n", a.StaticBaseURL)
 
 	// Start scheduler loop

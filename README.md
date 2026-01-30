@@ -10,8 +10,7 @@ Create a `.env` file in the project root with the following variables:
 PORT=8080
 DB_URL=postgres://user:password@localhost:5432/heatdb
 JWT_SECRET=your_jwt_secret_here
-CONTENT_DIR=./assets/content
-STATIC_BASE_URL=http://localhost:8080/static
+STATIC_BASE_URL=http://localhost:8080/assets
 ```
 
 ## Getting Started

@@ -55,7 +55,7 @@ type Adapters struct {
 	Content   ports.ContentGenerator
 }
 
-func NewAdapters(db *sql.DB, jwtSecret, contentDir, staticBaseURL string) (*Adapters, error) {
+func NewAdapters(db *sql.DB, jwtSecret, staticBaseURL string) (*Adapters, error) {
 	q := dbgen.New(db)
 	rq := readgen.New(db)
 
@@ -67,7 +67,7 @@ func NewAdapters(db *sql.DB, jwtSecret, contentDir, staticBaseURL string) (*Adap
 	// Security + content adapters (dev-friendly defaults)
 	hasher := security.NewSimpleHasher()
 	tokens := security.NewSimpleTokenProvider(jwtSecret)
-	generator := contentgen.NewSimpleGenerator(contentDir, staticBaseURL)
+	generator := contentgen.NewSimpleGenerator(staticBaseURL)
 
 	sectorRead := readrepo.NewSectorReadRepo(rq)
 	opRead := readrepo.NewOperationReadRepo(rq, sectorRead)

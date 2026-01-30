@@ -1,127 +1,138 @@
 package content
 
 import (
-	"encoding/json"
 	"fmt"
-	"math/rand"
-	"os"
-	"path"
-	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/artcodefun/heat-expansion-api/internal/core/domain"
 	"github.com/artcodefun/heat-expansion-api/internal/core/ports"
 )
 
-const maxContentIndex = 1000
-
-// SimpleGenerator provides deterministic placeholder content for locations.
+// SimpleGenerator provides content for locations using hardcoded metadata.
 type SimpleGenerator struct {
-	contentDir string
 	staticBase string
-	rand       *rand.Rand
+	imageCount int
 }
 
-type placeholderData struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-}
-
-// NewSimpleGenerator creates a generator that knows how to build URLs backed by a local content directory.
-func NewSimpleGenerator(contentDir, staticBaseURL string) *SimpleGenerator {
-	g := &SimpleGenerator{
-		contentDir: strings.TrimSpace(contentDir),
-		staticBase: strings.TrimSpace(staticBaseURL),
-		rand:       rand.New(rand.NewSource(time.Now().UnixNano())),
-	}
-	if g.contentDir != "" {
-		_ = os.MkdirAll(g.contentDir, 0o755)
-	}
-	return g
-}
-
-func (g *SimpleGenerator) randomIndex() int {
-	if g.rand == nil {
-		g.rand = rand.New(rand.NewSource(time.Now().UnixNano()))
-	}
-	return g.rand.Intn(maxContentIndex + 1)
-}
-
-func (g *SimpleGenerator) assetURL(kind string, index int) string {
-	rel := path.Join(kind, fmt.Sprintf("%d_image.png", index))
-	g.ensureLocalPath(rel)
-	return g.buildPublicURL(rel)
-}
-
-func (g *SimpleGenerator) ensureLocalPath(rel string) {
-	if g.contentDir == "" {
-		return
-	}
-	local := filepath.Join(g.contentDir, filepath.FromSlash(rel))
-	if err := os.MkdirAll(filepath.Dir(local), 0o755); err != nil {
-		return
+// NewSimpleGenerator creates a generator that uses hardcoded metadata for content.
+func NewSimpleGenerator(staticBaseURL string) *SimpleGenerator {
+	return &SimpleGenerator{
+		staticBase: strings.TrimRight(staticBaseURL, "/"),
+		imageCount: 25, // Assuming ~25 images per type as per user request
 	}
 }
 
-func (g *SimpleGenerator) metadata(kind string, index int) placeholderData {
-	if g.contentDir == "" {
-		return placeholderData{}
-	}
-	file := filepath.Join(g.contentDir, kind, fmt.Sprintf("%d_data.json", index))
-	data, err := os.ReadFile(file)
-	if err != nil {
-		return placeholderData{}
-	}
-	var meta placeholderData
-	if err := json.Unmarshal(data, &meta); err != nil {
-		return placeholderData{}
-	}
-	return meta
-}
-
-func (g *SimpleGenerator) buildPublicURL(rel string) string {
-	if g.staticBase == "" {
+func (g *SimpleGenerator) buildURL(folder, filename string, index int) string {
+	if filename == "" {
 		return ""
 	}
-	rel = strings.TrimLeft(path.Clean("/"+rel), "/")
-	return fmt.Sprintf("%s/%s", strings.TrimRight(g.staticBase, "/"), rel)
+	// Use absolute value for index to handle negative coordinates consistently
+	if index < 0 {
+		index = -index
+	}
+	// filename is expected to be without extension and index, e.g. "empty_sector"
+	fullFilename := fmt.Sprintf("%s_%d.png", filename, index%g.imageCount)
+	return fmt.Sprintf("%s/images/locations/%s/%s", g.staticBase, folder, fullFilename)
 }
 
-func (g *SimpleGenerator) generate(kind string, fallbackName, fallbackDescription string) ports.GeneratedLocationContent {
-	idx := g.randomIndex()
-	meta := g.metadata(kind, idx)
-	name := fallbackName
-	if meta.Name != "" {
-		name = meta.Name
-	}
-	desc := fallbackDescription
-	if meta.Description != "" {
-		desc = meta.Description
-	}
-	return ports.GeneratedLocationContent{
-		Name:        name,
-		Description: desc,
-		ImageURL:    g.assetURL(kind, idx),
-	}
+func (g *SimpleGenerator) getCoordIndex(coords domain.Vector2i) int {
+	// Deterministic index from coordinates: (X * prime1 + Y)
+	// Using 16381 as a prime to create a spread across sectors
+	return coords.X*16381 + coords.Y
 }
 
 func (g *SimpleGenerator) GenerateEmptySectorContent(sector *domain.SectorModel) ports.GeneratedLocationContent {
-	return g.generate("empty_sectors", "Uncharted Sector", "A quiet, empty stretch of space.")
+	idx := 0
+	if sector != nil {
+		idx = g.getCoordIndex(sector.Coordinates)
+	}
+	return ports.GeneratedLocationContent{
+		Name:        "Empty Sector",
+		Description: "A desolate volcanic wasteland with no detectable resources or inhabitants.",
+		ImageURL:    g.buildURL("empty_sectors", "empty_sector", idx),
+	}
 }
 
 func (g *SimpleGenerator) GenerateBaseContent(base *domain.UserBaseModel) ports.GeneratedLocationContent {
-	fallbackName := "Unknown Base"
+	idx := 0
+	name := "Human Expedition Base"
 	if base != nil {
-		fallbackName = fmt.Sprintf("Base #%d", base.UserID)
+		idx = g.getCoordIndex(base.Coordinates)
+		name = fmt.Sprintf("Base #%d", base.UserID)
 	}
-	return g.generate("user_bases", fallbackName, "A sturdy outpost in the sector.")
+	return ports.GeneratedLocationContent{
+		Name:        name,
+		Description: "A fortified expeditionary outpost established by the Exo-Coalition.",
+		ImageURL:    g.buildURL("user_bases", "user_base", idx),
+	}
 }
 
 func (g *SimpleGenerator) GenerateResourceLocationContent(resource *domain.ResourceLocationModel) ports.GeneratedLocationContent {
-	return g.generate("resource_locs", "Resource Field", "Rich in valuable materials.")
+	name := "Resource Field"
+	desc := "Rich in valuable materials."
+	fileBase := ""
+	idx := 0
+
+	if resource != nil {
+		idx = g.getCoordIndex(resource.Coordinates)
+		switch resource.Type {
+		case domain.ResourceTypeIron:
+			name = "Iron Resourceful Location"
+			desc = "Large-scale metallic formations indicate high concentrations of raw iron ore."
+			fileBase = "resource_iron"
+		case domain.ResourceTypeTitanium:
+			name = "Titanium Resourceful Location"
+			desc = "Volcanic vents surrounding jagged orange crystal clusters, a sign of rich titanium deposits."
+			fileBase = "resource_titanium"
+		case domain.ResourceTypeAntimatter:
+			name = "Antimatter Resourceful Location"
+			desc = "An unstable rift leaking pure antimatter, causing localized gravitational distortions."
+			fileBase = "resource_antimatter"
+		case domain.ResourceTypeCredits:
+			name = "Credit Resourceful Location"
+			desc = "A ramshackle outpost built over the ruins of an old merchant hub, likely containing hoarded credits."
+			fileBase = "resource_credits"
+		}
+	}
+
+	return ports.GeneratedLocationContent{
+		Name:        name,
+		Description: desc,
+		ImageURL:    g.buildURL("resource", fileBase, idx),
+	}
 }
 
 func (g *SimpleGenerator) GenerateDangerousLocationContent(danger *domain.DangerousLocationModel) ports.GeneratedLocationContent {
-	return g.generate("dangerous_locs", "Hazard Zone", "Hostile entities detected.")
+	name := "Hazard Zone"
+	desc := "Hostile entities detected."
+	fileBase := ""
+	idx := 0
+
+	if danger != nil {
+		idx = g.getCoordIndex(danger.Coordinates)
+		switch danger.DefenderFaction {
+		case domain.FactionCustodianProtocol:
+			name = "Dangerous Vault"
+			desc = "A monolithic precursor structure guarding the entrance to a long-forgotten vault."
+			fileBase = "dangerous_vault"
+		case domain.FactionNeuralWormApex:
+			name = "Dangerous Caverns"
+			desc = "Subterranean depths filled with bioluminescent neural filaments and ancient data archives."
+			fileBase = "dangerous_caverns"
+		case domain.FactionObsidianSentinels:
+			name = "Dangerous Spires"
+			desc = "A forest of floating obsidian spires that hum with a rhythmic, defensive energy."
+			fileBase = "dangerous_spires"
+		case domain.FactionScorchWalkers:
+			name = "Dangerous Monolith"
+			desc = "A massive, featureless black monolith that seems to absorb all light and nearby scans."
+			fileBase = "dangerous_monolith"
+		}
+	}
+
+	return ports.GeneratedLocationContent{
+		Name:        name,
+		Description: desc,
+		ImageURL:    g.buildURL("dangerous", fileBase, idx),
+	}
 }
