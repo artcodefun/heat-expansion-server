@@ -10,6 +10,10 @@ import (
 func (ub *UserBaseModel) AvailableArmies(allPrototypes []*ArmyItemPrototype) []*ArmyItemPrototype {
 	available := []*ArmyItemPrototype{}
 	for _, proto := range allPrototypes {
+		// Players can only build EXO_COALITION units
+		if proto.Faction != FactionExoCoalition {
+			continue
+		}
 		// Check tech unlock
 		if proto.UnlockTechnologyID != nil && !ub.HasTech(*proto.UnlockTechnologyID) {
 			continue

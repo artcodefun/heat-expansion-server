@@ -10,6 +10,10 @@ import (
 func (ub *UserBaseModel) AvailableBuildings(allPrototypes []*BuildItemPrototype) []*BuildItemPrototype {
 	available := []*BuildItemPrototype{}
 	for _, proto := range allPrototypes {
+		// Players can only build EXO_COALITION buildings
+		if proto.Faction != FactionExoCoalition {
+			continue
+		}
 		if proto.UnlockTechnologyID == nil || ub.HasTech(*proto.UnlockTechnologyID) {
 			available = append(available, proto)
 		}
