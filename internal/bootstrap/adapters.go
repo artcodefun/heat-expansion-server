@@ -92,7 +92,7 @@ func NewAdapters(db *sql.DB, jwtSecret, staticBaseURL string) (*Adapters, error)
 		Activities:         repo.NewActivityRepo(q),
 		RadarThreats:       repo.NewRadarThreatRepo(q),
 		OutboxEvents:       repo.NewOutboxEventRepo(q),
-		Alerts:             repo.NewAlertRepository(q),
+		Alerts:             repo.NewAlertRepo(q),
 		// Read side
 		BaseRead:      readrepo.NewBaseReadRepo(rq),
 		BuildingRead:  readrepo.NewBuildReadRepo(rq),

@@ -12,12 +12,14 @@ import (
 type AlertCommands struct {
 	AlertRepo ports.AlertRepository
 	Access    *services.AccessControlService
+	TxMgr     ports.TransactionManager
 }
 
-func NewAlertCommands(repo ports.AlertRepository, access *services.AccessControlService) *AlertCommands {
+func NewAlertCommands(repo ports.AlertRepository, access *services.AccessControlService, txMgr ports.TransactionManager) *AlertCommands {
 	return &AlertCommands{
 		AlertRepo: repo,
 		Access:    access,
+		TxMgr:     txMgr,
 	}
 }
 
@@ -57,10 +59,16 @@ func (c *AlertCommands) HandleActivityCreatedEvent(e domain.ActivityCreatedEvent
 		return nil // No alert for other kinds
 	}
 
-	alert := domain.NewAlert(e.BaseID, &e.ActivityID, kind, title, content, ttl)
-	err := c.AlertRepo.Create(alert)
-	if err != nil {
-		log.Printf("Failed to create alert for activity %s: %v", e.ActivityID, err)
-	}
-	return err
+	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
+		repo := c.AlertRepo.Tx(tx)
+		if exists, _ := repo.ExistsForActivity(e.ActivityID); exists {
+			return nil
+		}
+		alert := domain.NewAlert(e.BaseID, &e.ActivityID, kind, title, content, ttl)
+		err := repo.Create(alert)
+		if err != nil {
+			log.Printf("Failed to create alert for activity %s: %v", e.ActivityID, err)
+		}
+		return err
+	})
 }

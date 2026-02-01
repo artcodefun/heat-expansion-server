@@ -13,3 +13,9 @@ DELETE FROM alerts WHERE expires_at < $1;
 -- name: MarkAllAlertsAsRead :exec
 UPDATE alerts SET is_read = TRUE
 WHERE base_id = $1;
+
+-- name: ExistsForActivity :one
+SELECT EXISTS (
+    SELECT 1 FROM alerts
+    WHERE activity_id = $1
+);

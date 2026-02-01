@@ -21,6 +21,45 @@ func (q *Queries) DeleteActivitiesByBase(ctx context.Context, baseID int64) erro
 	return err
 }
 
+const existsForOperation = `-- name: ExistsForOperation :one
+SELECT EXISTS (
+    SELECT 1 FROM activities
+    WHERE base_id = $1 AND kind = $2
+      AND (
+          (kind = 'OFFENSE' AND (offense_data->>'op_id')::bigint = $3::bigint) OR
+          (kind = 'DEFENSE' AND (defense_data->>'op_id')::bigint = $3::bigint) OR
+          (kind = 'RADAR' AND (radar_data->>'op_id')::bigint = $3::bigint)
+      )
+)
+`
+
+type ExistsForOperationParams struct {
+	BaseID int64  `json:"base_id"`
+	Kind   string `json:"kind"`
+	OpID   int64  `json:"op_id"`
+}
+
+func (q *Queries) ExistsForOperation(ctx context.Context, arg ExistsForOperationParams) (bool, error) {
+	row := q.queryRow(ctx, q.existsForOperationStmt, existsForOperation, arg.BaseID, arg.Kind, arg.OpID)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
+const existsForScanReport = `-- name: ExistsForScanReport :one
+SELECT EXISTS (
+    SELECT 1 FROM activities
+    WHERE kind = 'SCAN' AND (scan_data->>'report_id')::bigint = $1::bigint
+)
+`
+
+func (q *Queries) ExistsForScanReport(ctx context.Context, reportID int64) (bool, error) {
+	row := q.queryRow(ctx, q.existsForScanReportStmt, existsForScanReport, reportID)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const insertActivity = `-- name: InsertActivity :one
 INSERT INTO activities (
     id, kind, created_at, base_id,

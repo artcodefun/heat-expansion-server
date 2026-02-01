@@ -20,6 +20,20 @@ func (q *Queries) DeleteExpiredAlerts(ctx context.Context, expiresAt int64) erro
 	return err
 }
 
+const existsForActivity = `-- name: ExistsForActivity :one
+SELECT EXISTS (
+    SELECT 1 FROM alerts
+    WHERE activity_id = $1
+)
+`
+
+func (q *Queries) ExistsForActivity(ctx context.Context, activityID uuid.NullUUID) (bool, error) {
+	row := q.queryRow(ctx, q.existsForActivityStmt, existsForActivity, activityID)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const insertAlert = `-- name: InsertAlert :exec
 INSERT INTO alerts (id, base_id, activity_id, kind, title, content, is_read, created_at, expires_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)

@@ -81,6 +81,15 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteScanReportStmt, err = db.PrepareContext(ctx, deleteScanReport); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteScanReport: %w", err)
 	}
+	if q.existsForActivityStmt, err = db.PrepareContext(ctx, existsForActivity); err != nil {
+		return nil, fmt.Errorf("error preparing query ExistsForActivity: %w", err)
+	}
+	if q.existsForOperationStmt, err = db.PrepareContext(ctx, existsForOperation); err != nil {
+		return nil, fmt.Errorf("error preparing query ExistsForOperation: %w", err)
+	}
+	if q.existsForScanReportStmt, err = db.PrepareContext(ctx, existsForScanReport); err != nil {
+		return nil, fmt.Errorf("error preparing query ExistsForScanReport: %w", err)
+	}
 	if q.findClosestBaseStmt, err = db.PrepareContext(ctx, findClosestBase); err != nil {
 		return nil, fmt.Errorf("error preparing query FindClosestBase: %w", err)
 	}
@@ -407,6 +416,21 @@ func (q *Queries) Close() error {
 	if q.deleteScanReportStmt != nil {
 		if cerr := q.deleteScanReportStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteScanReportStmt: %w", cerr)
+		}
+	}
+	if q.existsForActivityStmt != nil {
+		if cerr := q.existsForActivityStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing existsForActivityStmt: %w", cerr)
+		}
+	}
+	if q.existsForOperationStmt != nil {
+		if cerr := q.existsForOperationStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing existsForOperationStmt: %w", cerr)
+		}
+	}
+	if q.existsForScanReportStmt != nil {
+		if cerr := q.existsForScanReportStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing existsForScanReportStmt: %w", cerr)
 		}
 	}
 	if q.findClosestBaseStmt != nil {
@@ -847,6 +871,9 @@ type Queries struct {
 	deleteResourceLocationStmt                *sql.Stmt
 	deleteResourceLocationBySectorStmt        *sql.Stmt
 	deleteScanReportStmt                      *sql.Stmt
+	existsForActivityStmt                     *sql.Stmt
+	existsForOperationStmt                    *sql.Stmt
+	existsForScanReportStmt                   *sql.Stmt
 	findClosestBaseStmt                       *sql.Stmt
 	findClosestDangerousLocationStmt          *sql.Stmt
 	findClosestResourceLocationStmt           *sql.Stmt
@@ -948,6 +975,9 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		deleteResourceLocationStmt:                q.deleteResourceLocationStmt,
 		deleteResourceLocationBySectorStmt:        q.deleteResourceLocationBySectorStmt,
 		deleteScanReportStmt:                      q.deleteScanReportStmt,
+		existsForActivityStmt:                     q.existsForActivityStmt,
+		existsForOperationStmt:                    q.existsForOperationStmt,
+		existsForScanReportStmt:                   q.existsForScanReportStmt,
 		findClosestBaseStmt:                       q.findClosestBaseStmt,
 		findClosestDangerousLocationStmt:          q.findClosestDangerousLocationStmt,
 		findClosestResourceLocationStmt:           q.findClosestResourceLocationStmt,

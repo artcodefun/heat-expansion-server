@@ -48,7 +48,11 @@ func (c *ActivityCommands) HandleMilitaryOperationStartedEvent(event domain.Mili
 
 	item := domain.NewActivityFromOffenseOperation(op.SourceBaseID, op)
 	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
-		if err := c.ActivityRepo.Tx(tx).Create(&item); err != nil {
+		repo := c.ActivityRepo.Tx(tx)
+		if ok, _ := repo.ExistsForOperation(op.SourceBaseID, string(domain.ActivityKindOffense), event.OperationID); ok {
+			return nil
+		}
+		if err := repo.Create(&item); err != nil {
 			return err
 		}
 		return c.OutboxEvents.Tx(tx).Save(item.PullEvents())
@@ -73,7 +77,11 @@ func (c *ActivityCommands) HandleMilitaryOperationResolvedEvent(event domain.Mil
 		item.CreatedAt = ts
 	}
 	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
-		if err := c.ActivityRepo.Tx(tx).Create(&item); err != nil {
+		repo := c.ActivityRepo.Tx(tx)
+		if ok, _ := repo.ExistsForOperation(base.ID, string(domain.ActivityKindDefense), event.OperationID); ok {
+			return nil
+		}
+		if err := repo.Create(&item); err != nil {
 			return err
 		}
 		return c.OutboxEvents.Tx(tx).Save(item.PullEvents())
@@ -107,6 +115,10 @@ func (c *ActivityCommands) HandleScanReportCreatedEvent(event domain.ScanReportC
 		repo := c.ActivityRepo.Tx(tx)
 		outbox := c.OutboxEvents.Tx(tx)
 
+		if ok, _ := repo.ExistsForScanReport(event.ReportID); ok {
+			return nil
+		}
+
 		if err := repo.Create(&attackerActivity); err != nil {
 			return err
 		}
@@ -134,7 +146,11 @@ func (c *ActivityCommands) HandleRadarThreatDetectedEvent(event domain.RadarThre
 
 	activity := domain.NewActivityFromRadarThreat(threat)
 	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
-		if err := c.ActivityRepo.Tx(tx).Create(&activity); err != nil {
+		repo := c.ActivityRepo.Tx(tx)
+		if ok, _ := repo.ExistsForOperation(event.OwnerBaseID, string(domain.ActivityKindRadar), event.OperationID); ok {
+			return nil
+		}
+		if err := repo.Create(&activity); err != nil {
 			return err
 		}
 		return c.OutboxEvents.Tx(tx).Save(activity.PullEvents())

@@ -33,6 +33,9 @@ type Querier interface {
 	DeleteResourceLocation(ctx context.Context, id int64) error
 	DeleteResourceLocationBySector(ctx context.Context, arg DeleteResourceLocationBySectorParams) error
 	DeleteScanReport(ctx context.Context, id int64) error
+	ExistsForActivity(ctx context.Context, activityID uuid.NullUUID) (bool, error)
+	ExistsForOperation(ctx context.Context, arg ExistsForOperationParams) (bool, error)
+	ExistsForScanReport(ctx context.Context, reportID int64) (bool, error)
 	FindClosestBase(ctx context.Context, arg FindClosestBaseParams) (UserBasis, error)
 	FindClosestDangerousLocation(ctx context.Context, arg FindClosestDangerousLocationParams) (DangerousLocation, error)
 	FindClosestResourceLocation(ctx context.Context, arg FindClosestResourceLocationParams) (ResourceLocation, error)

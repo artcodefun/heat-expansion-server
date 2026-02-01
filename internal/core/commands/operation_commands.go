@@ -214,6 +214,9 @@ func (c *OperationCommands) HandleMilitaryOperationArrivedEvent(event domain.Mil
 		if err != nil {
 			return err
 		}
+		if op.Phase != domain.OperationPhaseOutbound {
+			return nil // Already handled or inconsistent state
+		}
 		sector, err := c.Provisioner.EnsureSectorExists(sRepo, op.TargetCoordinates.X, op.TargetCoordinates.Y)
 		if err != nil {
 			return err

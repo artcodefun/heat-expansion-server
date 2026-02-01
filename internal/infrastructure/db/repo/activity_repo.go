@@ -28,3 +28,15 @@ func (r *ActivityRepo) Create(item *domain.ActivityItem) error {
 	_, err := r.q.InsertActivity(context.Background(), params)
 	return err
 }
+
+func (r *ActivityRepo) ExistsForOperation(baseID int, kind string, opID int) (bool, error) {
+	return r.q.ExistsForOperation(context.Background(), gen.ExistsForOperationParams{
+		BaseID: int64(baseID),
+		Kind:   kind,
+		OpID:   int64(opID),
+	})
+}
+
+func (r *ActivityRepo) ExistsForScanReport(reportID int) (bool, error) {
+	return r.q.ExistsForScanReport(context.Background(), int64(reportID))
+}
