@@ -2,6 +2,7 @@ package domain
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/google/uuid"
 )
@@ -32,7 +33,7 @@ func (s *CrystalSpendingService) SpeedUpBuildingProduction(user *User, base *Use
 	remaining := item.CompletionDate - NowUnix()
 	total := item.CompletionDate - item.StartDate
 	fraction := float64(remaining) / float64(total)
-	crystals := int(float64(item.CrystalsSkipPrice) * fraction)
+	crystals := int(math.Ceil(float64(item.CrystalsSkipPrice) * fraction))
 	if crystals < 1 {
 		crystals = 1 // Minimum price
 	}
@@ -64,7 +65,7 @@ func (s *CrystalSpendingService) SpeedUpArmyProduction(user *User, base *UserBas
 	remaining := item.CompletionDate - NowUnix()
 	total := item.CompletionDate - item.StartDate
 	fraction := float64(remaining) / float64(total)
-	crystals := int(float64(item.CrystalsSkipPrice) * fraction)
+	crystals := int(math.Ceil(float64(item.CrystalsSkipPrice) * fraction))
 	if crystals < 1 {
 		crystals = 1 // Minimum price
 	}
@@ -96,7 +97,7 @@ func (s *CrystalSpendingService) SpeedUpTechResearch(user *User, base *UserBaseM
 	remaining := item.CompletionDate - NowUnix()
 	total := item.CompletionDate - item.StartDate
 	fraction := float64(remaining) / float64(total)
-	crystals := int(float64(item.CrystalsSkipPrice) * fraction)
+	crystals := int(math.Ceil(float64(item.CrystalsSkipPrice) * fraction))
 	if crystals < 1 {
 		crystals = 1 // Minimum price
 	}
@@ -141,7 +142,7 @@ func (s *CrystalSpendingService) SpeedUpOperation(user *User, op *MilitaryOperat
 	}
 
 	fraction := float64(remaining) / float64(total)
-	crystals := int(float64(op.CrystalsSkipPrice) * fraction)
+	crystals := int(math.Ceil(float64(op.CrystalsSkipPrice) * fraction))
 	if crystals < 1 {
 		crystals = 1 // Minimum price
 	}

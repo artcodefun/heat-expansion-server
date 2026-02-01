@@ -45,6 +45,35 @@ func TestCrystalSpendingService_SpeedUpBuildingProduction_DeductsCrystalsAndSpee
 	}
 }
 
+func TestCrystalSpendingService_SpeedUpBuildingProduction_CeilRounding(t *testing.T) {
+	SetTestNow(t, 1_000)
+
+	user := &User{ID: 1, Crystals: 10}
+	base := newBaseWithDefaults(1)
+
+	// Price 10, remaining fraction ~0.11 -> 1.1 -> Ceil should be 2
+	item := BuildItemInProduction{
+		BaseOwnedItem: NewBaseOwnedItem(base.ID),
+		Prototype: BuildItemPrototype{
+			ID:             1,
+			ProductionTime: 1000,
+		},
+		StartDate:         100,
+		CompletionDate:    1100, // total 1000, remaining at 1000 is 100 -> fraction 0.1
+		CrystalsSkipPrice: 11,   // 11 * 0.1 = 1.1 -> Ceil = 2 (Floor would be 1)
+	}
+	base.BuildingsInProduction = []BuildItemInProduction{item}
+
+	service := NewCrystalSpendingService()
+	if err := service.SpeedUpBuildingProduction(user, base, item.ID); err != nil {
+		t.Fatalf("SpeedUpBuildingProduction error: %v", err)
+	}
+
+	if user.Crystals != 8 {
+		t.Fatalf("expected 8 crystals (10 - 2), got %d", user.Crystals)
+	}
+}
+
 func TestCrystalSpendingService_SpeedUpOperation_Outbound(t *testing.T) {
 	SetTestNow(t, 1_000)
 
