@@ -14,6 +14,7 @@ func TestArmy_MoveAndSpeedUp_EmitsEvents(t *testing.T) {
 			ID:           10,
 			Name:         "Barracks",
 			Category:     BuildCategoryMilitary,
+			Faction:      FactionExoCoalition,
 			MilitaryData: &MilitaryBuildingData{UnlockArmyCategory: ArmyCategoryInfantry},
 			Space:        0,
 		},
@@ -23,6 +24,7 @@ func TestArmy_MoveAndSpeedUp_EmitsEvents(t *testing.T) {
 		ID:             100,
 		Name:           "Infantry",
 		Category:       ArmyCategoryInfantry,
+		Faction:        FactionExoCoalition,
 		Price:          PriceModel{},
 		ProductionTime: 60,
 		Space:          1,
@@ -89,6 +91,7 @@ func TestArmy_QueueArmy_NotEnoughSpace(t *testing.T) {
 			ID:       12,
 			Name:     "Barracks",
 			Category: BuildCategoryMilitary,
+			Faction:  FactionExoCoalition,
 			MilitaryData: &MilitaryBuildingData{
 				UnlockArmyCategory: ArmyCategoryInfantry,
 			},
@@ -99,6 +102,7 @@ func TestArmy_QueueArmy_NotEnoughSpace(t *testing.T) {
 		ID:             105,
 		Name:           "Heavy Infantry",
 		Category:       ArmyCategoryInfantry,
+		Faction:        FactionExoCoalition,
 		Price:          PriceModel{Credits: 100},
 		ProductionTime: 60,
 		Space:          2, // exceeds capacity
@@ -127,6 +131,7 @@ func TestArmy_QueueArmy_NotAvailableWithoutBuilding(t *testing.T) {
 		ID:             101,
 		Name:           "Infantry",
 		Category:       ArmyCategoryInfantry,
+		Faction:        FactionExoCoalition,
 		Price:          PriceModel{Credits: 50},
 		ProductionTime: 60,
 		Space:          1,
@@ -156,6 +161,7 @@ func TestArmy_CancelPendingArmyByID_RefundsAndEmitsEvent(t *testing.T) {
 		ID:             102,
 		Name:           "Infantry",
 		Category:       ArmyCategoryInfantry,
+		Faction:        FactionExoCoalition,
 		Price:          PriceModel{Credits: 10},
 		ProductionTime: 60,
 		Space:          1,
@@ -217,6 +223,7 @@ func TestArmy_MoveArmyQueue_RespectsCategorySlots(t *testing.T) {
 			ID:       11,
 			Name:     "Barracks",
 			Category: BuildCategoryMilitary,
+			Faction:  FactionExoCoalition,
 			MilitaryData: &MilitaryBuildingData{
 				UnlockArmyCategory: ArmyCategoryInfantry,
 			},
@@ -227,6 +234,7 @@ func TestArmy_MoveArmyQueue_RespectsCategorySlots(t *testing.T) {
 		ID:             103,
 		Name:           "Infantry",
 		Category:       ArmyCategoryInfantry,
+		Faction:        FactionExoCoalition,
 		Price:          PriceModel{},
 		ProductionTime: 120,
 		Space:          1,
@@ -273,12 +281,12 @@ func TestArmy_GetReadyToDeployArmy_SuccessDoesNotMutate(t *testing.T) {
 	base.ArmiesPresent = []ArmyItemPresent{
 		{
 			BaseOwnedItem: NewBaseOwnedItem(base.ID),
-			Prototype:     ArmyItemPrototype{ID: 200, Category: ArmyCategoryInfantry, Attack: 1, Defence: 1, Space: 1},
+			Prototype:     ArmyItemPrototype{ID: 200, Category: ArmyCategoryInfantry, Faction: FactionExoCoalition, Attack: 1, Defence: 1, Space: 1},
 			Count:         5,
 		},
 		{
 			BaseOwnedItem: NewBaseOwnedItem(base.ID),
-			Prototype:     ArmyItemPrototype{ID: 201, Category: ArmyCategoryInfantry, Attack: 2, Defence: 2, Space: 1},
+			Prototype:     ArmyItemPrototype{ID: 201, Category: ArmyCategoryInfantry, Faction: FactionExoCoalition, Attack: 2, Defence: 2, Space: 1},
 			Count:         3,
 		},
 	}
@@ -314,7 +322,7 @@ func TestArmy_GetReadyToDeployArmy_InvalidCountErrorsAndDoesNotMutate(t *testing
 	base := newBaseWithDefaults(31)
 	base.ArmiesPresent = []ArmyItemPresent{{
 		BaseOwnedItem: NewBaseOwnedItem(base.ID),
-		Prototype:     ArmyItemPrototype{ID: 210, Category: ArmyCategoryInfantry, Space: 1},
+		Prototype:     ArmyItemPrototype{ID: 210, Category: ArmyCategoryInfantry, Faction: FactionExoCoalition, Space: 1},
 		Count:         4,
 	}}
 
@@ -336,7 +344,7 @@ func TestArmy_GetReadyToDeployArmy_EmptyRequestsErrors(t *testing.T) {
 	base.ArmiesPresent = []ArmyItemPresent{ // some present units
 		{
 			BaseOwnedItem: NewBaseOwnedItem(base.ID),
-			Prototype:     ArmyItemPrototype{ID: 230, Category: ArmyCategoryInfantry, Space: 1},
+			Prototype:     ArmyItemPrototype{ID: 230, Category: ArmyCategoryInfantry, Faction: FactionExoCoalition, Space: 1},
 			Count:         3,
 		},
 	}
@@ -355,7 +363,7 @@ func TestArmy_GetReadyToDeployArmy_EmptyRequestsErrors(t *testing.T) {
 
 func TestArmy_AllocateArmyToOperation_RemovesFromPresentAndMergesDeployed(t *testing.T) {
 	base := newBaseWithDefaults(32)
-	proto := ArmyItemPrototype{ID: 220, Category: ArmyCategoryInfantry, Space: 1}
+	proto := ArmyItemPrototype{ID: 220, Category: ArmyCategoryInfantry, Faction: FactionExoCoalition, Space: 1}
 	base.ArmiesPresent = []ArmyItemPresent{{
 		BaseOwnedItem: NewBaseOwnedItem(base.ID),
 		Prototype:     proto,
@@ -394,7 +402,7 @@ func TestArmy_AllocateArmyToOperation_RemovesFromPresentAndMergesDeployed(t *tes
 
 func TestArmy_AllocateArmyToOperation_RespectsMaxOperations(t *testing.T) {
 	base := newBaseWithDefaults(34) // recalculateStats() sets DefaultMaxOperations (2)
-	proto := ArmyItemPrototype{ID: 240, Category: ArmyCategoryInfantry, Space: 1}
+	proto := ArmyItemPrototype{ID: 240, Category: ArmyCategoryInfantry, Faction: FactionExoCoalition, Space: 1}
 
 	base.ArmiesPresent = []ArmyItemPresent{
 		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: proto, Count: 10},
@@ -423,13 +431,13 @@ func TestArmy_AllocateArmyToOperation_RespectsMaxOperations(t *testing.T) {
 
 func TestArmy_ReturnAllDeployedFromOperation_MergesBackAndCleans(t *testing.T) {
 	base := newBaseWithDefaults(33)
-	proto1 := ArmyItemPrototype{ID: 230, Category: ArmyCategoryInfantry}
-	proto2 := ArmyItemPrototype{ID: 231, Category: ArmyCategoryInfantry}
+	proto1 := ArmyItemPrototype{ID: 230, Category: ArmyCategoryInfantry, Faction: FactionExoCoalition}
+	proto2 := ArmyItemPrototype{ID: 231, Category: ArmyCategoryInfantry, Faction: FactionExoCoalition}
 
 	// Present already has some proto1 and an unrelated proto3
 	base.ArmiesPresent = []ArmyItemPresent{
 		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: proto1, Count: 5},
-		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: ArmyItemPrototype{ID: 232}, Count: 1},
+		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: ArmyItemPrototype{ID: 232, Faction: FactionExoCoalition}, Count: 1},
 	}
 
 	// Deployed for two operations
@@ -465,8 +473,8 @@ func TestArmy_ReturnAllDeployedFromOperation_MergesBackAndCleans(t *testing.T) {
 
 func TestArmy_TrimDeployedToSurvivors_AdjustsCountsAndKeepsZeroEntries(t *testing.T) {
 	base := newBaseWithDefaults(34)
-	proto1 := ArmyItemPrototype{ID: 240}
-	proto2 := ArmyItemPrototype{ID: 241}
+	proto1 := ArmyItemPrototype{ID: 240, Faction: FactionExoCoalition}
+	proto2 := ArmyItemPrototype{ID: 241, Faction: FactionExoCoalition}
 
 	base.ArmiesDeployed = []ArmyItemDeployed{
 		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: proto1, OperationID: 50, Count: 5},
@@ -497,8 +505,8 @@ func TestArmy_TrimDeployedToSurvivors_AdjustsCountsAndKeepsZeroEntries(t *testin
 func TestApplyDefenderArmyRemaining_UpdatesCountsAndZeroesMissing(t *testing.T) {
 	base := newBaseWithDefaults(40)
 	base.ArmiesPresent = []ArmyItemPresent{
-		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: ArmyItemPrototype{ID: 300}, Count: 5},
-		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: ArmyItemPrototype{ID: 301}, Count: 4},
+		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: ArmyItemPrototype{ID: 300, Faction: FactionExoCoalition}, Count: 5},
+		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: ArmyItemPrototype{ID: 301, Faction: FactionExoCoalition}, Count: 4},
 	}
 
 	remaining := []MilitaryUnitSnap{

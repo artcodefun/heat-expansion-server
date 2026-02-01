@@ -12,6 +12,7 @@ func TestBuilding_MoveAndSpeedUpProduction_EmitsEvents(t *testing.T) {
 		ID:             1,
 		Name:           "Mine",
 		Category:       BuildCategoryResources,
+		Faction:        FactionExoCoalition,
 		Price:          PriceModel{Credits: 100, Iron: 50, Titanium: 10, Antimatter: 1},
 		ProductionTime: 120,
 		Space:          2,
@@ -124,6 +125,7 @@ func TestBuilding_AddToBuildQueue_NotEnoughSpace(t *testing.T) {
 		ID:             2,
 		Name:           "Big Tower",
 		Category:       BuildCategoryResources,
+		Faction:        FactionExoCoalition,
 		Price:          PriceModel{Credits: 100, Iron: 50, Titanium: 30, Antimatter: 20},
 		ProductionTime: 60,
 		Space:          2, // exceeds capacity
@@ -145,9 +147,9 @@ func TestApplyRemainingDefensiveStructures_KeepsNonDefensiveAndAppliesCounts(t *
 	base := newBaseWithDefaults(41)
 
 	// One non-defensive building, and three defensive turrets (same prototype ID)
-	defProto := BuildItemPrototype{ID: 400, Category: BuildCategoryDefense, DefenseData: &DefenseBuildingData{DefenceBonus: 5}}
+	defProto := BuildItemPrototype{ID: 400, Category: BuildCategoryDefense, Faction: FactionExoCoalition, DefenseData: &DefenseBuildingData{DefenceBonus: 5}}
 	base.BuildingsPresent = []BuildItemPresent{
-		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: BuildItemPrototype{ID: 399, Category: BuildCategoryResources}},
+		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: BuildItemPrototype{ID: 399, Category: BuildCategoryResources, Faction: FactionExoCoalition}},
 		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: defProto},
 		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: defProto},
 		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: defProto},
@@ -179,6 +181,7 @@ func TestUserBase_TotalRadarStealthStrength(t *testing.T) {
 	radarProto := &BuildItemPrototype{
 		ID:       10,
 		Category: BuildCategoryIntelligence,
+		Faction:  FactionExoCoalition,
 		IntelligenceData: &IntelligenceBuildingData{
 			Subtype:         IntelligenceSubtypeRadar,
 			StealthStrength: 50,
