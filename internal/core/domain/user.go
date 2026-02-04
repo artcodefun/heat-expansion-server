@@ -14,7 +14,7 @@ type User struct {
 
 // Default values for new users
 const (
-	DefaultCrystalsBalance = 5
+	DefaultCrystalsBalance = 50
 )
 
 // Initialize sets default values and emits user created event.

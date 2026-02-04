@@ -147,6 +147,27 @@ func FillDefenders(
 		return
 	}
 
+	// 2. Filter out units that are "too strong" for the budget (> 75% of target power).
+	// This ensures a diverse force rather than a single super-unit for low-budget locations.
+	powerCap := targetPower * 0.75
+	filteredArmies := make([]*ArmyItemPrototype, 0)
+	for _, p := range factionArmies {
+		if float64(p.Defence) <= powerCap {
+			filteredArmies = append(filteredArmies, p)
+		}
+	}
+	filteredBuilds := make([]*BuildItemPrototype, 0)
+	for _, p := range factionBuilds {
+		if float64(p.DefenseData.DefenceBonus) <= powerCap {
+			filteredBuilds = append(filteredBuilds, p)
+		}
+	}
+	// Fallback to full lists if filtering was too aggressive (e.g. at very low power levels where all units exceed the cap)
+	if len(filteredArmies) > 0 || len(filteredBuilds) > 0 {
+		factionArmies = filteredArmies
+		factionBuilds = filteredBuilds
+	}
+
 	currentPower := 0.0
 	// To avoid infinite loops if power is 0 (though we filtered builds)
 	maxIterations := 100

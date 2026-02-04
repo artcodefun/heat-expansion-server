@@ -176,34 +176,39 @@ func (c *WorldGenerationCommands) HandleSpawnNearbyLocationsJob(job ports.SpawnN
 }
 
 func (c *WorldGenerationCommands) HandleUserBaseCreatedEvent(ev domain.UserBaseCreatedEvent) error {
-	// 1. Immediately spawn 4 specific resourceful locations nearby (radius 2)
+	// 1. Immediately spawn specific resourceful locations nearby.
+	// - 1 Credit and 1 Iron at radius 1.
+	// - 4 locations (one of each type) at radius 2 (but not radius 1).
 	base, err := c.UserBases.FindByID(ev.BaseID)
 	if err == nil {
 		armyProtos, _ := c.ArmyPrototypes.FindAllPrototypes()
 		buildProtos, _ := c.BuildPrototypes.FindAllPrototypes()
 
-		resTypes := []domain.ResourceType{
-			domain.ResourceTypeCredits,
-			domain.ResourceTypeIron,
-			domain.ResourceTypeTitanium,
-			domain.ResourceTypeAntimatter,
-		}
-
 		r := rand.New(rand.NewSource(time.Now().UnixNano()))
 		center := base.Coordinates
 
-		for _, resType := range resTypes {
-			// Find an empty spot within radius 2
-			found := false
-			for attempt := 0; attempt < 25; attempt++ {
-				dx := r.Intn(5) - 2 // -2 to 2
-				dy := r.Intn(5) - 2 // -2 to 2
-				if dx == 0 && dy == 0 {
-					continue
-				}
+		// Define tasks: resource type and required distance
+		tasks := []struct {
+			resType domain.ResourceType
+			dist    int
+		}{
+			{domain.ResourceTypeCredits, 1},
+			{domain.ResourceTypeIron, 1},
+			{domain.ResourceTypeCredits, 2},
+			{domain.ResourceTypeIron, 2},
+			{domain.ResourceTypeTitanium, 2},
+			{domain.ResourceTypeAntimatter, 2},
+		}
 
-				targetX := center.X + dx
-				targetY := center.Y + dy
+		for _, task := range tasks {
+			candidates := c.getHexRing(center, task.dist)
+			r.Shuffle(len(candidates), func(i, j int) {
+				candidates[i], candidates[j] = candidates[j], candidates[i]
+			})
+
+			found := false
+			for _, target := range candidates {
+				targetX, targetY := target.X, target.Y
 
 				_ = c.TxMgr.WithTx(func(tx ports.Transaction) error {
 					sRepo := c.Sectors.Tx(tx)
@@ -222,7 +227,7 @@ func (c *WorldGenerationCommands) HandleUserBaseCreatedEvent(ev domain.UserBaseC
 					}
 
 					faction := domain.FactionMarauders
-					switch resType {
+					switch task.resType {
 					case domain.ResourceTypeIron:
 						faction = domain.FactionFerrousSwarm
 					case domain.ResourceTypeTitanium:
@@ -231,10 +236,13 @@ func (c *WorldGenerationCommands) HandleUserBaseCreatedEvent(ev domain.UserBaseC
 						faction = domain.FactionVoidEcho
 					}
 
-					worth := 1000
+					worth := 500
+					if task.dist == 1 {
+						worth = 250
+					}
 					loc := domain.NewResourceLocation(
 						tSector.Coordinates,
-						resType,
+						task.resType,
 						faction,
 						worth,
 						armyProtos,
@@ -258,6 +266,60 @@ func (c *WorldGenerationCommands) HandleUserBaseCreatedEvent(ev domain.UserBaseC
 
 	jitter := int64(rand.Intn(60))
 	return c.Scheduler.Schedule(ports.SpawnNearbyLocationsJob{BaseID: ev.BaseID}, time.Now().Unix()+jitter)
+}
+
+func (c *WorldGenerationCommands) getHexRing(center domain.Vector2i, dist int) []domain.Vector2i {
+	// Pointy-top offset coordinates (even-row)
+	// We use cube coordinates internally to find the ring.
+	centerCube := offsetToCube(center)
+	var results []domain.Vector2i
+
+	// Cube neighbor directions
+	directions := []cube{
+		{1, -1, 0}, {1, 0, -1}, {0, 1, -1},
+		{-1, 1, 0}, {-1, 0, 1}, {0, -1, 1},
+	}
+
+	// To get a ring at distance N:
+	// Start at center + direction[4]*dist
+	// Then move dist steps in each of the 6 directions.
+	startCube := cube{
+		q: centerCube.q + directions[4].q*dist,
+		r: centerCube.r + directions[4].r*dist,
+		s: centerCube.s + directions[4].s*dist,
+	}
+
+	curr := startCube
+	for i := 0; i < 6; i++ {
+		for j := 0; j < dist; j++ {
+			results = append(results, cubeToOffset(curr))
+			curr = cube{
+				q: curr.q + directions[i].q,
+				r: curr.r + directions[i].r,
+				s: curr.s + directions[i].s,
+			}
+		}
+	}
+
+	return results
+}
+
+type cube struct {
+	q, r, s int
+}
+
+func offsetToCube(v domain.Vector2i) cube {
+	// Pointy-top Even-row offset to Cube
+	q := v.X - (v.Y-(v.Y&1))/2
+	r := v.Y
+	return cube{q: q, r: r, s: -q - r}
+}
+
+func cubeToOffset(c cube) domain.Vector2i {
+	// Cube to Pointy-top Even-row offset
+	x := c.q + (c.r-(c.r&1))/2
+	y := c.r
+	return domain.Vector2i{X: x, Y: y}
 }
 
 func (c *WorldGenerationCommands) persistResourceful(loc *domain.ResourceLocationModel) error {

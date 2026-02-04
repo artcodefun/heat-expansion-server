@@ -507,7 +507,7 @@ func (ub *UserBaseModel) EnsureStartingArmyPresent(allPrototypes []*ArmyItemProt
 		ub.ArmiesPresent = append(ub.ArmiesPresent, ArmyItemPresent{
 			BaseOwnedItem: NewBaseOwnedItem(ub.ID),
 			Prototype:     *basicInfantry,
-			Count:         5,
+			Count:         20,
 			Refund:        basicInfantry.Price.Divide(2),
 		})
 	}

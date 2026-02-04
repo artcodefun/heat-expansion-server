@@ -77,19 +77,19 @@ func (g *SimpleGenerator) GenerateResourceLocationContent(resource *domain.Resou
 		idx = g.getCoordIndex(resource.Coordinates)
 		switch resource.Type {
 		case domain.ResourceTypeIron:
-			name = "Iron Resourceful Location"
+			name = "Iron Rich Location"
 			desc = "Large-scale metallic formations indicate high concentrations of raw iron ore."
 			fileBase = "resource_iron"
 		case domain.ResourceTypeTitanium:
-			name = "Titanium Resourceful Location"
+			name = "Titanium Rich Location"
 			desc = "Volcanic vents surrounding jagged orange crystal clusters, a sign of rich titanium deposits."
 			fileBase = "resource_titanium"
 		case domain.ResourceTypeAntimatter:
-			name = "Antimatter Resourceful Location"
+			name = "Antimatter Rich Location"
 			desc = "An unstable rift leaking pure antimatter, causing localized gravitational distortions."
 			fileBase = "resource_antimatter"
 		case domain.ResourceTypeCredits:
-			name = "Credit Resourceful Location"
+			name = "Credit Rich Location"
 			desc = "A ramshackle outpost built over the ruins of an old merchant hub, likely containing hoarded credits."
 			fileBase = "resource_credits"
 		}

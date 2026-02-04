@@ -249,4 +249,5 @@ func (ub *UserBaseModel) CreditLoot(loot PriceModel) {
 func (ub *UserBaseModel) FillStarterResources() {
 	ub.Stats.Credits = float64(ub.Stats.CreditsCapacity)
 	ub.Stats.Iron = float64(ub.Stats.IronCapacity)
+	ub.Stats.Antimatter = 1
 }
