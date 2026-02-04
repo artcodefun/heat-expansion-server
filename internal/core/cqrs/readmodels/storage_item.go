@@ -131,3 +131,23 @@ type StorageItemPresent struct {
 	ExpiresAt *int64
 	IsActive  bool
 }
+
+// MilitaryModifiers represents the multipliers applied to military stats.
+type MilitaryModifiers struct {
+	AttackMul   float32
+	DefenceMul  float32
+	StealthMul  float32
+	CapacityMul float32
+	SpeedMul    float32
+}
+
+// StorageItemSnap is a snapshot of a storage item (buff/artifact) for historical logging.
+type StorageItemSnap struct {
+	PrototypeID      int
+	Name             string
+	ShortDescription string
+	ImageURL         string
+	Category         StorageCategory
+	BuffData         *BuffStorageData
+	ArtifactData     *ArtifactStorageData
+}

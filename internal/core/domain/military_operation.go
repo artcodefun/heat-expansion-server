@@ -61,6 +61,10 @@ type SpyResult struct {
 	DefenderRemaining []MilitaryUnitSnap
 	// New: snapshot of defenders before resolution (for UI diffs)
 	DefendersBefore []MilitaryUnitSnap
+	// Buffs/artifacts active during resolution
+	DefenderStorageSnaps []StorageItemSnap
+	// Aggregated multiplier for defenders
+	TotalDefenderModifiers MilitaryModifiers
 }
 
 type AttackResult struct {
@@ -73,6 +77,10 @@ type AttackResult struct {
 	// New: snapshots for UI to show casualties/damage
 	DefendersBefore  []MilitaryUnitSnap
 	StructuresBefore []DefenseStructureSnap
+	// Buffs/artifacts active during resolution
+	DefenderStorageSnaps []StorageItemSnap
+	// Aggregated multiplier for defenders
+	TotalDefenderModifiers MilitaryModifiers
 }
 
 // MilitaryOperation models an attack or spy op traveling between sectors and resolving on arrival.
@@ -104,6 +112,12 @@ type MilitaryOperation struct {
 	// Snapshot of attacking units
 	Units []MilitaryUnitSnap
 
+	// Snapshot of attacking storage items (buffs/artifacts) active at start
+	StorageSnaps []StorageItemSnap
+
+	// TotalModifiers is the aggregated multiplier from StorageSnaps.
+	TotalModifiers MilitaryModifiers
+
 	// Results (only one will be populated depending on Type)
 	SpyResult    *SpyResult
 	AttackResult *AttackResult
@@ -111,7 +125,7 @@ type MilitaryOperation struct {
 
 // NewAttackOperation creates an ATTACK operation in transit.
 // It validates that at least one unit is provided and that source/target are different.
-func NewAttackOperation(ownerUserID, sourceBaseID int, source, target Vector2i, units []MilitaryUnitSnap) (*MilitaryOperation, error) {
+func NewAttackOperation(ownerUserID, sourceBaseID int, source, target Vector2i, units []MilitaryUnitSnap, storageSnaps []StorageItemSnap) (*MilitaryOperation, error) {
 	if source == target {
 		return nil, fmt.Errorf("source and target coordinates must be different")
 	}
@@ -129,13 +143,15 @@ func NewAttackOperation(ownerUserID, sourceBaseID int, source, target Vector2i, 
 		Phase:             OperationPhasePending,
 		Result:            OperationResultUnknown,
 		Units:             cloneUnits(units),
+		StorageSnaps:      cloneStorageSnaps(storageSnaps),
+		TotalModifiers:    MilitaryModifiersFromSnaps(storageSnaps),
 	}
 	return op, nil
 }
 
 // NewSpyOperation creates a SPY operation in transit.
 // It validates that at least one unit is provided, targeting a different sector, and that all units are spies.
-func NewSpyOperation(ownerUserID, sourceBaseID int, source, target Vector2i, spies []MilitaryUnitSnap) (*MilitaryOperation, error) {
+func NewSpyOperation(ownerUserID, sourceBaseID int, source, target Vector2i, spies []MilitaryUnitSnap, storageSnaps []StorageItemSnap) (*MilitaryOperation, error) {
 	if source == target {
 		return nil, fmt.Errorf("source and target coordinates must be different")
 	}
@@ -158,6 +174,8 @@ func NewSpyOperation(ownerUserID, sourceBaseID int, source, target Vector2i, spi
 		Phase:             OperationPhasePending,
 		Result:            OperationResultUnknown,
 		Units:             cloneUnits(spies),
+		StorageSnaps:      cloneStorageSnaps(storageSnaps),
+		TotalModifiers:    MilitaryModifiersFromSnaps(storageSnaps),
 	}
 	return op, nil
 }
@@ -169,7 +187,7 @@ func (op *MilitaryOperation) Start() {
 		return
 	}
 	now := NowUnix()
-	travelSeconds := computeTravelSecondsBetween(op.SourceCoordinates, op.TargetCoordinates, op.Units)
+	travelSeconds := computeTravelSecondsBetween(op.SourceCoordinates, op.TargetCoordinates, op.Units, op.TotalModifiers)
 	op.OutboundDepartAt = now
 	op.OutboundArriveAt = now + travelSeconds
 	// Base skip price proportional to total travel time (minimum 1 crystal)
@@ -193,27 +211,36 @@ func (op *MilitaryOperation) OnArrive() {
 // then (if not blocked) resolving a skirmish versus defending spies.
 // targetCloakingStrength: sum of StealthStrength across target cloaking buildings
 // defendingSpies: snapshot of defending spy units present in the sector
-func (op *MilitaryOperation) ResolveSpy(targetCloakingStrength int, defendingSpies []MilitaryUnitSnap) *SpyResult {
+func (op *MilitaryOperation) ResolveSpy(targetCloakingStrength int, defendingSpies []MilitaryUnitSnap, defenderStorageSnaps []StorageItemSnap) *SpyResult {
 	if op.Type != MilitaryOperationTypeSpy || (op.Phase != OperationPhaseAtTarget && op.Phase != OperationPhaseOutbound) {
 		return op.SpyResult
 	}
 	op.Phase = OperationPhaseResolving
 
+	atkMods := op.TotalModifiers
+	defMods := MilitaryModifiersFromSnaps(defenderStorageSnaps)
+
 	// Ensure we consider only spy-category units on the attacker side
 	attackers := filterUnitsByCategory(op.Units, ArmyCategorySpy)
-	attackerStealth := sumStealth(attackers)
+	attackerStealth := SumEffectiveStealth(attackers, atkMods.StealthMul)
 
 	// Snapshot defenders before resolving for UI diffs
 	defBefore := cloneUnits(defendingSpies)
 
 	// 1) Cloaking check: if target cloaking >= attacker stealth -> empty report; units unharmed.
-	if targetCloakingStrength >= attackerStealth {
+	// targetCloakingStrength is assumed to be already modified if it comes from buildings.
+	// But let's assume it should also be multiplied by defender modifiers if they affect it?
+	// Usually cloaking is building-based, so it might not be affected by ARM/INF/etc modifiers.
+	// For now we keep it as is, but we compare against float.
+	if float64(targetCloakingStrength) >= attackerStealth {
 		res := &SpyResult{
 			Outcome: SpyOutcomeBlockedByCloaking,
 			// Everyone survives in this outcome
-			AttackerRemaining: cloneUnits(attackers),
-			DefenderRemaining: cloneUnits(defendingSpies),
-			DefendersBefore:   defBefore,
+			AttackerRemaining:      cloneUnits(attackers),
+			DefenderRemaining:      cloneUnits(defendingSpies),
+			DefendersBefore:        defBefore,
+			DefenderStorageSnaps:   cloneStorageSnaps(defenderStorageSnaps),
+			TotalDefenderModifiers: defMods,
 		}
 		op.SpyResult = res
 		op.Result = OperationResultSuccess
@@ -222,13 +249,15 @@ func (op *MilitaryOperation) ResolveSpy(targetCloakingStrength int, defendingSpi
 	}
 
 	// 2) Skirmish with defending spies
-	atkRemaining, defRemaining, attackerWon := resolveSpySkirmish(attackers, defendingSpies)
+	atkRemaining, defRemaining, attackerWon := resolveSpySkirmish(attackers, atkMods, defendingSpies, defMods)
 	if !attackerWon {
 		res := &SpyResult{
-			Outcome:           SpyOutcomeDefeatedBySpies,
-			AttackerRemaining: atkRemaining,
-			DefenderRemaining: defRemaining,
-			DefendersBefore:   defBefore,
+			Outcome:                SpyOutcomeDefeatedBySpies,
+			AttackerRemaining:      atkRemaining,
+			DefenderRemaining:      defRemaining,
+			DefendersBefore:        defBefore,
+			DefenderStorageSnaps:   cloneStorageSnaps(defenderStorageSnaps),
+			TotalDefenderModifiers: defMods,
 		}
 		op.SpyResult = res
 		op.Result = OperationResultFailure
@@ -238,10 +267,12 @@ func (op *MilitaryOperation) ResolveSpy(targetCloakingStrength int, defendingSpi
 
 	// 3) Successful intelligence report
 	res := &SpyResult{
-		Outcome:           SpyOutcomeReportProduced,
-		AttackerRemaining: atkRemaining,
-		DefenderRemaining: defRemaining,
-		DefendersBefore:   defBefore,
+		Outcome:                SpyOutcomeReportProduced,
+		AttackerRemaining:      atkRemaining,
+		DefenderRemaining:      defRemaining,
+		DefendersBefore:        defBefore,
+		DefenderStorageSnaps:   cloneStorageSnaps(defenderStorageSnaps),
+		TotalDefenderModifiers: defMods,
 	}
 	op.SpyResult = res
 	op.Result = OperationResultSuccess
@@ -251,26 +282,31 @@ func (op *MilitaryOperation) ResolveSpy(targetCloakingStrength int, defendingSpi
 
 // ResolveAttack resolves an attack using a simplified power comparison as a placeholder.
 // A more detailed sequential algorithm can replace this later.
-func (op *MilitaryOperation) ResolveAttack(defenders []MilitaryUnitSnap, structures []DefenseStructureSnap, availableResourcePool PriceModel, trophies []TrophyStorageItem) *AttackResult {
+func (op *MilitaryOperation) ResolveAttack(defenders []MilitaryUnitSnap, structures []DefenseStructureSnap, availableResourcePool PriceModel, trophies []TrophyStorageItem, defenderStorageSnaps []StorageItemSnap) *AttackResult {
 	if op.Type != MilitaryOperationTypeAttack || (op.Phase != OperationPhaseAtTarget && op.Phase != OperationPhaseOutbound) {
 		return op.AttackResult
 	}
 	op.Phase = OperationPhaseResolving
 
+	atkMods := op.TotalModifiers
+	defMods := MilitaryModifiersFromSnaps(defenderStorageSnaps)
+
 	// capture "before" snapshots for UI diffs
 	defBefore := cloneUnits(defenders)
 	structBefore := cloneStructures(structures)
 
-	atkRemain, defRemain, structRemain, attackerWon := resolveAttackCombat(cloneUnits(op.Units), cloneUnits(defenders), cloneStructures(structures))
+	atkRemain, defRemain, structRemain, attackerWon := resolveAttackCombat(cloneUnits(op.Units), atkMods, cloneUnits(defenders), defMods, cloneStructures(structures))
 
 	result := &AttackResult{
-		DefendersBefore:     defBefore,
-		StructuresBefore:    structBefore,
-		AttackerRemaining:   atkRemain,
-		DefenderRemaining:   defRemain,
-		RemainingStructures: structRemain,
+		DefendersBefore:        defBefore,
+		StructuresBefore:       structBefore,
+		AttackerRemaining:      atkRemain,
+		DefenderRemaining:      defRemain,
+		RemainingStructures:    structRemain,
+		DefenderStorageSnaps:   cloneStorageSnaps(defenderStorageSnaps),
+		TotalDefenderModifiers: defMods,
 		// Compute loot here based on remaining attackers' capacity and available resources at target
-		Loot: computeLoadFromLocation(atkRemain, availableResourcePool),
+		Loot: computeLoadFromLocation(atkRemain, atkMods, availableResourcePool),
 	}
 	if attackerWon {
 		result.Outcome = AttackOutcomeAttackerWon
@@ -297,9 +333,9 @@ func (op *MilitaryOperation) ResolveAttack(defenders []MilitaryUnitSnap, structu
 //   - Defending units use their Defence as per-instance HP when taking damage
 //   - Defensive structures use their Defence as per-structure HP
 //
-// Damage removes full instances only.
+// Damage removes full instances proportionally to float HP.
 // Returns remaining stacks and whether attackers won (defenders and structures eliminated).
-func resolveAttackCombat(attackers []MilitaryUnitSnap, defenders []MilitaryUnitSnap, structures []DefenseStructureSnap) (atkRemaining []MilitaryUnitSnap, defRemaining []MilitaryUnitSnap, structRemaining []DefenseStructureSnap, attackerWon bool) {
+func resolveAttackCombat(attackers []MilitaryUnitSnap, atkMods MilitaryModifiers, defenders []MilitaryUnitSnap, defMods MilitaryModifiers, structures []DefenseStructureSnap) (atkRemaining []MilitaryUnitSnap, defRemaining []MilitaryUnitSnap, structRemaining []DefenseStructureSnap, attackerWon bool) {
 	// Normalize: drop zero-count stacks
 	attackers = filterZeroCountUnits(attackers)
 	defenders = filterZeroCountUnits(defenders)
@@ -318,24 +354,24 @@ func resolveAttackCombat(attackers []MilitaryUnitSnap, defenders []MilitaryUnitS
 			break
 		}
 
-		// Compute damages from current forces
-		attDmg := sumAttack(attackers)
+		// Compute damages from current forces using floats
+		attDmg := SumEffectiveAttack(attackers, atkMods.AttackMul)
 		// Defenders and structures both contribute damage using their Defence as power
-		defDmg := sumDefence(defenders) + sumStructureDefence(structures)
+		defDmg := SumEffectiveDefence(defenders, defMods.DefenceMul) + SumEffectiveStructureDefence(structures, defMods.DefenceMul)
 
 		// If neither side can deal damage, stop to avoid infinite loop
-		if attDmg == 0 && defDmg == 0 {
+		if attDmg <= 0 && defDmg <= 0 {
 			attackerWon = false
 			break
 		}
 
 		// Apply attacker damage to defenders then structures
-		var attOverflow int
-		defenders, attOverflow = applyDamageToUnits(defenders, attDmg, true)
-		structures, _ = applyDamageToStructures(structures, attOverflow)
+		var attOverflow float64
+		defenders, attOverflow = applyDamageToUnits(defenders, attDmg, true, defMods.DefenceMul)
+		structures, _ = applyDamageToStructures(structures, attOverflow, defMods.DefenceMul)
 
 		// Apply defender damage to attackers
-		attackers, _ = applyDamageToUnits(attackers, defDmg, false)
+		attackers, _ = applyDamageToUnits(attackers, defDmg, false, atkMods.AttackMul)
 
 		// Optional normalization could be applied here if needed
 	}
@@ -344,8 +380,9 @@ func resolveAttackCombat(attackers []MilitaryUnitSnap, defenders []MilitaryUnitS
 }
 
 // applyDamageToUnits applies damage to units. When isDefensive=true, per-instance HP is Defence; otherwise HP is Attack.
+// Damage is float64; per-instance HP is also scaled by mul.
 // Returns updated units and any leftover damage not consumed.
-func applyDamageToUnits(units []MilitaryUnitSnap, damage int, isDefensive bool) ([]MilitaryUnitSnap, int) {
+func applyDamageToUnits(units []MilitaryUnitSnap, damage float64, isDefensive bool, mul float64) ([]MilitaryUnitSnap, float64) {
 	if damage <= 0 || len(units) == 0 {
 		return units, damage
 	}
@@ -355,27 +392,28 @@ func applyDamageToUnits(units []MilitaryUnitSnap, damage int, isDefensive bool) 
 		if u.Count <= 0 {
 			continue
 		}
-		var hp int
+		var baseHp int
 		if isDefensive {
-			hp = u.Defence
+			baseHp = u.Defence
 		} else {
-			hp = u.Attack
+			baseHp = u.Attack
 		}
+		hp := float64(baseHp) * mul
 		// Guard against non-positive HP creating immortal stacks
 		if hp <= 0 {
-			hp = 1
+			hp = 1.0
 		}
 		// kills = min(count, floor(damage / hpPerUnit))
-		possibleKills := remainingDamage / hp
+		possibleKills := int(math.Floor(remainingDamage / hp))
 		if possibleKills > 0 {
 			if possibleKills >= u.Count {
-				remainingDamage -= u.Count * hp
+				remainingDamage -= float64(u.Count) * hp
 				// all killed -> skip append
 				continue
 			}
 			// partial kills
 			u.Count -= possibleKills
-			remainingDamage -= possibleKills * hp
+			remainingDamage -= float64(possibleKills) * hp
 		}
 		if u.Count > 0 {
 			out = append(out, u)
@@ -387,7 +425,7 @@ func applyDamageToUnits(units []MilitaryUnitSnap, damage int, isDefensive bool) 
 // (No separate variants; isDefensive flag selects HP stat.)
 
 // applyDamageToStructures applies damage to structures similarly based on Defence HP per structure.
-func applyDamageToStructures(structs []DefenseStructureSnap, damage int) ([]DefenseStructureSnap, int) {
+func applyDamageToStructures(structs []DefenseStructureSnap, damage float64, mul float64) ([]DefenseStructureSnap, float64) {
 	if damage <= 0 || len(structs) == 0 {
 		return structs, damage
 	}
@@ -397,18 +435,18 @@ func applyDamageToStructures(structs []DefenseStructureSnap, damage int) ([]Defe
 		if s.Count <= 0 {
 			continue
 		}
-		hp := s.Defence
+		hp := float64(s.Defence) * mul
 		if hp <= 0 {
-			hp = 1
+			hp = 1.0
 		}
-		possibleKills := remainingDamage / hp
+		possibleKills := int(math.Floor(remainingDamage / hp))
 		if possibleKills > 0 {
 			if possibleKills >= s.Count {
-				remainingDamage -= s.Count * hp
+				remainingDamage -= float64(s.Count) * hp
 				continue
 			}
 			s.Count -= possibleKills
-			remainingDamage -= possibleKills * hp
+			remainingDamage -= float64(possibleKills) * hp
 		}
 		if s.Count > 0 {
 			out = append(out, s)
@@ -505,7 +543,7 @@ func (op *MilitaryOperation) StartReturn() {
 		return
 	}
 
-	travelSeconds := computeTravelSecondsBetween(op.TargetCoordinates, op.SourceCoordinates, returningUnits)
+	travelSeconds := computeTravelSecondsBetween(op.TargetCoordinates, op.SourceCoordinates, returningUnits, op.TotalModifiers)
 	op.ReturnDepartAt = now
 	op.ReturnArriveAt = now + travelSeconds
 	// Recompute skip price for the return leg (minimum 1 crystal)
@@ -607,13 +645,13 @@ func lerpCoordinates(s, t Vector2i, startT, endT, at int64) Vector2i {
 
 // computeTravelSecondsBetween computes travel time as ceil(distance / slowestSpeed).
 // Distance is Manhattan on sector coordinates for now; speed is taken from the slowest unit.
-func computeTravelSecondsBetween(a, b Vector2i, units []MilitaryUnitSnap) int64 {
+func computeTravelSecondsBetween(a, b Vector2i, units []MilitaryUnitSnap, mods MilitaryModifiers) int64 {
 	// Euclidean distance scaled by 1000, then divide by slowest speed and ceil
 	dist := euclideanScaled(a, b)
 	if dist <= 0 {
 		return 0
 	}
-	s := slowestSpeed(units)
+	s := GetEffectiveSpeed(units, mods.SpeedMul)
 	if s <= 0 {
 		s = 1 // guard against invalid data
 	}
@@ -705,27 +743,31 @@ func filterUnitsByCategory(units []MilitaryUnitSnap, cat ArmyCategory) []Militar
 }
 
 func (op *MilitaryOperation) TotalAttack() int {
-	return sumAttack(op.Units)
+	mods := op.TotalModifiers
+	return int(math.Round(SumEffectiveAttack(op.Units, mods.AttackMul)))
 }
 
 func (op *MilitaryOperation) TotalStealth() int {
-	return sumStealth(op.Units)
+	mods := op.TotalModifiers
+	return int(math.Round(SumEffectiveStealth(op.Units, mods.StealthMul)))
 }
 
 func (op *MilitaryOperation) TotalSpeed() int {
-	return slowestSpeed(op.Units)
+	mods := op.TotalModifiers
+	return GetEffectiveSpeed(op.Units, mods.SpeedMul)
 }
 
 func (op *MilitaryOperation) TotalCapacity() int {
-	return sumCapacity(op.Units)
+	mods := op.TotalModifiers
+	return int(math.Round(SumEffectiveCapacity(op.Units, mods.CapacityMul)))
 }
 
 // computeLoadFromLocation fills available carrying capacity using the available
 // resource pool, prioritizing lower value resources first (least expensive to most expensive).
 // This incentivizes players to fully loot a location.
 // Carrying capacity is volume-based (WorthCapacityMultiplier * total unit capacity).
-func computeLoadFromLocation(remaining []MilitaryUnitSnap, available PriceModel) PriceModel {
-	capacity := sumCapacity(remaining)
+func computeLoadFromLocation(remaining []MilitaryUnitSnap, mods MilitaryModifiers, available PriceModel) PriceModel {
+	capacity := int(math.Round(SumEffectiveCapacity(remaining, mods.CapacityMul)))
 	if capacity <= 0 {
 		return PriceModel{}
 	}
@@ -779,12 +821,12 @@ func computeLoadFromLocation(remaining []MilitaryUnitSnap, available PriceModel)
 
 // resolveSpySkirmish performs a very simple skirmish resolution between spy units as a placeholder.
 // Later, replace with the step-by-step subtraction algorithm across items.
-func resolveSpySkirmish(attackers, defenders []MilitaryUnitSnap) (atkRemaining []MilitaryUnitSnap, defRemaining []MilitaryUnitSnap, attackerWon bool) {
+func resolveSpySkirmish(attackers []MilitaryUnitSnap, atkMods MilitaryModifiers, defenders []MilitaryUnitSnap, defMods MilitaryModifiers) (atkRemaining []MilitaryUnitSnap, defRemaining []MilitaryUnitSnap, attackerWon bool) {
 	atk := cloneUnits(attackers)
 	def := cloneUnits(defenders)
 
-	atkPower := sumAttack(atk)
-	defPower := sumDefence(def)
+	atkPower := SumEffectiveAttack(atk, atkMods.AttackMul)
+	defPower := SumEffectiveDefence(def, defMods.DefenceMul)
 
 	// Simple outcome: higher total attack vs defence wins
 	attackerWon = atkPower >= defPower

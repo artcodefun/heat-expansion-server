@@ -134,12 +134,48 @@ type StorageItemPresent struct {
 	IsActive  bool   // Whether the item is currently active (e.g., toggled artifact or active buff)
 }
 
-// BaseModifiers aggregates currently-active buffs/artifacts as multipliers.
-type BaseModifiers struct {
+// StorageItemSnap captures a snapshot of an active storage item (buff or artifact)
+// to decouple resolution from potential prototype changes.
+type StorageItemSnap struct {
+	PrototypeID int
+	Category    StorageCategory
+	Buff        *BuffStorageData
+	Artifact    *ArtifactStorageData
+}
+
+// StorageItemFromPresent converts a present storage item to a snapshot.
+func StorageItemFromPresent(p StorageItemPresent) StorageItemSnap {
+	return StorageItemSnap{
+		PrototypeID: p.Prototype.ID,
+		Category:    p.Prototype.Category,
+		Buff:        p.Prototype.BuffData,
+		Artifact:    p.Prototype.ArtifactData,
+	}
+}
+
+// StorageItemsFromPresent maps present storage items to snapshots.
+func StorageItemsFromPresent(items []StorageItemPresent) []StorageItemSnap {
+	if len(items) == 0 {
+		return nil
+	}
+	out := make([]StorageItemSnap, 0, len(items))
+	for _, it := range items {
+		if it.IsActive {
+			out = append(out, StorageItemFromPresent(it))
+		}
+	}
+	return out
+}
+
+// ProductionModifiers aggregates production-related multipliers.
+type ProductionModifiers struct {
 	CreditsProdMul  float64
 	IronProdMul     float64
 	TitaniumProdMul float64
+}
 
+// MilitaryModifiers aggregates combat-related multipliers.
+type MilitaryModifiers struct {
 	AttackMul   float64
 	DefenceMul  float64
 	StealthMul  float64
@@ -147,31 +183,44 @@ type BaseModifiers struct {
 	SpeedMul    float64
 }
 
+// BaseModifiers aggregates all currently-active buffs/artifacts as multipliers.
+type BaseModifiers struct {
+	ProductionModifiers
+	MilitaryModifiers
+}
+
 func IdentityBaseModifiers() BaseModifiers {
 	return BaseModifiers{
-		CreditsProdMul:  1,
-		IronProdMul:     1,
-		TitaniumProdMul: 1,
-		AttackMul:       1,
-		DefenceMul:      1,
-		StealthMul:      1,
-		CapacityMul:     1,
-		SpeedMul:        1,
+		ProductionModifiers: ProductionModifiers{
+			CreditsProdMul:  1,
+			IronProdMul:     1,
+			TitaniumProdMul: 1,
+		},
+		MilitaryModifiers: MilitaryModifiers{
+			AttackMul:   1,
+			DefenceMul:  1,
+			StealthMul:  1,
+			CapacityMul: 1,
+			SpeedMul:    1,
+		},
 	}
 }
 
-func (m BaseModifiers) ApplyToUnitSnap(s MilitaryUnitSnap) MilitaryUnitSnap {
-	s.Attack = mulInt(s.Attack, m.AttackMul)
-	s.Defence = mulInt(s.Defence, m.DefenceMul)
-	s.Stealth = mulInt(s.Stealth, m.StealthMul)
-	s.Capacity = mulInt(s.Capacity, m.CapacityMul)
-	s.Speed = mulInt(s.Speed, m.SpeedMul)
-	return s
+func ModifiersFromSnaps(snaps []StorageItemSnap) BaseModifiers {
+	m := IdentityBaseModifiers()
+	for _, s := range snaps {
+		if s.Buff != nil {
+			m.ApplyBuff(s.Buff.Type, float64(s.Buff.Value))
+		}
+		if s.Artifact != nil {
+			m.ApplyArtifact(s.Artifact.Type, float64(s.Artifact.Value))
+		}
+	}
+	return m
 }
 
-func (m BaseModifiers) ApplyToStructureSnap(s DefenseStructureSnap) DefenseStructureSnap {
-	s.Defence = mulInt(s.Defence, m.DefenceMul)
-	return s
+func MilitaryModifiersFromSnaps(snaps []StorageItemSnap) MilitaryModifiers {
+	return ModifiersFromSnaps(snaps).MilitaryModifiers
 }
 
 func mulInt(v int, mul float64) int {

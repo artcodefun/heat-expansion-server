@@ -56,6 +56,9 @@ type SpyResult struct {
 	DefenderRemaining []MilitaryUnitSnap
 	// New: snapshot of defenders before resolution (for UI diffs)
 	DefendersBefore []MilitaryUnitSnap
+	// New: snapshots active during resolution
+	DefenderStorageSnaps   []StorageItemSnap
+	TotalDefenderModifiers MilitaryModifiers
 }
 
 type TrophyStorageItem struct {
@@ -72,6 +75,9 @@ type AttackResult struct {
 	// New: snapshots for UI to show casualties/damage
 	DefendersBefore  []MilitaryUnitSnap
 	StructuresBefore []DefenseStructureSnap
+	// New: snapshots active during resolution
+	DefenderStorageSnaps   []StorageItemSnap
+	TotalDefenderModifiers MilitaryModifiers
 }
 
 // MilitaryOperation models an attack or spy op traveling between sectors and resolving on arrival.
@@ -99,6 +105,11 @@ type MilitaryOperation struct {
 
 	// Snapshot of attacking units
 	Units []MilitaryUnitSnap
+
+	// Snapshots of active buffs/artifacts at operation creation
+	StorageSnaps []StorageItemSnap
+	// Pre-calculated total multipliers for the attacker
+	TotalModifiers MilitaryModifiers
 
 	// Results (only one will be populated depending on Type)
 	SpyResult    *SpyResult

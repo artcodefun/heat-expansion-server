@@ -1,12 +1,12 @@
 -- Military operations queries
 
 -- name: GetMilitaryOperationByID :one
-SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, phase, result, crystals_skip_price, units, spy_result, attack_result
+SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, phase, result, crystals_skip_price, units, storage_snaps, total_modifiers, spy_result, attack_result
 FROM military_operations
 WHERE id = @id;
 
 -- name: GetMilitaryOperationByIDForUpdate :one
-SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, phase, result, crystals_skip_price, units, spy_result, attack_result
+SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, phase, result, crystals_skip_price, units, storage_snaps, total_modifiers, spy_result, attack_result
 FROM military_operations
 WHERE id = @id
 FOR UPDATE;
@@ -17,7 +17,7 @@ SELECT id, type, owner_user_id, source_base_id,
         outbound_depart_at, outbound_arrive_at,
         return_depart_at, return_arrive_at,
         completed_at, phase, result, crystals_skip_price,
-        units, spy_result, attack_result
+        units, storage_snaps, total_modifiers, spy_result, attack_result
 FROM military_operations
 WHERE source_base_id = @base_id
 ORDER BY id DESC
@@ -29,7 +29,7 @@ SELECT id, type, owner_user_id, source_base_id,
         outbound_depart_at, outbound_arrive_at,
         return_depart_at, return_arrive_at,
         completed_at, phase, result, crystals_skip_price,
-        units, spy_result, attack_result
+        units, storage_snaps, total_modifiers, spy_result, attack_result
 FROM military_operations
 WHERE target_x = @target_x AND target_y = @target_y
 ORDER BY id DESC
@@ -42,7 +42,8 @@ INSERT INTO military_operations (
     outbound_depart_at, outbound_arrive_at,
     return_depart_at, return_arrive_at,
         completed_at, phase, result,
-        units, spy_result, attack_result,
+        units, storage_snaps, total_modifiers,
+        spy_result, attack_result,
         crystals_skip_price
 ) VALUES (
         @type, @owner_user_id, @source_base_id,
@@ -50,7 +51,8 @@ INSERT INTO military_operations (
     @outbound_depart_at, @outbound_arrive_at,
     @return_depart_at, @return_arrive_at,
         @completed_at, @phase, @result,
-        @units, @spy_result, @attack_result,
+        @units, @storage_snaps, @total_modifiers,
+        @spy_result, @attack_result,
         @crystals_skip_price
 )
 RETURNING id;
@@ -72,6 +74,8 @@ SET type = @type,
         phase = @phase,
         result = @result,
         units = @units,
+        storage_snaps = @storage_snaps,
+        total_modifiers = @total_modifiers,
         spy_result = @spy_result,
         attack_result = @attack_result,
         crystals_skip_price = @crystals_skip_price

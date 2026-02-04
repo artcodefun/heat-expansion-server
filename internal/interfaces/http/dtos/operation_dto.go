@@ -78,46 +78,72 @@ type TrophyStorageItemDTO struct {
 	Prototype StorageItemPrototypeDTO `json:"prototype"`
 }
 
+// MilitaryModifiersDTO represents multipliers for military stats at the DTO level.
+type MilitaryModifiersDTO struct {
+	AttackMul   float32 `json:"attack_mul"`
+	DefenceMul  float32 `json:"defence_mul"`
+	StealthMul  float32 `json:"stealth_mul"`
+	CapacityMul float32 `json:"capacity_mul"`
+	SpeedMul    float32 `json:"speed_mul"`
+}
+
+// StorageItemSnapDTO represents a snapshot of a storage item at the DTO level.
+type StorageItemSnapDTO struct {
+	PrototypeID      int                     `json:"prototype_id"`
+	Name             string                  `json:"name"`
+	ShortDescription string                  `json:"short_description"`
+	ImageURL         string                  `json:"image_url"`
+	Category         StorageCategory         `json:"category"`
+	BuffData         *BuffStorageDataDTO     `json:"buff_data,omitempty"`
+	ArtifactData     *ArtifactStorageDataDTO `json:"artifact_data,omitempty"`
+}
+
 // SpyResultDTO reports spy resolution outcomes.
 type SpyResultDTO struct {
-	Outcome           SpyOutcome        `json:"outcome"`
-	AttackerRemaining []MilitaryUnitDTO `json:"attacker_remaining"`
-	DefenderRemaining []MilitaryUnitDTO `json:"defender_remaining"`
-	DefendersBefore   []MilitaryUnitDTO `json:"defenders_before"`
+	Outcome                SpyOutcome           `json:"outcome"`
+	AttackerRemaining      []MilitaryUnitDTO    `json:"attacker_remaining"`
+	DefenderRemaining      []MilitaryUnitDTO    `json:"defender_remaining"`
+	DefendersBefore        []MilitaryUnitDTO    `json:"defenders_before"`
+	DefenderStorageSnaps   []StorageItemSnapDTO `json:"defender_storage_snaps"`
+	TotalDefenderModifiers MilitaryModifiersDTO `json:"total_defender_modifiers"`
 }
 
 // AttackResultDTO reports attack outcomes.
 type AttackResultDTO struct {
-	Outcome             AttackOutcome          `json:"outcome"`
-	AttackerRemaining   []MilitaryUnitDTO      `json:"attacker_remaining"`
-	DefenderRemaining   []MilitaryUnitDTO      `json:"defender_remaining"`
-	RemainingStructures []DefenseStructureDTO  `json:"remaining_structures"`
-	Loot                PriceModelDTO          `json:"loot"`
-	Trophies            []TrophyStorageItemDTO `json:"trophies"`
-	DefendersBefore     []MilitaryUnitDTO      `json:"defenders_before"`
-	StructuresBefore    []DefenseStructureDTO  `json:"structures_before"`
+	Outcome                AttackOutcome          `json:"outcome"`
+	AttackerRemaining      []MilitaryUnitDTO      `json:"attacker_remaining"`
+	DefenderRemaining      []MilitaryUnitDTO      `json:"defender_remaining"`
+	RemainingStructures    []DefenseStructureDTO  `json:"remaining_structures"`
+	Loot                   PriceModelDTO          `json:"loot"`
+	Trophies               []TrophyStorageItemDTO `json:"trophies"`
+	DefendersBefore        []MilitaryUnitDTO      `json:"defenders_before"`
+	StructuresBefore       []DefenseStructureDTO  `json:"structures_before"`
+	DefenderStorageSnaps   []StorageItemSnapDTO   `json:"defender_storage_snaps"`
+	TotalDefenderModifiers MilitaryModifiersDTO   `json:"total_defender_modifiers"`
 }
 
 // MilitaryOperationDTO serializes military operations for HTTP responses.
 type MilitaryOperationDTO struct {
-	ID                 int               `json:"id"`
-	Type               OperationType     `json:"type"`
-	Phase              OperationPhase    `json:"phase"`
-	Result             OperationResult   `json:"result"`
-	SourceBaseID       int               `json:"source_base_id"`
-	SourceCoordinates  Vector2iDTO       `json:"source_coordinates"`
-	TargetCoordinates  Vector2iDTO       `json:"target_coordinates"`
-	OutboundDepartAt   int64             `json:"outbound_depart_at"`
-	OutboundArriveAt   int64             `json:"outbound_arrive_at"`
-	ReturnDepartAt     int64             `json:"return_depart_at"`
-	ReturnArriveAt     int64             `json:"return_arrive_at"`
-	CompletedAt        int64             `json:"completed_at"`
-	CrystalsSkipPrice  int               `json:"crystals_skip_price"`
-	Units              []MilitaryUnitDTO `json:"units"`
-	SpyResult          *SpyResultDTO     `json:"spy_result,omitempty"`
-	AttackResult       *AttackResultDTO  `json:"attack_result,omitempty"`
-	ProducedScanReport *SectorDTO        `json:"produced_scan_report,omitempty"`
-	PriorScanReport    *SectorDTO        `json:"prior_scan_report,omitempty"`
+	ID                 int                  `json:"id"`
+	Type               OperationType        `json:"type"`
+	Phase              OperationPhase       `json:"phase"`
+	Result             OperationResult      `json:"result"`
+	SourceBaseID       int                  `json:"source_base_id"`
+	SourceCoordinates  Vector2iDTO          `json:"source_coordinates"`
+	TargetCoordinates  Vector2iDTO          `json:"target_coordinates"`
+	OutboundDepartAt   int64                `json:"outbound_depart_at"`
+	OutboundArriveAt   int64                `json:"outbound_arrive_at"`
+	ReturnDepartAt     int64                `json:"return_depart_at"`
+	ReturnArriveAt     int64                `json:"return_arrive_at"`
+	CompletedAt        int64                `json:"completed_at"`
+	CrystalsSkipPrice  int                  `json:"crystals_skip_price"`
+	Units              []MilitaryUnitDTO    `json:"units"`
+	StorageSnaps       []StorageItemSnapDTO `json:"storage_snaps"`
+	TotalModifiers     MilitaryModifiersDTO `json:"total_modifiers"`
+	SpyResult          *SpyResultDTO        `json:"spy_result,omitempty"`
+	AttackResult       *AttackResultDTO     `json:"attack_result,omitempty"`
+	ProducedScanReport *SectorDTO           `json:"produced_scan_report,omitempty"`
+	PriorScanReport    *SectorDTO           `json:"prior_scan_report,omitempty"`
 }
 
 func MilitaryUnitsFromReadModel(units []readmodels.MilitaryUnitSnap) []MilitaryUnitDTO {
@@ -168,10 +194,12 @@ func SpyResultFromReadModel(res *readmodels.SpyResult) *SpyResultDTO {
 		return nil
 	}
 	return &SpyResultDTO{
-		Outcome:           SpyOutcome(res.Outcome),
-		AttackerRemaining: MilitaryUnitsFromReadModel(res.AttackerRemaining),
-		DefenderRemaining: MilitaryUnitsFromReadModel(res.DefenderRemaining),
-		DefendersBefore:   MilitaryUnitsFromReadModel(res.DefendersBefore),
+		Outcome:                SpyOutcome(res.Outcome),
+		AttackerRemaining:      MilitaryUnitsFromReadModel(res.AttackerRemaining),
+		DefenderRemaining:      MilitaryUnitsFromReadModel(res.DefenderRemaining),
+		DefendersBefore:        MilitaryUnitsFromReadModel(res.DefendersBefore),
+		DefenderStorageSnaps:   storageItemSnapsFromReadModel(res.DefenderStorageSnaps),
+		TotalDefenderModifiers: MilitaryModifiersFromReadModel(res.TotalDefenderModifiers),
 	}
 }
 
@@ -180,14 +208,16 @@ func AttackResultFromReadModel(res *readmodels.AttackResult) *AttackResultDTO {
 		return nil
 	}
 	return &AttackResultDTO{
-		Outcome:             AttackOutcome(res.Outcome),
-		AttackerRemaining:   MilitaryUnitsFromReadModel(res.AttackerRemaining),
-		DefenderRemaining:   MilitaryUnitsFromReadModel(res.DefenderRemaining),
-		RemainingStructures: defenseStructuresFromReadModel(res.RemainingStructures),
-		Loot:                PriceModelFromReadModel(res.Loot),
-		Trophies:            trophiesFromReadModel(res.Trophies),
-		DefendersBefore:     MilitaryUnitsFromReadModel(res.DefendersBefore),
-		StructuresBefore:    defenseStructuresFromReadModel(res.StructuresBefore),
+		Outcome:                AttackOutcome(res.Outcome),
+		AttackerRemaining:      MilitaryUnitsFromReadModel(res.AttackerRemaining),
+		DefenderRemaining:      MilitaryUnitsFromReadModel(res.DefenderRemaining),
+		RemainingStructures:    defenseStructuresFromReadModel(res.RemainingStructures),
+		Loot:                   PriceModelFromReadModel(res.Loot),
+		Trophies:               trophiesFromReadModel(res.Trophies),
+		DefendersBefore:        MilitaryUnitsFromReadModel(res.DefendersBefore),
+		StructuresBefore:       defenseStructuresFromReadModel(res.StructuresBefore),
+		DefenderStorageSnaps:   storageItemSnapsFromReadModel(res.DefenderStorageSnaps),
+		TotalDefenderModifiers: MilitaryModifiersFromReadModel(res.TotalDefenderModifiers),
 	}
 }
 
@@ -207,6 +237,8 @@ func OperationFromReadModel(m *readmodels.MilitaryOperation) MilitaryOperationDT
 		CompletedAt:       m.CompletedAt,
 		CrystalsSkipPrice: m.CrystalsSkipPrice,
 		Units:             MilitaryUnitsFromReadModel(m.Units),
+		StorageSnaps:      storageItemSnapsFromReadModel(m.StorageSnaps),
+		TotalModifiers:    MilitaryModifiersFromReadModel(m.TotalModifiers),
 		SpyResult:         SpyResultFromReadModel(m.SpyResult),
 		AttackResult:      AttackResultFromReadModel(m.AttackResult),
 	}
@@ -219,6 +251,50 @@ func OperationFromReadModel(m *readmodels.MilitaryOperation) MilitaryOperationDT
 		dto.PriorScanReport = &report
 	}
 	return dto
+}
+
+func storageItemSnapsFromReadModel(snaps []readmodels.StorageItemSnap) []StorageItemSnapDTO {
+	if len(snaps) == 0 {
+		return []StorageItemSnapDTO{}
+	}
+	out := make([]StorageItemSnapDTO, 0, len(snaps))
+	for _, s := range snaps {
+		var buff *BuffStorageDataDTO
+		if s.BuffData != nil {
+			buff = &BuffStorageDataDTO{
+				Type:            BuffType(s.BuffData.Type),
+				Value:           s.BuffData.Value,
+				DurationSeconds: s.BuffData.DurationSeconds,
+			}
+		}
+		var artifact *ArtifactStorageDataDTO
+		if s.ArtifactData != nil {
+			artifact = &ArtifactStorageDataDTO{
+				Type:  ArtifactEffectType(s.ArtifactData.Type),
+				Value: s.ArtifactData.Value,
+			}
+		}
+		out = append(out, StorageItemSnapDTO{
+			PrototypeID:      s.PrototypeID,
+			Name:             s.Name,
+			ShortDescription: s.ShortDescription,
+			ImageURL:         s.ImageURL,
+			Category:         StorageCategory(s.Category),
+			BuffData:         buff,
+			ArtifactData:     artifact,
+		})
+	}
+	return out
+}
+
+func MilitaryModifiersFromReadModel(m readmodels.MilitaryModifiers) MilitaryModifiersDTO {
+	return MilitaryModifiersDTO{
+		AttackMul:   m.AttackMul,
+		DefenceMul:  m.DefenceMul,
+		StealthMul:  m.StealthMul,
+		CapacityMul: m.CapacityMul,
+		SpeedMul:    m.SpeedMul,
+	}
 }
 
 func OperationsFromReadModels(items []*readmodels.MilitaryOperation) []MilitaryOperationDTO {

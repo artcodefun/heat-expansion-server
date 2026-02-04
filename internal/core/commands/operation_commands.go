@@ -64,8 +64,8 @@ func (c *OperationCommands) CreateMilitaryOperation(ctx cqrs.CommandContext, opT
 			return cqrs.NewDomainError(err)
 		}
 
-		mods := base.ActiveModifiers()
-		units := domain.MilitaryUnitsFromDeployed(readyToDeploy, mods)
+		snaps := base.ActiveStorageSnaps()
+		units := domain.MilitaryUnitsFromDeployed(readyToDeploy)
 		sourceSector, err := c.Provisioner.EnsureSectorExists(sRepo, base.Coordinates.X, base.Coordinates.Y)
 		if err != nil {
 			return err
@@ -77,9 +77,9 @@ func (c *OperationCommands) CreateMilitaryOperation(ctx cqrs.CommandContext, opT
 		var opCreationErr error
 		switch opType {
 		case domain.MilitaryOperationTypeAttack:
-			createdOp, opCreationErr = domain.NewAttackOperation(base.UserID, sourceBaseID, sourceSector.Coordinates, targetSector.Coordinates, units)
+			createdOp, opCreationErr = domain.NewAttackOperation(base.UserID, sourceBaseID, sourceSector.Coordinates, targetSector.Coordinates, units, snaps)
 		case domain.MilitaryOperationTypeSpy:
-			createdOp, opCreationErr = domain.NewSpyOperation(base.UserID, sourceBaseID, sourceSector.Coordinates, targetSector.Coordinates, units)
+			createdOp, opCreationErr = domain.NewSpyOperation(base.UserID, sourceBaseID, sourceSector.Coordinates, targetSector.Coordinates, units, snaps)
 		default:
 			return errors.New("unsupported operation type")
 		}

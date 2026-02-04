@@ -38,6 +38,8 @@ func OperationFromModel(m gen.MilitaryOperation) readmodels.MilitaryOperation {
 		Phase:              readmodels.MilitaryOperationPhase(m.Phase),
 		Result:             readmodels.MilitaryOperationResult(m.Result),
 		Units:              militaryUnitsFromJSON(m.Units),
+		StorageSnaps:       storageSnapsFromJSON(m.StorageSnaps),
+		TotalModifiers:     militaryModifiersFromJSON(m.TotalModifiers),
 		SpyResult:          spyResultFromJSON(m.SpyResult),
 		AttackResult:       attackResultFromJSON(m.AttackResult),
 		ProducedScanReport: nil,
@@ -45,6 +47,66 @@ func OperationFromModel(m gen.MilitaryOperation) readmodels.MilitaryOperation {
 }
 
 // JSON helpers: DTO shape -> readmodels.*
+
+func storageSnapsFromJSON(raw json.RawMessage) []readmodels.StorageItemSnap {
+	if len(raw) == 0 {
+		return []readmodels.StorageItemSnap{}
+	}
+	var snapsDTO []dtos.StorageItemSnapDTO
+	if err := json.Unmarshal(raw, &snapsDTO); err != nil {
+		return []readmodels.StorageItemSnap{}
+	}
+	out := make([]readmodels.StorageItemSnap, 0, len(snapsDTO))
+	for _, s := range snapsDTO {
+		out = append(out, storageItemSnapFromDTO(s))
+	}
+	return out
+}
+
+func storageItemSnapFromDTO(d dtos.StorageItemSnapDTO) readmodels.StorageItemSnap {
+	var buffData *readmodels.BuffStorageData
+	if d.BuffData != nil {
+		buffData = &readmodels.BuffStorageData{
+			Type:            readmodels.BuffType(d.BuffData.Type),
+			Value:           d.BuffData.Value,
+			DurationSeconds: d.BuffData.DurationSeconds,
+		}
+	}
+	var artifactData *readmodels.ArtifactStorageData
+	if d.ArtifactData != nil {
+		artifactData = &readmodels.ArtifactStorageData{
+			Type:  readmodels.ArtifactEffectType(d.ArtifactData.Type),
+			Value: d.ArtifactData.Value,
+		}
+	}
+	return readmodels.StorageItemSnap{
+		PrototypeID:  d.PrototypeID,
+		Category:     readmodels.StorageCategory(d.Category),
+		BuffData:     buffData,
+		ArtifactData: artifactData,
+	}
+}
+
+func militaryModifiersFromJSON(raw json.RawMessage) readmodels.MilitaryModifiers {
+	if len(raw) == 0 {
+		return readmodels.MilitaryModifiers{}
+	}
+	var d dtos.MilitaryModifiersDTO
+	if err := json.Unmarshal(raw, &d); err != nil {
+		return readmodels.MilitaryModifiers{}
+	}
+	return militaryModifiersFromDTO(d)
+}
+
+func militaryModifiersFromDTO(d dtos.MilitaryModifiersDTO) readmodels.MilitaryModifiers {
+	return readmodels.MilitaryModifiers{
+		AttackMul:   float32(d.AttackMul),
+		DefenceMul:  float32(d.DefenceMul),
+		StealthMul:  float32(d.StealthMul),
+		CapacityMul: float32(d.CapacityMul),
+		SpeedMul:    float32(d.SpeedMul),
+	}
+}
 
 func militaryUnitsFromJSON(raw json.RawMessage) []readmodels.MilitaryUnitSnap {
 	if len(raw) == 0 {
@@ -102,7 +164,8 @@ func spyResultFromJSON(nm pqtype.NullRawMessage) *readmodels.SpyResult {
 		return nil
 	}
 	res := &readmodels.SpyResult{
-		Outcome: readmodels.SpyOutcome(d.Outcome),
+		Outcome:                readmodels.SpyOutcome(d.Outcome),
+		TotalDefenderModifiers: militaryModifiersFromDTO(d.TotalDefenderModifiers),
 	}
 	if len(d.AttackerRemaining) > 0 {
 		res.AttackerRemaining = make([]readmodels.MilitaryUnitSnap, 0, len(d.AttackerRemaining))
@@ -120,6 +183,12 @@ func spyResultFromJSON(nm pqtype.NullRawMessage) *readmodels.SpyResult {
 		res.DefendersBefore = make([]readmodels.MilitaryUnitSnap, 0, len(d.DefendersBefore))
 		for _, u := range d.DefendersBefore {
 			res.DefendersBefore = append(res.DefendersBefore, militaryUnitFromDTO(u))
+		}
+	}
+	if len(d.DefenderStorageSnaps) > 0 {
+		res.DefenderStorageSnaps = make([]readmodels.StorageItemSnap, 0, len(d.DefenderStorageSnaps))
+		for _, s := range d.DefenderStorageSnaps {
+			res.DefenderStorageSnaps = append(res.DefenderStorageSnaps, storageItemSnapFromDTO(s))
 		}
 	}
 	return res
@@ -141,6 +210,7 @@ func attackResultFromJSON(nm pqtype.NullRawMessage) *readmodels.AttackResult {
 			Titanium:   d.Loot.Titanium,
 			Antimatter: d.Loot.Antimatter,
 		},
+		TotalDefenderModifiers: militaryModifiersFromDTO(d.TotalDefenderModifiers),
 	}
 	if len(d.AttackerRemaining) > 0 {
 		res.AttackerRemaining = make([]readmodels.MilitaryUnitSnap, 0, len(d.AttackerRemaining))
@@ -178,6 +248,12 @@ func attackResultFromJSON(nm pqtype.NullRawMessage) *readmodels.AttackResult {
 			res.StructuresBefore = append(res.StructuresBefore, defenseStructureFromDTO(s))
 		}
 	}
+	if len(d.DefenderStorageSnaps) > 0 {
+		res.DefenderStorageSnaps = make([]readmodels.StorageItemSnap, 0, len(d.DefenderStorageSnaps))
+		for _, s := range d.DefenderStorageSnaps {
+			res.DefenderStorageSnaps = append(res.DefenderStorageSnaps, storageItemSnapFromDTO(s))
+		}
+	}
 	return res
 }
 
@@ -188,6 +264,13 @@ func EnrichOperationUnitsAndStructures(op *readmodels.MilitaryOperation, armyMap
 		if proto, ok := armyMap[op.Units[i].PrototypeID]; ok {
 			op.Units[i].Name = proto.Name
 			op.Units[i].ImageURL = proto.ImageURL
+		}
+	}
+	for i := range op.StorageSnaps {
+		if proto, ok := storageMap[op.StorageSnaps[i].PrototypeID]; ok {
+			op.StorageSnaps[i].Name = proto.Name
+			op.StorageSnaps[i].ShortDescription = proto.ShortDescription
+			op.StorageSnaps[i].ImageURL = proto.ImageURL
 		}
 	}
 	if op.SpyResult != nil {
@@ -207,6 +290,13 @@ func EnrichOperationUnitsAndStructures(op *readmodels.MilitaryOperation, armyMap
 			if proto, ok := armyMap[op.SpyResult.DefendersBefore[i].PrototypeID]; ok {
 				op.SpyResult.DefendersBefore[i].Name = proto.Name
 				op.SpyResult.DefendersBefore[i].ImageURL = proto.ImageURL
+			}
+		}
+		for i := range op.SpyResult.DefenderStorageSnaps {
+			if proto, ok := storageMap[op.SpyResult.DefenderStorageSnaps[i].PrototypeID]; ok {
+				op.SpyResult.DefenderStorageSnaps[i].Name = proto.Name
+				op.SpyResult.DefenderStorageSnaps[i].ShortDescription = proto.ShortDescription
+				op.SpyResult.DefenderStorageSnaps[i].ImageURL = proto.ImageURL
 			}
 		}
 	}
@@ -244,6 +334,13 @@ func EnrichOperationUnitsAndStructures(op *readmodels.MilitaryOperation, armyMap
 			if proto, ok := buildMap[op.AttackResult.StructuresBefore[i].PrototypeID]; ok {
 				op.AttackResult.StructuresBefore[i].Name = proto.Name
 				op.AttackResult.StructuresBefore[i].ImageURL = proto.ImageURL
+			}
+		}
+		for i := range op.AttackResult.DefenderStorageSnaps {
+			if proto, ok := storageMap[op.AttackResult.DefenderStorageSnaps[i].PrototypeID]; ok {
+				op.AttackResult.DefenderStorageSnaps[i].Name = proto.Name
+				op.AttackResult.DefenderStorageSnaps[i].ShortDescription = proto.ShortDescription
+				op.AttackResult.DefenderStorageSnaps[i].ImageURL = proto.ImageURL
 			}
 		}
 	}

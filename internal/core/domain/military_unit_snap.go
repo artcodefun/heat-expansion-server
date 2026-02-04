@@ -1,5 +1,7 @@
 package domain
 
+import "math"
+
 // MilitaryUnitSnap captures a snapshot of an army unit participating in an operation.
 // Using a snapshot decouples battle resolution from prototype changes over time.
 type MilitaryUnitSnap struct {
@@ -22,8 +24,8 @@ type DefenseStructureSnap struct {
 }
 
 // MilitaryUnitFromPresent converts a present army item to an MilitaryUnitSnap snapshot.
-func MilitaryUnitFromPresent(p ArmyItemPresent, mods BaseModifiers) MilitaryUnitSnap {
-	s := MilitaryUnitSnap{
+func MilitaryUnitFromPresent(p ArmyItemPresent) MilitaryUnitSnap {
+	return MilitaryUnitSnap{
 		PrototypeID: p.Prototype.ID,
 		Category:    p.Prototype.Category,
 		Attack:      p.Prototype.Attack,
@@ -33,12 +35,11 @@ func MilitaryUnitFromPresent(p ArmyItemPresent, mods BaseModifiers) MilitaryUnit
 		Speed:       p.Prototype.Speed,
 		Count:       p.Count,
 	}
-	return mods.ApplyToUnitSnap(s)
 }
 
 // MilitaryUnitFromStack converts an army stack into an operational snapshot.
-func MilitaryUnitFromStack(stack ArmyStack, mods BaseModifiers) MilitaryUnitSnap {
-	s := MilitaryUnitSnap{
+func MilitaryUnitFromStack(stack ArmyStack) MilitaryUnitSnap {
+	return MilitaryUnitSnap{
 		PrototypeID: stack.Prototype.ID,
 		Category:    stack.Prototype.Category,
 		Attack:      stack.Prototype.Attack,
@@ -48,26 +49,25 @@ func MilitaryUnitFromStack(stack ArmyStack, mods BaseModifiers) MilitaryUnitSnap
 		Speed:       stack.Prototype.Speed,
 		Count:       stack.Count,
 	}
-	return mods.ApplyToUnitSnap(s)
 }
 
 // MilitaryUnitsFromPresent maps present army items to MilitaryUnitSnap snapshots.
-func MilitaryUnitsFromPresent(items []ArmyItemPresent, mods BaseModifiers) []MilitaryUnitSnap {
+func MilitaryUnitsFromPresent(items []ArmyItemPresent) []MilitaryUnitSnap {
 	if len(items) == 0 {
 		return nil
 	}
 	out := make([]MilitaryUnitSnap, 0, len(items))
 	for _, it := range items {
 		if it.Count > 0 {
-			out = append(out, MilitaryUnitFromPresent(it, mods))
+			out = append(out, MilitaryUnitFromPresent(it))
 		}
 	}
 	return out
 }
 
 // MilitaryUnitFromDeployed converts a single deploy-ready stack into an military unit snapshot.
-func MilitaryUnitFromDeployed(d DeploymentReadyItem, mods BaseModifiers) MilitaryUnitSnap {
-	s := MilitaryUnitSnap{
+func MilitaryUnitFromDeployed(d DeploymentReadyItem) MilitaryUnitSnap {
+	return MilitaryUnitSnap{
 		PrototypeID: d.Prototype.ID,
 		Category:    d.Prototype.Category,
 		Attack:      d.Prototype.Attack,
@@ -77,36 +77,34 @@ func MilitaryUnitFromDeployed(d DeploymentReadyItem, mods BaseModifiers) Militar
 		Speed:       d.Prototype.Speed,
 		Count:       d.Count,
 	}
-	return mods.ApplyToUnitSnap(s)
 }
 
 // MilitaryUnitsFromDeployed returns military units for a list of deploy-ready stacks.
-func MilitaryUnitsFromDeployed(items []DeploymentReadyItem, mods BaseModifiers) []MilitaryUnitSnap {
+func MilitaryUnitsFromDeployed(items []DeploymentReadyItem) []MilitaryUnitSnap {
 	if len(items) == 0 {
 		return nil
 	}
 	out := make([]MilitaryUnitSnap, 0, len(items))
 	for _, d := range items {
-		out = append(out, MilitaryUnitFromDeployed(d, mods))
+		out = append(out, MilitaryUnitFromDeployed(d))
 	}
 	return out
 }
 
 // DefenseStructuresFromBuildings returns defense structures based on present buildings with defense data.
 // For now we map each defensive building to a single structure with Defence equal to DefenceBonus.
-func DefenseStructuresFromBuildings(buildings []BuildItemPresent, mods BaseModifiers) []DefenseStructureSnap {
+func DefenseStructuresFromBuildings(buildings []BuildItemPresent) []DefenseStructureSnap {
 	if len(buildings) == 0 {
 		return nil
 	}
 	out := make([]DefenseStructureSnap, 0, len(buildings))
 	for _, b := range buildings {
 		if b.Prototype.DefenseData != nil {
-			s := DefenseStructureSnap{
+			out = append(out, DefenseStructureSnap{
 				PrototypeID: b.Prototype.ID,
 				Defence:     b.Prototype.DefenseData.DefenceBonus,
 				Count:       1,
-			}
-			out = append(out, mods.ApplyToStructureSnap(s))
+			})
 		}
 	}
 	if len(out) == 0 {
@@ -116,17 +114,16 @@ func DefenseStructuresFromBuildings(buildings []BuildItemPresent, mods BaseModif
 }
 
 // DefenseStructureFromStack converts a defense stack into a simplified snapshot.
-func DefenseStructureFromStack(stack DefenseStack, mods BaseModifiers) DefenseStructureSnap {
+func DefenseStructureFromStack(stack DefenseStack) DefenseStructureSnap {
 	defence := 0
 	if stack.Prototype.DefenseData != nil {
 		defence = stack.Prototype.DefenseData.DefenceBonus
 	}
-	s := DefenseStructureSnap{
+	return DefenseStructureSnap{
 		PrototypeID: stack.Prototype.ID,
 		Defence:     defence,
 		Count:       stack.Count,
 	}
-	return mods.ApplyToStructureSnap(s)
 }
 
 // Helpers
@@ -136,6 +133,15 @@ func cloneUnits(src []MilitaryUnitSnap) []MilitaryUnitSnap {
 		return nil
 	}
 	out := make([]MilitaryUnitSnap, len(src))
+	copy(out, src)
+	return out
+}
+
+func cloneStorageSnaps(src []StorageItemSnap) []StorageItemSnap {
+	if len(src) == 0 {
+		return nil
+	}
+	out := make([]StorageItemSnap, len(src))
 	copy(out, src)
 	return out
 }
@@ -203,4 +209,34 @@ func sumStructureDefence(structs []DefenseStructureSnap) int {
 		total += s.Defence * s.Count
 	}
 	return total
+}
+
+// Effective stat helpers with multipliers
+
+func SumEffectiveAttack(units []MilitaryUnitSnap, mul float64) float64 {
+	return float64(sumAttack(units)) * mul
+}
+
+func SumEffectiveDefence(units []MilitaryUnitSnap, mul float64) float64 {
+	return float64(sumDefence(units)) * mul
+}
+
+func SumEffectiveStealth(units []MilitaryUnitSnap, mul float64) float64 {
+	return float64(sumStealth(units)) * mul
+}
+
+func SumEffectiveCapacity(units []MilitaryUnitSnap, mul float64) float64 {
+	return float64(sumCapacity(units)) * mul
+}
+
+func SumEffectiveStructureDefence(structs []DefenseStructureSnap, mul float64) float64 {
+	return float64(sumStructureDefence(structs)) * mul
+}
+
+func GetEffectiveSpeed(units []MilitaryUnitSnap, mul float64) int {
+	base := slowestSpeed(units)
+	if base <= 0 {
+		return 0
+	}
+	return int(math.Round(float64(base) * mul))
 }

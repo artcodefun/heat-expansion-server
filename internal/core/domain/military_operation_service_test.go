@@ -17,7 +17,7 @@ func TestResolveAgainstUserBase_Attack_AppliesLootAndSurvivors(t *testing.T) {
 		{PrototypeID: 1, Category: ArmyCategoryInfantry, Attack: 5, Defence: 3, Capacity: 2, Stealth: 0, Speed: 100, Count: 3},
 	}
 
-	op, err := NewAttackOperation(1, 10, Vector2i{X: 0, Y: 0}, Vector2i{X: 1, Y: 0}, attackUnits)
+	op, err := NewAttackOperation(1, 10, Vector2i{X: 0, Y: 0}, Vector2i{X: 1, Y: 0}, attackUnits, nil)
 	if err != nil {
 		t.Fatalf("unexpected error from NewAttackOperation: %v", err)
 	}
@@ -110,7 +110,7 @@ func TestResolveAgainstUserBase_Spy_BlockedByCloaking_PreservesNonSpyDefenders(t
 	spies := []MilitaryUnitSnap{
 		{PrototypeID: 7, Category: ArmyCategorySpy, Attack: 2, Defence: 1, Capacity: 0, Stealth: 4, Speed: 120, Count: 2},
 	}
-	op, err := NewSpyOperation(1, 10, Vector2i{X: 0, Y: 0}, Vector2i{X: 1, Y: 1}, spies)
+	op, err := NewSpyOperation(1, 10, Vector2i{X: 0, Y: 0}, Vector2i{X: 1, Y: 1}, spies, nil)
 	if err != nil {
 		t.Fatalf("unexpected error from NewSpyOperation: %v", err)
 	}

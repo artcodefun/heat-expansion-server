@@ -83,7 +83,7 @@ func TestCrystalSpendingService_SpeedUpOperation_Outbound(t *testing.T) {
 	}
 	source := Vector2i{X: 0, Y: 0}
 	target := Vector2i{X: 3, Y: 4}
-	op, err := NewAttackOperation(1, 10, source, target, units)
+	op, err := NewAttackOperation(1, 10, source, target, units, nil)
 	if err != nil {
 		t.Fatalf("unexpected error from NewAttackOperation: %v", err)
 	}
@@ -128,7 +128,7 @@ func TestCrystalSpendingService_SpeedUpOperation_Returning(t *testing.T) {
 	}
 	source := Vector2i{X: 0, Y: 0}
 	target := Vector2i{X: 4, Y: 3}
-	op, err := NewAttackOperation(1, 10, source, target, units)
+	op, err := NewAttackOperation(1, 10, source, target, units, nil)
 	if err != nil {
 		t.Fatalf("unexpected error from NewAttackOperation: %v", err)
 	}

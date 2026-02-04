@@ -3,28 +3,35 @@ package dtos
 import "github.com/artcodefun/heat-expansion-api/internal/core/domain"
 
 type SpyResultDTO struct {
-	Outcome           string            `json:"outcome"`
-	AttackerRemaining []MilitaryUnitDTO `json:"attacker_remaining"`
-	DefenderRemaining []MilitaryUnitDTO `json:"defender_remaining"`
-	DefendersBefore   []MilitaryUnitDTO `json:"defenders_before"`
+	Outcome                string               `json:"outcome"`
+	AttackerRemaining      []MilitaryUnitDTO    `json:"attacker_remaining"`
+	DefenderRemaining      []MilitaryUnitDTO    `json:"defender_remaining"`
+	DefendersBefore        []MilitaryUnitDTO    `json:"defenders_before"`
+	DefenderStorageSnaps   []StorageItemSnapDTO `json:"defender_storage_snaps"`
+	TotalDefenderModifiers MilitaryModifiersDTO `json:"total_defender_modifiers"`
 }
 
 type AttackResultDTO struct {
-	Outcome             string                `json:"outcome"`
-	AttackerRemaining   []MilitaryUnitDTO     `json:"attacker_remaining"`
-	DefenderRemaining   []MilitaryUnitDTO     `json:"defender_remaining"`
-	RemainingStructures []DefenseStructureDTO `json:"remaining_structures"`
-	Loot                PriceDTO              `json:"loot"`
-	Trophies            []TrophyDTO           `json:"trophies"`
-	DefendersBefore     []MilitaryUnitDTO     `json:"defenders_before"`
-	StructuresBefore    []DefenseStructureDTO `json:"structures_before"`
+	Outcome                string                `json:"outcome"`
+	AttackerRemaining      []MilitaryUnitDTO     `json:"attacker_remaining"`
+	DefenderRemaining      []MilitaryUnitDTO     `json:"defender_remaining"`
+	RemainingStructures    []DefenseStructureDTO `json:"remaining_structures"`
+	Loot                   PriceDTO              `json:"loot"`
+	Trophies               []TrophyDTO           `json:"trophies"`
+	DefendersBefore        []MilitaryUnitDTO     `json:"defenders_before"`
+	StructuresBefore       []DefenseStructureDTO `json:"structures_before"`
+	DefenderStorageSnaps   []StorageItemSnapDTO  `json:"defender_storage_snaps"`
+	TotalDefenderModifiers MilitaryModifiersDTO  `json:"total_defender_modifiers"`
 }
 
 func SpyResultDTOFromDomain(s *domain.SpyResult) *SpyResultDTO {
 	if s == nil {
 		return nil
 	}
-	out := &SpyResultDTO{Outcome: string(s.Outcome)}
+	out := &SpyResultDTO{
+		Outcome:                string(s.Outcome),
+		TotalDefenderModifiers: MilitaryModifiersDTOFromDomain(s.TotalDefenderModifiers),
+	}
 	if len(s.AttackerRemaining) > 0 {
 		out.AttackerRemaining = make([]MilitaryUnitDTO, 0, len(s.AttackerRemaining))
 		for _, u := range s.AttackerRemaining {
@@ -43,13 +50,22 @@ func SpyResultDTOFromDomain(s *domain.SpyResult) *SpyResultDTO {
 			out.DefendersBefore = append(out.DefendersBefore, MilitaryUnitDTOFromDomain(u))
 		}
 	}
+	if len(s.DefenderStorageSnaps) > 0 {
+		out.DefenderStorageSnaps = make([]StorageItemSnapDTO, 0, len(s.DefenderStorageSnaps))
+		for _, snap := range s.DefenderStorageSnaps {
+			out.DefenderStorageSnaps = append(out.DefenderStorageSnaps, StorageItemSnapDTOFromDomain(snap))
+		}
+	}
 	return out
 }
 func SpyResultFromDTO(d *SpyResultDTO) *domain.SpyResult {
 	if d == nil {
 		return nil
 	}
-	out := &domain.SpyResult{Outcome: domain.SpyOutcome(d.Outcome)}
+	out := &domain.SpyResult{
+		Outcome:                domain.SpyOutcome(d.Outcome),
+		TotalDefenderModifiers: MilitaryModifiersFromDTO(d.TotalDefenderModifiers),
+	}
 	if len(d.AttackerRemaining) > 0 {
 		out.AttackerRemaining = make([]domain.MilitaryUnitSnap, 0, len(d.AttackerRemaining))
 		for _, u := range d.AttackerRemaining {
@@ -68,6 +84,12 @@ func SpyResultFromDTO(d *SpyResultDTO) *domain.SpyResult {
 			out.DefendersBefore = append(out.DefendersBefore, MilitaryUnitFromDTO(u))
 		}
 	}
+	if len(d.DefenderStorageSnaps) > 0 {
+		out.DefenderStorageSnaps = make([]domain.StorageItemSnap, 0, len(d.DefenderStorageSnaps))
+		for _, snap := range d.DefenderStorageSnaps {
+			out.DefenderStorageSnaps = append(out.DefenderStorageSnaps, StorageItemSnapFromDTO(snap))
+		}
+	}
 	return out
 }
 
@@ -75,7 +97,11 @@ func AttackResultDTOFromDomain(a *domain.AttackResult) *AttackResultDTO {
 	if a == nil {
 		return nil
 	}
-	out := &AttackResultDTO{Outcome: string(a.Outcome), Loot: PriceDTOFromDomain(a.Loot)}
+	out := &AttackResultDTO{
+		Outcome:                string(a.Outcome),
+		Loot:                   PriceDTOFromDomain(a.Loot),
+		TotalDefenderModifiers: MilitaryModifiersDTOFromDomain(a.TotalDefenderModifiers),
+	}
 	if len(a.AttackerRemaining) > 0 {
 		out.AttackerRemaining = make([]MilitaryUnitDTO, 0, len(a.AttackerRemaining))
 		for _, u := range a.AttackerRemaining {
@@ -112,13 +138,23 @@ func AttackResultDTOFromDomain(a *domain.AttackResult) *AttackResultDTO {
 			out.StructuresBefore = append(out.StructuresBefore, DefenseStructureDTOFromDomain(s))
 		}
 	}
+	if len(a.DefenderStorageSnaps) > 0 {
+		out.DefenderStorageSnaps = make([]StorageItemSnapDTO, 0, len(a.DefenderStorageSnaps))
+		for _, snap := range a.DefenderStorageSnaps {
+			out.DefenderStorageSnaps = append(out.DefenderStorageSnaps, StorageItemSnapDTOFromDomain(snap))
+		}
+	}
 	return out
 }
 func AttackResultFromDTO(d *AttackResultDTO) *domain.AttackResult {
 	if d == nil {
 		return nil
 	}
-	out := &domain.AttackResult{Outcome: domain.AttackOutcome(d.Outcome), Loot: PriceFromDTO(d.Loot)}
+	out := &domain.AttackResult{
+		Outcome:                domain.AttackOutcome(d.Outcome),
+		Loot:                   PriceFromDTO(d.Loot),
+		TotalDefenderModifiers: MilitaryModifiersFromDTO(d.TotalDefenderModifiers),
+	}
 	if len(d.AttackerRemaining) > 0 {
 		out.AttackerRemaining = make([]domain.MilitaryUnitSnap, 0, len(d.AttackerRemaining))
 		for _, u := range d.AttackerRemaining {
@@ -153,6 +189,12 @@ func AttackResultFromDTO(d *AttackResultDTO) *domain.AttackResult {
 		out.StructuresBefore = make([]domain.DefenseStructureSnap, 0, len(d.StructuresBefore))
 		for _, s := range d.StructuresBefore {
 			out.StructuresBefore = append(out.StructuresBefore, DefenseStructureFromDTO(s))
+		}
+	}
+	if len(d.DefenderStorageSnaps) > 0 {
+		out.DefenderStorageSnaps = make([]domain.StorageItemSnap, 0, len(d.DefenderStorageSnaps))
+		for _, snap := range d.DefenderStorageSnaps {
+			out.DefenderStorageSnaps = append(out.DefenderStorageSnaps, StorageItemSnapFromDTO(snap))
 		}
 	}
 	return out

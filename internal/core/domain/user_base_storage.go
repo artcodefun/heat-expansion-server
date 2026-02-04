@@ -332,7 +332,12 @@ func (ub *UserBaseModel) DeactivateArtifactByID(itemID uuid.UUID) error {
 // ActiveModifiers returns the currently-active multipliers.
 // Buffs must be IsActive and non-expired; artifacts must be IsActive.
 func (ub *UserBaseModel) ActiveModifiers() BaseModifiers {
-	m := IdentityBaseModifiers()
+	return ModifiersFromSnaps(ub.ActiveStorageSnaps())
+}
+
+// ActiveStorageSnaps returns snapshots of all currently active storage items (buffs/artifacts).
+func (ub *UserBaseModel) ActiveStorageSnaps() []StorageItemSnap {
+	var active []StorageItemSnap
 	now := NowUnix()
 
 	for _, it := range ub.StorageItemsPresent {
@@ -345,18 +350,18 @@ func (ub *UserBaseModel) ActiveModifiers() BaseModifiers {
 			if it.ExpiresAt != nil && *it.ExpiresAt <= now {
 				continue
 			}
-			m.ApplyBuff(it.Prototype.BuffData.Type, float64(it.Prototype.BuffData.Value))
+			active = append(active, StorageItemFromPresent(it))
 			continue
 		}
 
 		// Permanent artifacts (toggleable by IsActive)
 		if it.Prototype.ArtifactData != nil {
-			m.ApplyArtifact(it.Prototype.ArtifactData.Type, float64(it.Prototype.ArtifactData.Value))
+			active = append(active, StorageItemFromPresent(it))
 			continue
 		}
 	}
 
-	return m
+	return active
 }
 
 // AddTrophies adds the provided trophies to the base's storage.

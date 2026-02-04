@@ -76,13 +76,19 @@ func TestIntelligenceService_ResolveRadarDetection(t *testing.T) {
 		}
 
 		// radar 100 > stealth 50 -> detected
-		op1 := &MilitaryOperation{Units: []MilitaryUnitSnap{{Stealth: 50, Count: 1}}}
+		op1 := &MilitaryOperation{
+			Units:          []MilitaryUnitSnap{{Stealth: 50, Count: 1}},
+			TotalModifiers: MilitaryModifiersFromSnaps(nil),
+		}
 		if !service.ResolveRadarDetection(base, op1) {
 			t.Error("expected true when radar strength > op stealth")
 		}
 
 		// radar 100 <= stealth 100 -> not detected
-		op2 := &MilitaryOperation{Units: []MilitaryUnitSnap{{Stealth: 100, Count: 1}}}
+		op2 := &MilitaryOperation{
+			Units:          []MilitaryUnitSnap{{Stealth: 100, Count: 1}},
+			TotalModifiers: MilitaryModifiersFromSnaps(nil),
+		}
 		if service.ResolveRadarDetection(base, op2) {
 			t.Error("expected false when radar strength <= op stealth")
 		}

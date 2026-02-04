@@ -16,6 +16,16 @@ func MilitaryOperationFromDB(r gen.MilitaryOperation) *domain.MilitaryOperation 
 		units = append(units, dtos.MilitaryUnitFromDTO(d))
 	}
 
+	var storageDTOs []dtos.StorageItemSnapDTO
+	_ = json.Unmarshal(r.StorageSnaps, &storageDTOs)
+	storageSnaps := make([]domain.StorageItemSnap, 0, len(storageDTOs))
+	for _, d := range storageDTOs {
+		storageSnaps = append(storageSnaps, dtos.StorageItemSnapFromDTO(d))
+	}
+
+	var milModsDTO dtos.MilitaryModifiersDTO
+	_ = json.Unmarshal(r.TotalModifiers, &milModsDTO)
+
 	var spyDTO *dtos.SpyResultDTO
 	unmarshalIfValid(r.SpyResult, &spyDTO)
 	var attackDTO *dtos.AttackResultDTO
@@ -37,6 +47,8 @@ func MilitaryOperationFromDB(r gen.MilitaryOperation) *domain.MilitaryOperation 
 		Phase:             domain.MilitaryOperationPhase(r.Phase),
 		Result:            domain.MilitaryOperationResult(r.Result),
 		Units:             units,
+		StorageSnaps:      storageSnaps,
+		TotalModifiers:    dtos.MilitaryModifiersFromDTO(milModsDTO),
 		SpyResult:         dtos.SpyResultFromDTO(spyDTO),
 		AttackResult:      dtos.AttackResultFromDTO(attackDTO),
 	}
@@ -49,6 +61,15 @@ func InsertMilitaryOperationParamsFromDomain(op *domain.MilitaryOperation) gen.I
 		unitDTOs = append(unitDTOs, dtos.MilitaryUnitDTOFromDomain(u))
 	}
 	unitsJSON, _ := json.Marshal(unitDTOs)
+
+	storageDTOs := make([]dtos.StorageItemSnapDTO, 0, len(op.StorageSnaps))
+	for _, s := range op.StorageSnaps {
+		storageDTOs = append(storageDTOs, dtos.StorageItemSnapDTOFromDomain(s))
+	}
+	storageJSON, _ := json.Marshal(storageDTOs)
+
+	milModsDTO := dtos.MilitaryModifiersDTOFromDomain(op.TotalModifiers)
+	milModsJSON, _ := json.Marshal(milModsDTO)
 
 	spyDTO := dtos.SpyResultDTOFromDomain(op.SpyResult)
 	attackDTO := dtos.AttackResultDTOFromDomain(op.AttackResult)
@@ -70,6 +91,8 @@ func InsertMilitaryOperationParamsFromDomain(op *domain.MilitaryOperation) gen.I
 		Phase:             string(op.Phase),
 		Result:            string(op.Result),
 		Units:             unitsJSON,
+		StorageSnaps:      storageJSON,
+		TotalModifiers:    milModsJSON,
 		SpyResult:         toNullRawMessage(spyDTO),
 		AttackResult:      toNullRawMessage(attackDTO),
 	}
@@ -81,6 +104,15 @@ func UpdateMilitaryOperationParamsFromDomain(op *domain.MilitaryOperation) gen.U
 		unitDTOs = append(unitDTOs, dtos.MilitaryUnitDTOFromDomain(u))
 	}
 	unitsJSON, _ := json.Marshal(unitDTOs)
+
+	storageDTOs := make([]dtos.StorageItemSnapDTO, 0, len(op.StorageSnaps))
+	for _, s := range op.StorageSnaps {
+		storageDTOs = append(storageDTOs, dtos.StorageItemSnapDTOFromDomain(s))
+	}
+	storageJSON, _ := json.Marshal(storageDTOs)
+
+	milModsDTO := dtos.MilitaryModifiersDTOFromDomain(op.TotalModifiers)
+	milModsJSON, _ := json.Marshal(milModsDTO)
 
 	spyDTO := dtos.SpyResultDTOFromDomain(op.SpyResult)
 	attackDTO := dtos.AttackResultDTOFromDomain(op.AttackResult)
@@ -103,6 +135,8 @@ func UpdateMilitaryOperationParamsFromDomain(op *domain.MilitaryOperation) gen.U
 		Phase:             string(op.Phase),
 		Result:            string(op.Result),
 		Units:             unitsJSON,
+		StorageSnaps:      storageJSON,
+		TotalModifiers:    milModsJSON,
 		SpyResult:         toNullRawMessage(spyDTO),
 		AttackResult:      toNullRawMessage(attackDTO),
 	}

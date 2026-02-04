@@ -33,6 +33,59 @@ func DefenseStructureFromDTO(d DefenseStructureDTO) domain.DefenseStructureSnap 
 	return domain.DefenseStructureSnap{PrototypeID: d.PrototypeID, Defence: d.Defence, Count: d.Count}
 }
 
+type MilitaryModifiersDTO struct {
+	AttackMul   float64 `json:"attack_mul"`
+	DefenceMul  float64 `json:"defence_mul"`
+	StealthMul  float64 `json:"stealth_mul"`
+	CapacityMul float64 `json:"capacity_mul"`
+	SpeedMul    float64 `json:"speed_mul"`
+}
+
+func MilitaryModifiersDTOFromDomain(m domain.MilitaryModifiers) MilitaryModifiersDTO {
+	return MilitaryModifiersDTO{
+		AttackMul:   m.AttackMul,
+		DefenceMul:  m.DefenceMul,
+		StealthMul:  m.StealthMul,
+		CapacityMul: m.CapacityMul,
+		SpeedMul:    m.SpeedMul,
+	}
+}
+
+func MilitaryModifiersFromDTO(d MilitaryModifiersDTO) domain.MilitaryModifiers {
+	return domain.MilitaryModifiers{
+		AttackMul:   d.AttackMul,
+		DefenceMul:  d.DefenceMul,
+		StealthMul:  d.StealthMul,
+		CapacityMul: d.CapacityMul,
+		SpeedMul:    d.SpeedMul,
+	}
+}
+
+type StorageItemSnapDTO struct {
+	PrototypeID  int                     `json:"prototype_id"`
+	Category     string                  `json:"category"`
+	BuffData     *BuffStorageDataDTO     `json:"buff_data,omitempty"`
+	ArtifactData *ArtifactStorageDataDTO `json:"artifact_data,omitempty"`
+}
+
+func StorageItemSnapDTOFromDomain(s domain.StorageItemSnap) StorageItemSnapDTO {
+	return StorageItemSnapDTO{
+		PrototypeID:  s.PrototypeID,
+		Category:     string(s.Category),
+		BuffData:     BuffStorageDataDTOFromDomain(s.Buff),
+		ArtifactData: ArtifactStorageDataDTOFromDomain(s.Artifact),
+	}
+}
+
+func StorageItemSnapFromDTO(d StorageItemSnapDTO) domain.StorageItemSnap {
+	return domain.StorageItemSnap{
+		PrototypeID: d.PrototypeID,
+		Category:    domain.StorageCategory(d.Category),
+		Buff:        BuffStorageDataFromDTO(d.BuffData),
+		Artifact:    ArtifactStorageDataFromDTO(d.ArtifactData),
+	}
+}
+
 type TrophyDTO struct {
 	PrototypeID int `json:"prototype_id"`
 }

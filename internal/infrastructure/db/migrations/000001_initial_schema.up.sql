@@ -59,6 +59,10 @@ CREATE TABLE military_operations (
     crystals_skip_price INTEGER NOT NULL DEFAULT 0,
     -- Snapshot of units: [{"prototype_id": int, "category": string, "attack": int, "defence": int, "count": int, ...}]
     units              JSONB  NOT NULL DEFAULT '[]'::jsonb,
+    -- Snapshot of active buffs/artifacts at operation creation: [{"prototype_id": int, "category": string, "buff_data": {...}, "artifact_data": {...}}]
+    storage_snaps      JSONB  NOT NULL DEFAULT '[]'::jsonb,
+    -- Pre-calculated total multipliers for the attacker: {"attack_mul": float, "defence_mul": float, "stealth_mul": float, "capacity_mul": float, "speed_mul": float}
+    total_modifiers    JSONB  NOT NULL DEFAULT '{}'::jsonb,
     -- Spy result: {"outcome": string, "attacker_remaining": [...], "defender_remaining": [...], "defenders_before": [...]}
     spy_result         JSONB,
     -- Attack result: {"outcome": string, "attacker_remaining": [...], "defender_remaining": [...], "remaining_structures": [...], "loot": {...}, ...}

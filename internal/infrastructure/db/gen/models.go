@@ -160,6 +160,8 @@ type MilitaryOperation struct {
 	Result            string                `json:"result"`
 	CrystalsSkipPrice int32                 `json:"crystals_skip_price"`
 	Units             json.RawMessage       `json:"units"`
+	StorageSnaps      json.RawMessage       `json:"storage_snaps"`
+	TotalModifiers    json.RawMessage       `json:"total_modifiers"`
 	SpyResult         pqtype.NullRawMessage `json:"spy_result"`
 	AttackResult      pqtype.NullRawMessage `json:"attack_result"`
 }
