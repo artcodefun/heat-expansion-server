@@ -265,3 +265,61 @@ func (ub *UserBaseModel) ApplyRemainingDefensiveStructures(remaining []DefenseSt
 	}
 	ub.BuildingsPresent = filtered
 }
+
+// EnsureStartingBuildingsPresent adds basic production buildings if they are missing.
+func (ub *UserBaseModel) EnsureStartingBuildingsPresent(allPrototypes []*BuildItemPrototype) {
+	defer ub.recalculateStats()
+
+	var basicCredits, basicIron, basicInfantryBuilding *BuildItemPrototype
+	for _, p := range allPrototypes {
+		if p.Faction != FactionExoCoalition {
+			continue
+		}
+
+		if p.Category == BuildCategoryResources && p.ResourcesData != nil {
+			if p.ResourcesData.CreditsProduction > 0 && (basicCredits == nil || p.ResourcesData.CreditsProduction < basicCredits.ResourcesData.CreditsProduction) {
+				basicCredits = p
+			}
+			if p.ResourcesData.IronProduction > 0 && (basicIron == nil || p.ResourcesData.IronProduction < basicIron.ResourcesData.IronProduction) {
+				basicIron = p
+			}
+		}
+
+		if p.Category == BuildCategoryMilitary && p.MilitaryData != nil && p.MilitaryData.UnlockArmyCategory == ArmyCategoryInfantry {
+			if basicInfantryBuilding == nil || p.Price.CreditsWorth() < basicInfantryBuilding.Price.CreditsWorth() {
+				basicInfantryBuilding = p
+			}
+		}
+	}
+
+	hasPrototype := func(id int) bool {
+		for _, b := range ub.BuildingsPresent {
+			if b.Prototype.ID == id {
+				return true
+			}
+		}
+		return false
+	}
+
+	if basicCredits != nil && !hasPrototype(basicCredits.ID) {
+		ub.BuildingsPresent = append(ub.BuildingsPresent, BuildItemPresent{
+			BaseOwnedItem: NewBaseOwnedItem(ub.ID),
+			Prototype:     *basicCredits,
+			Refund:        basicCredits.Price.Divide(10),
+		})
+	}
+	if basicIron != nil && !hasPrototype(basicIron.ID) {
+		ub.BuildingsPresent = append(ub.BuildingsPresent, BuildItemPresent{
+			BaseOwnedItem: NewBaseOwnedItem(ub.ID),
+			Prototype:     *basicIron,
+			Refund:        basicIron.Price.Divide(10),
+		})
+	}
+	if basicInfantryBuilding != nil && !hasPrototype(basicInfantryBuilding.ID) {
+		ub.BuildingsPresent = append(ub.BuildingsPresent, BuildItemPresent{
+			BaseOwnedItem: NewBaseOwnedItem(ub.ID),
+			Prototype:     *basicInfantryBuilding,
+			Refund:        basicInfantryBuilding.Price.Divide(10),
+		})
+	}
+}

@@ -35,7 +35,8 @@ func (r *UserBaseRepo) Create(base *domain.UserBaseModel) error {
 	base.Name = created.Name
 	base.Description = created.Description
 	base.ImageURL = created.ImageURL
-	return nil
+
+	return r.persistAllItems(base)
 }
 
 func (r *UserBaseRepo) FindByID(id int) (*domain.UserBaseModel, error) {
@@ -70,19 +71,7 @@ func (r *UserBaseRepo) Update(base *domain.UserBaseModel) error {
 	if _, err := r.q.UpdateBase(context.Background(), mappers.UpdateBaseParamsFromDomain(base)); err != nil {
 		return err
 	}
-	if err := r.persistArmyItems(base); err != nil {
-		return err
-	}
-	if err := r.persistBuildItems(base); err != nil {
-		return err
-	}
-	if err := r.persistTechItems(base); err != nil {
-		return err
-	}
-	if err := r.persistStorageItems(base); err != nil {
-		return err
-	}
-	return nil
+	return r.persistAllItems(base)
 }
 
 func (r *UserBaseRepo) Delete(id int) error {
@@ -167,8 +156,22 @@ func (r *UserBaseRepo) GetOwnerID(baseID int) (int, error) {
 	return int(row.UserID), nil
 }
 
-// PersistAggregate updates the base stats row and fully replaces all item rows with the current aggregate collections.
-// This is a bulk-replacement write path keeping persistence logic simple and avoiding per-row diffing.
+// persistAllItems updates the base stats row and fully replaces all item rows with the current aggregate collections.
+func (r *UserBaseRepo) persistAllItems(base *domain.UserBaseModel) error {
+	if err := r.persistArmyItems(base); err != nil {
+		return err
+	}
+	if err := r.persistBuildItems(base); err != nil {
+		return err
+	}
+	if err := r.persistTechItems(base); err != nil {
+		return err
+	}
+	if err := r.persistStorageItems(base); err != nil {
+		return err
+	}
+	return nil
+}
 
 // --- Internal per-table persistence helpers ---
 

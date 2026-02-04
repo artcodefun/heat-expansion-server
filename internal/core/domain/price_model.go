@@ -19,3 +19,10 @@ func (p PriceModel) Divide(n int) PriceModel {
 		Antimatter: p.Antimatter / n,
 	}
 }
+
+func (p PriceModel) CreditsWorth() float64 {
+	return float64(p.Credits)*WorthCredit +
+		float64(p.Iron)*WorthIron +
+		float64(p.Titanium)*WorthTitanium +
+		float64(p.Antimatter)*WorthAntimatter
+}

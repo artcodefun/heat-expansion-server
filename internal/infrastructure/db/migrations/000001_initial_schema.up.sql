@@ -125,8 +125,6 @@ CREATE INDEX idx_dangerous_locations_sector_coords ON dangerous_locations(sector
 CREATE INDEX idx_dang_locations_armies_gin ON dangerous_locations USING gin (armies jsonb_path_ops);
 CREATE INDEX idx_dang_locations_buildings_gin ON dangerous_locations USING gin (buildings jsonb_path_ops);
 
--- Empty Locations table removed; emptiness is derived.
-
 -- Sector Scan Reports
 CREATE TABLE scan_reports (
     id                   BIGSERIAL PRIMARY KEY,

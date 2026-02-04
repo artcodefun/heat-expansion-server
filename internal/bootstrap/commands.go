@@ -23,7 +23,7 @@ type Commands struct {
 
 func NewCommands(a *Adapters, as *AppServices) *Commands {
 	return &Commands{
-		Base:        commands.NewBaseCommands(a.UserBases, a.Sectors, a.Content, as.Provisioner, a.OutboxEvents, a.TxMgr),
+		Base:        commands.NewBaseCommands(a.UserBases, a.Sectors, a.BuildPrototypes, a.ArmyPrototypes, a.Content, as.Provisioner, a.OutboxEvents, a.TxMgr),
 		Army:        commands.NewArmyCommands(a.UserBases, a.ArmyPrototypes, a.Users, a.OutboxEvents, a.Scheduler, a.TxMgr, as.Access),
 		Building:    commands.NewBuildingCommands(a.UserBases, a.BuildPrototypes, a.Users, a.OutboxEvents, a.Scheduler, a.TxMgr, as.Access),
 		Tech:        commands.NewTechCommands(a.UserBases, a.TechPrototypes, a.Users, a.OutboxEvents, a.Scheduler, a.TxMgr, as.Access),

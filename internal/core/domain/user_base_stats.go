@@ -244,3 +244,9 @@ func (ub *UserBaseModel) CreditLoot(loot PriceModel) {
 		ub.Stats.Antimatter = min(ub.Stats.Antimatter+float64(loot.Antimatter), float64(ub.Stats.AntimatterCapacity))
 	}
 }
+
+// FillStarterResources sets Credits and Iron to their current maximum capacity.
+func (ub *UserBaseModel) FillStarterResources() {
+	ub.Stats.Credits = float64(ub.Stats.CreditsCapacity)
+	ub.Stats.Iron = float64(ub.Stats.IronCapacity)
+}

@@ -474,3 +474,41 @@ func (ub *UserBaseModel) ApplyDefenderArmyRemaining(remaining []MilitaryUnitSnap
 	}
 	ub.ArmiesPresent = newArmies
 }
+
+// EnsureStartingArmyPresent adds basic infantry units if they are missing.
+func (ub *UserBaseModel) EnsureStartingArmyPresent(allPrototypes []*ArmyItemPrototype) {
+	defer ub.recalculateStats()
+
+	var basicInfantry *ArmyItemPrototype
+	for _, p := range allPrototypes {
+		if p.Faction == FactionExoCoalition && p.Category == ArmyCategoryInfantry {
+			if basicInfantry == nil || p.Attack+p.Defence < basicInfantry.Attack+basicInfantry.Defence {
+				basicInfantry = p
+			}
+		}
+	}
+
+	if basicInfantry == nil {
+		return
+	}
+
+	found := false
+	for i, a := range ub.ArmiesPresent {
+		if a.Prototype.ID == basicInfantry.ID {
+			if a.Count < 5 {
+				ub.ArmiesPresent[i].Count = 5
+			}
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		ub.ArmiesPresent = append(ub.ArmiesPresent, ArmyItemPresent{
+			BaseOwnedItem: NewBaseOwnedItem(ub.ID),
+			Prototype:     *basicInfantry,
+			Count:         5,
+			Refund:        basicInfantry.Price.Divide(2),
+		})
+	}
+}

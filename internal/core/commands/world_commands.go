@@ -176,6 +176,86 @@ func (c *WorldGenerationCommands) HandleSpawnNearbyLocationsJob(job ports.SpawnN
 }
 
 func (c *WorldGenerationCommands) HandleUserBaseCreatedEvent(ev domain.UserBaseCreatedEvent) error {
+	// 1. Immediately spawn 4 specific resourceful locations nearby (radius 2)
+	base, err := c.UserBases.FindByID(ev.BaseID)
+	if err == nil {
+		armyProtos, _ := c.ArmyPrototypes.FindAllPrototypes()
+		buildProtos, _ := c.BuildPrototypes.FindAllPrototypes()
+
+		resTypes := []domain.ResourceType{
+			domain.ResourceTypeCredits,
+			domain.ResourceTypeIron,
+			domain.ResourceTypeTitanium,
+			domain.ResourceTypeAntimatter,
+		}
+
+		r := rand.New(rand.NewSource(time.Now().UnixNano()))
+		center := base.Coordinates
+
+		for _, resType := range resTypes {
+			// Find an empty spot within radius 2
+			found := false
+			for attempt := 0; attempt < 25; attempt++ {
+				dx := r.Intn(5) - 2 // -2 to 2
+				dy := r.Intn(5) - 2 // -2 to 2
+				if dx == 0 && dy == 0 {
+					continue
+				}
+
+				targetX := center.X + dx
+				targetY := center.Y + dy
+
+				_ = c.TxMgr.WithTx(func(tx ports.Transaction) error {
+					sRepo := c.Sectors.Tx(tx)
+					rRepo := c.ResourceLocations.Tx(tx)
+
+					// Ensure sector exists
+					tSector, err := c.Provisioner.EnsureSectorExists(sRepo, targetX, targetY)
+					if err != nil {
+						return err
+					}
+
+					// Check if empty
+					lt, _ := sRepo.GetLocationTypeByCoordinates(targetX, targetY)
+					if lt != domain.LocationTypeEmpty {
+						return nil // Try another spot
+					}
+
+					faction := domain.FactionMarauders
+					switch resType {
+					case domain.ResourceTypeIron:
+						faction = domain.FactionFerrousSwarm
+					case domain.ResourceTypeTitanium:
+						faction = domain.FactionTitanArachnids
+					case domain.ResourceTypeAntimatter:
+						faction = domain.FactionVoidEcho
+					}
+
+					worth := 1000
+					loc := domain.NewResourceLocation(
+						tSector.Coordinates,
+						resType,
+						faction,
+						worth,
+						armyProtos,
+						buildProtos,
+					)
+
+					if err := c.Provisioner.CreateResourceLocationIfEmpty(sRepo, rRepo, loc); err != nil {
+						return err
+					}
+
+					found = true
+					return nil
+				})
+
+				if found {
+					break
+				}
+			}
+		}
+	}
+
 	jitter := int64(rand.Intn(60))
 	return c.Scheduler.Schedule(ports.SpawnNearbyLocationsJob{BaseID: ev.BaseID}, time.Now().Unix()+jitter)
 }
