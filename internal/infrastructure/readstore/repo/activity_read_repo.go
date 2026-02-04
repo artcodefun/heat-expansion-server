@@ -124,6 +124,8 @@ func (r *ActivityReadRepo) enrichActivity(v *readmodels.ActivityItem) error {
 				ContactDate:       op.OutboundArriveAt,
 				Result:            op.Result,
 				Units:             op.Units,
+				StorageSnaps:      op.StorageSnaps,
+				TotalModifiers:    op.TotalModifiers,
 				SpyResult:         op.SpyResult,
 				AttackResult:      op.AttackResult,
 			}

@@ -50,6 +50,8 @@ type OffenderInfo struct {
 	ContactDate       int64
 	Result            MilitaryOperationResult
 	Units             []MilitaryUnitSnap
+	StorageSnaps      []StorageItemSnap
+	TotalModifiers    MilitaryModifiers
 	SpyResult         *SpyResult
 	AttackResult      *AttackResult
 }

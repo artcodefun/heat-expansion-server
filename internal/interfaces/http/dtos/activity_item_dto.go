@@ -54,14 +54,16 @@ type OffenseActivityDTO struct {
 
 // OffenderInfoDTO provides a restricted view of an attacking operation for the defender.
 type OffenderInfoDTO struct {
-	Type              OperationType     `json:"type"`
-	SourceCoordinates Vector2iDTO       `json:"sourceCoordinates"`
-	TargetCoordinates Vector2iDTO       `json:"targetCoordinates"`
-	ContactDate       int64             `json:"contactDate"`
-	Result            OperationResult   `json:"result"`
-	Units             []MilitaryUnitDTO `json:"units"`
-	SpyResult         *SpyResultDTO     `json:"spyResult,omitempty"`
-	AttackResult      *AttackResultDTO  `json:"attackResult,omitempty"`
+	Type              OperationType        `json:"type"`
+	SourceCoordinates Vector2iDTO          `json:"sourceCoordinates"`
+	TargetCoordinates Vector2iDTO          `json:"targetCoordinates"`
+	ContactDate       int64                `json:"contactDate"`
+	Result            OperationResult      `json:"result"`
+	Units             []MilitaryUnitDTO    `json:"units"`
+	StorageSnaps      []StorageItemSnapDTO `json:"storageSnaps"`
+	TotalModifiers    MilitaryModifiersDTO `json:"totalModifiers"`
+	SpyResult         *SpyResultDTO        `json:"spyResult,omitempty"`
+	AttackResult      *AttackResultDTO     `json:"attackResult,omitempty"`
 }
 
 // DefenseActivityDTO mirrors readmodels.DefenseActivity.
@@ -128,6 +130,8 @@ func offenderInfoFromReadModel(o *readmodels.OffenderInfo) *OffenderInfoDTO {
 		ContactDate:       o.ContactDate,
 		Result:            OperationResult(o.Result),
 		Units:             MilitaryUnitsFromReadModel(o.Units),
+		StorageSnaps:      storageItemSnapsFromReadModel(o.StorageSnaps),
+		TotalModifiers:    MilitaryModifiersFromReadModel(o.TotalModifiers),
 		SpyResult:         SpyResultFromReadModel(o.SpyResult),
 		AttackResult:      AttackResultFromReadModel(o.AttackResult),
 	}
