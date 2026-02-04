@@ -14,16 +14,16 @@ type UserBaseModel struct {
 
 // UserBaseStats represents current properties of a base.
 type UserBaseStats struct {
-	Credits               int
+	Credits               float64
 	CreditsCapacity       int
 	CreditsProduction     float64
-	Iron                  int
+	Iron                  float64
 	IronCapacity          int
 	IronProduction        float64
-	Titanium              int
+	Titanium              float64
 	TitaniumCapacity      int
 	TitaniumProduction    float64
-	Antimatter            int
+	Antimatter            float64
 	AntimatterCapacity    int
 	AntimatterProduction  float64
 	Defence               int

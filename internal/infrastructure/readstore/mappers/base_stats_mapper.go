@@ -7,16 +7,16 @@ import (
 
 func UserBaseStatsFromDTO(dto dtos.BaseStatsDTO, calcTs int64) readmodels.UserBaseStats {
 	return readmodels.UserBaseStats{
-		Credits:               int(dto.Credits),
+		Credits:               dto.Credits,
 		CreditsCapacity:       dto.CreditsCapacity,
 		CreditsProduction:     dto.CreditsProduction,
-		Iron:                  int(dto.Iron),
+		Iron:                  dto.Iron,
 		IronCapacity:          dto.IronCapacity,
 		IronProduction:        dto.IronProduction,
-		Titanium:              int(dto.Titanium),
+		Titanium:              dto.Titanium,
 		TitaniumCapacity:      dto.TitaniumCapacity,
 		TitaniumProduction:    dto.TitaniumProduction,
-		Antimatter:            int(dto.Antimatter),
+		Antimatter:            dto.Antimatter,
 		AntimatterCapacity:    dto.AntimatterCapacity,
 		AntimatterProduction:  dto.AntimatterProduction,
 		Defence:               dto.Defence,

@@ -138,8 +138,8 @@ func (ub *UserBaseModel) recalculateStats() {
 
 	// Aggregate power from present armies
 	for _, a := range ub.ArmiesPresent {
-		stats.Defence += a.Prototype.Defence
-		stats.Attack += a.Prototype.Attack
+		stats.Defence += a.Prototype.Defence * a.Count
+		stats.Attack += a.Prototype.Attack * a.Count
 	}
 
 	// Apply researched technology improvements (additive bonuses scaling with level)
