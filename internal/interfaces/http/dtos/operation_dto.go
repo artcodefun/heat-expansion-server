@@ -61,6 +61,7 @@ type MilitaryUnitDTO struct {
 	Capacity    int          `json:"capacity"`
 	Stealth     int          `json:"stealth"`
 	Speed       int          `json:"speed"`
+	Space       int          `json:"space"`
 	Count       int          `json:"count"`
 }
 
@@ -70,6 +71,7 @@ type DefenseStructureDTO struct {
 	Name        string `json:"name"`
 	ImageURL    string `json:"image_url"`
 	Defence     int    `json:"defence"`
+	Space       int    `json:"space"`
 	Count       int    `json:"count"`
 }
 
@@ -159,6 +161,7 @@ func MilitaryUnitsFromReadModel(units []readmodels.MilitaryUnitSnap) []MilitaryU
 			Capacity:    unit.Capacity,
 			Stealth:     unit.Stealth,
 			Speed:       unit.Speed,
+			Space:       unit.Space,
 			Count:       unit.Count,
 		})
 	}
@@ -173,6 +176,7 @@ func defenseStructuresFromReadModel(structs []readmodels.DefenseStructureSnap) [
 			Name:        s.Name,
 			ImageURL:    s.ImageURL,
 			Defence:     s.Defence,
+			Space:       s.Space,
 			Count:       s.Count,
 		})
 	}

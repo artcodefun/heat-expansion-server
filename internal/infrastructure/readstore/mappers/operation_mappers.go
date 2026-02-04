@@ -14,11 +14,13 @@ import (
 type ArmyPrototypeSnapshot struct {
 	Name     string
 	ImageURL string
+	Space    int
 }
 
 type BuildPrototypeSnapshot struct {
 	Name     string
 	ImageURL string
+	Space    int
 }
 
 func OperationFromModel(m gen.MilitaryOperation) readmodels.MilitaryOperation {
@@ -264,6 +266,7 @@ func EnrichOperationUnitsAndStructures(op *readmodels.MilitaryOperation, armyMap
 		if proto, ok := armyMap[op.Units[i].PrototypeID]; ok {
 			op.Units[i].Name = proto.Name
 			op.Units[i].ImageURL = proto.ImageURL
+			op.Units[i].Space = proto.Space
 		}
 	}
 	for i := range op.StorageSnaps {
@@ -278,18 +281,21 @@ func EnrichOperationUnitsAndStructures(op *readmodels.MilitaryOperation, armyMap
 			if proto, ok := armyMap[op.SpyResult.AttackerRemaining[i].PrototypeID]; ok {
 				op.SpyResult.AttackerRemaining[i].Name = proto.Name
 				op.SpyResult.AttackerRemaining[i].ImageURL = proto.ImageURL
+				op.SpyResult.AttackerRemaining[i].Space = proto.Space
 			}
 		}
 		for i := range op.SpyResult.DefenderRemaining {
 			if proto, ok := armyMap[op.SpyResult.DefenderRemaining[i].PrototypeID]; ok {
 				op.SpyResult.DefenderRemaining[i].Name = proto.Name
 				op.SpyResult.DefenderRemaining[i].ImageURL = proto.ImageURL
+				op.SpyResult.DefenderRemaining[i].Space = proto.Space
 			}
 		}
 		for i := range op.SpyResult.DefendersBefore {
 			if proto, ok := armyMap[op.SpyResult.DefendersBefore[i].PrototypeID]; ok {
 				op.SpyResult.DefendersBefore[i].Name = proto.Name
 				op.SpyResult.DefendersBefore[i].ImageURL = proto.ImageURL
+				op.SpyResult.DefendersBefore[i].Space = proto.Space
 			}
 		}
 		for i := range op.SpyResult.DefenderStorageSnaps {
@@ -305,18 +311,21 @@ func EnrichOperationUnitsAndStructures(op *readmodels.MilitaryOperation, armyMap
 			if proto, ok := armyMap[op.AttackResult.AttackerRemaining[i].PrototypeID]; ok {
 				op.AttackResult.AttackerRemaining[i].Name = proto.Name
 				op.AttackResult.AttackerRemaining[i].ImageURL = proto.ImageURL
+				op.AttackResult.AttackerRemaining[i].Space = proto.Space
 			}
 		}
 		for i := range op.AttackResult.DefenderRemaining {
 			if proto, ok := armyMap[op.AttackResult.DefenderRemaining[i].PrototypeID]; ok {
 				op.AttackResult.DefenderRemaining[i].Name = proto.Name
 				op.AttackResult.DefenderRemaining[i].ImageURL = proto.ImageURL
+				op.AttackResult.DefenderRemaining[i].Space = proto.Space
 			}
 		}
 		for i := range op.AttackResult.RemainingStructures {
 			if proto, ok := buildMap[op.AttackResult.RemainingStructures[i].PrototypeID]; ok {
 				op.AttackResult.RemainingStructures[i].Name = proto.Name
 				op.AttackResult.RemainingStructures[i].ImageURL = proto.ImageURL
+				op.AttackResult.RemainingStructures[i].Space = proto.Space
 			}
 		}
 		for i := range op.AttackResult.Trophies {
@@ -328,12 +337,14 @@ func EnrichOperationUnitsAndStructures(op *readmodels.MilitaryOperation, armyMap
 			if proto, ok := armyMap[op.AttackResult.DefendersBefore[i].PrototypeID]; ok {
 				op.AttackResult.DefendersBefore[i].Name = proto.Name
 				op.AttackResult.DefendersBefore[i].ImageURL = proto.ImageURL
+				op.AttackResult.DefendersBefore[i].Space = proto.Space
 			}
 		}
 		for i := range op.AttackResult.StructuresBefore {
 			if proto, ok := buildMap[op.AttackResult.StructuresBefore[i].PrototypeID]; ok {
 				op.AttackResult.StructuresBefore[i].Name = proto.Name
 				op.AttackResult.StructuresBefore[i].ImageURL = proto.ImageURL
+				op.AttackResult.StructuresBefore[i].Space = proto.Space
 			}
 		}
 		for i := range op.AttackResult.DefenderStorageSnaps {

@@ -131,7 +131,7 @@ func (r *OperationReadRepo) loadPrototypeMaps() (map[int]mappers.ArmyPrototypeSn
 		if p.ImageUrl.Valid {
 			imageURL = p.ImageUrl.String
 		}
-		armyMap[int(p.ID)] = mappers.ArmyPrototypeSnapshot{Name: name, ImageURL: imageURL}
+		armyMap[int(p.ID)] = mappers.ArmyPrototypeSnapshot{Name: name, ImageURL: imageURL, Space: int(p.Space)}
 	}
 	buildMap := make(map[int]mappers.BuildPrototypeSnapshot, len(buildRows))
 	for _, p := range buildRows {
@@ -140,7 +140,7 @@ func (r *OperationReadRepo) loadPrototypeMaps() (map[int]mappers.ArmyPrototypeSn
 		if p.ImageUrl.Valid {
 			imageURL = p.ImageUrl.String
 		}
-		buildMap[int(p.ID)] = mappers.BuildPrototypeSnapshot{Name: name, ImageURL: imageURL}
+		buildMap[int(p.ID)] = mappers.BuildPrototypeSnapshot{Name: name, ImageURL: imageURL, Space: int(p.Space)}
 	}
 	storageMap := make(map[int]readmodels.StorageItemPrototype, len(storageRows))
 	for _, p := range storageRows {

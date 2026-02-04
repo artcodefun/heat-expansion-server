@@ -12,6 +12,7 @@ type MilitaryUnitSnap struct {
 	Capacity    int
 	Stealth     int
 	Speed       int
+	Space       int
 	Count       int
 }
 
@@ -22,5 +23,6 @@ type DefenseStructureSnap struct {
 	Name        string
 	ImageURL    string
 	Defence     int
+	Space       int
 	Count       int
 }
