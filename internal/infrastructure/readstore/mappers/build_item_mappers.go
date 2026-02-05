@@ -22,7 +22,7 @@ func buildPrototypeFromParts(id int64, name, category, faction string, unlock sq
 		ID:                 int(id),
 		Name:               name,
 		Category:           readmodels.BuildCategory(category),
-		Faction:            faction,
+		Faction:            readmodels.Faction(faction),
 		UnlockTechnologyID: unlockPtr,
 		ShortDescription:   nullString(short),
 		FullDescription:    nullString(full),

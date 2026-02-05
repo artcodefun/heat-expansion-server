@@ -20,7 +20,7 @@ func armyPrototypeFromParts(id int64, name string, category string, faction stri
 		ID:                 int(id),
 		Name:               name,
 		Category:           readmodels.ArmyCategory(category),
-		Faction:            faction,
+		Faction:            readmodels.Faction(faction),
 		UnlockTechnologyID: unlockPtr,
 		ShortDescription:   nullString(short),
 		FullDescription:    nullString(full),

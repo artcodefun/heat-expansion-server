@@ -8,8 +8,6 @@ import (
 
 type ArmyCategory string
 
-type ArmyStatus string
-
 // ArmyCategory enum values
 const (
 	Infantry  ArmyCategory = "INFANTRY"
@@ -20,6 +18,8 @@ const (
 	Special   ArmyCategory = "SPECIAL"
 )
 
+type ArmyStatus string
+
 // ArmyStatus enum values
 const (
 	ArmyNew          ArmyStatus = "NEW"
@@ -28,10 +28,25 @@ const (
 	ArmyPresent      ArmyStatus = "PRESENT"
 )
 
+type Faction string
+
+const (
+	FactionExoCoalition      Faction = "EXO_COALITION"   // Playable (Human)
+	FactionMarauders         Faction = "MARAUDERS"       // NPC: Credits
+	FactionFerrousSwarm      Faction = "FERROUS_SWARM"   // NPC: Iron
+	FactionTitanArachnids    Faction = "TITAN_ARACHNIDS" // NPC: Titanium
+	FactionVoidEcho          Faction = "VOID_ECHO"       // NPC: Antimatter
+	FactionCustodianProtocol Faction = "CUSTODIAN"       // NPC: Dangerous (Artifacts)
+	FactionScorchWalkers     Faction = "SCORCH_WALKERS"  // NPC: Dangerous (Buffs)
+	FactionObsidianSentinels Faction = "OBSIDIAN"        // NPC: Dangerous (Trophies)
+	FactionNeuralWormApex    Faction = "NEURAL_WORM"     // NPC: Dangerous (Intel)
+)
+
 type ArmyItemPrototypeDTO struct {
 	ID               int           `json:"id"`
 	Name             string        `json:"name"`
 	Category         ArmyCategory  `json:"category"`
+	Faction          Faction       `json:"faction"`
 	ShortDescription string        `json:"short_description"`
 	FullDescription  string        `json:"full_description"`
 	Price            PriceModelDTO `json:"price"`
@@ -75,6 +90,7 @@ func mapArmyPrototype(proto readmodels.ArmyItemPrototype) ArmyItemPrototypeDTO {
 		ID:               proto.ID,
 		Name:             proto.Name,
 		Category:         ArmyCategory(proto.Category),
+		Faction:          Faction(proto.Faction),
 		ShortDescription: proto.ShortDescription,
 		FullDescription:  proto.FullDescription,
 		Price:            PriceModelFromReadModel(proto.Price),

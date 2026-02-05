@@ -50,6 +50,7 @@ type BuildItemPrototypeDTO struct {
 	ID               int           `json:"id"`
 	Name             string        `json:"name"`
 	Category         BuildCategory `json:"category"`
+	Faction          Faction       `json:"faction"`
 	ShortDescription string        `json:"short_description"`
 	FullDescription  string        `json:"full_description"`
 	Price            PriceModelDTO `json:"price"`
@@ -123,6 +124,7 @@ func mapBuildItemPrototype(proto readmodels.BuildItemPrototype) BuildItemPrototy
 		ID:               proto.ID,
 		Name:             proto.Name,
 		Category:         BuildCategory(proto.Category),
+		Faction:          Faction(proto.Faction),
 		ShortDescription: proto.ShortDescription,
 		FullDescription:  proto.FullDescription,
 		Price:            PriceModelFromReadModel(proto.Price),

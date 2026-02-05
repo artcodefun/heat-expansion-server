@@ -25,7 +25,7 @@ type BuildItemPrototype struct {
 	ID                 int
 	Name               string
 	Category           BuildCategory
-	Faction            string
+	Faction            Faction
 	UnlockTechnologyID *int // nil: available by default; non-nil: unlocked by this technology
 	ShortDescription   string
 	FullDescription    string
