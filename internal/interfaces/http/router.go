@@ -67,6 +67,7 @@ func NewRouter(cmd Commands, qry Queries, tokenProvider ports.TokenProvider) *gi
 	{
 		publicApi.POST("/auth/register", userHandler.Register)
 		publicApi.POST("/auth/login", userHandler.Login)
+		publicApi.GET("/min-client-version", MinClientVersionHandler)
 	}
 
 	// Private routes (auth required)
