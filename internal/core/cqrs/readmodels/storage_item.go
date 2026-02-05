@@ -144,6 +144,7 @@ type MilitaryModifiers struct {
 // StorageItemSnap is a snapshot of a storage item (buff/artifact) for historical logging.
 type StorageItemSnap struct {
 	PrototypeID      int
+	CurrentPrototype StorageItemPrototype
 	Name             string
 	ShortDescription string
 	ImageURL         string

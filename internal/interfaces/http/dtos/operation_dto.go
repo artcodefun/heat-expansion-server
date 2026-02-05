@@ -52,27 +52,29 @@ const (
 
 // MilitaryUnitDTO serializes military unit snapshots.
 type MilitaryUnitDTO struct {
-	PrototypeID int          `json:"prototype_id"`
-	Name        string       `json:"name"`
-	ImageURL    string       `json:"image_url"`
-	Category    ArmyCategory `json:"category"`
-	Attack      int          `json:"attack"`
-	Defence     int          `json:"defence"`
-	Capacity    int          `json:"capacity"`
-	Stealth     int          `json:"stealth"`
-	Speed       int          `json:"speed"`
-	Space       int          `json:"space"`
-	Count       int          `json:"count"`
+	PrototypeID      int                  `json:"prototype_id"`
+	CurrentPrototype ArmyItemPrototypeDTO `json:"current_prototype"`
+	Name             string               `json:"name"`
+	ImageURL         string               `json:"image_url"`
+	Category         ArmyCategory         `json:"category"`
+	Attack           int                  `json:"attack"`
+	Defence          int                  `json:"defence"`
+	Capacity         int                  `json:"capacity"`
+	Stealth          int                  `json:"stealth"`
+	Speed            int                  `json:"speed"`
+	Space            int                  `json:"space"`
+	Count            int                  `json:"count"`
 }
 
 // DefenseStructureDTO represents defensive structure snapshots.
 type DefenseStructureDTO struct {
-	PrototypeID int    `json:"prototype_id"`
-	Name        string `json:"name"`
-	ImageURL    string `json:"image_url"`
-	Defence     int    `json:"defence"`
-	Space       int    `json:"space"`
-	Count       int    `json:"count"`
+	PrototypeID      int                   `json:"prototype_id"`
+	CurrentPrototype BuildItemPrototypeDTO `json:"current_prototype"`
+	Name             string                `json:"name"`
+	ImageURL         string                `json:"image_url"`
+	Defence          int                   `json:"defence"`
+	Space            int                   `json:"space"`
+	Count            int                   `json:"count"`
 }
 
 // TrophyStorageItemDTO represents trophy item snapshots.
@@ -92,6 +94,7 @@ type MilitaryModifiersDTO struct {
 // StorageItemSnapDTO represents a snapshot of a storage item at the DTO level.
 type StorageItemSnapDTO struct {
 	PrototypeID      int                     `json:"prototype_id"`
+	CurrentPrototype StorageItemPrototypeDTO `json:"current_prototype"`
 	Name             string                  `json:"name"`
 	ShortDescription string                  `json:"short_description"`
 	ImageURL         string                  `json:"image_url"`
@@ -152,17 +155,18 @@ func MilitaryUnitsFromReadModel(units []readmodels.MilitaryUnitSnap) []MilitaryU
 	out := make([]MilitaryUnitDTO, 0, len(units))
 	for _, unit := range units {
 		out = append(out, MilitaryUnitDTO{
-			PrototypeID: unit.PrototypeID,
-			Name:        unit.Name,
-			ImageURL:    unit.ImageURL,
-			Category:    ArmyCategory(unit.Category),
-			Attack:      unit.Attack,
-			Defence:     unit.Defence,
-			Capacity:    unit.Capacity,
-			Stealth:     unit.Stealth,
-			Speed:       unit.Speed,
-			Space:       unit.Space,
-			Count:       unit.Count,
+			PrototypeID:      unit.PrototypeID,
+			CurrentPrototype: mapArmyPrototype(unit.CurrentPrototype),
+			Name:             unit.Name,
+			ImageURL:         unit.ImageURL,
+			Category:         ArmyCategory(unit.Category),
+			Attack:           unit.Attack,
+			Defence:          unit.Defence,
+			Capacity:         unit.Capacity,
+			Stealth:          unit.Stealth,
+			Speed:            unit.Speed,
+			Space:            unit.Space,
+			Count:            unit.Count,
 		})
 	}
 	return out
@@ -172,12 +176,13 @@ func defenseStructuresFromReadModel(structs []readmodels.DefenseStructureSnap) [
 	out := make([]DefenseStructureDTO, 0, len(structs))
 	for _, s := range structs {
 		out = append(out, DefenseStructureDTO{
-			PrototypeID: s.PrototypeID,
-			Name:        s.Name,
-			ImageURL:    s.ImageURL,
-			Defence:     s.Defence,
-			Space:       s.Space,
-			Count:       s.Count,
+			PrototypeID:      s.PrototypeID,
+			CurrentPrototype: mapBuildItemPrototype(s.CurrentPrototype),
+			Name:             s.Name,
+			ImageURL:         s.ImageURL,
+			Defence:          s.Defence,
+			Space:            s.Space,
+			Count:            s.Count,
 		})
 	}
 	return out
@@ -280,6 +285,7 @@ func storageItemSnapsFromReadModel(snaps []readmodels.StorageItemSnap) []Storage
 		}
 		out = append(out, StorageItemSnapDTO{
 			PrototypeID:      s.PrototypeID,
+			CurrentPrototype: mapStorageItemPrototype(s.CurrentPrototype),
 			Name:             s.Name,
 			ShortDescription: s.ShortDescription,
 			ImageURL:         s.ImageURL,

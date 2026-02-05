@@ -39,8 +39,12 @@ func buildPrototypeFromParts(id int64, name, category, faction string, unlock sq
 }
 
 func NewBuildItemFromPrototype(p gen.BuildItemPrototype) readmodels.BuildItemNew {
-	proto := buildPrototypeFromParts(p.ID, p.Name, p.Category, p.Faction, p.UnlockTechnologyID, p.ShortDescription, p.FullDescription, p.Price, p.ProductionTime, p.Space, p.ImageUrl, p.ControlData, p.ResourcesData, p.DefenseData, p.MilitaryData, p.IntelligenceData)
+	proto := BuildPrototypeFromModel(p)
 	return readmodels.BuildItemNew{Prototype: proto}
+}
+
+func BuildPrototypeFromModel(p gen.BuildItemPrototype) readmodels.BuildItemPrototype {
+	return buildPrototypeFromParts(p.ID, p.Name, p.Category, p.Faction, p.UnlockTechnologyID, p.ShortDescription, p.FullDescription, p.Price, p.ProductionTime, p.Space, p.ImageUrl, p.ControlData, p.ResourcesData, p.DefenseData, p.MilitaryData, p.IntelligenceData)
 }
 
 func BuildItemPendingFromRow(r gen.ListPendingBuildItemsRow) readmodels.BuildItemPending {

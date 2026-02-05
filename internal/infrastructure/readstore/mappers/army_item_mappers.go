@@ -79,6 +79,10 @@ func ArmyItemPresentFromRow(r gen.ListPresentArmyItemsRow) readmodels.ArmyItemPr
 }
 
 func NewArmyItemFromPrototype(p gen.ArmyItemPrototype) readmodels.ArmyItemNew {
-	proto := armyPrototypeFromParts(p.ID, p.Name, p.Category, p.Faction, p.UnlockTechnologyID, p.ShortDescription, p.FullDescription, p.Price, p.ProductionTime, p.Space, p.ImageUrl, p.Attack, p.Defence, p.Capacity, p.Stealth, p.Speed)
+	proto := ArmyPrototypeFromModel(p)
 	return readmodels.ArmyItemNew{Prototype: proto}
+}
+
+func ArmyPrototypeFromModel(p gen.ArmyItemPrototype) readmodels.ArmyItemPrototype {
+	return armyPrototypeFromParts(p.ID, p.Name, p.Category, p.Faction, p.UnlockTechnologyID, p.ShortDescription, p.FullDescription, p.Price, p.ProductionTime, p.Space, p.ImageUrl, p.Attack, p.Defence, p.Capacity, p.Stealth, p.Speed)
 }

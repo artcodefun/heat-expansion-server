@@ -76,7 +76,7 @@ func (r *OperationReadRepo) ListActiveOperations(baseID int) ([]*readmodels.Mili
 }
 
 // enrichOperation enriches a single operation.
-func (r *OperationReadRepo) enrichOperation(v *readmodels.MilitaryOperation, army map[int]mappers.ArmyPrototypeSnapshot, build map[int]mappers.BuildPrototypeSnapshot, storage map[int]readmodels.StorageItemPrototype) error {
+func (r *OperationReadRepo) enrichOperation(v *readmodels.MilitaryOperation, army map[int]readmodels.ArmyItemPrototype, build map[int]readmodels.BuildItemPrototype, storage map[int]readmodels.StorageItemPrototype) error {
 	// 1. Resolve prototypes if not provided
 	if army == nil || build == nil || storage == nil {
 		var err error
@@ -111,7 +111,7 @@ func (r *OperationReadRepo) enrichOperation(v *readmodels.MilitaryOperation, arm
 }
 
 // loadPrototypeMaps fetches all army/build prototypes for read-store and indexes them by ID.
-func (r *OperationReadRepo) loadPrototypeMaps() (map[int]mappers.ArmyPrototypeSnapshot, map[int]mappers.BuildPrototypeSnapshot, map[int]readmodels.StorageItemPrototype, error) {
+func (r *OperationReadRepo) loadPrototypeMaps() (map[int]readmodels.ArmyItemPrototype, map[int]readmodels.BuildItemPrototype, map[int]readmodels.StorageItemPrototype, error) {
 	armyRows, err := r.q.ListArmyPrototypes(context.Background())
 	if err != nil {
 		return nil, nil, nil, err
@@ -124,23 +124,13 @@ func (r *OperationReadRepo) loadPrototypeMaps() (map[int]mappers.ArmyPrototypeSn
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	armyMap := make(map[int]mappers.ArmyPrototypeSnapshot, len(armyRows))
+	armyMap := make(map[int]readmodels.ArmyItemPrototype, len(armyRows))
 	for _, p := range armyRows {
-		name := p.Name
-		imageURL := ""
-		if p.ImageUrl.Valid {
-			imageURL = p.ImageUrl.String
-		}
-		armyMap[int(p.ID)] = mappers.ArmyPrototypeSnapshot{Name: name, ImageURL: imageURL, Space: int(p.Space)}
+		armyMap[int(p.ID)] = mappers.ArmyPrototypeFromModel(p)
 	}
-	buildMap := make(map[int]mappers.BuildPrototypeSnapshot, len(buildRows))
+	buildMap := make(map[int]readmodels.BuildItemPrototype, len(buildRows))
 	for _, p := range buildRows {
-		name := p.Name
-		imageURL := ""
-		if p.ImageUrl.Valid {
-			imageURL = p.ImageUrl.String
-		}
-		buildMap[int(p.ID)] = mappers.BuildPrototypeSnapshot{Name: name, ImageURL: imageURL, Space: int(p.Space)}
+		buildMap[int(p.ID)] = mappers.BuildPrototypeFromModel(p)
 	}
 	storageMap := make(map[int]readmodels.StorageItemPrototype, len(storageRows))
 	for _, p := range storageRows {
