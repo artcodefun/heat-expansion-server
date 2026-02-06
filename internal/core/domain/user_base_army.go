@@ -29,6 +29,7 @@ func (ub *UserBaseModel) AvailableArmies(allPrototypes []*ArmyItemPrototype) []*
 
 // Queues a new army item for production (batch with count)
 func (ub *UserBaseModel) QueueArmy(proto *ArmyItemPrototype, count int) error {
+	ub.recalculateStats()
 	defer ub.recalculateStats()
 
 	if count < 1 {

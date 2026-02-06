@@ -65,6 +65,7 @@ func (ub *UserBaseModel) GetTechLevel(techID int) int {
 
 // StartTechResearch queues a technology for research
 func (ub *UserBaseModel) StartTechResearch(proto *TechItemPrototype) error {
+	ub.recalculateStats()
 	defer ub.recalculateStats()
 	// Ensure this prototype is actually available for this base
 	if len(ub.AvailableTechnologies([]*TechItemPrototype{proto})) == 0 {

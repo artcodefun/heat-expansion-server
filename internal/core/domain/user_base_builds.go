@@ -33,6 +33,7 @@ func (ub *UserBaseModel) GetProductionCompletionTime(id uuid.UUID) (int64, bool)
 
 // Queues a new building for production
 func (ub *UserBaseModel) AddToBuildQueue(proto *BuildItemPrototype) error {
+	ub.recalculateStats()
 	defer ub.recalculateStats()
 
 	// Ensure this prototype is actually available for this base
