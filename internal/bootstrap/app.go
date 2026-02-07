@@ -23,6 +23,7 @@ type App struct {
 	JWTSecret     string
 	LogLevel      string
 	StaticBaseURL string
+	AssetsDir     string
 
 	DB         *sql.DB
 	Adapters   *Adapters
@@ -38,9 +39,14 @@ func NewApp() *App {
 	dbURL := os.Getenv("DB_URL")
 	jwtSecret := os.Getenv("JWT_SECRET")
 	staticBaseURL := os.Getenv("STATIC_BASE_URL")
+	assetsDir := os.Getenv("ASSETS_DIR")
 
 	if port == "" || dbURL == "" || jwtSecret == "" || staticBaseURL == "" {
 		log.Fatal("Missing required environment variables. Please check your .env file.")
+	}
+
+	if assetsDir == "" {
+		assetsDir = "./assets" // Default value
 	}
 
 	db, err := sql.Open("postgres", dbURL)
@@ -86,7 +92,7 @@ func NewApp() *App {
 		Activity:  queries.Activity,
 		Alert:     queries.Alert,
 	}
-	router := httpapi.NewRouter(httpCommands, httpQueries, adapters.Tokens)
+	router := httpapi.NewRouter(httpCommands, httpQueries, adapters.Tokens, assetsDir)
 	httpServer := httpapi.NewServer(router)
 
 	return &App{
@@ -95,6 +101,7 @@ func NewApp() *App {
 		DBURL:         dbURL,
 		JWTSecret:     jwtSecret,
 		StaticBaseURL: staticBaseURL,
+		AssetsDir:     assetsDir,
 		DB:            db,
 		Adapters:      adapters,
 		Services:      services,
