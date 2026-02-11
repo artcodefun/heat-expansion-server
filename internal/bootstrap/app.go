@@ -12,6 +12,7 @@ import (
 
 	_ "github.com/lib/pq"
 
+	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/db/repo"
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/jobs"
 	httpapi "github.com/artcodefun/heat-expansion-api/internal/interfaces/http"
 )
@@ -125,15 +126,25 @@ func (a *App) Run() {
 	// Start outbox dispatcher loop
 	go func() {
 		ctx := context.Background()
-		ticker := time.NewTicker(time.Second)
+		ticker := time.NewTicker(5 * time.Second)
 		defer ticker.Stop()
+
+		var signalChan <-chan struct{}
+		if txMgr, ok := a.Adapters.TxMgr.(*repo.DBTxManager); ok {
+			signalChan = txMgr.CommitSignal
+		}
+
 		for {
 			select {
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
 				if err := a.Services.Outbox.ProcessBatch(100); err != nil {
-					slog.Error("outbox dispatch failed", "error", err.Error())
+					slog.Error("outbox dispatch failed (polling)", "error", err.Error())
+				}
+			case <-signalChan:
+				if err := a.Services.Outbox.ProcessBatch(100); err != nil {
+					slog.Error("outbox dispatch failed (signaled)", "error", err.Error())
 				}
 			}
 		}

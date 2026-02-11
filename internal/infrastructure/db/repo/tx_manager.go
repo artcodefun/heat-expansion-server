@@ -7,16 +7,22 @@ import (
 	"github.com/artcodefun/heat-expansion-api/internal/core/ports"
 )
 
-// dbTxManager is a minimal TransactionManager over *sql.DB.
-type dbTxManager struct {
-	db *sql.DB
+// DBTxManager is a minimal TransactionManager over *sql.DB.
+// It includes a CommitSignal channel that background workers can use
+// to be notified immediately after a successful transaction commit.
+type DBTxManager struct {
+	db           *sql.DB
+	CommitSignal chan struct{}
 }
 
-func NewDBTxManager(db *sql.DB) ports.TransactionManager {
-	return &dbTxManager{db: db}
+func NewDBTxManager(db *sql.DB) *DBTxManager {
+	return &DBTxManager{
+		db:           db,
+		CommitSignal: make(chan struct{}, 1),
+	}
 }
 
-func (m *dbTxManager) WithTx(fn func(tx ports.Transaction) error) error {
+func (m *DBTxManager) WithTx(fn func(tx ports.Transaction) error) error {
 	tx, err := m.db.BeginTx(context.Background(), nil)
 	if err != nil {
 		return err
@@ -32,5 +38,15 @@ func (m *dbTxManager) WithTx(fn func(tx ports.Transaction) error) error {
 		_ = tx.Rollback()
 		return err
 	}
-	return tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	// Non-blocking signal
+	select {
+	case m.CommitSignal <- struct{}{}:
+	default:
+	}
+
+	return nil
 }
