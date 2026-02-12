@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/artcodefun/heat-expansion-api/internal/bootstrap"
+	"github.com/artcodefun/heat-expansion-api/internal/game/bootstrap"
 )
 
 func main() {
