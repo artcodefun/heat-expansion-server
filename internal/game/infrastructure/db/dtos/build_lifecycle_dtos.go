@@ -1,6 +1,6 @@
 package dtos
 
-import "github.com/artcodefun/heat-expansion-api/internal/game/core/domain"
+import "github.com/artcodefun/heat-expansion-api/internal/game/domain"
 
 // Pending build items (currently carry no extra payload beyond ownership/prototype).
 // DTO exists for symmetry and future-proofing of pending_data JSON.

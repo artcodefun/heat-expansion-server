@@ -1,6 +1,6 @@
 package dtos
 
-import "github.com/artcodefun/heat-expansion-api/internal/game/core/domain"
+import "github.com/artcodefun/heat-expansion-api/internal/game/domain"
 
 type PriceDTO struct {
 	Credits    int `json:"credits"`

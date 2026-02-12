@@ -14,7 +14,7 @@ RUN go mod download
 COPY . .
 
 # Build the application
-RUN go build -o /app/heat-expansion-api ./cmd/api
+RUN go build -o /app/heat-expansion-api ./cmd/server
 
 # Install golang-migrate for the final image
 RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz && \
@@ -33,7 +33,7 @@ COPY --from=builder /app/heat-expansion-api /app/
 COPY --from=builder /usr/local/bin/migrate /usr/local/bin/migrate
 
 # Copy migrations
-COPY internal/infrastructure/db/migrations /app/migrations
+COPY internal/game/infrastructure/db/migrations /app/migrations
 
 # Copy entrypoint script
 COPY scripts/entrypoint.sh /app/entrypoint.sh

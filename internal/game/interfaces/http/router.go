@@ -1,8 +1,8 @@
 package http
 
 import (
-	"github.com/artcodefun/heat-expansion-api/internal/game/core/cqrs"
-	"github.com/artcodefun/heat-expansion-api/internal/game/core/ports"
+	"github.com/artcodefun/heat-expansion-api/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-api/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-api/internal/game/interfaces/http/dtos"
 	"github.com/artcodefun/heat-expansion-api/internal/game/interfaces/http/handlers"
 	"github.com/artcodefun/heat-expansion-api/internal/game/interfaces/http/middleware"

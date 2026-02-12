@@ -1,8 +1,8 @@
 package bootstrap
 
 import (
-	"github.com/artcodefun/heat-expansion-api/internal/game/core/domain"
-	"github.com/artcodefun/heat-expansion-api/internal/game/core/ports"
+	"github.com/artcodefun/heat-expansion-api/internal/game/application/ports"
+	"github.com/artcodefun/heat-expansion-api/internal/game/domain"
 	infraevents "github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/events"
 	infrajobs "github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/jobs"
 )

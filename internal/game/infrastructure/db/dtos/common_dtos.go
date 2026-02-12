@@ -1,6 +1,6 @@
 package dtos
 
-import "github.com/artcodefun/heat-expansion-api/internal/game/core/domain"
+import "github.com/artcodefun/heat-expansion-api/internal/game/domain"
 
 type Vector2iDTO struct {
 	X int `json:"x"`

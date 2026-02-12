@@ -1,8 +1,8 @@
 package events
 
 import (
-	"github.com/artcodefun/heat-expansion-api/internal/game/core/domain"
-	"github.com/artcodefun/heat-expansion-api/internal/game/core/ports"
+	"github.com/artcodefun/heat-expansion-api/internal/game/application/ports"
+	"github.com/artcodefun/heat-expansion-api/internal/game/domain"
 )
 
 // SimplePublisher is a minimal in-process EventPublisher used for tests and dev.

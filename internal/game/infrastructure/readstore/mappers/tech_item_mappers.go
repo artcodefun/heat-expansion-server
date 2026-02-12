@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/artcodefun/heat-expansion-api/internal/game/core/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-api/internal/game/application/cqrs/readmodels"
 	"github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/db/dtos"
 	"github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/readstore/gen"
 )

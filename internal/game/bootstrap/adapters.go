@@ -3,7 +3,7 @@ package bootstrap
 import (
 	"database/sql"
 
-	"github.com/artcodefun/heat-expansion-api/internal/game/core/ports"
+	"github.com/artcodefun/heat-expansion-api/internal/game/application/ports"
 	contentgen "github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/content"
 	dbgen "github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/db/gen"
 	repo "github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/db/repo"

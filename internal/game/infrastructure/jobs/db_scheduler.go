@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/artcodefun/heat-expansion-api/internal/game/core/ports"
+	"github.com/artcodefun/heat-expansion-api/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/db/repo"
 )
 

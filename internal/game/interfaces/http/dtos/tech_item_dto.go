@@ -3,7 +3,7 @@ package dtos
 import (
 	"strings"
 
-	"github.com/artcodefun/heat-expansion-api/internal/game/core/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-api/internal/game/application/cqrs/readmodels"
 )
 
 type TechCategory string

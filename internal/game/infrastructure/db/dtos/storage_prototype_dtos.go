@@ -1,6 +1,6 @@
 package dtos
 
-import "github.com/artcodefun/heat-expansion-api/internal/game/core/domain"
+import "github.com/artcodefun/heat-expansion-api/internal/game/domain"
 
 // BuffStorageDataDTO represents JSON shape for buff storage items in prototypes.
 type BuffStorageDataDTO struct {

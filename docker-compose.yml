@@ -30,9 +30,10 @@ services:
       - .env
     environment:
       # These overrides take precedence over .env for the container environment
-      - PORT=8080
-      - DB_URL=postgres://heatuser:heatpassword@db:5432/heatdb?sslmode=disable
-      - ASSETS_DIR=/app/assets
+      - GAME_PORT=8080
+      - GAME_DB_URL=postgres://heatuser:heatpassword@db:5432/heatdb?sslmode=disable
+      - GAME_ASSETS_DIR=/app/assets
+      - GAME_MIGRATIONS_TABLE=game_schema_migrations
     volumes:
       - ./assets:/app/assets
 

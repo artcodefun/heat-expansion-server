@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/artcodefun/heat-expansion-api/internal/game/core/domain"
-	"github.com/artcodefun/heat-expansion-api/internal/game/core/ports"
+	"github.com/artcodefun/heat-expansion-api/internal/game/application/ports"
+	"github.com/artcodefun/heat-expansion-api/internal/game/domain"
 	"github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/db/gen"
 	"github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/db/mappers"
 )

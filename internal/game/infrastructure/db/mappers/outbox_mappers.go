@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/artcodefun/heat-expansion-api/internal/game/core/domain"
-	"github.com/artcodefun/heat-expansion-api/internal/game/core/ports"
+	"github.com/artcodefun/heat-expansion-api/internal/game/application/ports"
+	"github.com/artcodefun/heat-expansion-api/internal/game/domain"
 	"github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/db/dtos"
 )
 

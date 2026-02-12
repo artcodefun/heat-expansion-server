@@ -1,6 +1,6 @@
 package dtos
 
-import "github.com/artcodefun/heat-expansion-api/internal/game/core/domain"
+import "github.com/artcodefun/heat-expansion-api/internal/game/domain"
 
 // ControlBuildingDataDTO represents JSON shape for control building data in prototypes.
 type ControlBuildingDataDTO struct {

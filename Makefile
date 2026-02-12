@@ -7,10 +7,10 @@ CGO_ENABLED?=0
 .PHONY: build run test sqlc clean
 
 build:
-	go build -o bin/${BINARY_NAME} ./cmd/api
+	go build -o bin/${BINARY_NAME} ./cmd/server
 
 run:
-	set -a; source .env; set +a; go run ./cmd/api
+	set -a; source .env; set +a; go run ./cmd/server
 
 test:
 	go test ./...
@@ -26,17 +26,20 @@ ifneq (,$(wildcard ./.env))
     export
 endif
 
-MIGRATION_DIR=internal/infrastructure/db/migrations
-DB_URL?=postgres://user:password@localhost:5432/heatdb?sslmode=disable
+GAME_MIGRATION_DIR=internal/game/infrastructure/db/migrations
+GAME_DB_URL?=postgres://user:password@localhost:5432/heatdb?sslmode=disable
+GAME_MIGRATIONS_TABLE?=game_schema_migrations
+
+GAME_MIGRATE_DB_URL=$(GAME_DB_URL)$(if $(findstring ?,$(GAME_DB_URL)),&,?)x-migrations-table=$(GAME_MIGRATIONS_TABLE)
 
 migrate-up:
-	migrate -path $(MIGRATION_DIR) -database "$(DB_URL)&x-migrations-table=game_schema_migrations" up
+	migrate -path $(GAME_MIGRATION_DIR) -database "$(GAME_MIGRATE_DB_URL)" up
 
 migrate-down:
-	migrate -path $(MIGRATION_DIR) -database "$(DB_URL)&x-migrations-table=game_schema_migrations" down
+	migrate -path $(GAME_MIGRATION_DIR) -database "$(GAME_MIGRATE_DB_URL)" down
 
 migrate-create:
-	migrate create -ext sql -dir $(MIGRATION_DIR) -seq $(name)
+	migrate create -ext sql -dir $(GAME_MIGRATION_DIR) -seq $(name)
 
 sqlc:
-	sqlc -f internal/infrastructure/sqlc.yaml generate
+	sqlc -f internal/game/infrastructure/sqlc.yaml generate

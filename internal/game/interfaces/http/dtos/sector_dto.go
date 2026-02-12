@@ -1,6 +1,6 @@
 package dtos
 
-import "github.com/artcodefun/heat-expansion-api/internal/game/core/cqrs/readmodels"
+import "github.com/artcodefun/heat-expansion-api/internal/game/application/cqrs/readmodels"
 
 type SectorType string
 
