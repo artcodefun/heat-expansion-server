@@ -11,7 +11,7 @@ import (
 )
 
 const countDangerousLocationsInRange = `-- name: CountDangerousLocationsInRange :one
-SELECT COUNT(*) FROM dangerous_locations
+SELECT COUNT(*) FROM game.dangerous_locations
 WHERE sector_x >= ($1::int - $2::int)
   AND sector_x <= ($1::int + $2::int)
   AND sector_y >= ($3::int - $2::int)
@@ -33,7 +33,7 @@ func (q *Queries) CountDangerousLocationsInRange(ctx context.Context, arg CountD
 }
 
 const countResourcefulLocationsInRange = `-- name: CountResourcefulLocationsInRange :one
-SELECT COUNT(*) FROM resource_locations
+SELECT COUNT(*) FROM game.resource_locations
 WHERE sector_x >= ($1::int - $2::int)
   AND sector_x <= ($1::int + $2::int)
   AND sector_y >= ($3::int - $2::int)
@@ -56,7 +56,7 @@ func (q *Queries) CountResourcefulLocationsInRange(ctx context.Context, arg Coun
 
 const createSector = `-- name: CreateSector :one
 
-INSERT INTO sectors (x, y, name, description, image_url)
+INSERT INTO game.sectors (x, y, name, description, image_url)
 VALUES ($1, $2, $3, $4, $5)
 RETURNING id, x, y, name, description, image_url
 `
@@ -93,13 +93,13 @@ func (q *Queries) CreateSector(ctx context.Context, arg CreateSectorParams) (Sec
 const getLocationTypeByCoordinates = `-- name: GetLocationTypeByCoordinates :one
 SELECT CASE
     WHEN EXISTS (
-        SELECT 1 FROM user_bases ub WHERE ub.sector_x = $1 AND ub.sector_y = $2
+        SELECT 1 FROM game.user_bases ub WHERE ub.sector_x = $1 AND ub.sector_y = $2
     ) THEN 'BASE'
     WHEN EXISTS (
-        SELECT 1 FROM resource_locations rl WHERE rl.sector_x = $1 AND rl.sector_y = $2
+        SELECT 1 FROM game.resource_locations rl WHERE rl.sector_x = $1 AND rl.sector_y = $2
     ) THEN 'RESOURCEFUL'
     WHEN EXISTS (
-        SELECT 1 FROM dangerous_locations dl WHERE dl.sector_x = $1 AND dl.sector_y = $2
+        SELECT 1 FROM game.dangerous_locations dl WHERE dl.sector_x = $1 AND dl.sector_y = $2
     ) THEN 'DANGEROUS'
     ELSE 'EMPTY'
 END AS location_type
@@ -119,7 +119,7 @@ func (q *Queries) GetLocationTypeByCoordinates(ctx context.Context, arg GetLocat
 
 const getSectorByCoordinates = `-- name: GetSectorByCoordinates :one
 SELECT id, x, y, name, description, image_url
-FROM sectors
+FROM game.sectors
 WHERE x = $1 AND y = $2
 `
 
@@ -144,7 +144,7 @@ func (q *Queries) GetSectorByCoordinates(ctx context.Context, arg GetSectorByCoo
 
 const getSectorByCoordinatesForUpdate = `-- name: GetSectorByCoordinatesForUpdate :one
 SELECT id, x, y, name, description, image_url
-FROM sectors
+FROM game.sectors
 WHERE x = $1 AND y = $2
 FOR UPDATE
 `
@@ -169,11 +169,11 @@ func (q *Queries) GetSectorByCoordinatesForUpdate(ctx context.Context, arg GetSe
 }
 
 const listOccupiedSectorCoordinates = `-- name: ListOccupiedSectorCoordinates :many
-SELECT ub.sector_x AS x, ub.sector_y AS y FROM user_bases ub
+SELECT ub.sector_x AS x, ub.sector_y AS y FROM game.user_bases ub
 UNION
-SELECT rl.sector_x, rl.sector_y FROM resource_locations rl
+SELECT rl.sector_x, rl.sector_y FROM game.resource_locations rl
 UNION
-SELECT dl.sector_x, dl.sector_y FROM dangerous_locations dl
+SELECT dl.sector_x, dl.sector_y FROM game.dangerous_locations dl
 `
 
 type ListOccupiedSectorCoordinatesRow struct {
@@ -206,7 +206,7 @@ func (q *Queries) ListOccupiedSectorCoordinates(ctx context.Context) ([]ListOccu
 
 const listSectors = `-- name: ListSectors :many
 SELECT id, x, y, name, description, image_url
-FROM sectors
+FROM game.sectors
 ORDER BY id
 `
 
@@ -241,7 +241,7 @@ func (q *Queries) ListSectors(ctx context.Context) ([]Sector, error) {
 }
 
 const updateSector = `-- name: UpdateSector :one
-UPDATE sectors
+UPDATE game.sectors
 SET name = $1,
     description = $2,
     image_url = $3

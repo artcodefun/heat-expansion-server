@@ -13,7 +13,7 @@ import (
 
 const claimDueScheduledJobs = `-- name: ClaimDueScheduledJobs :many
 SELECT id, kind, payload, execute_at, created_at, dispatched, dispatched_at
-FROM scheduled_jobs
+FROM game.scheduled_jobs
 WHERE dispatched = FALSE
   AND execute_at <= $1
 ORDER BY execute_at ASC, id ASC
@@ -59,7 +59,7 @@ func (q *Queries) ClaimDueScheduledJobs(ctx context.Context, arg ClaimDueSchedul
 
 const getNextScheduledJob = `-- name: GetNextScheduledJob :one
 SELECT id, kind, payload, execute_at, created_at, dispatched, dispatched_at
-FROM scheduled_jobs
+FROM game.scheduled_jobs
 WHERE dispatched = FALSE
 ORDER BY execute_at ASC, id ASC
 LIMIT 1
@@ -82,7 +82,7 @@ func (q *Queries) GetNextScheduledJob(ctx context.Context) (ScheduledJob, error)
 
 const getPendingScheduledJobByKindPayload = `-- name: GetPendingScheduledJobByKindPayload :one
 SELECT id, kind, payload, execute_at, created_at, dispatched, dispatched_at
-FROM scheduled_jobs
+FROM game.scheduled_jobs
 WHERE dispatched = FALSE
   AND kind = $1
   AND payload = $2
@@ -111,7 +111,7 @@ func (q *Queries) GetPendingScheduledJobByKindPayload(ctx context.Context, arg G
 
 const insertScheduledJob = `-- name: InsertScheduledJob :one
 
-INSERT INTO scheduled_jobs (
+INSERT INTO game.scheduled_jobs (
     kind, payload, execute_at, created_at, dispatched
 ) VALUES (
     $1, $2, $3, $4, FALSE
@@ -140,7 +140,7 @@ func (q *Queries) InsertScheduledJob(ctx context.Context, arg InsertScheduledJob
 }
 
 const lockScheduledJobsTable = `-- name: LockScheduledJobsTable :exec
-LOCK TABLE scheduled_jobs IN EXCLUSIVE MODE
+LOCK TABLE game.scheduled_jobs IN EXCLUSIVE MODE
 `
 
 func (q *Queries) LockScheduledJobsTable(ctx context.Context) error {
@@ -149,7 +149,7 @@ func (q *Queries) LockScheduledJobsTable(ctx context.Context) error {
 }
 
 const markScheduledJobDispatched = `-- name: MarkScheduledJobDispatched :exec
-UPDATE scheduled_jobs
+UPDATE game.scheduled_jobs
 SET dispatched = TRUE,
     dispatched_at = $1
 WHERE id = $2

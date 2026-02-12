@@ -2,16 +2,16 @@
 
 -- name: GetUserByID :one
 SELECT id, name, email, password_hash, crystals
-FROM users
+FROM game.users
 WHERE id = @id;
 
 -- name: GetUserByEmail :one
 SELECT id, name, email, password_hash, crystals
-FROM users
+FROM game.users
 WHERE email = @email;
 
 -- name: InsertUser :one
-INSERT INTO users (
+INSERT INTO game.users (
     name, email, password_hash, crystals
 ) VALUES (
     @name, @email, @password_hash, @crystals
@@ -19,7 +19,7 @@ INSERT INTO users (
 RETURNING id;
 
 -- name: UpdateUser :exec
-UPDATE users
+UPDATE game.users
 SET name = @name,
     email = @email,
     password_hash = @password_hash,
@@ -28,6 +28,6 @@ WHERE id = @id;
 
 -- name: ListUsers :many
 SELECT id, name, email, password_hash, crystals
-FROM users
+FROM game.users
 ORDER BY id
 LIMIT $1 OFFSET $2;

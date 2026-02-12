@@ -14,7 +14,7 @@ import (
 )
 
 const deleteBaseStorageItemsByBase = `-- name: DeleteBaseStorageItemsByBase :exec
-DELETE FROM base_storage_items WHERE base_id = $1
+DELETE FROM game.base_storage_items WHERE base_id = $1
 `
 
 func (q *Queries) DeleteBaseStorageItemsByBase(ctx context.Context, baseID int64) error {
@@ -23,7 +23,7 @@ func (q *Queries) DeleteBaseStorageItemsByBase(ctx context.Context, baseID int64
 }
 
 const insertBaseStorageItem = `-- name: InsertBaseStorageItem :one
-INSERT INTO base_storage_items (
+INSERT INTO game.base_storage_items (
     id, base_id, prototype_id, status,
     present_data, state, created_at
 ) VALUES (
@@ -62,7 +62,7 @@ const listBaseStorageItems = `-- name: ListBaseStorageItems :many
 
 SELECT id, base_id, prototype_id, status,
        present_data, state, created_at
-FROM base_storage_items
+FROM game.base_storage_items
 WHERE base_id = $1
 ORDER BY id
 `

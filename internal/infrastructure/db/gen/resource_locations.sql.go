@@ -12,7 +12,7 @@ import (
 )
 
 const deleteResourceLocation = `-- name: DeleteResourceLocation :exec
-DELETE FROM resource_locations WHERE id = $1
+DELETE FROM game.resource_locations WHERE id = $1
 `
 
 func (q *Queries) DeleteResourceLocation(ctx context.Context, id int64) error {
@@ -21,7 +21,7 @@ func (q *Queries) DeleteResourceLocation(ctx context.Context, id int64) error {
 }
 
 const deleteResourceLocationBySector = `-- name: DeleteResourceLocationBySector :exec
-DELETE FROM resource_locations WHERE sector_x = $1 AND sector_y = $2
+DELETE FROM game.resource_locations WHERE sector_x = $1 AND sector_y = $2
 `
 
 type DeleteResourceLocationBySectorParams struct {
@@ -37,7 +37,7 @@ func (q *Queries) DeleteResourceLocationBySector(ctx context.Context, arg Delete
 const findClosestResourceLocation = `-- name: FindClosestResourceLocation :one
 SELECT id, sector_x, sector_y, resource_type, defender_faction, total_worth, name, description, image_url,
        resources, resources_calc_timestamp, armies, buildings
-FROM resource_locations
+FROM game.resource_locations
 ORDER BY (sector_x - $1)^2 + (sector_y - $2)^2 ASC
 LIMIT 1
 `
@@ -72,7 +72,7 @@ const getResourceLocationByID = `-- name: GetResourceLocationByID :one
 
 SELECT id, sector_x, sector_y, resource_type, defender_faction, total_worth, name, description, image_url,
        resources, resources_calc_timestamp, armies, buildings
-FROM resource_locations
+FROM game.resource_locations
 WHERE id = $1
 `
 
@@ -101,7 +101,7 @@ func (q *Queries) GetResourceLocationByID(ctx context.Context, id int64) (Resour
 const getResourceLocationBySector = `-- name: GetResourceLocationBySector :one
 SELECT id, sector_x, sector_y, resource_type, defender_faction, total_worth, name, description, image_url,
        resources, resources_calc_timestamp, armies, buildings
-FROM resource_locations
+FROM game.resource_locations
 WHERE sector_x = $1 AND sector_y = $2
 `
 
@@ -134,7 +134,7 @@ func (q *Queries) GetResourceLocationBySector(ctx context.Context, arg GetResour
 const getResourceLocationBySectorForUpdate = `-- name: GetResourceLocationBySectorForUpdate :one
 SELECT id, sector_x, sector_y, resource_type, defender_faction, total_worth, name, description, image_url,
        resources, resources_calc_timestamp, armies, buildings
-FROM resource_locations
+FROM game.resource_locations
 WHERE sector_x = $1 AND sector_y = $2
 FOR UPDATE
 `
@@ -166,7 +166,7 @@ func (q *Queries) GetResourceLocationBySectorForUpdate(ctx context.Context, arg 
 }
 
 const insertResourceLocation = `-- name: InsertResourceLocation :one
-INSERT INTO resource_locations (
+INSERT INTO game.resource_locations (
     sector_x, sector_y, resource_type, defender_faction, total_worth, name, description, image_url,
     resources, resources_calc_timestamp, armies, buildings
 ) VALUES (
@@ -212,7 +212,7 @@ func (q *Queries) InsertResourceLocation(ctx context.Context, arg InsertResource
 }
 
 const updateResourceLocation = `-- name: UpdateResourceLocation :exec
-UPDATE resource_locations
+UPDATE game.resource_locations
 SET resource_type = $1,
     defender_faction = $2,
     total_worth = $3,

@@ -1,8 +1,10 @@
 -- Initial schema migration for Heat Expansion (PostgreSQL)
 -- Up migration: creates all tables and indexes. No IF NOT EXISTS clauses.
 
+CREATE SCHEMA game;
+
 -- Users
-CREATE TABLE users (
+CREATE TABLE game.users (
     id              BIGSERIAL PRIMARY KEY,
     name            TEXT        NOT NULL,
     email           TEXT        NOT NULL UNIQUE,
@@ -11,7 +13,7 @@ CREATE TABLE users (
 );
 
 -- Sectors
-CREATE TABLE sectors (
+CREATE TABLE game.sectors (
     id           BIGSERIAL PRIMARY KEY,
     x            INTEGER NOT NULL,
     y            INTEGER NOT NULL,
@@ -22,9 +24,9 @@ CREATE TABLE sectors (
 );
 
 -- User Bases (stats denormalized; internal items stored in separate tables)
-CREATE TABLE user_bases (
+CREATE TABLE game.user_bases (
     id                         BIGSERIAL PRIMARY KEY,
-    user_id                    BIGINT    NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id                    BIGINT    NOT NULL REFERENCES game.users(id) ON DELETE CASCADE,
     sector_x                   INTEGER   NOT NULL,
     sector_y                   INTEGER   NOT NULL,
     name                       TEXT,
@@ -33,17 +35,17 @@ CREATE TABLE user_bases (
     -- Base stats: {"credits": int, "iron": int, "titanium": int, "antimatter": int, "defence": int, "attack": int, "space": int, ...}
     stats                      JSONB            NOT NULL DEFAULT '{}'::jsonb,
     stats_calc_timestamp       BIGINT           NOT NULL DEFAULT 0,
-    CONSTRAINT fk_user_bases_sector_coords FOREIGN KEY (sector_x, sector_y) REFERENCES sectors(x, y) ON DELETE RESTRICT,
+    CONSTRAINT fk_user_bases_sector_coords FOREIGN KEY (sector_x, sector_y) REFERENCES game.sectors(x, y) ON DELETE RESTRICT,
     CONSTRAINT user_bases_sector_unique UNIQUE (sector_x, sector_y)
 );
-CREATE INDEX idx_user_bases_user_id ON user_bases(user_id);
+CREATE INDEX idx_user_bases_user_id ON game.user_bases(user_id);
 
 -- Military Operations
-CREATE TABLE military_operations (
+CREATE TABLE game.military_operations (
     id                 BIGSERIAL PRIMARY KEY,
     type               TEXT    NOT NULL,
-    owner_user_id      BIGINT  NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    source_base_id     BIGINT  NOT NULL REFERENCES user_bases(id) ON DELETE CASCADE,
+    owner_user_id      BIGINT  NOT NULL REFERENCES game.users(id) ON DELETE CASCADE,
+    source_base_id     BIGINT  NOT NULL REFERENCES game.user_bases(id) ON DELETE CASCADE,
     -- target sector is identified by coordinates; keep id-less reference
     source_x           INTEGER NOT NULL,
     source_y           INTEGER NOT NULL,
@@ -68,12 +70,12 @@ CREATE TABLE military_operations (
     -- Attack result: {"outcome": string, "attacker_remaining": [...], "defender_remaining": [...], "remaining_structures": [...], "loot": {...}, ...}
     attack_result      JSONB
 );
-CREATE INDEX idx_ops_owner ON military_operations(owner_user_id);
-CREATE INDEX idx_ops_source_base ON military_operations(source_base_id);
-CREATE INDEX idx_ops_target_coords ON military_operations(target_x, target_y);
+CREATE INDEX idx_ops_owner ON game.military_operations(owner_user_id);
+CREATE INDEX idx_ops_source_base ON game.military_operations(source_base_id);
+CREATE INDEX idx_ops_target_coords ON game.military_operations(target_x, target_y);
 
 -- Resource Locations (one per sector)
-CREATE TABLE resource_locations (
+CREATE TABLE game.resource_locations (
     id                BIGSERIAL PRIMARY KEY,
     sector_x          INTEGER NOT NULL,
     sector_y          INTEGER NOT NULL,
@@ -90,16 +92,16 @@ CREATE TABLE resource_locations (
     armies                   JSONB  NOT NULL DEFAULT '[]'::jsonb,
     -- Buildings: [{"prototype_id": int, "count": int}]
     buildings                JSONB  NOT NULL DEFAULT '[]'::jsonb,
-    CONSTRAINT fk_resource_locations_sector_coords FOREIGN KEY (sector_x, sector_y) REFERENCES sectors(x, y) ON DELETE CASCADE,
+    CONSTRAINT fk_resource_locations_sector_coords FOREIGN KEY (sector_x, sector_y) REFERENCES game.sectors(x, y) ON DELETE CASCADE,
     CONSTRAINT resource_locations_sector_unique UNIQUE (sector_x, sector_y)
 );
-CREATE INDEX idx_resource_locations_sector_coords ON resource_locations(sector_x, sector_y);
+CREATE INDEX idx_resource_locations_sector_coords ON game.resource_locations(sector_x, sector_y);
 -- Optional containment indexes for queries like armies @> '[{"prototype_id": 123}]'
-CREATE INDEX idx_resource_locations_armies_gin ON resource_locations USING gin (armies jsonb_path_ops);
-CREATE INDEX idx_resource_locations_buildings_gin ON resource_locations USING gin (buildings jsonb_path_ops);
+CREATE INDEX idx_resource_locations_armies_gin ON game.resource_locations USING gin (armies jsonb_path_ops);
+CREATE INDEX idx_resource_locations_buildings_gin ON game.resource_locations USING gin (buildings jsonb_path_ops);
 
 -- Dangerous Locations (one per sector)
-CREATE TABLE dangerous_locations (
+CREATE TABLE game.dangerous_locations (
     id                BIGSERIAL PRIMARY KEY,
     sector_x          INTEGER NOT NULL,
     sector_y          INTEGER NOT NULL,
@@ -117,24 +119,24 @@ CREATE TABLE dangerous_locations (
     buildings                JSONB  NOT NULL DEFAULT '[]'::jsonb,
     -- Trophies: [{"prototype_id": int}]
     trophies                 JSONB  NOT NULL DEFAULT '[]'::jsonb,
-    CONSTRAINT fk_dangerous_locations_sector_coords FOREIGN KEY (sector_x, sector_y) REFERENCES sectors(x, y) ON DELETE CASCADE,
+    CONSTRAINT fk_dangerous_locations_sector_coords FOREIGN KEY (sector_x, sector_y) REFERENCES game.sectors(x, y) ON DELETE CASCADE,
     CONSTRAINT dangerous_locations_sector_unique UNIQUE (sector_x, sector_y)
 );
-CREATE INDEX idx_dangerous_locations_sector_coords ON dangerous_locations(sector_x, sector_y);
+CREATE INDEX idx_dangerous_locations_sector_coords ON game.dangerous_locations(sector_x, sector_y);
 -- Optional containment indexes
-CREATE INDEX idx_dang_locations_armies_gin ON dangerous_locations USING gin (armies jsonb_path_ops);
-CREATE INDEX idx_dang_locations_buildings_gin ON dangerous_locations USING gin (buildings jsonb_path_ops);
+CREATE INDEX idx_dang_locations_armies_gin ON game.dangerous_locations USING gin (armies jsonb_path_ops);
+CREATE INDEX idx_dang_locations_buildings_gin ON game.dangerous_locations USING gin (buildings jsonb_path_ops);
 
 -- Sector Scan Reports
-CREATE TABLE scan_reports (
+CREATE TABLE game.scan_reports (
     id                   BIGSERIAL PRIMARY KEY,
-    base_id              BIGINT  NOT NULL REFERENCES user_bases(id) ON DELETE CASCADE,
+    base_id              BIGINT  NOT NULL REFERENCES game.user_bases(id) ON DELETE CASCADE,
     sector_x             INTEGER NOT NULL,
     sector_y             INTEGER NOT NULL,
     created_at           BIGINT  NOT NULL,
     type                 TEXT    NOT NULL,
     is_cloaked           BOOLEAN NOT NULL DEFAULT FALSE,
-    source_operation_id  BIGINT  REFERENCES military_operations(id) ON DELETE SET NULL,
+    source_operation_id  BIGINT  REFERENCES game.military_operations(id) ON DELETE SET NULL,
     source_scanner_id    UUID,
     source_intel_item_id UUID,
     name                 TEXT,
@@ -142,17 +144,17 @@ CREATE TABLE scan_reports (
     image_url            TEXT,
     -- Scan info: {"credits": int, "iron": int, "titanium": int, "antimatter": int, "defence": int, "attack": int, "space": int}
     info                JSONB  NOT NULL DEFAULT '{}'::jsonb,
-    CONSTRAINT fk_scan_reports_sector_coords FOREIGN KEY (sector_x, sector_y) REFERENCES sectors(x, y) ON DELETE CASCADE
+    CONSTRAINT fk_scan_reports_sector_coords FOREIGN KEY (sector_x, sector_y) REFERENCES game.sectors(x, y) ON DELETE CASCADE
 );
-CREATE INDEX idx_scan_reports_base_created_at ON scan_reports(base_id, created_at DESC);
-CREATE INDEX idx_scan_reports_sector_coords ON scan_reports(sector_x, sector_y);
+CREATE INDEX idx_scan_reports_base_created_at ON game.scan_reports(base_id, created_at DESC);
+CREATE INDEX idx_scan_reports_sector_coords ON game.scan_reports(sector_x, sector_y);
 
 -- Activities (append-only feed; payload captures subtype-specific data)
-CREATE TABLE activities (
+CREATE TABLE game.activities (
     id          UUID PRIMARY KEY,
     kind        TEXT   NOT NULL,
     created_at  BIGINT NOT NULL,
-    base_id     BIGINT NOT NULL REFERENCES user_bases(id) ON DELETE CASCADE,
+    base_id     BIGINT NOT NULL REFERENCES game.user_bases(id) ON DELETE CASCADE,
     -- Offense activity: {"op_id": int, "subtype": string}
     offense_data     JSONB,
     -- Defense activity: {"op_id": int, "subtype": string}
@@ -172,4 +174,4 @@ CREATE TABLE activities (
         (kind = 'TRADE'    AND offense_data IS NULL AND defense_data IS NULL AND scan_data IS NULL AND radar_data IS NULL AND trade_data IS NOT NULL)
     )
 );
-CREATE INDEX idx_activities_base_created_at ON activities(base_id, created_at DESC);
+CREATE INDEX idx_activities_base_created_at ON game.activities(base_id, created_at DESC);

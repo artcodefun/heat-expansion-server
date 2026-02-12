@@ -13,7 +13,7 @@ import (
 )
 
 const deleteMilitaryOperation = `-- name: DeleteMilitaryOperation :exec
-DELETE FROM military_operations WHERE id = $1
+DELETE FROM game.military_operations WHERE id = $1
 `
 
 func (q *Queries) DeleteMilitaryOperation(ctx context.Context, id int64) error {
@@ -24,7 +24,7 @@ func (q *Queries) DeleteMilitaryOperation(ctx context.Context, id int64) error {
 const getMilitaryOperationByID = `-- name: GetMilitaryOperationByID :one
 
 SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, phase, result, crystals_skip_price, units, storage_snaps, total_modifiers, spy_result, attack_result
-FROM military_operations
+FROM game.military_operations
 WHERE id = $1
 `
 
@@ -60,7 +60,7 @@ func (q *Queries) GetMilitaryOperationByID(ctx context.Context, id int64) (Milit
 
 const getMilitaryOperationByIDForUpdate = `-- name: GetMilitaryOperationByIDForUpdate :one
 SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, phase, result, crystals_skip_price, units, storage_snaps, total_modifiers, spy_result, attack_result
-FROM military_operations
+FROM game.military_operations
 WHERE id = $1
 FOR UPDATE
 `
@@ -95,7 +95,7 @@ func (q *Queries) GetMilitaryOperationByIDForUpdate(ctx context.Context, id int6
 }
 
 const insertMilitaryOperation = `-- name: InsertMilitaryOperation :one
-INSERT INTO military_operations (
+INSERT INTO game.military_operations (
         type, owner_user_id, source_base_id,
     source_x, source_y, target_x, target_y,
     outbound_depart_at, outbound_arrive_at,
@@ -175,7 +175,7 @@ SELECT id, type, owner_user_id, source_base_id,
         return_depart_at, return_arrive_at,
         completed_at, phase, result, crystals_skip_price,
         units, storage_snaps, total_modifiers, spy_result, attack_result
-FROM military_operations
+FROM game.military_operations
 WHERE source_base_id = $3
 ORDER BY id DESC
 LIMIT $1 OFFSET $2
@@ -239,7 +239,7 @@ SELECT id, type, owner_user_id, source_base_id,
         return_depart_at, return_arrive_at,
         completed_at, phase, result, crystals_skip_price,
         units, storage_snaps, total_modifiers, spy_result, attack_result
-FROM military_operations
+FROM game.military_operations
 WHERE target_x = $3 AND target_y = $4
 ORDER BY id DESC
 LIMIT $1 OFFSET $2
@@ -303,7 +303,7 @@ func (q *Queries) ListOpsByTargetCoordinates(ctx context.Context, arg ListOpsByT
 }
 
 const updateMilitaryOperation = `-- name: UpdateMilitaryOperation :exec
-UPDATE military_operations
+UPDATE game.military_operations
 SET type = $1,
         owner_user_id = $2,
         source_base_id = $3,

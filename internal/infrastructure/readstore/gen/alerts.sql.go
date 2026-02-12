@@ -10,7 +10,7 @@ import (
 )
 
 const countUnreadAlertsByBase = `-- name: CountUnreadAlertsByBase :one
-SELECT count(*) FROM alerts
+SELECT count(*) FROM game.alerts
 WHERE base_id = $1 AND is_read = false AND expires_at > $2
 `
 
@@ -27,7 +27,7 @@ func (q *Queries) CountUnreadAlertsByBase(ctx context.Context, arg CountUnreadAl
 }
 
 const listAlertsByBase = `-- name: ListAlertsByBase :many
-SELECT id, base_id, activity_id, kind, title, content, is_read, created_at, expires_at FROM alerts
+SELECT id, base_id, activity_id, kind, title, content, is_read, created_at, expires_at FROM game.alerts
 WHERE base_id = $1 AND expires_at > $2
 ORDER BY created_at DESC
 `

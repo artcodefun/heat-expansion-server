@@ -1,0 +1,68 @@
+version: "2"
+sql:
+  - schema: "db/migrations"
+    queries: "db/queries"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "gen"
+        out: "db/gen"
+        emit_json_tags: true
+        emit_prepared_queries: true
+        emit_interface: true
+        emit_exact_table_names: false
+        emit_empty_slices: true
+        rename:
+          game_activity: Activity
+          game_alert: Alert
+          game_army_item_prototype: ArmyItemPrototype
+          game_base_army_item: BaseArmyItem
+          game_base_build_item: BaseBuildItem
+          game_base_storage_item: BaseStorageItem
+          game_base_tech_item: BaseTechItem
+          game_build_item_prototype: BuildItemPrototype
+          game_dangerous_location: DangerousLocation
+          game_domain_event: DomainEvent
+          game_military_operation: MilitaryOperation
+          game_radar_threat: RadarThreat
+          game_resource_location: ResourceLocation
+          game_scan_report: ScanReport
+          game_scheduled_job: ScheduledJob
+          game_sector: Sector
+          game_storage_item_prototype: StorageItemPrototype
+          game_tech_item_prototype: TechItemPrototype
+          game_user_basis: UserBase
+          game_user: User
+  - schema: "db/migrations"
+    queries: "readstore/queries"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "gen"
+        out: "readstore/gen"
+        emit_json_tags: true
+        emit_prepared_queries: true
+        emit_interface: true
+        emit_exact_table_names: false
+        emit_empty_slices: true
+        rename:
+          game_activity: Activity
+          game_alert: Alert
+          game_army_item_prototype: ArmyItemPrototype
+          game_base_army_item: BaseArmyItem
+          game_base_build_item: BaseBuildItem
+          game_base_storage_item: BaseStorageItem
+          game_base_tech_item: BaseTechItem
+          game_build_item_prototype: BuildItemPrototype
+          game_dangerous_location: DangerousLocation
+          game_domain_event: DomainEvent
+          game_military_operation: MilitaryOperation
+          game_radar_threat: RadarThreat
+          game_resource_location: ResourceLocation
+          game_scan_report: ScanReport
+          game_scheduled_job: ScheduledJob
+          game_sector: Sector
+          game_storage_item_prototype: StorageItemPrototype
+          game_tech_item_prototype: TechItemPrototype
+          game_user_basis: UserBase
+          game_user: User

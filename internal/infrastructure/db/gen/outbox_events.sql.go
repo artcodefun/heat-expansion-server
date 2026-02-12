@@ -13,7 +13,7 @@ import (
 
 const claimUnpublishedOutboxEvents = `-- name: ClaimUnpublishedOutboxEvents :many
 SELECT id, kind, payload, created_at, published, published_at
-FROM domain_events
+FROM game.domain_events
 WHERE published = FALSE
 ORDER BY id ASC
 FOR UPDATE SKIP LOCKED
@@ -52,7 +52,7 @@ func (q *Queries) ClaimUnpublishedOutboxEvents(ctx context.Context, limit int32)
 
 const insertOutboxEvent = `-- name: InsertOutboxEvent :one
 
-INSERT INTO domain_events (
+INSERT INTO game.domain_events (
     kind, payload, created_at, published
 ) VALUES (
     $1, $2, $3, FALSE
@@ -75,7 +75,7 @@ func (q *Queries) InsertOutboxEvent(ctx context.Context, arg InsertOutboxEventPa
 }
 
 const markOutboxEventPublished = `-- name: MarkOutboxEventPublished :exec
-UPDATE domain_events
+UPDATE game.domain_events
 SET published = TRUE,
     published_at = $1
 WHERE id = $2

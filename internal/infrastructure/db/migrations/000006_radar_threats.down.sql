@@ -1,1 +1,1 @@
-DROP TABLE radar_threats;
+DROP TABLE game.radar_threats;

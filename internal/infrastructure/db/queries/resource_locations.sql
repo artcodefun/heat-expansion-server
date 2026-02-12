@@ -3,31 +3,31 @@
 -- name: GetResourceLocationByID :one
 SELECT id, sector_x, sector_y, resource_type, defender_faction, total_worth, name, description, image_url,
        resources, resources_calc_timestamp, armies, buildings
-FROM resource_locations
+FROM game.resource_locations
 WHERE id = @id;
 
 -- name: GetResourceLocationBySector :one
 SELECT id, sector_x, sector_y, resource_type, defender_faction, total_worth, name, description, image_url,
        resources, resources_calc_timestamp, armies, buildings
-FROM resource_locations
+FROM game.resource_locations
 WHERE sector_x = @sector_x AND sector_y = @sector_y;
 
 -- name: GetResourceLocationBySectorForUpdate :one
 SELECT id, sector_x, sector_y, resource_type, defender_faction, total_worth, name, description, image_url,
        resources, resources_calc_timestamp, armies, buildings
-FROM resource_locations
+FROM game.resource_locations
 WHERE sector_x = @sector_x AND sector_y = @sector_y
 FOR UPDATE;
 
 -- name: FindClosestResourceLocation :one
 SELECT id, sector_x, sector_y, resource_type, defender_faction, total_worth, name, description, image_url,
        resources, resources_calc_timestamp, armies, buildings
-FROM resource_locations
+FROM game.resource_locations
 ORDER BY (sector_x - @x)^2 + (sector_y - @y)^2 ASC
 LIMIT 1;
 
 -- name: InsertResourceLocation :one
-INSERT INTO resource_locations (
+INSERT INTO game.resource_locations (
     sector_x, sector_y, resource_type, defender_faction, total_worth, name, description, image_url,
     resources, resources_calc_timestamp, armies, buildings
 ) VALUES (
@@ -37,7 +37,7 @@ INSERT INTO resource_locations (
 RETURNING id;
 
 -- name: UpdateResourceLocation :exec
-UPDATE resource_locations
+UPDATE game.resource_locations
 SET resource_type = @resource_type,
     defender_faction = @defender_faction,
     total_worth = @total_worth,
@@ -51,7 +51,7 @@ SET resource_type = @resource_type,
 WHERE id = @id;
 
 -- name: DeleteResourceLocation :exec
-DELETE FROM resource_locations WHERE id = @id;
+DELETE FROM game.resource_locations WHERE id = @id;
 
 -- name: DeleteResourceLocationBySector :exec
-DELETE FROM resource_locations WHERE sector_x = @sector_x AND sector_y = @sector_y;
+DELETE FROM game.resource_locations WHERE sector_x = @sector_x AND sector_y = @sector_y;

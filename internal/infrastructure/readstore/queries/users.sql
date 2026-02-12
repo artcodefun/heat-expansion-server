@@ -2,5 +2,5 @@
 
 -- name: GetUserProfile :one
 SELECT id, name, email, password_hash, crystals
-FROM users
+FROM game.users
 WHERE id = $1;

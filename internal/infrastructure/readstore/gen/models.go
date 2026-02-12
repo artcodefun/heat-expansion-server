@@ -275,7 +275,7 @@ type User struct {
 	Crystals     int32  `json:"crystals"`
 }
 
-type UserBasis struct {
+type UserBase struct {
 	ID                 int64           `json:"id"`
 	UserID             int64           `json:"user_id"`
 	SectorX            int32           `json:"sector_x"`

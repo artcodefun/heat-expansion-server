@@ -18,7 +18,7 @@ import (
 const listBuildPrototypesByIDs = `-- name: ListBuildPrototypesByIDs :many
 
 SELECT p.id, p.name, p.category, p.faction, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.control_data, p.resources_data, p.defense_data, p.military_data, p.intelligence_data
-FROM build_item_prototypes p
+FROM game.build_item_prototypes p
 WHERE p.id = ANY($1::bigint[])
 ORDER BY p.id
 `
@@ -66,8 +66,8 @@ func (q *Queries) ListBuildPrototypesByIDs(ctx context.Context, dollar_1 []int64
 
 const listInProductionBuildItems = `-- name: ListInProductionBuildItems :many
 SELECT bbi.id, bbi.base_id, bbi.prototype_id, bbi.status, bbi.in_prod_data, p.id AS proto_id, p.name, p.category, p.faction, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.control_data, p.resources_data, p.defense_data, p.military_data, p.intelligence_data
-FROM base_build_items bbi
-JOIN build_item_prototypes p ON p.id = bbi.prototype_id
+FROM game.base_build_items bbi
+JOIN game.build_item_prototypes p ON p.id = bbi.prototype_id
 WHERE bbi.base_id = $1 AND p.category = $2 AND bbi.status = 'IN_PRODUCTION'
 ORDER BY (bbi.in_prod_data->>'completion_date')::bigint ASC NULLS LAST
 `
@@ -148,8 +148,8 @@ func (q *Queries) ListInProductionBuildItems(ctx context.Context, arg ListInProd
 
 const listInProductionBuildItemsAll = `-- name: ListInProductionBuildItemsAll :many
 SELECT bbi.id, bbi.base_id, bbi.prototype_id, bbi.status, bbi.in_prod_data, p.id AS proto_id, p.name, p.category, p.faction, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.control_data, p.resources_data, p.defense_data, p.military_data, p.intelligence_data
-FROM base_build_items bbi
-JOIN build_item_prototypes p ON p.id = bbi.prototype_id
+FROM game.base_build_items bbi
+JOIN game.build_item_prototypes p ON p.id = bbi.prototype_id
 WHERE bbi.base_id = $1 AND bbi.status = 'IN_PRODUCTION'
 ORDER BY (bbi.in_prod_data->>'completion_date')::bigint ASC NULLS LAST
 `
@@ -225,8 +225,8 @@ func (q *Queries) ListInProductionBuildItemsAll(ctx context.Context, baseID int6
 
 const listPendingBuildItems = `-- name: ListPendingBuildItems :many
 SELECT bbi.id, bbi.base_id, bbi.prototype_id, bbi.status, bbi.pending_data, p.id AS proto_id, p.name, p.category, p.faction, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.control_data, p.resources_data, p.defense_data, p.military_data, p.intelligence_data
-FROM base_build_items bbi
-JOIN build_item_prototypes p ON p.id = bbi.prototype_id
+FROM game.base_build_items bbi
+JOIN game.build_item_prototypes p ON p.id = bbi.prototype_id
 WHERE bbi.base_id = $1 AND p.category = $2 AND bbi.status = 'PENDING'
 ORDER BY p.id
 `
@@ -307,8 +307,8 @@ func (q *Queries) ListPendingBuildItems(ctx context.Context, arg ListPendingBuil
 
 const listPendingBuildItemsAll = `-- name: ListPendingBuildItemsAll :many
 SELECT bbi.id, bbi.base_id, bbi.prototype_id, bbi.status, bbi.pending_data, p.id AS proto_id, p.name, p.category, p.faction, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.control_data, p.resources_data, p.defense_data, p.military_data, p.intelligence_data
-FROM base_build_items bbi
-JOIN build_item_prototypes p ON p.id = bbi.prototype_id
+FROM game.base_build_items bbi
+JOIN game.build_item_prototypes p ON p.id = bbi.prototype_id
 WHERE bbi.base_id = $1 AND bbi.status = 'PENDING'
 ORDER BY p.id
 `
@@ -384,8 +384,8 @@ func (q *Queries) ListPendingBuildItemsAll(ctx context.Context, baseID int64) ([
 
 const listPresentBuildItems = `-- name: ListPresentBuildItems :many
 SELECT bbi.id, bbi.base_id, bbi.prototype_id, bbi.status, bbi.present_data, p.id AS proto_id, p.name, p.category, p.faction, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.control_data, p.resources_data, p.defense_data, p.military_data, p.intelligence_data
-FROM base_build_items bbi
-JOIN build_item_prototypes p ON p.id = bbi.prototype_id
+FROM game.base_build_items bbi
+JOIN game.build_item_prototypes p ON p.id = bbi.prototype_id
 WHERE bbi.base_id = $1 AND p.category = $2 AND bbi.status = 'PRESENT'
 ORDER BY p.id
 `
@@ -466,8 +466,8 @@ func (q *Queries) ListPresentBuildItems(ctx context.Context, arg ListPresentBuil
 
 const listPresentBuildItemsAll = `-- name: ListPresentBuildItemsAll :many
 SELECT bbi.id, bbi.base_id, bbi.prototype_id, bbi.status, bbi.present_data, p.id AS proto_id, p.name, p.category, p.faction, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.control_data, p.resources_data, p.defense_data, p.military_data, p.intelligence_data
-FROM base_build_items bbi
-JOIN build_item_prototypes p ON p.id = bbi.prototype_id
+FROM game.base_build_items bbi
+JOIN game.build_item_prototypes p ON p.id = bbi.prototype_id
 WHERE bbi.base_id = $1 AND bbi.status = 'PRESENT'
 ORDER BY p.id
 `

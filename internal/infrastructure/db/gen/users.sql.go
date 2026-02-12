@@ -11,7 +11,7 @@ import (
 
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT id, name, email, password_hash, crystals
-FROM users
+FROM game.users
 WHERE email = $1
 `
 
@@ -31,7 +31,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 const getUserByID = `-- name: GetUserByID :one
 
 SELECT id, name, email, password_hash, crystals
-FROM users
+FROM game.users
 WHERE id = $1
 `
 
@@ -50,7 +50,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 }
 
 const insertUser = `-- name: InsertUser :one
-INSERT INTO users (
+INSERT INTO game.users (
     name, email, password_hash, crystals
 ) VALUES (
     $1, $2, $3, $4
@@ -79,7 +79,7 @@ func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) (int64, 
 
 const listUsers = `-- name: ListUsers :many
 SELECT id, name, email, password_hash, crystals
-FROM users
+FROM game.users
 ORDER BY id
 LIMIT $1 OFFSET $2
 `
@@ -119,7 +119,7 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 }
 
 const updateUser = `-- name: UpdateUser :exec
-UPDATE users
+UPDATE game.users
 SET name = $1,
     email = $2,
     password_hash = $3,

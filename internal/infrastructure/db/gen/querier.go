@@ -16,7 +16,7 @@ type Querier interface {
 	CountDangerousLocationsInRange(ctx context.Context, arg CountDangerousLocationsInRangeParams) (int64, error)
 	CountResourcefulLocationsInRange(ctx context.Context, arg CountResourcefulLocationsInRangeParams) (int64, error)
 	// User bases queries
-	CreateBase(ctx context.Context, arg CreateBaseParams) (UserBasis, error)
+	CreateBase(ctx context.Context, arg CreateBaseParams) (UserBase, error)
 	// Sector queries
 	CreateSector(ctx context.Context, arg CreateSectorParams) (Sector, error)
 	DeleteActivitiesByBase(ctx context.Context, baseID int64) error
@@ -36,15 +36,15 @@ type Querier interface {
 	ExistsForActivity(ctx context.Context, activityID uuid.NullUUID) (bool, error)
 	ExistsForOperation(ctx context.Context, arg ExistsForOperationParams) (bool, error)
 	ExistsForScanReport(ctx context.Context, reportID int64) (bool, error)
-	FindClosestBase(ctx context.Context, arg FindClosestBaseParams) (UserBasis, error)
+	FindClosestBase(ctx context.Context, arg FindClosestBaseParams) (UserBase, error)
 	FindClosestDangerousLocation(ctx context.Context, arg FindClosestDangerousLocationParams) (DangerousLocation, error)
 	FindClosestResourceLocation(ctx context.Context, arg FindClosestResourceLocationParams) (ResourceLocation, error)
 	// Army prototypes queries
 	GetArmyPrototypeByID(ctx context.Context, id int64) (ArmyItemPrototype, error)
-	GetBaseByCoordinates(ctx context.Context, arg GetBaseByCoordinatesParams) (UserBasis, error)
-	GetBaseByCoordinatesForUpdate(ctx context.Context, arg GetBaseByCoordinatesForUpdateParams) (UserBasis, error)
-	GetBaseByID(ctx context.Context, id int64) (UserBasis, error)
-	GetBaseByIDForUpdate(ctx context.Context, id int64) (UserBasis, error)
+	GetBaseByCoordinates(ctx context.Context, arg GetBaseByCoordinatesParams) (UserBase, error)
+	GetBaseByCoordinatesForUpdate(ctx context.Context, arg GetBaseByCoordinatesForUpdateParams) (UserBase, error)
+	GetBaseByID(ctx context.Context, id int64) (UserBase, error)
+	GetBaseByIDForUpdate(ctx context.Context, id int64) (UserBase, error)
 	// Building prototypes queries
 	GetBuildPrototypeByID(ctx context.Context, id int64) (BuildItemPrototype, error)
 	// Dangerous locations queries
@@ -94,7 +94,7 @@ type Querier interface {
 	// Activities queries
 	ListActivitiesByBase(ctx context.Context, arg ListActivitiesByBaseParams) ([]Activity, error)
 	ListAlertsByBase(ctx context.Context, arg ListAlertsByBaseParams) ([]Alert, error)
-	ListAllBases(ctx context.Context) ([]UserBasis, error)
+	ListAllBases(ctx context.Context) ([]UserBase, error)
 	ListArmyPrototypes(ctx context.Context) ([]ArmyItemPrototype, error)
 	// Base army items queries
 	ListBaseArmyItems(ctx context.Context, baseID int64) ([]BaseArmyItem, error)
@@ -104,7 +104,7 @@ type Querier interface {
 	ListBaseStorageItems(ctx context.Context, baseID int64) ([]BaseStorageItem, error)
 	// Base tech items queries
 	ListBaseTechItems(ctx context.Context, baseID int64) ([]BaseTechItem, error)
-	ListBasesByUserID(ctx context.Context, userID int64) ([]UserBasis, error)
+	ListBasesByUserID(ctx context.Context, userID int64) ([]UserBase, error)
 	ListBuildPrototypes(ctx context.Context) ([]BuildItemPrototype, error)
 	ListOccupiedSectorCoordinates(ctx context.Context) ([]ListOccupiedSectorCoordinatesRow, error)
 	ListOpsBySourceBase(ctx context.Context, arg ListOpsBySourceBaseParams) ([]MilitaryOperation, error)
@@ -121,7 +121,7 @@ type Querier interface {
 	MarkScheduledJobDispatched(ctx context.Context, arg MarkScheduledJobDispatchedParams) error
 	RadarThreatExists(ctx context.Context, arg RadarThreatExistsParams) (bool, error)
 	RecentReportExistsByScanner(ctx context.Context, arg RecentReportExistsByScannerParams) (bool, error)
-	UpdateBase(ctx context.Context, arg UpdateBaseParams) (UserBasis, error)
+	UpdateBase(ctx context.Context, arg UpdateBaseParams) (UserBase, error)
 	UpdateDangerousLocation(ctx context.Context, arg UpdateDangerousLocationParams) error
 	UpdateMilitaryOperation(ctx context.Context, arg UpdateMilitaryOperationParams) error
 	UpdateRadarThreat(ctx context.Context, arg UpdateRadarThreatParams) (RadarThreat, error)

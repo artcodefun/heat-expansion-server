@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS alerts;
+DROP TABLE IF EXISTS game.alerts;

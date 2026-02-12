@@ -12,7 +12,7 @@ import (
 )
 
 const deleteExpiredAlerts = `-- name: DeleteExpiredAlerts :exec
-DELETE FROM alerts WHERE expires_at < $1
+DELETE FROM game.alerts WHERE expires_at < $1
 `
 
 func (q *Queries) DeleteExpiredAlerts(ctx context.Context, expiresAt int64) error {
@@ -22,7 +22,7 @@ func (q *Queries) DeleteExpiredAlerts(ctx context.Context, expiresAt int64) erro
 
 const existsForActivity = `-- name: ExistsForActivity :one
 SELECT EXISTS (
-    SELECT 1 FROM alerts
+    SELECT 1 FROM game.alerts
     WHERE activity_id = $1
 )
 `
@@ -35,7 +35,7 @@ func (q *Queries) ExistsForActivity(ctx context.Context, activityID uuid.NullUUI
 }
 
 const insertAlert = `-- name: InsertAlert :exec
-INSERT INTO alerts (id, base_id, activity_id, kind, title, content, is_read, created_at, expires_at)
+INSERT INTO game.alerts (id, base_id, activity_id, kind, title, content, is_read, created_at, expires_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 `
 
@@ -67,7 +67,7 @@ func (q *Queries) InsertAlert(ctx context.Context, arg InsertAlertParams) error 
 }
 
 const listAlertsByBase = `-- name: ListAlertsByBase :many
-SELECT id, base_id, activity_id, kind, title, content, is_read, created_at, expires_at FROM alerts
+SELECT id, base_id, activity_id, kind, title, content, is_read, created_at, expires_at FROM game.alerts
 WHERE base_id = $1 AND expires_at > $2
 ORDER BY created_at DESC
 `
@@ -111,7 +111,7 @@ func (q *Queries) ListAlertsByBase(ctx context.Context, arg ListAlertsByBasePara
 }
 
 const markAllAlertsAsRead = `-- name: MarkAllAlertsAsRead :exec
-UPDATE alerts SET is_read = TRUE
+UPDATE game.alerts SET is_read = TRUE
 WHERE base_id = $1
 `
 

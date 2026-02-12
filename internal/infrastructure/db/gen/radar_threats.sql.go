@@ -13,7 +13,7 @@ import (
 )
 
 const getRadarThreat = `-- name: GetRadarThreat :one
-SELECT id, operation_id, owner_base_id, detected_at, detected_x, detected_y, source_x, source_y, target_x, target_y, estimated_arrival_at, arrival_at, type, status, attack, speed, stealth, capacity FROM radar_threats WHERE id = $1 LIMIT 1
+SELECT id, operation_id, owner_base_id, detected_at, detected_x, detected_y, source_x, source_y, target_x, target_y, estimated_arrival_at, arrival_at, type, status, attack, speed, stealth, capacity FROM game.radar_threats WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetRadarThreat(ctx context.Context, id uuid.UUID) (RadarThreat, error) {
@@ -43,7 +43,7 @@ func (q *Queries) GetRadarThreat(ctx context.Context, id uuid.UUID) (RadarThreat
 }
 
 const getRadarThreatByOperationID = `-- name: GetRadarThreatByOperationID :one
-SELECT id, operation_id, owner_base_id, detected_at, detected_x, detected_y, source_x, source_y, target_x, target_y, estimated_arrival_at, arrival_at, type, status, attack, speed, stealth, capacity FROM radar_threats WHERE operation_id = $1 LIMIT 1
+SELECT id, operation_id, owner_base_id, detected_at, detected_x, detected_y, source_x, source_y, target_x, target_y, estimated_arrival_at, arrival_at, type, status, attack, speed, stealth, capacity FROM game.radar_threats WHERE operation_id = $1 LIMIT 1
 `
 
 func (q *Queries) GetRadarThreatByOperationID(ctx context.Context, operationID int64) (RadarThreat, error) {
@@ -73,7 +73,7 @@ func (q *Queries) GetRadarThreatByOperationID(ctx context.Context, operationID i
 }
 
 const insertRadarThreat = `-- name: InsertRadarThreat :one
-INSERT INTO radar_threats (
+INSERT INTO game.radar_threats (
     id, operation_id, owner_base_id, detected_at, detected_x, detected_y,
     source_x, source_y, target_x, target_y,
     estimated_arrival_at, arrival_at, type, status, attack, speed, stealth, capacity
@@ -150,7 +150,7 @@ func (q *Queries) InsertRadarThreat(ctx context.Context, arg InsertRadarThreatPa
 
 const radarThreatExists = `-- name: RadarThreatExists :one
 SELECT EXISTS (
-    SELECT 1 FROM radar_threats WHERE owner_base_id = $1 AND operation_id = $2
+    SELECT 1 FROM game.radar_threats WHERE owner_base_id = $1 AND operation_id = $2
 )
 `
 
@@ -167,7 +167,7 @@ func (q *Queries) RadarThreatExists(ctx context.Context, arg RadarThreatExistsPa
 }
 
 const updateRadarThreat = `-- name: UpdateRadarThreat :one
-UPDATE radar_threats
+UPDATE game.radar_threats
 SET estimated_arrival_at = $2,
     arrival_at = $3,
     status = $4

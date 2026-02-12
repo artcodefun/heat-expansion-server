@@ -13,7 +13,7 @@ import (
 
 const createBase = `-- name: CreateBase :one
 
-INSERT INTO user_bases (
+INSERT INTO game.user_bases (
     user_id, sector_x, sector_y, name, description, image_url,
     stats, stats_calc_timestamp
 ) VALUES (
@@ -36,7 +36,7 @@ type CreateBaseParams struct {
 }
 
 // User bases queries
-func (q *Queries) CreateBase(ctx context.Context, arg CreateBaseParams) (UserBasis, error) {
+func (q *Queries) CreateBase(ctx context.Context, arg CreateBaseParams) (UserBase, error) {
 	row := q.queryRow(ctx, q.createBaseStmt, createBase,
 		arg.UserID,
 		arg.SectorX,
@@ -47,7 +47,7 @@ func (q *Queries) CreateBase(ctx context.Context, arg CreateBaseParams) (UserBas
 		arg.Stats,
 		arg.StatsCalcTimestamp,
 	)
-	var i UserBasis
+	var i UserBase
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
@@ -64,7 +64,7 @@ func (q *Queries) CreateBase(ctx context.Context, arg CreateBaseParams) (UserBas
 
 const deleteBase = `-- name: DeleteBase :exec
 
-DELETE FROM user_bases WHERE id = $1
+DELETE FROM game.user_bases WHERE id = $1
 `
 
 // Note: above RETURNING still lists sector_id; fix below to sector_x, sector_y
@@ -76,7 +76,7 @@ func (q *Queries) DeleteBase(ctx context.Context, id int64) error {
 const findClosestBase = `-- name: FindClosestBase :one
 SELECT id, user_id, sector_x, sector_y, name, description, image_url,
        stats, stats_calc_timestamp
-FROM user_bases
+FROM game.user_bases
 WHERE sector_x != $1 OR sector_y != $2
 ORDER BY (sector_x - $1)^2 + (sector_y - $2)^2 ASC
 LIMIT 1
@@ -87,9 +87,9 @@ type FindClosestBaseParams struct {
 	Y int32 `json:"y"`
 }
 
-func (q *Queries) FindClosestBase(ctx context.Context, arg FindClosestBaseParams) (UserBasis, error) {
+func (q *Queries) FindClosestBase(ctx context.Context, arg FindClosestBaseParams) (UserBase, error) {
 	row := q.queryRow(ctx, q.findClosestBaseStmt, findClosestBase, arg.X, arg.Y)
-	var i UserBasis
+	var i UserBase
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
@@ -107,7 +107,7 @@ func (q *Queries) FindClosestBase(ctx context.Context, arg FindClosestBaseParams
 const getBaseByCoordinates = `-- name: GetBaseByCoordinates :one
 SELECT id, user_id, sector_x, sector_y, name, description, image_url,
        stats, stats_calc_timestamp
-FROM user_bases
+FROM game.user_bases
 WHERE sector_x = $1 AND sector_y = $2
 `
 
@@ -116,9 +116,9 @@ type GetBaseByCoordinatesParams struct {
 	SectorY int32 `json:"sector_y"`
 }
 
-func (q *Queries) GetBaseByCoordinates(ctx context.Context, arg GetBaseByCoordinatesParams) (UserBasis, error) {
+func (q *Queries) GetBaseByCoordinates(ctx context.Context, arg GetBaseByCoordinatesParams) (UserBase, error) {
 	row := q.queryRow(ctx, q.getBaseByCoordinatesStmt, getBaseByCoordinates, arg.SectorX, arg.SectorY)
-	var i UserBasis
+	var i UserBase
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
@@ -136,7 +136,7 @@ func (q *Queries) GetBaseByCoordinates(ctx context.Context, arg GetBaseByCoordin
 const getBaseByCoordinatesForUpdate = `-- name: GetBaseByCoordinatesForUpdate :one
 SELECT id, user_id, sector_x, sector_y, name, description, image_url,
        stats, stats_calc_timestamp
-FROM user_bases
+FROM game.user_bases
 WHERE sector_x = $1 AND sector_y = $2
 FOR UPDATE
 `
@@ -146,9 +146,9 @@ type GetBaseByCoordinatesForUpdateParams struct {
 	SectorY int32 `json:"sector_y"`
 }
 
-func (q *Queries) GetBaseByCoordinatesForUpdate(ctx context.Context, arg GetBaseByCoordinatesForUpdateParams) (UserBasis, error) {
+func (q *Queries) GetBaseByCoordinatesForUpdate(ctx context.Context, arg GetBaseByCoordinatesForUpdateParams) (UserBase, error) {
 	row := q.queryRow(ctx, q.getBaseByCoordinatesForUpdateStmt, getBaseByCoordinatesForUpdate, arg.SectorX, arg.SectorY)
-	var i UserBasis
+	var i UserBase
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
@@ -166,13 +166,13 @@ func (q *Queries) GetBaseByCoordinatesForUpdate(ctx context.Context, arg GetBase
 const getBaseByID = `-- name: GetBaseByID :one
 SELECT id, user_id, sector_x, sector_y, name, description, image_url,
        stats, stats_calc_timestamp
-FROM user_bases
+FROM game.user_bases
 WHERE id = $1
 `
 
-func (q *Queries) GetBaseByID(ctx context.Context, id int64) (UserBasis, error) {
+func (q *Queries) GetBaseByID(ctx context.Context, id int64) (UserBase, error) {
 	row := q.queryRow(ctx, q.getBaseByIDStmt, getBaseByID, id)
-	var i UserBasis
+	var i UserBase
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
@@ -190,14 +190,14 @@ func (q *Queries) GetBaseByID(ctx context.Context, id int64) (UserBasis, error) 
 const getBaseByIDForUpdate = `-- name: GetBaseByIDForUpdate :one
 SELECT id, user_id, sector_x, sector_y, name, description, image_url,
        stats, stats_calc_timestamp
-FROM user_bases
+FROM game.user_bases
 WHERE id = $1
 FOR UPDATE
 `
 
-func (q *Queries) GetBaseByIDForUpdate(ctx context.Context, id int64) (UserBasis, error) {
+func (q *Queries) GetBaseByIDForUpdate(ctx context.Context, id int64) (UserBase, error) {
 	row := q.queryRow(ctx, q.getBaseByIDForUpdateStmt, getBaseByIDForUpdate, id)
-	var i UserBasis
+	var i UserBase
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
@@ -215,19 +215,19 @@ func (q *Queries) GetBaseByIDForUpdate(ctx context.Context, id int64) (UserBasis
 const listAllBases = `-- name: ListAllBases :many
 SELECT id, user_id, sector_x, sector_y, name, description, image_url,
        stats, stats_calc_timestamp
-FROM user_bases
+FROM game.user_bases
 ORDER BY id
 `
 
-func (q *Queries) ListAllBases(ctx context.Context) ([]UserBasis, error) {
+func (q *Queries) ListAllBases(ctx context.Context) ([]UserBase, error) {
 	rows, err := q.query(ctx, q.listAllBasesStmt, listAllBases)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []UserBasis{}
+	items := []UserBase{}
 	for rows.Next() {
-		var i UserBasis
+		var i UserBase
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
@@ -255,20 +255,20 @@ func (q *Queries) ListAllBases(ctx context.Context) ([]UserBasis, error) {
 const listBasesByUserID = `-- name: ListBasesByUserID :many
 SELECT id, user_id, sector_x, sector_y, name, description, image_url,
        stats, stats_calc_timestamp
-FROM user_bases
+FROM game.user_bases
 WHERE user_id = $1
 ORDER BY id
 `
 
-func (q *Queries) ListBasesByUserID(ctx context.Context, userID int64) ([]UserBasis, error) {
+func (q *Queries) ListBasesByUserID(ctx context.Context, userID int64) ([]UserBase, error) {
 	rows, err := q.query(ctx, q.listBasesByUserIDStmt, listBasesByUserID, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []UserBasis{}
+	items := []UserBase{}
 	for rows.Next() {
-		var i UserBasis
+		var i UserBase
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
@@ -294,7 +294,7 @@ func (q *Queries) ListBasesByUserID(ctx context.Context, userID int64) ([]UserBa
 }
 
 const updateBase = `-- name: UpdateBase :one
-UPDATE user_bases
+UPDATE game.user_bases
 SET name = $1,
     description = $2,
     image_url = $3,
@@ -314,7 +314,7 @@ type UpdateBaseParams struct {
 	ID                 int64           `json:"id"`
 }
 
-func (q *Queries) UpdateBase(ctx context.Context, arg UpdateBaseParams) (UserBasis, error) {
+func (q *Queries) UpdateBase(ctx context.Context, arg UpdateBaseParams) (UserBase, error) {
 	row := q.queryRow(ctx, q.updateBaseStmt, updateBase,
 		arg.Name,
 		arg.Description,
@@ -323,7 +323,7 @@ func (q *Queries) UpdateBase(ctx context.Context, arg UpdateBaseParams) (UserBas
 		arg.StatsCalcTimestamp,
 		arg.ID,
 	)
-	var i UserBasis
+	var i UserBase
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,

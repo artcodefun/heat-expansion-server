@@ -9,7 +9,7 @@ import (
 	"github.com/artcodefun/heat-expansion-api/internal/infrastructure/db/gen"
 )
 
-func UserBaseFromDB(b gen.UserBasis) *domain.UserBaseModel {
+func UserBaseFromDB(b gen.UserBase) *domain.UserBaseModel {
 	// Unmarshal stats JSON
 	var dto dtos.BaseStatsDTO
 	_ = json.Unmarshal(b.Stats, &dto)

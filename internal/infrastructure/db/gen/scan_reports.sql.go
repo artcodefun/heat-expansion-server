@@ -14,7 +14,7 @@ import (
 )
 
 const deleteScanReport = `-- name: DeleteScanReport :exec
-DELETE FROM scan_reports WHERE id = $1
+DELETE FROM game.scan_reports WHERE id = $1
 `
 
 func (q *Queries) DeleteScanReport(ctx context.Context, id int64) error {
@@ -25,7 +25,7 @@ func (q *Queries) DeleteScanReport(ctx context.Context, id int64) error {
 const getLatestScanReportsByBase = `-- name: GetLatestScanReportsByBase :many
 SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked,
        source_operation_id, source_scanner_id, source_intel_item_id, name, description, image_url, info
-FROM scan_reports
+FROM game.scan_reports
 WHERE base_id = $1
 ORDER BY created_at DESC
 LIMIT 50
@@ -72,7 +72,7 @@ func (q *Queries) GetLatestScanReportsByBase(ctx context.Context, baseID int64) 
 const getScanReportByID = `-- name: GetScanReportByID :one
 SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked,
        source_operation_id, source_scanner_id, source_intel_item_id, name, description, image_url, info
-FROM scan_reports
+FROM game.scan_reports
 WHERE id = $1
 `
 
@@ -100,7 +100,7 @@ func (q *Queries) GetScanReportByID(ctx context.Context, id int64) (ScanReport, 
 
 const insertScanReport = `-- name: InsertScanReport :one
 
-INSERT INTO scan_reports (
+INSERT INTO game.scan_reports (
     base_id, sector_x, sector_y, created_at, type, is_cloaked,
     source_operation_id, source_scanner_id, source_intel_item_id, name, description, image_url, info
 ) VALUES (
@@ -151,7 +151,7 @@ func (q *Queries) InsertScanReport(ctx context.Context, arg InsertScanReportPara
 const listScanReportsByBaseAndCoordinates = `-- name: ListScanReportsByBaseAndCoordinates :many
 SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked,
        source_operation_id, source_scanner_id, source_intel_item_id, name, description, image_url, info
-FROM scan_reports
+FROM game.scan_reports
 WHERE base_id = $1 AND sector_x = $2 AND sector_y = $3
 ORDER BY created_at DESC
 `
@@ -209,8 +209,8 @@ WITH params AS (
 )
 SELECT sr.id, sr.base_id, sr.sector_x, sr.sector_y, sr.created_at, sr.type, sr.is_cloaked,
        sr.source_operation_id, sr.source_scanner_id, sr.source_intel_item_id, sr.name, sr.description, sr.image_url, sr.info
-FROM scan_reports AS sr
-JOIN sectors AS s ON s.x = sr.sector_x AND s.y = sr.sector_y
+FROM game.scan_reports AS sr
+JOIN game.sectors AS s ON s.x = sr.sector_x AND s.y = sr.sector_y
 JOIN params p ON p.base_id = sr.base_id
 WHERE ((s.x - p.cx) * (s.x - p.cx) + (s.y - p.cy) * (s.y - p.cy)) <= (p.r * p.r)
 ORDER BY sr.created_at DESC
@@ -268,7 +268,7 @@ func (q *Queries) ListScanReportsByBaseWithinArea(ctx context.Context, arg ListS
 
 const recentReportExistsByScanner = `-- name: RecentReportExistsByScanner :one
 SELECT EXISTS (
-    SELECT 1 FROM scan_reports
+    SELECT 1 FROM game.scan_reports
     WHERE source_scanner_id = $1
       AND created_at >= $2
 )

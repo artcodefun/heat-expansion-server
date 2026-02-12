@@ -5,7 +5,7 @@ SELECT id, name, category, faction, unlock_technology_id, short_description, ful
        price,
        production_time, space, image_url,
        attack, defence, capacity, stealth, speed
-FROM army_item_prototypes
+FROM game.army_item_prototypes
 WHERE id = @id;
 
 -- name: ListArmyPrototypes :many
@@ -13,5 +13,5 @@ SELECT id, name, category, faction, unlock_technology_id, short_description, ful
        price,
        production_time, space, image_url,
        attack, defence, capacity, stealth, speed
-FROM army_item_prototypes
+FROM game.army_item_prototypes
 ORDER BY id;

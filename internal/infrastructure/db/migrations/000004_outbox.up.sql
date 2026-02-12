@@ -1,7 +1,7 @@
 -- Outbox table for domain events (PostgreSQL)
 
 -- Domain events outbox
-CREATE TABLE domain_events (
+CREATE TABLE game.domain_events (
     id           BIGSERIAL PRIMARY KEY,
     kind         TEXT   NOT NULL,
     payload      JSONB  NOT NULL,
@@ -11,4 +11,4 @@ CREATE TABLE domain_events (
 );
 
 CREATE INDEX idx_domain_events_published_id
-    ON domain_events (published, id);
+    ON game.domain_events (published, id);

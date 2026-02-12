@@ -30,13 +30,13 @@ MIGRATION_DIR=internal/infrastructure/db/migrations
 DB_URL?=postgres://user:password@localhost:5432/heatdb?sslmode=disable
 
 migrate-up:
-	migrate -path $(MIGRATION_DIR) -database "$(DB_URL)" up
+	migrate -path $(MIGRATION_DIR) -database "$(DB_URL)&x-migrations-table=game_schema_migrations" up
 
 migrate-down:
-	migrate -path $(MIGRATION_DIR) -database "$(DB_URL)" down
+	migrate -path $(MIGRATION_DIR) -database "$(DB_URL)&x-migrations-table=game_schema_migrations" down
 
 migrate-create:
 	migrate create -ext sql -dir $(MIGRATION_DIR) -seq $(name)
 
 sqlc:
-	sqlc generate
+	sqlc -f internal/infrastructure/sqlc.yaml generate

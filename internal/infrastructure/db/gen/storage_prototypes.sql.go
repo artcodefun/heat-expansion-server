@@ -13,7 +13,7 @@ const getStoragePrototypeByID = `-- name: GetStoragePrototypeByID :one
 
 SELECT id, name, category, estimated_worth, short_description, full_description, image_url,
        buff_data, intel_data, damaged_data, artifact_data, consumable_data
-FROM storage_item_prototypes
+FROM game.storage_item_prototypes
 WHERE id = $1
 `
 
@@ -41,7 +41,7 @@ func (q *Queries) GetStoragePrototypeByID(ctx context.Context, id int64) (Storag
 const listStoragePrototypes = `-- name: ListStoragePrototypes :many
 SELECT id, name, category, estimated_worth, short_description, full_description, image_url,
        buff_data, intel_data, damaged_data, artifact_data, consumable_data
-FROM storage_item_prototypes
+FROM game.storage_item_prototypes
 ORDER BY id
 `
 

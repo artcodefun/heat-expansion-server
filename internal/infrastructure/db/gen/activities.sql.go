@@ -13,7 +13,7 @@ import (
 )
 
 const deleteActivitiesByBase = `-- name: DeleteActivitiesByBase :exec
-DELETE FROM activities WHERE base_id = $1
+DELETE FROM game.activities WHERE base_id = $1
 `
 
 func (q *Queries) DeleteActivitiesByBase(ctx context.Context, baseID int64) error {
@@ -23,7 +23,7 @@ func (q *Queries) DeleteActivitiesByBase(ctx context.Context, baseID int64) erro
 
 const existsForOperation = `-- name: ExistsForOperation :one
 SELECT EXISTS (
-    SELECT 1 FROM activities
+    SELECT 1 FROM game.activities
     WHERE base_id = $1 AND kind = $2
       AND (
           (kind = 'OFFENSE' AND (offense_data->>'op_id')::bigint = $3::bigint) OR
@@ -48,7 +48,7 @@ func (q *Queries) ExistsForOperation(ctx context.Context, arg ExistsForOperation
 
 const existsForScanReport = `-- name: ExistsForScanReport :one
 SELECT EXISTS (
-    SELECT 1 FROM activities
+    SELECT 1 FROM game.activities
     WHERE kind = 'SCAN' AND (scan_data->>'report_id')::bigint = $1::bigint
 )
 `
@@ -61,7 +61,7 @@ func (q *Queries) ExistsForScanReport(ctx context.Context, reportID int64) (bool
 }
 
 const insertActivity = `-- name: InsertActivity :one
-INSERT INTO activities (
+INSERT INTO game.activities (
     id, kind, created_at, base_id,
     offense_data, defense_data, scan_data, radar_data, trade_data
 ) VALUES (
@@ -104,7 +104,7 @@ const listActivitiesByBase = `-- name: ListActivitiesByBase :many
 
 SELECT id, kind, created_at, base_id,
        offense_data, defense_data, scan_data, radar_data, trade_data
-FROM activities
+FROM game.activities
 WHERE base_id = $3
 ORDER BY created_at DESC, id DESC
 LIMIT $1 OFFSET $2

@@ -13,7 +13,7 @@ import (
 
 const getBaseStats = `-- name: GetBaseStats :one
 SELECT stats, stats_calc_timestamp
-FROM user_bases
+FROM game.user_bases
 WHERE id = $1
 `
 
@@ -32,7 +32,7 @@ func (q *Queries) GetBaseStats(ctx context.Context, id int64) (GetBaseStatsRow, 
 
 const listUserBases = `-- name: ListUserBases :many
 SELECT id, user_id, sector_x, sector_y, name, description, image_url
-FROM user_bases
+FROM game.user_bases
 WHERE user_id = $1
 ORDER BY id
 `

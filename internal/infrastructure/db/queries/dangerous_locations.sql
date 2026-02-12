@@ -3,31 +3,31 @@
 -- name: GetDangerousLocationByID :one
 SELECT id, sector_x, sector_y, defender_faction, total_worth, name, description, image_url,
        resources, resources_calc_timestamp, armies, buildings, trophies
-FROM dangerous_locations
+FROM game.dangerous_locations
 WHERE id = @id;
 
 -- name: GetDangerousLocationBySector :one
 SELECT id, sector_x, sector_y, defender_faction, total_worth, name, description, image_url,
        resources, resources_calc_timestamp, armies, buildings, trophies
-FROM dangerous_locations
+FROM game.dangerous_locations
 WHERE sector_x = @sector_x AND sector_y = @sector_y;
 
 -- name: GetDangerousLocationBySectorForUpdate :one
 SELECT id, sector_x, sector_y, defender_faction, total_worth, name, description, image_url,
        resources, resources_calc_timestamp, armies, buildings, trophies
-FROM dangerous_locations
+FROM game.dangerous_locations
 WHERE sector_x = @sector_x AND sector_y = @sector_y
 FOR UPDATE;
 
 -- name: FindClosestDangerousLocation :one
 SELECT id, sector_x, sector_y, defender_faction, total_worth, name, description, image_url,
        resources, resources_calc_timestamp, armies, buildings, trophies
-FROM dangerous_locations
+FROM game.dangerous_locations
 ORDER BY (sector_x - @x)^2 + (sector_y - @y)^2 ASC
 LIMIT 1;
 
 -- name: InsertDangerousLocation :one
-INSERT INTO dangerous_locations (
+INSERT INTO game.dangerous_locations (
     sector_x, sector_y, defender_faction, total_worth, name, description, image_url,
     resources, resources_calc_timestamp, armies, buildings, trophies
 ) VALUES (
@@ -37,7 +37,7 @@ INSERT INTO dangerous_locations (
 RETURNING id;
 
 -- name: UpdateDangerousLocation :exec
-UPDATE dangerous_locations
+UPDATE game.dangerous_locations
 SET defender_faction = @defender_faction,
     total_worth = @total_worth,
     name = @name,
@@ -51,7 +51,7 @@ SET defender_faction = @defender_faction,
 WHERE id = @id;
 
 -- name: DeleteDangerousLocation :exec
-DELETE FROM dangerous_locations WHERE id = @id;
+DELETE FROM game.dangerous_locations WHERE id = @id;
 
 -- name: DeleteDangerousLocationBySector :exec
-DELETE FROM dangerous_locations WHERE sector_x = @sector_x AND sector_y = @sector_y;
+DELETE FROM game.dangerous_locations WHERE sector_x = @sector_x AND sector_y = @sector_y;

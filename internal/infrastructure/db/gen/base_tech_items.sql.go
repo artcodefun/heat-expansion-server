@@ -13,7 +13,7 @@ import (
 )
 
 const deleteBaseTechItemsByBase = `-- name: DeleteBaseTechItemsByBase :exec
-DELETE FROM base_tech_items WHERE base_id = $1
+DELETE FROM game.base_tech_items WHERE base_id = $1
 `
 
 func (q *Queries) DeleteBaseTechItemsByBase(ctx context.Context, baseID int64) error {
@@ -22,7 +22,7 @@ func (q *Queries) DeleteBaseTechItemsByBase(ctx context.Context, baseID int64) e
 }
 
 const insertBaseTechItem = `-- name: InsertBaseTechItem :one
-INSERT INTO base_tech_items (
+INSERT INTO game.base_tech_items (
     id, base_id, prototype_id, status,
     in_progress_data, done_data,
     created_at
@@ -64,7 +64,7 @@ const listBaseTechItems = `-- name: ListBaseTechItems :many
 SELECT id, base_id, prototype_id, status,
        in_progress_data, done_data,
        created_at
-FROM base_tech_items
+FROM game.base_tech_items
 WHERE base_id = $1
 ORDER BY id
 `

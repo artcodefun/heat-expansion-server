@@ -12,7 +12,7 @@ import (
 )
 
 const deleteDangerousLocation = `-- name: DeleteDangerousLocation :exec
-DELETE FROM dangerous_locations WHERE id = $1
+DELETE FROM game.dangerous_locations WHERE id = $1
 `
 
 func (q *Queries) DeleteDangerousLocation(ctx context.Context, id int64) error {
@@ -21,7 +21,7 @@ func (q *Queries) DeleteDangerousLocation(ctx context.Context, id int64) error {
 }
 
 const deleteDangerousLocationBySector = `-- name: DeleteDangerousLocationBySector :exec
-DELETE FROM dangerous_locations WHERE sector_x = $1 AND sector_y = $2
+DELETE FROM game.dangerous_locations WHERE sector_x = $1 AND sector_y = $2
 `
 
 type DeleteDangerousLocationBySectorParams struct {
@@ -37,7 +37,7 @@ func (q *Queries) DeleteDangerousLocationBySector(ctx context.Context, arg Delet
 const findClosestDangerousLocation = `-- name: FindClosestDangerousLocation :one
 SELECT id, sector_x, sector_y, defender_faction, total_worth, name, description, image_url,
        resources, resources_calc_timestamp, armies, buildings, trophies
-FROM dangerous_locations
+FROM game.dangerous_locations
 ORDER BY (sector_x - $1)^2 + (sector_y - $2)^2 ASC
 LIMIT 1
 `
@@ -72,7 +72,7 @@ const getDangerousLocationByID = `-- name: GetDangerousLocationByID :one
 
 SELECT id, sector_x, sector_y, defender_faction, total_worth, name, description, image_url,
        resources, resources_calc_timestamp, armies, buildings, trophies
-FROM dangerous_locations
+FROM game.dangerous_locations
 WHERE id = $1
 `
 
@@ -101,7 +101,7 @@ func (q *Queries) GetDangerousLocationByID(ctx context.Context, id int64) (Dange
 const getDangerousLocationBySector = `-- name: GetDangerousLocationBySector :one
 SELECT id, sector_x, sector_y, defender_faction, total_worth, name, description, image_url,
        resources, resources_calc_timestamp, armies, buildings, trophies
-FROM dangerous_locations
+FROM game.dangerous_locations
 WHERE sector_x = $1 AND sector_y = $2
 `
 
@@ -134,7 +134,7 @@ func (q *Queries) GetDangerousLocationBySector(ctx context.Context, arg GetDange
 const getDangerousLocationBySectorForUpdate = `-- name: GetDangerousLocationBySectorForUpdate :one
 SELECT id, sector_x, sector_y, defender_faction, total_worth, name, description, image_url,
        resources, resources_calc_timestamp, armies, buildings, trophies
-FROM dangerous_locations
+FROM game.dangerous_locations
 WHERE sector_x = $1 AND sector_y = $2
 FOR UPDATE
 `
@@ -166,7 +166,7 @@ func (q *Queries) GetDangerousLocationBySectorForUpdate(ctx context.Context, arg
 }
 
 const insertDangerousLocation = `-- name: InsertDangerousLocation :one
-INSERT INTO dangerous_locations (
+INSERT INTO game.dangerous_locations (
     sector_x, sector_y, defender_faction, total_worth, name, description, image_url,
     resources, resources_calc_timestamp, armies, buildings, trophies
 ) VALUES (
@@ -212,7 +212,7 @@ func (q *Queries) InsertDangerousLocation(ctx context.Context, arg InsertDangero
 }
 
 const updateDangerousLocation = `-- name: UpdateDangerousLocation :exec
-UPDATE dangerous_locations
+UPDATE game.dangerous_locations
 SET defender_faction = $1,
     total_worth = $2,
     name = $3,

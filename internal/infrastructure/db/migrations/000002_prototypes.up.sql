@@ -2,11 +2,11 @@
 -- Up migration: creates prototype tables and indexes.
 
 -- Technologies catalog (must exist before others due to unlock_technology_id references)
-CREATE TABLE tech_item_prototypes (
+CREATE TABLE game.tech_item_prototypes (
     id                   BIGSERIAL PRIMARY KEY,
     name                 TEXT    NOT NULL,
     category             TEXT    NOT NULL,
-    unlock_technology_id BIGINT  REFERENCES tech_item_prototypes(id) ON DELETE RESTRICT,
+    unlock_technology_id BIGINT  REFERENCES game.tech_item_prototypes(id) ON DELETE RESTRICT,
     short_description    TEXT,
     full_description     TEXT,
     -- Price: {"credits": int, "iron": int, "titanium": int, "antimatter": int}
@@ -16,15 +16,15 @@ CREATE TABLE tech_item_prototypes (
     -- Improvement: {"type": string, "value": int, "max_level": int|null}
     improvement          JSONB
 );
-CREATE INDEX idx_tech_prototypes_category ON tech_item_prototypes(category);
+CREATE INDEX idx_tech_prototypes_category ON game.tech_item_prototypes(category);
 
 -- Armies catalog
-CREATE TABLE army_item_prototypes (
+CREATE TABLE game.army_item_prototypes (
     id                   BIGSERIAL PRIMARY KEY,
     name                 TEXT    NOT NULL,
     category             TEXT    NOT NULL,
     faction              TEXT    NOT NULL DEFAULT 'EXO_COALITION',
-    unlock_technology_id BIGINT  REFERENCES tech_item_prototypes(id) ON DELETE RESTRICT,
+    unlock_technology_id BIGINT  REFERENCES game.tech_item_prototypes(id) ON DELETE RESTRICT,
     short_description    TEXT,
     full_description     TEXT,
     -- Price: {"credits": int, "iron": int, "titanium": int, "antimatter": int}
@@ -38,15 +38,15 @@ CREATE TABLE army_item_prototypes (
     stealth              INTEGER NOT NULL DEFAULT 0,
     speed                INTEGER NOT NULL DEFAULT 0
 );
-CREATE INDEX idx_army_prototypes_category ON army_item_prototypes(category);
+CREATE INDEX idx_army_prototypes_category ON game.army_item_prototypes(category);
 
 -- Buildings catalog (with category-specific JSONB payloads)
-CREATE TABLE build_item_prototypes (
+CREATE TABLE game.build_item_prototypes (
     id                   BIGSERIAL PRIMARY KEY,
     name                 TEXT    NOT NULL,
     category             TEXT    NOT NULL,
     faction              TEXT    NOT NULL DEFAULT 'EXO_COALITION',
-    unlock_technology_id BIGINT  REFERENCES tech_item_prototypes(id) ON DELETE RESTRICT,
+    unlock_technology_id BIGINT  REFERENCES game.tech_item_prototypes(id) ON DELETE RESTRICT,
     short_description    TEXT,
     full_description     TEXT,
     -- Price: {"credits": int, "iron": int, "titanium": int, "antimatter": int}
@@ -65,10 +65,10 @@ CREATE TABLE build_item_prototypes (
     -- Intelligence building data: {"subtype": string, "stealth_strength": int, "target_location_type": string, "scan_range": int, "scan_cooldown": bigint}
     intelligence_data    JSONB
 );
-CREATE INDEX idx_build_prototypes_category ON build_item_prototypes(category);
+CREATE INDEX idx_build_prototypes_category ON game.build_item_prototypes(category);
 
 -- Storage items catalog (with category-specific JSONB payloads)
-CREATE TABLE storage_item_prototypes (
+CREATE TABLE game.storage_item_prototypes (
     id                   BIGSERIAL PRIMARY KEY,
     name                 TEXT    NOT NULL,
     category             TEXT    NOT NULL,
@@ -87,4 +87,4 @@ CREATE TABLE storage_item_prototypes (
     -- Consumable storage data: {"type": string, "box_contents": []string, "box_size": int}
     consumable_data      JSONB
 );
-CREATE INDEX idx_storage_prototypes_category ON storage_item_prototypes(category);
+CREATE INDEX idx_storage_prototypes_category ON game.storage_item_prototypes(category);
