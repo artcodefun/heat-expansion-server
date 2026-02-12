@@ -1,8 +1,8 @@
 package mappers
 
 import (
-	"github.com/artcodefun/heat-expansion-api/internal/game/application/cqrs/readmodels"
-	"github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/db/dtos"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/dtos"
 )
 
 func UserBaseStatsFromDTO(dto dtos.BaseStatsDTO, calcTs int64) readmodels.UserBaseStats {

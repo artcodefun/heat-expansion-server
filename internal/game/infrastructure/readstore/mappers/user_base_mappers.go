@@ -1,8 +1,8 @@
 package mappers
 
 import (
-	"github.com/artcodefun/heat-expansion-api/internal/game/application/cqrs/readmodels"
-	"github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/readstore/gen"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/gen"
 )
 
 // UserBaseFromBasicRow maps basic base fields to readmodels.UserBaseModel.

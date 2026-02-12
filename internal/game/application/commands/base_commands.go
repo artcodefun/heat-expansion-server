@@ -3,10 +3,10 @@ package commands
 import (
 	"fmt"
 
-	"github.com/artcodefun/heat-expansion-api/internal/game/application/cqrs"
-	"github.com/artcodefun/heat-expansion-api/internal/game/application/ports"
-	"github.com/artcodefun/heat-expansion-api/internal/game/application/services"
-	"github.com/artcodefun/heat-expansion-api/internal/game/domain"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
+	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 )
 
 // BaseCommands encapsulates state-changing base operations.

@@ -1,8 +1,8 @@
 package services
 
 import (
-	"github.com/artcodefun/heat-expansion-api/internal/game/application/ports"
-	"github.com/artcodefun/heat-expansion-api/internal/game/domain"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 )
 
 // SectorProvisioningService centralizes lazy creation of sectors with generated empty flavor content.

@@ -11,9 +11,9 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/db/repo"
-	"github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/jobs"
-	httpapi "github.com/artcodefun/heat-expansion-api/internal/game/interfaces/http"
+	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/repo"
+	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/jobs"
+	httpapi "github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http"
 )
 
 type Module struct {

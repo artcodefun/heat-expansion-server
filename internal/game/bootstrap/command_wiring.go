@@ -1,10 +1,10 @@
 package bootstrap
 
 import (
-	"github.com/artcodefun/heat-expansion-api/internal/game/application/ports"
-	"github.com/artcodefun/heat-expansion-api/internal/game/domain"
-	infraevents "github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/events"
-	infrajobs "github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/jobs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
+	infraevents "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/events"
+	infrajobs "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/jobs"
 )
 
 // WireCommandEvents subscribes command-side handlers to domain events on the in-memory publisher.

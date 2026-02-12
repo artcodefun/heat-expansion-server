@@ -3,7 +3,7 @@ package services
 import (
 	"time"
 
-	"github.com/artcodefun/heat-expansion-api/internal/game/application/ports"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 )
 
 // OutboxService encapsulates the application-level logic for dispatching

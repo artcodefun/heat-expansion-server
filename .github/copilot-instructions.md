@@ -1,4 +1,4 @@
-# Copilot Instructions for Heat Expansion API
+# Copilot Instructions for Heat Expansion Server
 
 This repo is a Go backend for the Heat Expansion strategy game. It uses Hexagonal Architecture, DDD, and CQRS. Follow these project-specific guidelines when editing or generating code.
 
@@ -42,7 +42,7 @@ The patterns and conventions below apply to the **Game** service (`internal/game
   - Map domain/CQRS errors to HTTP status codes consistently using existing helpers in `http/dtos` and middleware.
 
 ## Workflows
-- **Build**: `make build` builds `./cmd/server` into `bin/heat-expansion-api`.
+- **Build**: `make build` builds `./cmd/server` into `bin/heat-expansion-server`.
 - **Run locally**: `make run` (loads `.env`, then `go run ./cmd/server`). Ensure DB is running and `GAME_DB_URL` is set.
 - **Tests**: `make test` or `go test ./...` from repo root.
 - **Migrations**: use `make migrate-up` / `make migrate-down` (requires `migrate` CLI). Game SQL files live in `internal/game/infrastructure/db/migrations`.

@@ -1,4 +1,4 @@
-module github.com/artcodefun/heat-expansion-api
+module github.com/artcodefun/heat-expansion-server
 
 go 1.25.1
 

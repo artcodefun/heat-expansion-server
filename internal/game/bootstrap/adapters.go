@@ -3,15 +3,15 @@ package bootstrap
 import (
 	"database/sql"
 
-	"github.com/artcodefun/heat-expansion-api/internal/game/application/ports"
-	contentgen "github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/content"
-	dbgen "github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/db/gen"
-	repo "github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/db/repo"
-	events "github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/events"
-	jobs "github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/jobs"
-	readgen "github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/readstore/gen"
-	readrepo "github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/readstore/repo"
-	"github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/security"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+	contentgen "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/content"
+	dbgen "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/gen"
+	repo "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/repo"
+	events "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/events"
+	jobs "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/jobs"
+	readgen "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/gen"
+	readrepo "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/repo"
+	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/security"
 )
 
 // Adapters wires secondary adapters (repositories, tx manager) implementing core ports.

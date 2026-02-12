@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/artcodefun/heat-expansion-api/internal/game/application/cqrs/readmodels"
-	"github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/db/dtos"
-	"github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/readstore/gen"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/dtos"
+	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/gen"
 )
 
 func techPrototypeFromParts(id int64, name, category string, unlock sql.NullInt64, short, full sql.NullString, price []byte, researchTime int64, imageURL sql.NullString, improvement []byte) readmodels.TechItemPrototype {

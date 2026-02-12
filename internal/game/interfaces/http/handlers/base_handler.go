@@ -3,8 +3,8 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/artcodefun/heat-expansion-api/internal/game/application/cqrs"
-	"github.com/artcodefun/heat-expansion-api/internal/game/interfaces/http/dtos"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
 )
 

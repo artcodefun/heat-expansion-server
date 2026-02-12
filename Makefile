@@ -1,5 +1,5 @@
-# Makefile for Heat Expansion API
-BINARY_NAME=heat-expansion-api
+# Makefile for Heat Expansion Server
+BINARY_NAME=heat-expansion-server
 GOARCH?=amd64
 GOOS?=linux
 CGO_ENABLED?=0

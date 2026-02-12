@@ -14,7 +14,7 @@ RUN go mod download
 COPY . .
 
 # Build the application
-RUN go build -o /app/heat-expansion-api ./cmd/server
+RUN go build -o /app/heat-expansion-server ./cmd/server
 
 # Install golang-migrate for the final image
 RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz && \
@@ -29,7 +29,7 @@ WORKDIR /app
 RUN apk add --no-cache ca-certificates bash
 
 # Copy binary and migrate tool
-COPY --from=builder /app/heat-expansion-api /app/
+COPY --from=builder /app/heat-expansion-server /app/
 COPY --from=builder /usr/local/bin/migrate /usr/local/bin/migrate
 
 # Copy migrations
@@ -43,4 +43,4 @@ RUN chmod +x /app/entrypoint.sh
 EXPOSE 8080
 
 ENTRYPOINT ["/app/entrypoint.sh"]
-CMD ["./heat-expansion-api"]
+CMD ["./heat-expansion-server"]

@@ -1,6 +1,6 @@
 package dtos
 
-import "github.com/artcodefun/heat-expansion-api/internal/game/application/cqrs/readmodels"
+import "github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
 
 // OperationType represents the type of a military operation at the DTO level.
 type OperationType string

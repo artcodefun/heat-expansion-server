@@ -1,7 +1,7 @@
 package dtos
 
 import (
-	"github.com/artcodefun/heat-expansion-api/internal/game/domain"
+	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 	"github.com/google/uuid"
 )
 

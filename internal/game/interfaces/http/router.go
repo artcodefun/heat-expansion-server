@@ -1,11 +1,11 @@
 package http
 
 import (
-	"github.com/artcodefun/heat-expansion-api/internal/game/application/cqrs"
-	"github.com/artcodefun/heat-expansion-api/internal/game/application/ports"
-	"github.com/artcodefun/heat-expansion-api/internal/game/interfaces/http/dtos"
-	"github.com/artcodefun/heat-expansion-api/internal/game/interfaces/http/handlers"
-	"github.com/artcodefun/heat-expansion-api/internal/game/interfaces/http/middleware"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http/dtos"
+	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http/handlers"
+	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"

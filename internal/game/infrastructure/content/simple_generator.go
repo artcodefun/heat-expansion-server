@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/artcodefun/heat-expansion-api/internal/game/application/ports"
-	"github.com/artcodefun/heat-expansion-api/internal/game/domain"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 )
 
 // SimpleGenerator provides content for locations using hardcoded metadata.

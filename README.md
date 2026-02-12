@@ -1,4 +1,4 @@
-# Heat Expansion API
+# Heat Expansion Server
 
 Heat Expansion is a Go backend for a multiplayer 4X strategy game.
 
@@ -19,8 +19,8 @@ This repository is structured as a **modular monolith**: multiple services live 
 
 1. Install Go and PostgreSQL.
 2. Create a `.env` file (see `.env.example`).
-3. Apply migrations and run the API:
+3. Apply migrations and run the Server:
    - `make migrate-up`
    - `make run`
 
-The Game API listens on `GAME_PORT` (default `8080`).
+The Game Server listens on `GAME_PORT` (default `8080`).

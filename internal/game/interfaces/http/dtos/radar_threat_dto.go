@@ -1,7 +1,7 @@
 package dtos
 
 import (
-	"github.com/artcodefun/heat-expansion-api/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
 )
 
 type ThreatType string

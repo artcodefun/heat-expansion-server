@@ -5,10 +5,10 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/artcodefun/heat-expansion-api/internal/game/application/cqrs/readmodels"
-	"github.com/artcodefun/heat-expansion-api/internal/game/application/ports"
-	"github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/readstore/gen"
-	"github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/readstore/mappers"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/gen"
+	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/mappers"
 )
 
 type OperationReadRepo struct {

@@ -3,9 +3,9 @@ package mappers
 import (
 	"encoding/json"
 
-	"github.com/artcodefun/heat-expansion-api/internal/game/domain"
-	"github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/db/dtos"
-	"github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/db/gen"
+	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
+	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/dtos"
+	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/gen"
 )
 
 func ResourceLocationFromDB(r gen.ResourceLocation, armyProtos map[int]*domain.ArmyItemPrototype, buildProtos map[int]*domain.BuildItemPrototype) *domain.ResourceLocationModel {

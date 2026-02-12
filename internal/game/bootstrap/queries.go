@@ -1,6 +1,6 @@
 package bootstrap
 
-import "github.com/artcodefun/heat-expansion-api/internal/game/application/queries"
+import "github.com/artcodefun/heat-expansion-server/internal/game/application/queries"
 
 // Queries aggregates all query facades.
 type Queries struct {

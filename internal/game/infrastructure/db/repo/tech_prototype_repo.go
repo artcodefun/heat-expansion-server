@@ -5,10 +5,10 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/artcodefun/heat-expansion-api/internal/game/application/ports"
-	"github.com/artcodefun/heat-expansion-api/internal/game/domain"
-	"github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/db/gen"
-	"github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/db/mappers"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
+	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/gen"
+	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/mappers"
 )
 
 type TechPrototypeRepo struct {

@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/artcodefun/heat-expansion-api/internal/game/interfaces/http/dtos"
+	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )

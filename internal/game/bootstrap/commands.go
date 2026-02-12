@@ -1,6 +1,6 @@
 package bootstrap
 
-import "github.com/artcodefun/heat-expansion-api/internal/game/application/commands"
+import "github.com/artcodefun/heat-expansion-server/internal/game/application/commands"
 
 // Commands aggregates all command handlers.
 type Commands struct {

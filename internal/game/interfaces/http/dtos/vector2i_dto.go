@@ -1,6 +1,6 @@
 package dtos
 
-import "github.com/artcodefun/heat-expansion-api/internal/game/application/cqrs/readmodels"
+import "github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
 
 // Vector2iDTO mirrors readmodels.Vector2i for serialization.
 type Vector2iDTO struct {

@@ -1,6 +1,6 @@
 package cqrs
 
-import readmodels "github.com/artcodefun/heat-expansion-api/internal/game/application/cqrs/readmodels"
+import readmodels "github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
 
 // QueryContext carries caller identity & auth scope for authorization checks.
 // Extend later with tenant, trace, feature flags, etc.

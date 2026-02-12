@@ -3,8 +3,8 @@ package services
 import (
 	"errors"
 
-	"github.com/artcodefun/heat-expansion-api/internal/game/application/cqrs"
-	"github.com/artcodefun/heat-expansion-api/internal/game/application/ports"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 )
 
 func repoErr(err error) error {

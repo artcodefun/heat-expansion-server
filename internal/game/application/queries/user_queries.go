@@ -1,9 +1,9 @@
 package queries
 
 import (
-	"github.com/artcodefun/heat-expansion-api/internal/game/application/cqrs"
-	"github.com/artcodefun/heat-expansion-api/internal/game/application/cqrs/readmodels"
-	"github.com/artcodefun/heat-expansion-api/internal/game/application/ports"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 )
 
 type UserQueries struct{ Repo ports.UserReadRepository }

@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/artcodefun/heat-expansion-api/internal/game/application/ports"
-	"github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/db/gen"
-	"github.com/artcodefun/heat-expansion-api/internal/game/infrastructure/db/mappers"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/gen"
+	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/mappers"
 )
 
 // ScheduledJobRecord is an infrastructure-level representation of a scheduled job

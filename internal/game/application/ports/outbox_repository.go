@@ -1,6 +1,6 @@
 package ports
 
-import "github.com/artcodefun/heat-expansion-api/internal/game/domain"
+import "github.com/artcodefun/heat-expansion-server/internal/game/domain"
 
 // OutboxEventRecord represents a persisted domain event entry used by a
 // transactional outbox. The concrete event payload is held as a typed
