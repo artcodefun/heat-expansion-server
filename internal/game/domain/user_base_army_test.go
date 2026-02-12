@@ -82,7 +82,7 @@ func TestArmy_QueueArmy_NotEnoughSpace(t *testing.T) {
 	SetTestNow(t, 5_100)
 	base := newBaseWithDefaults(3)
 	// artificially restrict space capacity to simulate a nearly full base
-	base.Stats.MaxSpace = 1
+	// by adding a building that consumes most of the default capacity (100)
 
 	// Unlock infantry via present military building
 	base.BuildingsPresent = []BuildItemPresent{{
@@ -95,6 +95,7 @@ func TestArmy_QueueArmy_NotEnoughSpace(t *testing.T) {
 			MilitaryData: &MilitaryBuildingData{
 				UnlockArmyCategory: ArmyCategoryInfantry,
 			},
+			Space: 99,
 		},
 	}}
 
