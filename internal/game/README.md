@@ -20,7 +20,7 @@ At a high level, the Game service models a 4X-style strategy game where players 
 
 This service uses Hexagonal Architecture (Ports and Adapters), DDD (Domain-driven design) and the CQRS (Command Query Responsibility Segregation) pattern.
 
-![DDD Hexagon](https://raw.githubusercontent.com/Sairyss/domain-driven-hexagon/refs/heads/master/assets/images/DomainDrivenHexagon.png)
+![DDD Hexagon](../../.github/DomainDrivenHexagon.png)
 
 ### Key Layers
 

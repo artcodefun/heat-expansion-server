@@ -6,6 +6,8 @@ This repository is structured as a **modular monolith**: multiple services live 
 
 ## Services
 
+![Bounded Contexts](.github/BoundedContexts.png)
+
 - **Game**: core gameplay domain, CQRS, HTTP API, persistence
   - Docs: [internal/game/README.md](internal/game/README.md)
 
