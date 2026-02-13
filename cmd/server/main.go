@@ -1,8 +1,14 @@
 package main
 
-import "github.com/artcodefun/heat-expansion-server/internal/game/bootstrap"
+import (
+	authBootstrap "github.com/artcodefun/heat-expansion-server/internal/auth/bootstrap"
+	gameBootstrap "github.com/artcodefun/heat-expansion-server/internal/game/bootstrap"
+)
 
 func main() {
-	module := bootstrap.NewModule()
-	module.Run()
+	authModule := authBootstrap.NewModule()
+	go authModule.Run()
+
+	gameModule := gameBootstrap.NewModule()
+	gameModule.Run()
 }

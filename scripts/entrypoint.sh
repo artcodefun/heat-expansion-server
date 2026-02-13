@@ -3,13 +3,24 @@ set -e
 
 # Run migrations if GAME_DB_URL is set
 if [ -n "$GAME_DB_URL" ]; then
-  echo "Running migrations..."
+  echo "Running game migrations..."
   migrations_table="${GAME_MIGRATIONS_TABLE:-game_schema_migrations}"
   separator='&'
   if [[ "$GAME_DB_URL" != *"?"* ]]; then
     separator='?'
   fi
-  /usr/local/bin/migrate -path /app/migrations -database "${GAME_DB_URL}${separator}x-migrations-table=${migrations_table}" up
+  /usr/local/bin/migrate -path /app/migrations/game -database "${GAME_DB_URL}${separator}x-migrations-table=${migrations_table}" up
+fi
+
+# Run auth migrations if AUTH_DB_URL is set
+if [ -n "$AUTH_DB_URL" ]; then
+  echo "Running auth migrations..."
+  migrations_table="${AUTH_MIGRATIONS_TABLE:-auth_schema_migrations}"
+  separator='&'
+  if [[ "$AUTH_DB_URL" != *"?"* ]]; then
+    separator='?'
+  fi
+  /usr/local/bin/migrate -path /app/migrations/auth -database "${AUTH_DB_URL}${separator}x-migrations-table=${migrations_table}" up
 fi
 
 echo "Starting application..."

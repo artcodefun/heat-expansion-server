@@ -8,14 +8,17 @@ This repository is structured as a **modular monolith**: multiple services live 
 
 ![Bounded Contexts](.github/BoundedContexts.png)
 
-- **Game**: core gameplay domain, CQRS, HTTP API, persistence
+- **Game**: core gameplay domain, CQRS, HTTP API, persistence.
   - Docs: [internal/game/README.md](internal/game/README.md)
 
-- **Auth**: authentication-related code (in progress)
-  - Location: `internal/auth`
+- **Auth**: identity and access management, JWT issuance, integration events.
+  - Docs: [internal/auth/README.md](internal/auth/README.md)
 
-- **Billing**: billing/subscription-related code (in progress)
+- **Billing**: billing/subscription-related code (in progress).
   - Location: `internal/billing`
+
+- **Contracts**: shared integration event schemas and envelope definitions.
+  - Location: `contracts/`
 
 ## Getting started
 

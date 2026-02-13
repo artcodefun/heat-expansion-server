@@ -33,7 +33,8 @@ COPY --from=builder /app/heat-expansion-server /app/
 COPY --from=builder /usr/local/bin/migrate /usr/local/bin/migrate
 
 # Copy migrations
-COPY internal/game/infrastructure/db/migrations /app/migrations
+COPY internal/game/infrastructure/db/migrations /app/migrations/game
+COPY internal/auth/infrastructure/db/migrations /app/migrations/auth
 
 # Copy entrypoint script
 COPY scripts/entrypoint.sh /app/entrypoint.sh

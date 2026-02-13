@@ -15,7 +15,9 @@ This repo is a Go backend for the Heat Expansion strategy game. It uses Hexagona
   - `infrastructure/`: Secondary adapters (DB/sqlc, readstore, jobs, events, security, content, ...).
   - `interfaces/http`: Primary adapter (HTTP handlers/DTOs/middleware/router).
   - `bootstrap/`: Dependency wiring for the game service.
-- **Other services (WIP)**: `internal/auth`, `internal/billing`.
+- **Auth service**: `internal/auth` (IAM, JWT, Integration producers)
+- **Shared contracts**: `contracts/` (Versioned integration event schemas)
+- **Other services (WIP)**: `internal/billing`.
 
 ## Key Patterns & Conventions
 The patterns and conventions below apply to the **Game** service (`internal/game`) unless stated otherwise.
@@ -41,9 +43,15 @@ The patterns and conventions below apply to the **Game** service (`internal/game
   - Handlers in `internal/game/interfaces/http/handlers` should call into `bootstrap.Commands`/`bootstrap.Queries`, not directly into repositories or DB.
   - Map domain/CQRS errors to HTTP status codes consistently using existing helpers in `http/dtos` and middleware.
 
+- **Integration Events**
+  - External events live in `contracts/`. They consist of a generic `IntegrationEvent` envelope and versioned payloads (e.g., `contracts/auth/v1/AccountRegisteredV1`).
+  - Use `RegisterPayload` in `init()` functions to enable polymorphic unmarshaling.
+  - Integration events are produced from domain events via an `IntegrationProducer` and stored in an `IntegrationOutbox`.
+  - Idempotency is enforced on `(origin_id, event_type)` in the integration outbox table.
+
 ## Workflows
 - **Build**: `make build` builds `./cmd/server` into `bin/heat-expansion-server`.
-- **Run locally**: `make run` (loads `.env`, then `go run ./cmd/server`). Ensure DB is running and `GAME_DB_URL` is set.
+- **Run locally**: `make run` (loads `.env`, then `go run ./cmd/server`). Ensure DB is running and `GAME_DB_URL`/`AUTH_DB_URL` are set.
 - **Tests**: `make test` or `go test ./...` from repo root.
 - **Migrations**: use `make migrate-up` / `make migrate-down` (requires `migrate` CLI). Game SQL files live in `internal/game/infrastructure/db/migrations`.
 - **sqlc**: when changing DB queries, edit `internal/game/infrastructure/db/queries/*.sql` or `internal/game/infrastructure/readstore/queries/*.sql`, then run `make sqlc`.
@@ -52,4 +60,8 @@ The patterns and conventions below apply to the **Game** service (`internal/game
 - When introducing new domain behavior, prefer adding methods to aggregates in `internal/game/domain` and invoking them from command handlers, rather than mutating models directly in handlers.
 - For new write-side features, add/extend ports in `internal/game/application/ports`, implement them in `internal/game/infrastructure/db/repo`, wire them in `internal/game/bootstrap/adapters.go`, and inject via `Commands`/services.
 - For new read-side endpoints, add read models and queries in `internal/game/infrastructure/readstore`, then wire new query facades in `internal/game/application/queries` and expose via HTTP handlers.
+- For new integration events:
+  1. Define the payload in `contracts/`.
+  2. Implement `IntegrationEventType() string` and register the factory.
+  3. Create/update an `IntegrationProducer` to map domain events to the new contract.
 - Keep serialization, DTOs, and DB schemas in infra layers (`dtos/`, `mappers/`, `queries/`), not in domain or application packages.

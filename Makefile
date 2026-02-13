@@ -30,16 +30,27 @@ GAME_MIGRATION_DIR=internal/game/infrastructure/db/migrations
 GAME_DB_URL?=postgres://user:password@localhost:5432/heatdb?sslmode=disable
 GAME_MIGRATIONS_TABLE?=game_schema_migrations
 
+AUTH_MIGRATION_DIR=internal/auth/infrastructure/db/migrations
+AUTH_DB_URL?=postgres://user:password@localhost:5432/heatdb?sslmode=disable
+AUTH_MIGRATIONS_TABLE?=auth_schema_migrations
+
 GAME_MIGRATE_DB_URL=$(GAME_DB_URL)$(if $(findstring ?,$(GAME_DB_URL)),&,?)x-migrations-table=$(GAME_MIGRATIONS_TABLE)
+AUTH_MIGRATE_DB_URL=$(AUTH_DB_URL)$(if $(findstring ?,$(AUTH_DB_URL)),&,?)x-migrations-table=$(AUTH_MIGRATIONS_TABLE)
 
 migrate-up:
 	migrate -path $(GAME_MIGRATION_DIR) -database "$(GAME_MIGRATE_DB_URL)" up
+	migrate -path $(AUTH_MIGRATION_DIR) -database "$(AUTH_MIGRATE_DB_URL)" up
 
 migrate-down:
+	migrate -path $(AUTH_MIGRATION_DIR) -database "$(AUTH_MIGRATE_DB_URL)" down
 	migrate -path $(GAME_MIGRATION_DIR) -database "$(GAME_MIGRATE_DB_URL)" down
 
-migrate-create:
+game-migrate-create:
 	migrate create -ext sql -dir $(GAME_MIGRATION_DIR) -seq $(name)
+
+auth-migrate-create:
+	migrate create -ext sql -dir $(AUTH_MIGRATION_DIR) -seq $(name)
 
 sqlc:
 	sqlc -f internal/game/infrastructure/sqlc.yaml generate
+	sqlc -f internal/auth/infrastructure/sqlc.yaml generate

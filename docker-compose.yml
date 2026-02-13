@@ -16,7 +16,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  api:
+  server:
     build:
       context: .
       dockerfile: Dockerfile
@@ -26,6 +26,7 @@ services:
         condition: service_healthy
     ports:
       - "127.0.0.1:8080:8080"
+      - "127.0.0.1:8081:8081"
     env_file:
       - .env
     environment:
@@ -34,6 +35,10 @@ services:
       - GAME_DB_URL=postgres://heatuser:heatpassword@db:5432/heatdb?sslmode=disable
       - GAME_ASSETS_DIR=/app/assets
       - GAME_MIGRATIONS_TABLE=game_schema_migrations
+      - AUTH_PORT=8081
+      - AUTH_DB_URL=postgres://heatuser:heatpassword@db:5432/heatdb?sslmode=disable
+      - AUTH_JWT_SECRET=some-very-secret-key
+      - AUTH_MIGRATIONS_TABLE=auth_schema_migrations
     volumes:
       - ./assets:/app/assets
 
