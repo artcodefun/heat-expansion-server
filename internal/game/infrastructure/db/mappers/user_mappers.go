@@ -8,11 +8,8 @@ import (
 // UserFromDB maps a sqlc User model to domain.User.
 func UserFromDB(u gen.User) *domain.User {
 	return &domain.User{
-		ID:           int(u.ID),
-		Name:         u.Name,
-		Email:        u.Email,
-		PasswordHash: u.PasswordHash,
-		Crystals:     int(u.Crystals),
-		// BaseSectorIDs populated elsewhere (aggregate loading); left empty here.
+		ID:       u.ID,
+		Name:     u.Name,
+		Crystals: int(u.Crystals),
 	}
 }

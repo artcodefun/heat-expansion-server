@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/artcodefun/heat-expansion-server/internal/auth/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/db/repo"
@@ -20,7 +21,12 @@ type Adapters struct {
 	IntegrationEvents ports.IntegrationEventPublisher
 }
 
-func NewAdapters(db *sql.DB, jwtSecret string) (*Adapters, error) {
+func NewAdapters(db *sql.DB, jwtSecret string, rabbitURL string, integrationExchange string) (*Adapters, error) {
+	intPublisher, err := events.NewRabbitMQPublisher(rabbitURL, integrationExchange)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize RabbitMQ publisher: %w", err)
+	}
+
 	return &Adapters{
 		Repo:              repo.NewAccountRepository(db),
 		Hasher:            security.NewBcryptHasher(),
@@ -29,6 +35,6 @@ func NewAdapters(db *sql.DB, jwtSecret string) (*Adapters, error) {
 		TxMgr:             repo.NewDBTxManager(db),
 		Events:            events.NewSimplePublisher(),
 		IntegrationOutbox: repo.NewIntegrationOutboxRepo(db),
-		IntegrationEvents: events.NewConsoleIntegrationEventPublisher(),
+		IntegrationEvents: intPublisher,
 	}, nil
 }

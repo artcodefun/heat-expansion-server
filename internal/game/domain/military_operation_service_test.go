@@ -1,6 +1,10 @@
 package domain
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/google/uuid"
+)
 
 // TestResolveAgainstUserBase_Attack_AppliesLootAndSurvivors verifies that
 // MilitaryOperationService resolves an attack against a user base by:
@@ -17,7 +21,7 @@ func TestResolveAgainstUserBase_Attack_AppliesLootAndSurvivors(t *testing.T) {
 		{PrototypeID: 1, Category: ArmyCategoryInfantry, Attack: 5, Defence: 3, Capacity: 2, Stealth: 0, Speed: 100, Count: 3},
 	}
 
-	op, err := NewAttackOperation(1, 10, Vector2i{X: 0, Y: 0}, Vector2i{X: 1, Y: 0}, attackUnits, nil)
+	op, err := NewAttackOperation(uuid.New(), 10, Vector2i{X: 0, Y: 0}, Vector2i{X: 1, Y: 0}, attackUnits, nil)
 	if err != nil {
 		t.Fatalf("unexpected error from NewAttackOperation: %v", err)
 	}
@@ -28,7 +32,7 @@ func TestResolveAgainstUserBase_Attack_AppliesLootAndSurvivors(t *testing.T) {
 	op.UpdatePhaseBasedOnTime()
 
 	// Attacker base with some deployed units (all units deployed to this operation).
-	attacker := &UserBaseModel{ID: 10}
+	attacker := &UserBaseModel{ID: 10, UserID: uuid.New()}
 	attacker.ArmiesDeployed = []ArmyItemDeployed{
 		{
 			BaseOwnedItem: NewBaseOwnedItem(attacker.ID),
@@ -46,7 +50,7 @@ func TestResolveAgainstUserBase_Attack_AppliesLootAndSurvivors(t *testing.T) {
 	}
 
 	// Defender with modest resources and a small defending force.
-	defender := &UserBaseModel{ID: 99}
+	defender := &UserBaseModel{ID: 99, UserID: uuid.New()}
 	defender.Stats = UserBaseStats{Credits: 10, Iron: 5, Titanium: 3, Antimatter: 2, CalculationTimestamp: NowUnix()}
 	defender.ArmiesPresent = []ArmyItemPresent{
 		{
@@ -110,7 +114,7 @@ func TestResolveAgainstUserBase_Spy_BlockedByCloaking_PreservesNonSpyDefenders(t
 	spies := []MilitaryUnitSnap{
 		{PrototypeID: 7, Category: ArmyCategorySpy, Attack: 2, Defence: 1, Capacity: 0, Stealth: 4, Speed: 120, Count: 2},
 	}
-	op, err := NewSpyOperation(1, 10, Vector2i{X: 0, Y: 0}, Vector2i{X: 1, Y: 1}, spies, nil)
+	op, err := NewSpyOperation(uuid.New(), 10, Vector2i{X: 0, Y: 0}, Vector2i{X: 1, Y: 1}, spies, nil)
 	if err != nil {
 		t.Fatalf("unexpected error from NewSpyOperation: %v", err)
 	}
@@ -119,7 +123,7 @@ func TestResolveAgainstUserBase_Spy_BlockedByCloaking_PreservesNonSpyDefenders(t
 	op.UpdatePhaseBasedOnTime()
 
 	// Defender with strong cloaking (>= attacker stealth) and a non-spy garrison
-	defender := &UserBaseModel{ID: 99}
+	defender := &UserBaseModel{ID: 99, UserID: uuid.New()}
 	defender.BuildingsPresent = []BuildItemPresent{{
 		BaseOwnedItem: NewBaseOwnedItem(defender.ID),
 		Prototype: BuildItemPrototype{
@@ -137,7 +141,7 @@ func TestResolveAgainstUserBase_Spy_BlockedByCloaking_PreservesNonSpyDefenders(t
 		Count:         3,
 	}}
 
-	service := NewMilitaryOperationService(op, &UserBaseModel{ID: 10})
+	service := NewMilitaryOperationService(op, &UserBaseModel{ID: 10, UserID: uuid.New()})
 	service.ResolveAgainstUserBase(defender)
 
 	if op.SpyResult == nil || op.SpyResult.Outcome != SpyOutcomeBlockedByCloaking {

@@ -1,11 +1,34 @@
 package bootstrap
 
 import (
+	"log"
+
+	"github.com/artcodefun/heat-expansion-server/contracts/auth"
+	v1 "github.com/artcodefun/heat-expansion-server/contracts/auth/v1"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 	infraevents "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/events"
 	infrajobs "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/jobs"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
+
+// WireCommandIntegrationEvents wires external integration events to command handlers.
+func WireCommandIntegrationEvents(c *Commands, consumer *infraevents.RabbitMQConsumer, authExchange, authQueue string) {
+	consumer.Subscribe(authExchange, authQueue, "auth.#", func(d amqp.Delivery) error {
+		envelope, err := auth.Unmarshal(d.Body)
+		if err != nil {
+			return err
+		}
+
+		switch ev := envelope.Payload.(type) {
+		case *v1.AccountRegisteredV1:
+			return c.User.HandleAccountRegisteredV1Event(*ev)
+		default:
+			log.Printf("Received unknown identity integration event type: %T", ev)
+		}
+		return nil
+	})
+}
 
 // WireCommandEvents subscribes command-side handlers to domain events on the in-memory publisher.
 // It no-ops if the provided publisher does not support subscriptions.

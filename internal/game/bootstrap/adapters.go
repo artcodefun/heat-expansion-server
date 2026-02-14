@@ -48,26 +48,23 @@ type Adapters struct {
 
 	// Infra
 	TxMgr     ports.TransactionManager
+	Tokens    ports.TokenValidator
 	Events    ports.EventPublisher
 	Scheduler ports.Scheduler
-	Hasher    ports.PasswordHasher
-	Tokens    ports.TokenProvider
 	Content   ports.ContentGenerator
 }
 
-func NewAdapters(db *sql.DB, jwtSecret, staticBaseURL string) (*Adapters, error) {
+func NewAdapters(db *sql.DB, staticBaseURL string, jwtSecret string) (*Adapters, error) {
 	q := dbgen.New(db)
 	rq := readgen.New(db)
 
-	// Simple in-process publisher + DB-backed scheduler (durable jobs).
 	publisher := events.NewSimplePublisher()
 	txMgr := repo.NewDBTxManager(db)
 	schedulerRepo := repo.NewScheduledJobRepo(q)
 	scheduler := jobs.NewDBScheduler(txMgr, schedulerRepo)
-	// Security + content adapters (dev-friendly defaults)
-	hasher := security.NewSimpleHasher()
-	tokens := security.NewSimpleTokenProvider(jwtSecret)
+
 	generator := contentgen.NewSimpleGenerator(staticBaseURL)
+	tokens := security.NewSimpleTokenValidator(jwtSecret)
 
 	sectorRead := readrepo.NewSectorReadRepo(rq)
 	opRead := readrepo.NewOperationReadRepo(rq, sectorRead)
@@ -106,10 +103,9 @@ func NewAdapters(db *sql.DB, jwtSecret, staticBaseURL string) (*Adapters, error)
 		UserRead:      readrepo.NewUserReadRepo(rq),
 		AlertRead:     readrepo.NewAlertReadRepository(rq),
 		TxMgr:         txMgr,
+		Tokens:        tokens,
 		Events:        publisher,
 		Scheduler:     scheduler,
-		Hasher:        hasher,
-		Tokens:        tokens,
 		Content:       generator,
 	}, nil
 }

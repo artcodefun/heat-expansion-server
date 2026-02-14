@@ -144,8 +144,8 @@ func IntelligenceRadarJobFromDTO(d IntelligenceRadarJobDTO) ports.IntelligenceRa
 // events using their public constructors, which assign a fresh BasicEvent.
 
 type UserAccountCreatedEventDTO struct {
-	OccurredAt int64 `json:"occurred_at"`
-	UserID     int   `json:"user_id"`
+	OccurredAt int64     `json:"occurred_at"`
+	UserID     uuid.UUID `json:"user_id"`
 }
 
 func UserAccountCreatedEventDTOFromDomain(e domain.UserAccountCreatedEvent) UserAccountCreatedEventDTO {
@@ -157,9 +157,9 @@ func UserAccountCreatedEventFromDTO(d UserAccountCreatedEventDTO) domain.UserAcc
 }
 
 type UserBaseCreatedEventDTO struct {
-	OccurredAt int64 `json:"occurred_at"`
-	BaseID     int   `json:"base_id"`
-	OwnerID    int   `json:"owner_id"`
+	OccurredAt int64     `json:"occurred_at"`
+	BaseID     int       `json:"base_id"`
+	OwnerID    uuid.UUID `json:"owner_id"`
 }
 
 func UserBaseCreatedEventDTOFromDomain(e domain.UserBaseCreatedEvent) UserBaseCreatedEventDTO {

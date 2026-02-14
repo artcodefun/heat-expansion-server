@@ -17,7 +17,7 @@ func UserBaseFromDB(b gen.UserBase) *domain.UserBaseModel {
 	ub := &domain.UserBaseModel{
 		ID:          int(b.ID),
 		Coordinates: domain.Vector2i{X: int(b.SectorX), Y: int(b.SectorY)},
-		UserID:      int(b.UserID),
+		UserID:      b.UserID,
 		Stats:       dtos.BaseStatsFromDTO(dto, b.StatsCalcTimestamp),
 	}
 	// Location details
@@ -43,7 +43,7 @@ func InsertBaseParamsFromDomain(base *domain.UserBaseModel) gen.CreateBaseParams
 	dto := dtos.BaseStatsDTOFromDomain(base.Stats)
 	stats, _ := json.Marshal(dto)
 	return gen.CreateBaseParams{
-		UserID:             int64(base.UserID),
+		UserID:             base.UserID,
 		SectorX:            int32(base.Coordinates.X),
 		SectorY:            int32(base.Coordinates.Y),
 		Name:               toNullString(base.Name),

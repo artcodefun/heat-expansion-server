@@ -11,6 +11,7 @@ import (
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/dtos"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/gen"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/mappers"
+	"github.com/google/uuid"
 )
 
 type BaseReadRepo struct{ q *gen.Queries }
@@ -33,8 +34,8 @@ func (r *BaseReadRepo) GetBaseStats(baseID int) (*readmodels.UserBaseStats, erro
 	return &domainStats, nil
 }
 
-func (r *BaseReadRepo) ListUserBases(userID int) ([]*readmodels.UserBaseModel, error) {
-	rows, err := r.q.ListUserBases(context.Background(), int64(userID))
+func (r *BaseReadRepo) ListUserBases(userID uuid.UUID) ([]*readmodels.UserBaseModel, error) {
+	rows, err := r.q.ListUserBases(context.Background(), userID)
 	if err != nil {
 		return nil, err
 	}

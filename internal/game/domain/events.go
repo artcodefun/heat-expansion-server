@@ -39,10 +39,10 @@ func NewBasicEvent() BasicEvent {
 // User account creation event
 type UserAccountCreatedEvent struct {
 	BasicEvent
-	UserID int
+	UserID uuid.UUID
 }
 
-func NewUserAccountCreatedEvent(userID int) UserAccountCreatedEvent {
+func NewUserAccountCreatedEvent(userID uuid.UUID) UserAccountCreatedEvent {
 	return UserAccountCreatedEvent{
 		BasicEvent: NewBasicEvent(),
 		UserID:     userID,
@@ -53,10 +53,10 @@ func NewUserAccountCreatedEvent(userID int) UserAccountCreatedEvent {
 type UserBaseCreatedEvent struct {
 	BasicEvent
 	BaseID  int
-	OwnerID int
+	OwnerID uuid.UUID
 }
 
-func NewUserBaseCreatedEvent(baseID int, ownerID int) UserBaseCreatedEvent {
+func NewUserBaseCreatedEvent(baseID int, ownerID uuid.UUID) UserBaseCreatedEvent {
 	return UserBaseCreatedEvent{
 		BasicEvent: NewBasicEvent(),
 		BaseID:     baseID,

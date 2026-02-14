@@ -7,78 +7,46 @@ package gen
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
-
-const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, name, email, password_hash, crystals
-FROM game.users
-WHERE email = $1
-`
-
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
-	row := q.queryRow(ctx, q.getUserByEmailStmt, getUserByEmail, email)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Email,
-		&i.PasswordHash,
-		&i.Crystals,
-	)
-	return i, err
-}
 
 const getUserByID = `-- name: GetUserByID :one
 
-SELECT id, name, email, password_hash, crystals
+SELECT id, name, crystals
 FROM game.users
 WHERE id = $1
 `
 
 // Users queries
-func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
+func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
 	row := q.queryRow(ctx, q.getUserByIDStmt, getUserByID, id)
 	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Email,
-		&i.PasswordHash,
-		&i.Crystals,
-	)
+	err := row.Scan(&i.ID, &i.Name, &i.Crystals)
 	return i, err
 }
 
-const insertUser = `-- name: InsertUser :one
+const insertUser = `-- name: InsertUser :exec
 INSERT INTO game.users (
-    name, email, password_hash, crystals
+    id, name, crystals
 ) VALUES (
-    $1, $2, $3, $4
+    $1, $2, $3
 )
-RETURNING id
 `
 
 type InsertUserParams struct {
-	Name         string `json:"name"`
-	Email        string `json:"email"`
-	PasswordHash string `json:"password_hash"`
-	Crystals     int32  `json:"crystals"`
+	ID       uuid.UUID `json:"id"`
+	Name     string    `json:"name"`
+	Crystals int32     `json:"crystals"`
 }
 
-func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) (int64, error) {
-	row := q.queryRow(ctx, q.insertUserStmt, insertUser,
-		arg.Name,
-		arg.Email,
-		arg.PasswordHash,
-		arg.Crystals,
-	)
-	var id int64
-	err := row.Scan(&id)
-	return id, err
+func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) error {
+	_, err := q.exec(ctx, q.insertUserStmt, insertUser, arg.ID, arg.Name, arg.Crystals)
+	return err
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, name, email, password_hash, crystals
+SELECT id, name, crystals
 FROM game.users
 ORDER BY id
 LIMIT $1 OFFSET $2
@@ -98,13 +66,7 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 	items := []User{}
 	for rows.Next() {
 		var i User
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Email,
-			&i.PasswordHash,
-			&i.Crystals,
-		); err != nil {
+		if err := rows.Scan(&i.ID, &i.Name, &i.Crystals); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -121,27 +83,17 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 const updateUser = `-- name: UpdateUser :exec
 UPDATE game.users
 SET name = $1,
-    email = $2,
-    password_hash = $3,
-    crystals = $4
-WHERE id = $5
+    crystals = $2
+WHERE id = $3
 `
 
 type UpdateUserParams struct {
-	Name         string `json:"name"`
-	Email        string `json:"email"`
-	PasswordHash string `json:"password_hash"`
-	Crystals     int32  `json:"crystals"`
-	ID           int64  `json:"id"`
+	Name     string    `json:"name"`
+	Crystals int32     `json:"crystals"`
+	ID       uuid.UUID `json:"id"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
-	_, err := q.exec(ctx, q.updateUserStmt, updateUser,
-		arg.Name,
-		arg.Email,
-		arg.PasswordHash,
-		arg.Crystals,
-		arg.ID,
-	)
+	_, err := q.exec(ctx, q.updateUserStmt, updateUser, arg.Name, arg.Crystals, arg.ID)
 	return err
 }

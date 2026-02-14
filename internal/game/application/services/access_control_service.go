@@ -5,6 +5,7 @@ import (
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+	"github.com/google/uuid"
 )
 
 // AccessControlService centralizes authorization checks for aggregates.
@@ -18,11 +19,11 @@ func NewAccessControlService(bases ports.UserBaseRepository) *AccessControlServi
 }
 
 // EnsureBaseOwnership verifies that the provided userID owns the base.
-// userID <= 0 -> ErrForbidden (unauthenticated)
+// userID == uuid.Nil -> ErrForbidden (unauthenticated)
 // base not found -> ErrNotFound
 // mismatch owner -> ErrForbidden
-func (s *AccessControlService) EnsureBaseOwnership(userID int, baseID int) error {
-	if userID <= 0 {
+func (s *AccessControlService) EnsureBaseOwnership(userID uuid.UUID, baseID int) error {
+	if userID == uuid.Nil {
 		return cqrs.ErrForbidden
 	}
 	ownerID, err := s.Bases.GetOwnerID(baseID)

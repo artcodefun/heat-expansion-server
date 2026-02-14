@@ -34,7 +34,7 @@ func MilitaryOperationFromDB(r gen.MilitaryOperation) *domain.MilitaryOperation 
 	op := &domain.MilitaryOperation{
 		ID:                int(r.ID),
 		Type:              domain.MilitaryOperationType(r.Type),
-		OwnerUserID:       int(r.OwnerUserID),
+		OwnerUserID:       r.OwnerUserID,
 		SourceBaseID:      int(r.SourceBaseID),
 		SourceCoordinates: domain.Vector2i{X: int(r.SourceX), Y: int(r.SourceY)},
 		TargetCoordinates: domain.Vector2i{X: int(r.TargetX), Y: int(r.TargetY)},
@@ -76,7 +76,7 @@ func InsertMilitaryOperationParamsFromDomain(op *domain.MilitaryOperation) gen.I
 
 	return gen.InsertMilitaryOperationParams{
 		Type:              string(op.Type),
-		OwnerUserID:       int64(op.OwnerUserID),
+		OwnerUserID:       op.OwnerUserID,
 		SourceBaseID:      int64(op.SourceBaseID),
 		SourceX:           int32(op.SourceCoordinates.X),
 		SourceY:           int32(op.SourceCoordinates.Y),
@@ -120,7 +120,7 @@ func UpdateMilitaryOperationParamsFromDomain(op *domain.MilitaryOperation) gen.U
 	return gen.UpdateMilitaryOperationParams{
 		ID:                int64(op.ID),
 		Type:              string(op.Type),
-		OwnerUserID:       int64(op.OwnerUserID),
+		OwnerUserID:       op.OwnerUserID,
 		SourceBaseID:      int64(op.SourceBaseID),
 		SourceX:           int32(op.SourceCoordinates.X),
 		SourceY:           int32(op.SourceCoordinates.Y),

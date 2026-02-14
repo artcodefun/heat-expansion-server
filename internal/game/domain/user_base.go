@@ -9,7 +9,7 @@ type UserBaseModel struct {
 	EventProducer
 	ID          int
 	Coordinates Vector2i
-	UserID      int
+	UserID      uuid.UUID
 	LocationDetails
 
 	ArmiesPending      []ArmyItemPending
@@ -31,7 +31,7 @@ type UserBaseModel struct {
 
 // NewUserBaseModel constructs a fresh user base aggregate, ensuring all slices are initialized
 // and stats reflect the current state (even when empty).
-func NewUserBaseModel(baseID int, userID int, coords Vector2i) *UserBaseModel {
+func NewUserBaseModel(baseID int, userID uuid.UUID, coords Vector2i) *UserBaseModel {
 	ub := &UserBaseModel{
 		ID:                     baseID,
 		Coordinates:            coords,

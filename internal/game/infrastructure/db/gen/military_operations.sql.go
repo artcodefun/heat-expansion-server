@@ -9,6 +9,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/google/uuid"
 	"github.com/sqlc-dev/pqtype"
 )
 
@@ -119,7 +120,7 @@ RETURNING id
 
 type InsertMilitaryOperationParams struct {
 	Type              string                `json:"type"`
-	OwnerUserID       int64                 `json:"owner_user_id"`
+	OwnerUserID       uuid.UUID             `json:"owner_user_id"`
 	SourceBaseID      int64                 `json:"source_base_id"`
 	SourceX           int32                 `json:"source_x"`
 	SourceY           int32                 `json:"source_y"`
@@ -329,7 +330,7 @@ WHERE id = $21
 
 type UpdateMilitaryOperationParams struct {
 	Type              string                `json:"type"`
-	OwnerUserID       int64                 `json:"owner_user_id"`
+	OwnerUserID       uuid.UUID             `json:"owner_user_id"`
 	SourceBaseID      int64                 `json:"source_base_id"`
 	SourceX           int32                 `json:"source_x"`
 	SourceY           int32                 `json:"source_y"`

@@ -7,6 +7,7 @@ import (
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
+	"github.com/google/uuid"
 )
 
 // BaseCommands encapsulates state-changing base operations.
@@ -27,7 +28,7 @@ func NewBaseCommands(userBaseRepo ports.UserBaseRepository, sectorRepo ports.Sec
 }
 
 // CreateBase creates a new base for a user.
-func (c *BaseCommands) CreateBase(ctx cqrs.CommandContext, userID int) error {
+func (c *BaseCommands) CreateBase(ctx cqrs.CommandContext, userID uuid.UUID) error {
 	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
 		sRepo := c.SectorRepo.Tx(tx)
 		bRepo := c.UserBaseRepo.Tx(tx)

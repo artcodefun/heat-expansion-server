@@ -1,17 +1,20 @@
 package cqrs
 
-import readmodels "github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+import (
+	readmodels "github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/google/uuid"
+)
 
 // QueryContext carries caller identity & auth scope for authorization checks.
 // Extend later with tenant, trace, feature flags, etc.
 type QueryContext struct {
-	UserID int
+	UserID uuid.UUID
 	Roles  []string
 }
 
 // UserQueries: user profile & ownership context.
 type UserQueries interface {
-	GetUserProfile(ctx QueryContext, userID int) (*readmodels.User, error)
+	GetUserProfile(ctx QueryContext, userID uuid.UUID) (*readmodels.User, error)
 }
 
 // BaseQueries: high-level base stats.

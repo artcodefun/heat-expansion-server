@@ -9,7 +9,7 @@ import (
 func UserBaseFromBasicRow(r gen.ListUserBasesRow) readmodels.UserBaseModel {
 	return readmodels.UserBaseModel{
 		ID:     int(r.ID),
-		UserID: int(r.UserID),
+		UserID: r.UserID,
 		Coordinates: readmodels.Vector2i{
 			X: int(r.SectorX),
 			Y: int(r.SectorY),

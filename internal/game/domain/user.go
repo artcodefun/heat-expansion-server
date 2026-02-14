@@ -1,15 +1,17 @@
 package domain
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/google/uuid"
+)
 
 // User represents a player in the game.
 type User struct {
 	EventProducer
-	ID           int
-	Name         string
-	Email        string
-	PasswordHash string
-	Crystals     int // Global in-game currency for the user
+	ID       uuid.UUID
+	Name     string
+	Crystals int // Global in-game currency for the user
 }
 
 // Default values for new users
@@ -17,10 +19,15 @@ const (
 	DefaultCrystalsBalance = 50
 )
 
-// Initialize sets default values and emits user created event.
-func (u *User) Initialize() {
-	u.Crystals = DefaultCrystalsBalance
+// NewUser creates a new user with default settings and a creation event.
+func NewUser(id uuid.UUID, name string) *User {
+	u := &User{
+		ID:       id,
+		Name:     name,
+		Crystals: DefaultCrystalsBalance,
+	}
 	u.AddEvent(NewUserAccountCreatedEvent(u.ID))
+	return u
 }
 
 // SpendCrystals deducts the given amount from the user's crystal balance.

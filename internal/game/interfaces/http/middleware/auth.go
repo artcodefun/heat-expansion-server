@@ -10,7 +10,7 @@ import (
 
 // Auth attaches authenticated userID to the context if token is valid.
 // Expects Authorization: Bearer <token> header.
-func Auth(provider ports.TokenProvider) gin.HandlerFunc {
+func Auth(validator ports.TokenValidator) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		auth := c.GetHeader("Authorization")
 		if auth == "" || !strings.HasPrefix(auth, "Bearer ") {
@@ -18,7 +18,7 @@ func Auth(provider ports.TokenProvider) gin.HandlerFunc {
 			return
 		}
 		token := strings.TrimSpace(auth[len("Bearer "):])
-		userID, err := provider.Validate(token)
+		userID, err := validator.Validate(token)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
 			return

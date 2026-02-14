@@ -13,12 +13,11 @@ var ErrNotFound = errors.New("record not found")
 // UserRepository defines the interface for user persistence.
 type UserRepository interface {
 	Create(user *domain.User) error
-	FindByID(id int) (*domain.User, error)
+	FindByID(id uuid.UUID) (*domain.User, error)
 	// FindByIDForUpdate acquires a row-level lock on the user for the duration of the transaction.
-	FindByIDForUpdate(id int) (*domain.User, error)
-	FindByEmail(email string) (*domain.User, error)
+	FindByIDForUpdate(id uuid.UUID) (*domain.User, error)
 	Update(user *domain.User) error
-	Delete(id int) error
+	Delete(id uuid.UUID) error
 	// Tx returns a repository instance bound to the provided transaction.
 	Tx(tx Transaction) UserRepository
 }
@@ -102,11 +101,11 @@ type UserBaseRepository interface {
 	FindByIDForUpdate(id int) (*domain.UserBaseModel, error)
 	// GetOwnerID returns just the owning user ID for the specified base, or ErrNotFound if missing.
 	// Implementations should prefer a lightweight SELECT of user_id only.
-	GetOwnerID(baseID int) (int, error)
+	GetOwnerID(baseID int) (uuid.UUID, error)
 	// Update replaces all per-item rows (army/build/tech/storage) with the current aggregate state and updates base stats.
 	Update(base *domain.UserBaseModel) error
 	Delete(id int) error
-	FindByUserID(userID int) ([]*domain.UserBaseModel, error)
+	FindByUserID(userID uuid.UUID) ([]*domain.UserBaseModel, error)
 	FindByCoordinates(x, y int) (*domain.UserBaseModel, error)
 	// FindByCoordinatesForUpdate acquires a row-level lock on the base found by coordinates.
 	FindByCoordinatesForUpdate(x, y int) (*domain.UserBaseModel, error)

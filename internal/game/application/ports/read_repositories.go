@@ -15,7 +15,7 @@ type BuildingReadRepository interface {
 
 // UserReadRepository provides read-only access to user profile data.
 type UserReadRepository interface {
-	GetUserProfile(userID int) (*readmodels.User, error)
+	GetUserProfile(userID uuid.UUID) (*readmodels.User, error)
 }
 
 // ActivityReadRepository provides activity feed projections.
@@ -62,7 +62,7 @@ type StorageReadRepository interface {
 // BaseReadRepository provides read-only access to base state.
 type BaseReadRepository interface {
 	GetBaseStats(baseID int) (*readmodels.UserBaseStats, error)
-	ListUserBases(userID int) ([]*readmodels.UserBaseModel, error)
+	ListUserBases(userID uuid.UUID) ([]*readmodels.UserBaseModel, error)
 }
 
 // ArmyReadRepository exposes lifecycle-segmented army item projections.

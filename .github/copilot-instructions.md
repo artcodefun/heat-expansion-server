@@ -48,6 +48,7 @@ The patterns and conventions below apply to the **Game** service (`internal/game
   - Use `RegisterPayload` in `init()` functions to enable polymorphic unmarshaling.
   - Integration events are produced from domain events via an `IntegrationProducer` and stored in an `IntegrationOutbox`.
   - Idempotency is enforced on `(origin_id, event_type)` in the integration outbox table.
+  - Publishing is performed via RabbitMQ (using a `topic` exchange and event type as routing key) with a console fallback for local dev.
 
 ## Workflows
 - **Build**: `make build` builds `./cmd/server` into `bin/heat-expansion-server`.

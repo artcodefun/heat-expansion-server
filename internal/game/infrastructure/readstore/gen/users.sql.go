@@ -7,25 +7,21 @@ package gen
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 const getUserProfile = `-- name: GetUserProfile :one
 
-SELECT id, name, email, password_hash, crystals
+SELECT id, name, crystals
 FROM game.users
 WHERE id = $1
 `
 
 // Readstore user profile queries
-func (q *Queries) GetUserProfile(ctx context.Context, id int64) (User, error) {
+func (q *Queries) GetUserProfile(ctx context.Context, id uuid.UUID) (User, error) {
 	row := q.queryRow(ctx, q.getUserProfileStmt, getUserProfile, id)
 	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Email,
-		&i.PasswordHash,
-		&i.Crystals,
-	)
+	err := row.Scan(&i.ID, &i.Name, &i.Crystals)
 	return i, err
 }

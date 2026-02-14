@@ -16,6 +16,18 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    restart: always
+    ports:
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   server:
     build:
       context: .
@@ -23,6 +35,8 @@ services:
     restart: always
     depends_on:
       db:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     ports:
       - "127.0.0.1:8080:8080"
@@ -39,6 +53,8 @@ services:
       - AUTH_DB_URL=postgres://heatuser:heatpassword@db:5432/heatdb?sslmode=disable
       - AUTH_JWT_SECRET=some-very-secret-key
       - AUTH_MIGRATIONS_TABLE=auth_schema_migrations
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - AUTH_INTEGRATION_EXCHANGE=auth.integration
     volumes:
       - ./assets:/app/assets
 

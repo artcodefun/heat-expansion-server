@@ -174,9 +174,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getTechPrototypeByIDStmt, err = db.PrepareContext(ctx, getTechPrototypeByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTechPrototypeByID: %w", err)
 	}
-	if q.getUserByEmailStmt, err = db.PrepareContext(ctx, getUserByEmail); err != nil {
-		return nil, fmt.Errorf("error preparing query GetUserByEmail: %w", err)
-	}
 	if q.getUserByIDStmt, err = db.PrepareContext(ctx, getUserByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserByID: %w", err)
 	}
@@ -573,11 +570,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getTechPrototypeByIDStmt: %w", cerr)
 		}
 	}
-	if q.getUserByEmailStmt != nil {
-		if cerr := q.getUserByEmailStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getUserByEmailStmt: %w", cerr)
-		}
-	}
 	if q.getUserByIDStmt != nil {
 		if cerr := q.getUserByIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getUserByIDStmt: %w", cerr)
@@ -902,7 +894,6 @@ type Queries struct {
 	getSectorByCoordinatesForUpdateStmt       *sql.Stmt
 	getStoragePrototypeByIDStmt               *sql.Stmt
 	getTechPrototypeByIDStmt                  *sql.Stmt
-	getUserByEmailStmt                        *sql.Stmt
 	getUserByIDStmt                           *sql.Stmt
 	insertActivityStmt                        *sql.Stmt
 	insertAlertStmt                           *sql.Stmt
@@ -1006,7 +997,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getSectorByCoordinatesForUpdateStmt:       q.getSectorByCoordinatesForUpdateStmt,
 		getStoragePrototypeByIDStmt:               q.getStoragePrototypeByIDStmt,
 		getTechPrototypeByIDStmt:                  q.getTechPrototypeByIDStmt,
-		getUserByEmailStmt:                        q.getUserByEmailStmt,
 		getUserByIDStmt:                           q.getUserByIDStmt,
 		insertActivityStmt:                        q.insertActivityStmt,
 		insertAlertStmt:                           q.insertAlertStmt,

@@ -9,14 +9,15 @@ import (
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/gen"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/mappers"
+	"github.com/google/uuid"
 )
 
 type UserReadRepo struct{ q *gen.Queries }
 
 func NewUserReadRepo(q *gen.Queries) *UserReadRepo { return &UserReadRepo{q: q} }
 
-func (r *UserReadRepo) GetUserProfile(userID int) (*readmodels.User, error) {
-	row, err := r.q.GetUserProfile(context.Background(), int64(userID))
+func (r *UserReadRepo) GetUserProfile(userID uuid.UUID) (*readmodels.User, error) {
+	row, err := r.q.GetUserProfile(context.Background(), userID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ports.ErrNotFound

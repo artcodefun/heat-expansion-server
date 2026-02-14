@@ -3,6 +3,8 @@ package domain
 import (
 	"fmt"
 	"math"
+
+	"github.com/google/uuid"
 )
 
 // MilitaryOperationType represents the type of a military operation.
@@ -88,7 +90,7 @@ type MilitaryOperation struct {
 	EventProducer
 	ID           int
 	Type         MilitaryOperationType
-	OwnerUserID  int
+	OwnerUserID  uuid.UUID
 	SourceBaseID int
 
 	// Coordinates snapshot (for travel calculations)
@@ -125,7 +127,7 @@ type MilitaryOperation struct {
 
 // NewAttackOperation creates an ATTACK operation in transit.
 // It validates that at least one unit is provided and that source/target are different.
-func NewAttackOperation(ownerUserID, sourceBaseID int, source, target Vector2i, units []MilitaryUnitSnap, storageSnaps []StorageItemSnap) (*MilitaryOperation, error) {
+func NewAttackOperation(ownerUserID uuid.UUID, sourceBaseID int, source, target Vector2i, units []MilitaryUnitSnap, storageSnaps []StorageItemSnap) (*MilitaryOperation, error) {
 	if source == target {
 		return nil, fmt.Errorf("source and target coordinates must be different")
 	}
@@ -151,7 +153,7 @@ func NewAttackOperation(ownerUserID, sourceBaseID int, source, target Vector2i, 
 
 // NewSpyOperation creates a SPY operation in transit.
 // It validates that at least one unit is provided, targeting a different sector, and that all units are spies.
-func NewSpyOperation(ownerUserID, sourceBaseID int, source, target Vector2i, spies []MilitaryUnitSnap, storageSnaps []StorageItemSnap) (*MilitaryOperation, error) {
+func NewSpyOperation(ownerUserID uuid.UUID, sourceBaseID int, source, target Vector2i, spies []MilitaryUnitSnap, storageSnaps []StorageItemSnap) (*MilitaryOperation, error) {
 	if source == target {
 		return nil, fmt.Errorf("source and target coordinates must be different")
 	}

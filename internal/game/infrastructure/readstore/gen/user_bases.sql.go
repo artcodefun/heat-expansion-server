@@ -9,6 +9,8 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+
+	"github.com/google/uuid"
 )
 
 const getBaseStats = `-- name: GetBaseStats :one
@@ -39,7 +41,7 @@ ORDER BY id
 
 type ListUserBasesRow struct {
 	ID          int64          `json:"id"`
-	UserID      int64          `json:"user_id"`
+	UserID      uuid.UUID      `json:"user_id"`
 	SectorX     int32          `json:"sector_x"`
 	SectorY     int32          `json:"sector_y"`
 	Name        sql.NullString `json:"name"`
@@ -48,7 +50,7 @@ type ListUserBasesRow struct {
 }
 
 // List user-owned bases (basic info only)
-func (q *Queries) ListUserBases(ctx context.Context, userID int64) ([]ListUserBasesRow, error) {
+func (q *Queries) ListUserBases(ctx context.Context, userID uuid.UUID) ([]ListUserBasesRow, error) {
 	rows, err := q.query(ctx, q.listUserBasesStmt, listUserBases, userID)
 	if err != nil {
 		return nil, err

@@ -24,12 +24,14 @@ type Module struct {
 }
 
 func NewModule() *Module {
+	rabbitURL := os.Getenv("RABBITMQ_URL")
 	port := os.Getenv("AUTH_PORT")
 	dbURL := os.Getenv("AUTH_DB_URL")
 	jwtSecret := os.Getenv("AUTH_JWT_SECRET")
+	intExchange := os.Getenv("AUTH_INTEGRATION_EXCHANGE")
 
-	if port == "" || dbURL == "" || jwtSecret == "" {
-		log.Fatal("Missing required auth environment variables (AUTH_PORT, AUTH_DB_URL, AUTH_JWT_SECRET)")
+	if port == "" || dbURL == "" || jwtSecret == "" || rabbitURL == "" || intExchange == "" {
+		log.Fatal("Missing required auth environment variables (AUTH_PORT, AUTH_DB_URL, AUTH_JWT_SECRET, RABBITMQ_URL, AUTH_INTEGRATION_EXCHANGE)")
 	}
 
 	db, err := sql.Open("postgres", dbURL)
@@ -41,7 +43,7 @@ func NewModule() *Module {
 	}
 	fmt.Println("Connected to auth database successfully!")
 
-	adapters, err := NewAdapters(db, jwtSecret)
+	adapters, err := NewAdapters(db, jwtSecret, rabbitURL, intExchange)
 	if err != nil {
 		log.Fatal("Failed to initialize auth adapters:", err)
 	}

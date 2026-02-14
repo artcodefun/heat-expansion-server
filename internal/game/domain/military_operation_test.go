@@ -1,6 +1,10 @@
 package domain
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/google/uuid"
+)
 
 func TestOperation_Attack_EmptyLocation_PhaseAndEvents(t *testing.T) {
 	SetTestNow(t, 1_000)
@@ -9,7 +13,7 @@ func TestOperation_Attack_EmptyLocation_PhaseAndEvents(t *testing.T) {
 	}
 	source := Vector2i{X: 0, Y: 0}
 	target := Vector2i{X: 3, Y: 4} // Euclidean distance 5 -> scaled 5000
-	op, err := NewAttackOperation(1, 10, source, target, units, nil)
+	op, err := NewAttackOperation(uuid.New(), 10, source, target, units, nil)
 	if err != nil {
 		t.Fatalf("unexpected error from NewAttackOperation: %v", err)
 	}
@@ -109,7 +113,7 @@ func TestOperation_TimeBeforeEntersCircle(t *testing.T) {
 	target := Vector2i{X: 10, Y: 0} // Distance 10 (scaled 10000)
 	// Speed 100 -> Total travel time 10000 / 100 = 100s
 
-	op, _ := NewAttackOperation(1, 1, source, target, units, nil)
+	op, _ := NewAttackOperation(uuid.New(), 1, source, target, units, nil)
 	op.Start() // OutboundDepartAt = 1000, OutboundArriveAt = 1100
 
 	center := Vector2i{X: 10, Y: 0}
@@ -174,7 +178,7 @@ func TestOperation_Attack_UserBase_LootAndDeduction(t *testing.T) {
 	units := []MilitaryUnitSnap{
 		{PrototypeID: 2, Category: ArmyCategoryInfantry, Attack: 10, Defence: 5, Capacity: 7, Stealth: 0, Speed: 200, Count: 1},
 	}
-	op, err := NewAttackOperation(1, 10, Vector2i{0, 0}, Vector2i{1, 0}, units, nil)
+	op, err := NewAttackOperation(uuid.New(), 10, Vector2i{0, 0}, Vector2i{1, 0}, units, nil)
 	if err != nil {
 		t.Fatalf("unexpected error from NewAttackOperation: %v", err)
 	}
@@ -184,11 +188,11 @@ func TestOperation_Attack_UserBase_LootAndDeduction(t *testing.T) {
 	op.UpdatePhaseBasedOnTime()
 
 	// Defender with some resources
-	def := &UserBaseModel{ID: 99}
+	def := &UserBaseModel{ID: 99, UserID: uuid.New()}
 	def.Stats = UserBaseStats{Credits: 10, Iron: 8, Titanium: 4, Antimatter: 2, CalculationTimestamp: NowUnix()}
 	// No defenders/structures for a guaranteed win and no losses
 
-	attackerBase := &UserBaseModel{ID: 10}
+	attackerBase := &UserBaseModel{ID: 10, UserID: uuid.New()}
 	service := NewMilitaryOperationService(op, attackerBase)
 	service.ResolveAgainstUserBase(def)
 
@@ -224,7 +228,7 @@ func TestSpy_BlockedByCloaking_OutcomeAndReturn(t *testing.T) {
 	spies := []MilitaryUnitSnap{
 		{PrototypeID: 7, Category: ArmyCategorySpy, Attack: 2, Defence: 1, Capacity: 0, Stealth: 4, Speed: 120, Count: 2}, // stealth sum = 8
 	}
-	op, err := NewSpyOperation(1, 10, Vector2i{0, 0}, Vector2i{1, 1}, spies, nil)
+	op, err := NewSpyOperation(uuid.New(), 10, Vector2i{0, 0}, Vector2i{1, 1}, spies, nil)
 	if err != nil {
 		t.Fatalf("unexpected error from NewSpyOperation: %v", err)
 	}
@@ -266,7 +270,7 @@ func TestSpy_DefeatedByDefendingSpies_ReturnImmediate(t *testing.T) {
 	spies := []MilitaryUnitSnap{
 		{PrototypeID: 8, Category: ArmyCategorySpy, Attack: 1, Defence: 1, Capacity: 0, Stealth: 1, Speed: 100, Count: 2}, // atk power=2
 	}
-	op, err := NewSpyOperation(1, 10, Vector2i{0, 0}, Vector2i{1, 0}, spies, nil)
+	op, err := NewSpyOperation(uuid.New(), 10, Vector2i{0, 0}, Vector2i{1, 0}, spies, nil)
 	if err != nil {
 		t.Fatalf("unexpected error from NewSpyOperation: %v", err)
 	}
@@ -310,7 +314,7 @@ func TestSpy_ReportProduced_OutcomeAndReturn(t *testing.T) {
 	spies := []MilitaryUnitSnap{
 		{PrototypeID: 9, Category: ArmyCategorySpy, Attack: 10, Defence: 1, Capacity: 0, Stealth: 2, Speed: 100, Count: 1},
 	}
-	op, err := NewSpyOperation(1, 10, Vector2i{0, 0}, Vector2i{2, 0}, spies, nil)
+	op, err := NewSpyOperation(uuid.New(), 10, Vector2i{0, 0}, Vector2i{2, 0}, spies, nil)
 	if err != nil {
 		t.Fatalf("unexpected error from NewSpyOperation: %v", err)
 	}
@@ -350,7 +354,7 @@ func TestSpy_ReportProduced_OutcomeAndReturn(t *testing.T) {
 }
 
 func TestNewAttackOperation_RejectsNoUnits(t *testing.T) {
-	_, err := NewAttackOperation(1, 10, Vector2i{0, 0}, Vector2i{1, 0}, nil, nil)
+	_, err := NewAttackOperation(uuid.New(), 10, Vector2i{0, 0}, Vector2i{1, 0}, nil, nil)
 	if err == nil {
 		t.Fatalf("expected error when creating attack operation with no units")
 	}
@@ -358,14 +362,14 @@ func TestNewAttackOperation_RejectsNoUnits(t *testing.T) {
 
 func TestNewAttackOperation_RejectsSameCoordinates(t *testing.T) {
 	units := []MilitaryUnitSnap{{PrototypeID: 1, Category: ArmyCategoryInfantry, Count: 1}}
-	_, err := NewAttackOperation(1, 10, Vector2i{5, 5}, Vector2i{5, 5}, units, nil)
+	_, err := NewAttackOperation(uuid.New(), 10, Vector2i{5, 5}, Vector2i{5, 5}, units, nil)
 	if err == nil {
 		t.Fatalf("expected error when creating attack operation with same source/target")
 	}
 }
 
 func TestNewSpyOperation_RejectsNoUnits(t *testing.T) {
-	_, err := NewSpyOperation(1, 10, Vector2i{0, 0}, Vector2i{1, 0}, nil, nil)
+	_, err := NewSpyOperation(uuid.New(), 10, Vector2i{0, 0}, Vector2i{1, 0}, nil, nil)
 	if err == nil {
 		t.Fatalf("expected error when creating spy operation with no units")
 	}
@@ -373,7 +377,7 @@ func TestNewSpyOperation_RejectsNoUnits(t *testing.T) {
 
 func TestNewSpyOperation_RejectsSameCoordinates(t *testing.T) {
 	units := []MilitaryUnitSnap{{PrototypeID: 7, Category: ArmyCategorySpy, Count: 1}}
-	_, err := NewSpyOperation(1, 10, Vector2i{5, 5}, Vector2i{5, 5}, units, nil)
+	_, err := NewSpyOperation(uuid.New(), 10, Vector2i{5, 5}, Vector2i{5, 5}, units, nil)
 	if err == nil {
 		t.Fatalf("expected error when creating spy operation with same source/target")
 	}
@@ -381,7 +385,7 @@ func TestNewSpyOperation_RejectsSameCoordinates(t *testing.T) {
 
 func TestNewSpyOperation_RejectsNonSpyUnits(t *testing.T) {
 	units := []MilitaryUnitSnap{{PrototypeID: 1, Category: ArmyCategoryInfantry, Count: 1}}
-	_, err := NewSpyOperation(1, 10, Vector2i{0, 0}, Vector2i{1, 0}, units, nil)
+	_, err := NewSpyOperation(uuid.New(), 10, Vector2i{0, 0}, Vector2i{1, 0}, units, nil)
 	if err == nil {
 		t.Fatalf("expected error when creating spy operation with non-spy units")
 	}
@@ -401,9 +405,9 @@ func TestOperation_WithStorageSnaps_AffectsResolution(t *testing.T) {
 	}
 	// Base attack: 100 * 10 = 1000. With 1.2 multiplier = 1200.
 
-	op, err := NewAttackOperation(1, 10, Vector2i{0, 0}, Vector2i{1, 0}, atkUnits, atkSnaps)
+	op, err := NewAttackOperation(uuid.New(), 10, Vector2i{0, 0}, Vector2i{1, 0}, atkUnits, atkSnaps)
 	if err != nil {
-		t.Fatalf("failed to create operation: %v", err)
+		t.Fatalf("unexpected error from NewAttackOperation: %v", err)
 	}
 
 	op.Start()

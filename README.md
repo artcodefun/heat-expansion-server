@@ -22,10 +22,15 @@ This repository is structured as a **modular monolith**: multiple services live 
 
 ## Getting started
 
-1. Install Go and PostgreSQL.
+1. Install Go, PostgreSQL, and RabbitMQ.
 2. Create a `.env` file (see `.env.example`).
 3. Apply migrations and run the Server:
    - `make migrate-up`
    - `make run`
 
-The Game Server listens on `GAME_PORT` (default `8080`).
+Alternatively, use Docker Compose:
+```bash
+docker-compose up --build
+```
+
+The Game Server listens on `GAME_PORT` (default `8080`) and the Auth Server on `AUTH_PORT` (default `8081`).

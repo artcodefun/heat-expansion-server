@@ -1,5 +1,7 @@
 package readmodels
 
+import "github.com/google/uuid"
+
 // MilitaryOperationType represents the type of a military operation.
 type MilitaryOperationType string
 
@@ -84,7 +86,7 @@ type AttackResult struct {
 type MilitaryOperation struct {
 	ID           int
 	Type         MilitaryOperationType
-	OwnerUserID  int
+	OwnerUserID  uuid.UUID
 	SourceBaseID int
 
 	// Coordinates snapshot (for travel calculations)

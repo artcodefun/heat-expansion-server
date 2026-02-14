@@ -12,6 +12,7 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/repo"
+	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/events"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/jobs"
 	httpapi "github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http"
 )
@@ -23,6 +24,8 @@ type Module struct {
 	LogLevel      string
 	StaticBaseURL string
 	AssetsDir     string
+	RabbitURL     string
+	AuthExchange  string
 
 	DB         *sql.DB
 	Adapters   *Adapters
@@ -30,6 +33,7 @@ type Module struct {
 	Commands   *Commands
 	Queries    *Queries
 	HTTPServer *httpapi.Server
+	Consumer   *events.RabbitMQConsumer
 }
 
 func NewModule() *Module {
@@ -38,8 +42,10 @@ func NewModule() *Module {
 	jwtSecret := os.Getenv("GAME_JWT_SECRET")
 	staticBaseURL := os.Getenv("GAME_STATIC_BASE_URL")
 	assetsDir := os.Getenv("GAME_ASSETS_DIR")
+	rabbitURL := os.Getenv("RABBITMQ_URL")
+	authExchange := os.Getenv("AUTH_INTEGRATION_EXCHANGE")
 
-	if port == "" || dbURL == "" || jwtSecret == "" || staticBaseURL == "" {
+	if port == "" || dbURL == "" || jwtSecret == "" || staticBaseURL == "" || rabbitURL == "" || authExchange == "" {
 		log.Fatal("Missing required environment variables. Please check your .env file.")
 	}
 
@@ -56,7 +62,7 @@ func NewModule() *Module {
 	}
 	fmt.Println("Connected to database successfully!")
 
-	adapters, err := NewAdapters(db, jwtSecret, staticBaseURL)
+	adapters, err := NewAdapters(db, staticBaseURL, jwtSecret)
 	if err != nil {
 		log.Fatal("Failed to initialize adapters:", err)
 	}
@@ -66,6 +72,9 @@ func NewModule() *Module {
 
 	WireCommandEvents(commands, adapters.Events)
 	WireCommandSchedulerHandler(commands, adapters.Scheduler)
+
+	consumer := events.NewRabbitMQConsumer(rabbitURL)
+	WireCommandIntegrationEvents(commands, consumer, authExchange, "game.auth.integration.events")
 
 	httpCommands := httpapi.Commands{
 		User:      commands.User,
@@ -99,12 +108,15 @@ func NewModule() *Module {
 		JWTSecret:     jwtSecret,
 		StaticBaseURL: staticBaseURL,
 		AssetsDir:     assetsDir,
+		RabbitURL:     rabbitURL,
+		AuthExchange:  authExchange,
 		DB:            db,
 		Adapters:      adapters,
 		Services:      services,
 		Commands:      commands,
 		Queries:       queries,
 		HTTPServer:    httpServer,
+		Consumer:      consumer,
 	}
 }
 
@@ -113,9 +125,15 @@ func (m *Module) Run() {
 	fmt.Printf("Connecting to DB: %s\n", m.DBURL)
 	fmt.Println("JWT secret configured")
 	fmt.Printf("Static base URL: %s\n", m.StaticBaseURL)
+	fmt.Printf("RabbitMQ URL: %s\n", m.RabbitURL)
+	fmt.Printf("Auth Exchange: %s\n", m.AuthExchange)
 
 	if runner, ok := m.Adapters.Scheduler.(*jobs.DBScheduler); ok {
 		go runner.Run(context.Background())
+	}
+
+	if err := m.Consumer.Start(context.Background()); err != nil {
+		log.Printf("Warning: Failed to start RabbitMQ consumer: %v", err)
 	}
 
 	go func() {

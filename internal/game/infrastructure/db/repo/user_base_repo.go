@@ -9,6 +9,7 @@ import (
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/gen"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/mappers"
+	"github.com/google/uuid"
 )
 
 type UserBaseRepo struct {
@@ -78,8 +79,8 @@ func (r *UserBaseRepo) Delete(id int) error {
 	return r.q.DeleteBase(context.Background(), int64(id))
 }
 
-func (r *UserBaseRepo) FindByUserID(userID int) ([]*domain.UserBaseModel, error) {
-	rows, err := r.q.ListBasesByUserID(context.Background(), int64(userID))
+func (r *UserBaseRepo) FindByUserID(userID uuid.UUID) ([]*domain.UserBaseModel, error) {
+	rows, err := r.q.ListBasesByUserID(context.Background(), userID)
 	if err != nil {
 		return nil, err
 	}
@@ -145,15 +146,15 @@ func (r *UserBaseRepo) FindAll() ([]*domain.UserBaseModel, error) {
 }
 
 // GetOwnerID returns the owning user ID for a base.
-func (r *UserBaseRepo) GetOwnerID(baseID int) (int, error) {
+func (r *UserBaseRepo) GetOwnerID(baseID int) (uuid.UUID, error) {
 	row, err := r.q.GetBaseByID(context.Background(), int64(baseID))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return 0, ports.ErrNotFound
+			return uuid.Nil, ports.ErrNotFound
 		}
-		return 0, err
+		return uuid.Nil, err
 	}
-	return int(row.UserID), nil
+	return row.UserID, nil
 }
 
 // persistAllItems updates the base stats row and fully replaces all item rows with the current aggregate collections.

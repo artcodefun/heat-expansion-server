@@ -1,11 +1,15 @@
 package domain
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/google/uuid"
+)
 
 func TestCrystalSpendingService_SpeedUpBuildingProduction_DeductsCrystalsAndSpeedsUp(t *testing.T) {
 	SetTestNow(t, 1_000)
 
-	user := &User{ID: 1, Crystals: 10}
+	user := &User{ID: uuid.New(), Crystals: 10}
 	base := newBaseWithDefaults(1)
 
 	// Prepare a building in production with known timings and skip price
@@ -48,7 +52,7 @@ func TestCrystalSpendingService_SpeedUpBuildingProduction_DeductsCrystalsAndSpee
 func TestCrystalSpendingService_SpeedUpBuildingProduction_CeilRounding(t *testing.T) {
 	SetTestNow(t, 1_000)
 
-	user := &User{ID: 1, Crystals: 10}
+	user := &User{ID: uuid.New(), Crystals: 10}
 	base := newBaseWithDefaults(1)
 
 	// Price 10, remaining fraction ~0.11 -> 1.1 -> Ceil should be 2
@@ -77,13 +81,13 @@ func TestCrystalSpendingService_SpeedUpBuildingProduction_CeilRounding(t *testin
 func TestCrystalSpendingService_SpeedUpOperation_Outbound(t *testing.T) {
 	SetTestNow(t, 1_000)
 
-	user := &User{ID: 1, Crystals: 100}
+	user := &User{ID: uuid.New(), Crystals: 100}
 	units := []MilitaryUnitSnap{
 		{PrototypeID: 1, Category: ArmyCategoryInfantry, Attack: 10, Defence: 5, Capacity: 0, Stealth: 0, Speed: 100, Count: 5},
 	}
 	source := Vector2i{X: 0, Y: 0}
 	target := Vector2i{X: 3, Y: 4}
-	op, err := NewAttackOperation(1, 10, source, target, units, nil)
+	op, err := NewAttackOperation(uuid.New(), 10, source, target, units, nil)
 	if err != nil {
 		t.Fatalf("unexpected error from NewAttackOperation: %v", err)
 	}
@@ -122,13 +126,13 @@ func TestCrystalSpendingService_SpeedUpOperation_Outbound(t *testing.T) {
 func TestCrystalSpendingService_SpeedUpOperation_Returning(t *testing.T) {
 	SetTestNow(t, 2_000)
 
-	user := &User{ID: 1, Crystals: 100}
+	user := &User{ID: uuid.New(), Crystals: 100}
 	units := []MilitaryUnitSnap{
 		{PrototypeID: 2, Category: ArmyCategoryInfantry, Attack: 10, Defence: 5, Capacity: 0, Stealth: 0, Speed: 100, Count: 5},
 	}
 	source := Vector2i{X: 0, Y: 0}
 	target := Vector2i{X: 4, Y: 3}
-	op, err := NewAttackOperation(1, 10, source, target, units, nil)
+	op, err := NewAttackOperation(uuid.New(), 10, source, target, units, nil)
 	if err != nil {
 		t.Fatalf("unexpected error from NewAttackOperation: %v", err)
 	}

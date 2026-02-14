@@ -39,7 +39,7 @@ type Queries struct {
 }
 
 // NewRouter constructs the Gin engine, registers middleware and routes.
-func NewRouter(cmd Commands, qry Queries, tokenProvider ports.TokenProvider, assetsDir string) *gin.Engine {
+func NewRouter(cmd Commands, qry Queries, tokenValidator ports.TokenValidator, assetsDir string) *gin.Engine {
 	r := gin.Default()
 	registerCustomValidators()
 
@@ -65,14 +65,12 @@ func NewRouter(cmd Commands, qry Queries, tokenProvider ports.TokenProvider, ass
 	// Public routes (no auth)
 	publicApi := r.Group("/api/v1")
 	{
-		publicApi.POST("/auth/register", userHandler.Register)
-		publicApi.POST("/auth/login", userHandler.Login)
 		publicApi.GET("/min-client-version", MinClientVersionHandler)
 	}
 
 	// Private routes (auth required)
 	api := r.Group("/api/v1")
-	api.Use(middleware.Auth(tokenProvider))
+	api.Use(middleware.Auth(tokenValidator))
 	{
 		// User
 		api.GET("/user/balance", userHandler.GetCrystalBalance)

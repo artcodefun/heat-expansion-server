@@ -7,6 +7,7 @@ import (
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
+	"github.com/google/uuid"
 )
 
 type AlertCommands struct {
@@ -23,7 +24,7 @@ func NewAlertCommands(repo ports.AlertRepository, access *services.AccessControl
 	}
 }
 
-func (c *AlertCommands) MarkAllAsRead(baseID int, userID int) error {
+func (c *AlertCommands) MarkAllAsRead(baseID int, userID uuid.UUID) error {
 	if err := c.Access.EnsureBaseOwnership(userID, baseID); err != nil {
 		return err
 	}

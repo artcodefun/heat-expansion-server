@@ -8,19 +8,17 @@ import (
 // CommandContext carries caller identity & auth scope for authorization checks on mutations.
 // Mirrors QueryContext; extend with trace IDs, tenant, feature flags as needed.
 type CommandContext struct {
-	UserID int
+	UserID uuid.UUID
 	Roles  []string
 }
 
 // UserCommands encapsulates mutating user operations.
 type UserCommands interface {
-	Create(ctx CommandContext, name, email, password string) error
-	Authenticate(ctx CommandContext, email, password string) (string, error)
 }
 
 // BaseCommands encapsulates base creation operations.
 type BaseCommands interface {
-	CreateBase(ctx CommandContext, userID int) error
+	CreateBase(ctx CommandContext, userID uuid.UUID) error
 }
 
 // BuildingCommands encapsulates building queue & production mutations.
@@ -65,5 +63,5 @@ type OperationCommands interface {
 
 // AlertCommands encapsulates alert notifications management.
 type AlertCommands interface {
-	MarkAllAsRead(baseID int, userID int) error
+	MarkAllAsRead(baseID int, userID uuid.UUID) error
 }

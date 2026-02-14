@@ -8,7 +8,7 @@ import (
 type UserBaseModel struct {
 	ID          int
 	Coordinates Vector2i
-	UserID      int
+	UserID      uuid.UUID
 	LocationDetails
 }
 

@@ -145,7 +145,7 @@ type DomainEvent struct {
 type MilitaryOperation struct {
 	ID                int64                 `json:"id"`
 	Type              string                `json:"type"`
-	OwnerUserID       int64                 `json:"owner_user_id"`
+	OwnerUserID       uuid.UUID             `json:"owner_user_id"`
 	SourceBaseID      int64                 `json:"source_base_id"`
 	SourceX           int32                 `json:"source_x"`
 	SourceY           int32                 `json:"source_y"`
@@ -268,16 +268,14 @@ type TechItemPrototype struct {
 }
 
 type User struct {
-	ID           int64  `json:"id"`
-	Name         string `json:"name"`
-	Email        string `json:"email"`
-	PasswordHash string `json:"password_hash"`
-	Crystals     int32  `json:"crystals"`
+	ID       uuid.UUID `json:"id"`
+	Name     string    `json:"name"`
+	Crystals int32     `json:"crystals"`
 }
 
 type UserBase struct {
 	ID                 int64           `json:"id"`
-	UserID             int64           `json:"user_id"`
+	UserID             uuid.UUID       `json:"user_id"`
 	SectorX            int32           `json:"sector_x"`
 	SectorY            int32           `json:"sector_y"`
 	Name               sql.NullString  `json:"name"`

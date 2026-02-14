@@ -5,10 +5,8 @@ CREATE SCHEMA game;
 
 -- Users
 CREATE TABLE game.users (
-    id              BIGSERIAL PRIMARY KEY,
+    id              UUID PRIMARY KEY,
     name            TEXT        NOT NULL,
-    email           TEXT        NOT NULL UNIQUE,
-    password_hash   TEXT        NOT NULL,
     crystals        INTEGER     NOT NULL DEFAULT 0
 );
 
@@ -26,7 +24,7 @@ CREATE TABLE game.sectors (
 -- User Bases (stats denormalized; internal items stored in separate tables)
 CREATE TABLE game.user_bases (
     id                         BIGSERIAL PRIMARY KEY,
-    user_id                    BIGINT    NOT NULL REFERENCES game.users(id) ON DELETE CASCADE,
+    user_id                    UUID      NOT NULL REFERENCES game.users(id) ON DELETE CASCADE,
     sector_x                   INTEGER   NOT NULL,
     sector_y                   INTEGER   NOT NULL,
     name                       TEXT,
@@ -44,7 +42,7 @@ CREATE INDEX idx_user_bases_user_id ON game.user_bases(user_id);
 CREATE TABLE game.military_operations (
     id                 BIGSERIAL PRIMARY KEY,
     type               TEXT    NOT NULL,
-    owner_user_id      BIGINT  NOT NULL REFERENCES game.users(id) ON DELETE CASCADE,
+    owner_user_id      UUID    NOT NULL REFERENCES game.users(id) ON DELETE CASCADE,
     source_base_id     BIGINT  NOT NULL REFERENCES game.user_bases(id) ON DELETE CASCADE,
     -- target sector is identified by coordinates; keep id-less reference
     source_x           INTEGER NOT NULL,

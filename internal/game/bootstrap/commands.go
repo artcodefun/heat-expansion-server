@@ -32,7 +32,7 @@ func NewCommands(a *Adapters, as *AppServices) *Commands {
 		Scanner:     commands.NewIntelligenceScannerCommands(a.UserBases, a.Sectors, a.ResourceLocations, a.DangerousLocations, a.ScanReports, as.Provisioner, a.Scheduler, a.OutboxEvents, a.TxMgr),
 		Radar:       commands.NewIntelligenceRadarCommands(a.UserBases, a.MilitaryOps, a.RadarThreats, a.Scheduler, a.OutboxEvents, a.TxMgr),
 		RadarThreat: commands.NewRadarThreatCommands(a.RadarThreats, a.OutboxEvents, a.TxMgr),
-		User:        commands.NewUserCommands(a.Users, a.Hasher, a.Tokens, a.OutboxEvents, a.TxMgr),
+		User:        commands.NewUserCommands(a.Users, a.OutboxEvents, a.TxMgr),
 		Activity:    commands.NewActivityCommands(a.Activities, a.MilitaryOps, a.RadarThreats, a.Sectors, a.UserBases, a.ScanReports, a.OutboxEvents, a.TxMgr),
 		World:       commands.NewWorldGenerationCommands(a.UserBases, a.Sectors, a.ResourceLocations, a.DangerousLocations, a.StoragePrototypes, a.ArmyPrototypes, a.BuildPrototypes, a.Content, as.Provisioner, a.Scheduler, a.TxMgr),
 		Alert:       commands.NewAlertCommands(a.Alerts, as.Access, a.TxMgr),

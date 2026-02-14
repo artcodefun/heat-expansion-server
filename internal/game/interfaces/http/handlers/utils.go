@@ -6,24 +6,25 @@ import (
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 func queryCtx(c *gin.Context) cqrs.QueryContext {
 	if v, ok := c.Get("userID"); ok {
-		if id, ok2 := v.(int); ok2 {
+		if id, ok2 := v.(uuid.UUID); ok2 {
 			return cqrs.QueryContext{UserID: id}
 		}
 	}
-	return cqrs.QueryContext{UserID: 0}
+	return cqrs.QueryContext{UserID: uuid.Nil}
 }
 
 func commandCtx(c *gin.Context) cqrs.CommandContext {
 	if v, ok := c.Get("userID"); ok {
-		if id, ok2 := v.(int); ok2 {
+		if id, ok2 := v.(uuid.UUID); ok2 {
 			return cqrs.CommandContext{UserID: id}
 		}
 	}
-	return cqrs.CommandContext{UserID: 0}
+	return cqrs.CommandContext{UserID: uuid.Nil}
 }
 
 // handleCoreErr handles common core layer errors and writes an appropriate HTTP response.

@@ -71,9 +71,8 @@ type Querier interface {
 	GetStoragePrototypeByID(ctx context.Context, id int64) (StorageItemPrototype, error)
 	// Technology prototypes queries
 	GetTechPrototypeByID(ctx context.Context, id int64) (TechItemPrototype, error)
-	GetUserByEmail(ctx context.Context, email string) (User, error)
 	// Users queries
-	GetUserByID(ctx context.Context, id int64) (User, error)
+	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
 	InsertActivity(ctx context.Context, arg InsertActivityParams) (uuid.UUID, error)
 	InsertAlert(ctx context.Context, arg InsertAlertParams) error
 	InsertBaseArmyItem(ctx context.Context, arg InsertBaseArmyItemParams) (uuid.UUID, error)
@@ -90,7 +89,7 @@ type Querier interface {
 	InsertScanReport(ctx context.Context, arg InsertScanReportParams) (int64, error)
 	// Scheduled jobs queries for durable scheduler
 	InsertScheduledJob(ctx context.Context, arg InsertScheduledJobParams) (int64, error)
-	InsertUser(ctx context.Context, arg InsertUserParams) (int64, error)
+	InsertUser(ctx context.Context, arg InsertUserParams) error
 	// Activities queries
 	ListActivitiesByBase(ctx context.Context, arg ListActivitiesByBaseParams) ([]Activity, error)
 	ListAlertsByBase(ctx context.Context, arg ListAlertsByBaseParams) ([]Alert, error)
@@ -104,7 +103,7 @@ type Querier interface {
 	ListBaseStorageItems(ctx context.Context, baseID int64) ([]BaseStorageItem, error)
 	// Base tech items queries
 	ListBaseTechItems(ctx context.Context, baseID int64) ([]BaseTechItem, error)
-	ListBasesByUserID(ctx context.Context, userID int64) ([]UserBase, error)
+	ListBasesByUserID(ctx context.Context, userID uuid.UUID) ([]UserBase, error)
 	ListBuildPrototypes(ctx context.Context) ([]BuildItemPrototype, error)
 	ListOccupiedSectorCoordinates(ctx context.Context) ([]ListOccupiedSectorCoordinatesRow, error)
 	ListOpsBySourceBase(ctx context.Context, arg ListOpsBySourceBaseParams) ([]MilitaryOperation, error)

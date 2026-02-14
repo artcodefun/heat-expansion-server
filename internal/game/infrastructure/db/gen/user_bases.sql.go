@@ -9,6 +9,8 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+
+	"github.com/google/uuid"
 )
 
 const createBase = `-- name: CreateBase :one
@@ -25,7 +27,7 @@ RETURNING id, user_id, sector_x, sector_y, name, description, image_url,
 `
 
 type CreateBaseParams struct {
-	UserID             int64           `json:"user_id"`
+	UserID             uuid.UUID       `json:"user_id"`
 	SectorX            int32           `json:"sector_x"`
 	SectorY            int32           `json:"sector_y"`
 	Name               sql.NullString  `json:"name"`
@@ -260,7 +262,7 @@ WHERE user_id = $1
 ORDER BY id
 `
 
-func (q *Queries) ListBasesByUserID(ctx context.Context, userID int64) ([]UserBase, error) {
+func (q *Queries) ListBasesByUserID(ctx context.Context, userID uuid.UUID) ([]UserBase, error) {
 	rows, err := q.query(ctx, q.listBasesByUserIDStmt, listBasesByUserID, userID)
 	if err != nil {
 		return nil, err

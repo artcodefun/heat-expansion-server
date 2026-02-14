@@ -9,6 +9,7 @@ import (
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/gen"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/mappers"
+	"github.com/google/uuid"
 )
 
 type UserRepo struct {
@@ -25,21 +26,16 @@ func (r *UserRepo) Tx(tx ports.Transaction) ports.UserRepository {
 }
 
 func (r *UserRepo) Create(user *domain.User) error {
-	id, err := r.q.InsertUser(context.Background(), gen.InsertUserParams{
-		Name:         user.Name,
-		Email:        user.Email,
-		PasswordHash: user.PasswordHash,
-		Crystals:     int32(user.Crystals),
+	err := r.q.InsertUser(context.Background(), gen.InsertUserParams{
+		ID:       user.ID,
+		Name:     user.Name,
+		Crystals: int32(user.Crystals),
 	})
-	if err != nil {
-		return err
-	}
-	user.ID = int(id)
-	return nil
+	return err
 }
 
-func (r *UserRepo) FindByID(id int) (*domain.User, error) {
-	u, err := r.q.GetUserByID(context.Background(), int64(id))
+func (r *UserRepo) FindByID(id uuid.UUID) (*domain.User, error) {
+	u, err := r.q.GetUserByID(context.Background(), id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ports.ErrNotFound
@@ -50,34 +46,21 @@ func (r *UserRepo) FindByID(id int) (*domain.User, error) {
 }
 
 // FindByIDForUpdate uses a FOR UPDATE lock. Requires a transaction-bound repo.
-func (r *UserRepo) FindByIDForUpdate(id int) (*domain.User, error) {
+func (r *UserRepo) FindByIDForUpdate(id uuid.UUID) (*domain.User, error) {
 	// sqlc does not generate a FOR UPDATE variant yet; placeholder for future query.
 	return r.FindByID(id)
 }
 
-func (r *UserRepo) FindByEmail(email string) (*domain.User, error) {
-	u, err := r.q.GetUserByEmail(context.Background(), email)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, ports.ErrNotFound
-		}
-		return nil, err
-	}
-	return mappers.UserFromDB(u), nil
-}
-
 func (r *UserRepo) Update(user *domain.User) error {
 	err := r.q.UpdateUser(context.Background(), gen.UpdateUserParams{
-		ID:           int64(user.ID),
-		Name:         user.Name,
-		Email:        user.Email,
-		PasswordHash: user.PasswordHash,
-		Crystals:     int32(user.Crystals),
+		ID:       user.ID,
+		Name:     user.Name,
+		Crystals: int32(user.Crystals),
 	})
 	return err
 }
 
-func (r *UserRepo) Delete(id int) error {
+func (r *UserRepo) Delete(id uuid.UUID) error {
 	// No delete query defined yet; placeholder error to avoid silent omission.
 	return errors.New("Delete not implemented for users")
 }
