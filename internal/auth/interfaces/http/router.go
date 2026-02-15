@@ -26,11 +26,8 @@ func NewRouter(cmd Commands, qry Queries, tr ports.Translator) *gin.Engine {
 
 	v1 := r.Group("/api/v1")
 	{
-		auth := v1.Group("/auth")
-		{
-			auth.POST("/register", handler.Register)
-			auth.POST("/login", handler.Login)
-		}
+		v1.POST("/register", handler.Register)
+		v1.POST("/login", handler.Login)
 	}
 
 	return r

@@ -23,7 +23,7 @@
 .env
 
 # Runtime Resources
-/assets/
+/static/
 /i18n/
 
 # OS generated files

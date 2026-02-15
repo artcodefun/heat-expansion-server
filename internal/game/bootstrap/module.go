@@ -23,7 +23,6 @@ type Module struct {
 	JWTSecret     string
 	LogLevel      string
 	StaticBaseURL string
-	AssetsDir     string
 	RabbitURL     string
 	AuthExchange  string
 
@@ -41,17 +40,12 @@ func NewModule() *Module {
 	dbURL := os.Getenv("GAME_DB_URL")
 	jwtSecret := os.Getenv("GAME_JWT_SECRET")
 	staticBaseURL := os.Getenv("GAME_STATIC_BASE_URL")
-	assetsDir := os.Getenv("GAME_ASSETS_DIR")
 	i18nPath := os.Getenv("GAME_I18N_PATH")
 	rabbitURL := os.Getenv("RABBITMQ_URL")
 	authExchange := os.Getenv("AUTH_INTEGRATION_EXCHANGE")
 
 	if port == "" || dbURL == "" || jwtSecret == "" || staticBaseURL == "" || rabbitURL == "" || authExchange == "" {
 		log.Fatal("Missing required environment variables. Please check your .env file.")
-	}
-
-	if assetsDir == "" {
-		assetsDir = "./assets"
 	}
 
 	db, err := sql.Open("postgres", dbURL)
@@ -101,7 +95,7 @@ func NewModule() *Module {
 		Activity:  queries.Activity,
 		Alert:     queries.Alert,
 	}
-	router := httpapi.NewRouter(httpCommands, httpQueries, adapters.Tokens, adapters.Translator, assetsDir)
+	router := httpapi.NewRouter(httpCommands, httpQueries, adapters.Tokens, adapters.Translator)
 	httpServer := httpapi.NewServer(router)
 
 	return &Module{
@@ -109,7 +103,6 @@ func NewModule() *Module {
 		DBURL:         dbURL,
 		JWTSecret:     jwtSecret,
 		StaticBaseURL: staticBaseURL,
-		AssetsDir:     assetsDir,
 		RabbitURL:     rabbitURL,
 		AuthExchange:  authExchange,
 		DB:            db,

@@ -39,7 +39,7 @@ type Queries struct {
 }
 
 // NewRouter constructs the Gin engine, registers middleware and routes.
-func NewRouter(cmd Commands, qry Queries, tokenValidator ports.TokenValidator, tr ports.Translator, assetsDir string) *gin.Engine {
+func NewRouter(cmd Commands, qry Queries, tokenValidator ports.TokenValidator, tr ports.Translator) *gin.Engine {
 	r := gin.Default()
 	registerCustomValidators()
 
@@ -58,9 +58,6 @@ func NewRouter(cmd Commands, qry Queries, tokenValidator ports.TokenValidator, t
 
 	// Global routes
 	r.GET("/health", HealthHandler)
-
-	// Serve static files
-	r.Static("/assets", assetsDir)
 
 	// Public routes (no auth)
 	publicApi := r.Group("/api/v1")
