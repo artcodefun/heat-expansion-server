@@ -4,17 +4,19 @@ import (
 	"net/http"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
 )
 
 type ArmyHandler struct {
-	queries  cqrs.ArmyQueries
-	commands cqrs.ArmyCommands
+	queries    cqrs.ArmyQueries
+	commands   cqrs.ArmyCommands
+	translator ports.Translator
 }
 
-func NewArmyHandler(queries cqrs.ArmyQueries, commands cqrs.ArmyCommands) *ArmyHandler {
-	return &ArmyHandler{queries: queries, commands: commands}
+func NewArmyHandler(queries cqrs.ArmyQueries, commands cqrs.ArmyCommands, translator ports.Translator) *ArmyHandler {
+	return &ArmyHandler{queries: queries, commands: commands, translator: translator}
 }
 
 // ListNew handles GET /bases/:baseId/army/new.
@@ -27,12 +29,11 @@ func (h *ArmyHandler) ListNew(c *gin.Context) {
 
 	category := dtos.ArmyCategoryFromDTO(req.Query.Category)
 	items, err := h.queries.ListNewArmyItems(ctx, req.Uri.BaseID, category)
-	if handleCoreErr(c, err) {
+	if handleCoreErr(c, h.translator, err) {
 		return
 	}
 
-	resp := dtos.ArmyItemsNewFromReadModels(items)
-	c.JSON(http.StatusOK, resp)
+	c.JSON(http.StatusOK, dtos.ArmyItemsNewFromReadModels(items, h.translator, getLocale(c)))
 }
 
 // ListPending handles GET /bases/:baseId/army/pending.
@@ -45,11 +46,11 @@ func (h *ArmyHandler) ListPending(c *gin.Context) {
 
 	category := dtos.ArmyCategoryFromDTO(req.Query.Category)
 	items, err := h.queries.ListPendingArmyItems(ctx, req.Uri.BaseID, category)
-	if handleCoreErr(c, err) {
+	if handleCoreErr(c, h.translator, err) {
 		return
 	}
 
-	resp := dtos.ArmyItemsPendingFromReadModels(items)
+	resp := dtos.ArmyItemsPendingFromReadModels(items, h.translator, getLocale(c))
 	c.JSON(http.StatusOK, resp)
 }
 
@@ -63,11 +64,11 @@ func (h *ArmyHandler) ListInProduction(c *gin.Context) {
 
 	category := dtos.ArmyCategoryFromDTO(req.Query.Category)
 	items, err := h.queries.ListInProductionArmyItems(ctx, req.Uri.BaseID, category)
-	if handleCoreErr(c, err) {
+	if handleCoreErr(c, h.translator, err) {
 		return
 	}
 
-	resp := dtos.ArmyItemsInProductionFromReadModels(items)
+	resp := dtos.ArmyItemsInProductionFromReadModels(items, h.translator, getLocale(c))
 	c.JSON(http.StatusOK, resp)
 }
 
@@ -81,11 +82,11 @@ func (h *ArmyHandler) ListPresent(c *gin.Context) {
 
 	category := dtos.ArmyCategoryFromDTO(req.Query.Category)
 	items, err := h.queries.ListPresentArmyItems(ctx, req.Uri.BaseID, category)
-	if handleCoreErr(c, err) {
+	if handleCoreErr(c, h.translator, err) {
 		return
 	}
 
-	resp := dtos.ArmyItemsPresentFromReadModels(items)
+	resp := dtos.ArmyItemsPresentFromReadModels(items, h.translator, getLocale(c))
 	c.JSON(http.StatusOK, resp)
 }
 
@@ -97,7 +98,7 @@ func (h *ArmyHandler) Queue(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.QueueArmy(ctx, req.Uri.BaseID, req.Body.PrototypeID, req.Body.Count); handleCoreErr(c, err) {
+	if err := h.commands.QueueArmy(ctx, req.Uri.BaseID, req.Body.PrototypeID, req.Body.Count); handleCoreErr(c, h.translator, err) {
 		return
 	}
 
@@ -112,7 +113,7 @@ func (h *ArmyHandler) SpeedUpProduction(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.SpeedUpArmyProductionWithCrystals(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, err) {
+	if err := h.commands.SpeedUpArmyProductionWithCrystals(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
 		return
 	}
 
@@ -127,7 +128,7 @@ func (h *ArmyHandler) CancelPending(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.CancelPendingArmy(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid(), req.Body.Count); handleCoreErr(c, err) {
+	if err := h.commands.CancelPendingArmy(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid(), req.Body.Count); handleCoreErr(c, h.translator, err) {
 		return
 	}
 
@@ -142,7 +143,7 @@ func (h *ArmyHandler) DeletePresent(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.DeletePresentArmy(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid(), req.Body.Count); handleCoreErr(c, err) {
+	if err := h.commands.DeletePresentArmy(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid(), req.Body.Count); handleCoreErr(c, h.translator, err) {
 		return
 	}
 

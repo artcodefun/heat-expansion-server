@@ -25,12 +25,12 @@ const (
 // ArmyItemPrototype is the base struct for army item prototypes.
 type ArmyItemPrototype struct {
 	ID                 int
-	Name               string
+	Name               TranslationKey
 	Category           ArmyCategory
 	Faction            Faction
 	UnlockTechnologyID *int // nil: available by default; non-nil: unlocked by this technology
-	ShortDescription   string
-	FullDescription    string
+	ShortDescription   TranslationKey
+	FullDescription    TranslationKey
 	Price              PriceModel
 	ProductionTime     int64 // how many seconds it takes to create
 	Space              int

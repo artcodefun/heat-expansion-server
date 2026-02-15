@@ -50,6 +50,14 @@ The patterns and conventions below apply to the **Game** service (`internal/game
   - Idempotency is enforced on `(origin_id, event_type)` in the integration outbox table.
   - Publishing is performed via RabbitMQ (using a `topic` exchange and event type as routing key) with a console fallback for local dev.
 
+- **Internationalization (i18n)**
+  - All user-facing strings (errors, notifications, prototype names) must be translatable.
+  - **Systemic locales**: Errors, alerts, and world generation text are stored in `internal/game/infrastructure/i18n/locales/*.json` and embedded into the binary via `go:embed`.
+  - **Content locales**: Prototype-specific data (army names, descriptions) is generated into an external directory and loaded at runtime via the `GAME_I18N_PATH` environment variable.
+  - **Domain Errors**: Use `domain.NewError(key, params)` in domain logic. Never use `fmt.Errorf` with hardcoded English strings.
+  - **Application Errors**: Use `cqrs.NewAppError(kind, key)` or `cqrs.NewAppErrorWithParams` for high-level application failures.
+  - **Presentation Layer**: DTO mappers and HTTP handlers must use `ports.Translator` to resolve keys into final strings using the `locale` from the `Accept-Language` header.
+
 ## Workflows
 - **Build**: `make build` builds `./cmd/server` into `bin/heat-expansion-server`.
 - **Run locally**: `make run` (loads `.env`, then `go run ./cmd/server`). Ensure DB is running and `GAME_DB_URL`/`AUTH_DB_URL` are set.

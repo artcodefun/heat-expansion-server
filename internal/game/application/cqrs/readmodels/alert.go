@@ -1,6 +1,9 @@
 package readmodels
 
-import "github.com/google/uuid"
+import (
+	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
+	"github.com/google/uuid"
+)
 
 type AlertKind string
 
@@ -15,8 +18,8 @@ type AlertItem struct {
 	BaseID     int
 	ActivityID *uuid.UUID
 	Kind       AlertKind
-	Title      string
-	Content    string
+	Title      domain.TranslationKey
+	Content    domain.TranslationKey
 	IsRead     bool
 	CreatedAt  int64
 	ExpiresAt  int64

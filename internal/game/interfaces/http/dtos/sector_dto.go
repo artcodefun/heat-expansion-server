@@ -1,6 +1,11 @@
 package dtos
 
-import "github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+import (
+	"fmt"
+
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+)
 
 type SectorType string
 
@@ -72,7 +77,7 @@ func sectorTypeFromLocation(loc readmodels.LocationType) SectorType {
 	}
 }
 
-func SectorScanReportFromReadModel(r *readmodels.SectorScanReport) SectorDTO {
+func SectorScanReportFromReadModel(r *readmodels.SectorScanReport, tr ports.Translator, locale string) SectorDTO {
 	source := ScanSourceUnknown
 	if r.SourceIntelItemID != nil {
 		source = ScanSourceIntel
@@ -82,11 +87,16 @@ func SectorScanReportFromReadModel(r *readmodels.SectorScanReport) SectorDTO {
 		source = ScanSourceOperation
 	}
 
+	name := tr.T(locale, r.Details.Name, nil)
+	if r.Type == readmodels.LocationTypeUserBase && r.BaseID > 0 {
+		name = fmt.Sprintf("%s #%d", name, r.BaseID)
+	}
+
 	return SectorDTO{
 		Coordinates:  Vector2iFromReadModel(r.Coordinates),
 		Type:         sectorTypeFromLocation(r.Type),
-		Name:         r.Details.Name,
-		Description:  r.Details.Description,
+		Name:         name,
+		Description:  tr.T(locale, r.Details.Description, nil),
 		ImageURL:     r.Details.ImageURL,
 		ScanDate:     int(r.CreatedAt),
 		ScanReportID: r.ID,
@@ -95,10 +105,10 @@ func SectorScanReportFromReadModel(r *readmodels.SectorScanReport) SectorDTO {
 	}
 }
 
-func SectorScanReportsFromReadModels(reports []*readmodels.SectorScanReport) []SectorDTO {
+func SectorScanReportsFromReadModels(reports []*readmodels.SectorScanReport, tr ports.Translator, locale string) []SectorDTO {
 	out := make([]SectorDTO, 0, len(reports))
 	for _, r := range reports {
-		out = append(out, SectorScanReportFromReadModel(r))
+		out = append(out, SectorScanReportFromReadModel(r, tr, locale))
 	}
 	return out
 }

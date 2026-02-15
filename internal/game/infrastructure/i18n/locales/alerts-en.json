@@ -1,0 +1,9 @@
+{
+    "alert.combat.attack.title": "Base Under Attack",
+    "alert.combat.spy.content": "Spies have been noticed inside the base!",
+    "alert.combat.attack.content": "Foreign army has attacked the base!",
+    "alert.intel.scan.title": "External Scan Detected",
+    "alert.intel.scan.content": "Your sensors detected an external scan targeting your base!",
+    "alert.intel.threat.title": "Incoming Threat Detected",
+    "alert.intel.threat.content": "Radars have detected an incoming threat!"
+}

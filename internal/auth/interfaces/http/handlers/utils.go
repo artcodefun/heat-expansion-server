@@ -4,8 +4,10 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"strings"
 
 	"github.com/artcodefun/heat-expansion-server/internal/auth/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/auth/application/ports"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -28,14 +30,35 @@ func commandCtx(c *gin.Context) cqrs.CommandContext {
 	return cqrs.CommandContext{AccountID: uuid.Nil}
 }
 
-func handleCoreErr(c *gin.Context, err error) bool {
+func getLocale(c *gin.Context) string {
+	lang := c.GetHeader("Accept-Language")
+	if lang == "" {
+		return "en"
+	}
+	// Simplified: take the first part of the header (e.g., "en-US,en;q=0.9" -> "en")
+	parts := strings.Split(lang, ",")
+	if len(parts) > 0 {
+		localeParts := strings.Split(parts[0], ";")
+		if len(localeParts) > 0 {
+			fullLocale := strings.TrimSpace(localeParts[0])
+			localeLang := strings.Split(fullLocale, "-")
+			return strings.ToLower(localeLang[0])
+		}
+	}
+	return "en"
+}
+
+func handleCoreErr(c *gin.Context, tr ports.Translator, err error) bool {
 	if err == nil {
 		return false
 	}
 
+	locale := getLocale(c)
+
 	var appErr cqrs.AppError
 	if !errors.As(err, &appErr) {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		status := http.StatusInternalServerError
+		c.JSON(status, gin.H{"error": tr.T(locale, "error.application.internal_server_error", nil)})
 		slog.Error("internal error occurred", "request", c.Request.URL.Path, "error", err.Error())
 		return true
 	}
@@ -55,9 +78,7 @@ func handleCoreErr(c *gin.Context, err error) bool {
 	}
 
 	c.JSON(status, gin.H{
-		"code":    appErr.Code,
-		"message": appErr.Message,
-		"params":  appErr.Params,
+		"error": tr.T(locale, appErr.Code, appErr.Params),
 	})
 	return true
 }

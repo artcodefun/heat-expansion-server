@@ -39,23 +39,23 @@ func (c *AlertCommands) HandleActivityCreatedEvent(e domain.ActivityCreatedEvent
 	switch e.Kind {
 	case domain.ActivityKindDefense:
 		kind = domain.AlertKindCombat
-		title = "Base Under Attack"
+		title = "alert.combat.attack.title"
 		if e.Subtype == string(domain.DefenseActivitySubtypeSpy) {
-			content = "Spies have been noticed inside the base!"
+			content = "alert.combat.spy.content"
 		} else {
-			content = "Foreign army has attacked the base!"
+			content = "alert.combat.attack.content"
 		}
 	case domain.ActivityKindScan:
 		if e.Subtype != string(domain.ScanActivitySubtypeExternalScanDetected) {
 			return nil // No alert for reports produced by the player
 		}
 		kind = domain.AlertKindIntel
-		title = "External Scan Detected"
-		content = "Your sensors detected an external scan targeting your base!"
+		title = "alert.intel.scan.title"
+		content = "alert.intel.scan.content"
 	case domain.ActivityKindRadar:
 		kind = domain.AlertKindIntel
-		title = "Incoming Threat Detected"
-		content = "Radars have detected an incoming threat!"
+		title = "alert.intel.threat.title"
+		content = "alert.intel.threat.content"
 	default:
 		return nil // No alert for other kinds
 	}

@@ -1,31 +1,38 @@
 package cqrs
 
-import "errors"
-
-var (
-	ErrForbidden = errors.New("forbidden")
-	ErrNotFound  = errors.New("not found")
+import (
+	"fmt"
 )
 
-// DomainError wraps a domain-level error so adapters can distinguish it
-// from infrastructure or unexpected failures.
-type DomainError struct {
-	Err error
+type ErrorKind int
+
+const (
+	KindInternal ErrorKind = iota
+	KindNotFound
+	KindForbidden
+	KindConflict
+	KindInvalidInput
+)
+
+type AppError struct {
+	Kind   ErrorKind
+	Code   string
+	Params map[string]any
 }
 
-func (e DomainError) Error() string {
-	if e.Err == nil {
-		return "domain error"
-	}
-	return e.Err.Error()
+func (e AppError) Error() string {
+	return fmt.Sprintf("[%d] %s", e.Kind, e.Code)
 }
 
-func (e DomainError) Unwrap() error { return e.Err }
-
-// NewDomainError wraps the given error in a DomainError. If err is nil, it returns nil.
-func NewDomainError(err error) error {
-	if err == nil {
-		return nil
-	}
-	return DomainError{Err: err}
+func NewAppError(kind ErrorKind, code string) AppError {
+	return AppError{Kind: kind, Code: code}
 }
+
+func NewAppErrorWithParams(kind ErrorKind, code string, params map[string]any) AppError {
+	return AppError{Kind: kind, Code: code, Params: params}
+}
+
+var (
+	ErrNotFound  = NewAppError(KindNotFound, "error.application.not_found")
+	ErrForbidden = NewAppError(KindForbidden, "error.application.forbidden")
+)

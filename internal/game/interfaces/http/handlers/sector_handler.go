@@ -4,16 +4,21 @@ import (
 	"net/http"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
 )
 
 type SectorHandler struct {
-	queries cqrs.SectorQueries
+	queries    cqrs.SectorQueries
+	translator ports.Translator
 }
 
-func NewSectorHandler(queries cqrs.SectorQueries) *SectorHandler {
-	return &SectorHandler{queries: queries}
+func NewSectorHandler(queries cqrs.SectorQueries, translator ports.Translator) *SectorHandler {
+	return &SectorHandler{
+		queries:    queries,
+		translator: translator,
+	}
 }
 
 // GetScansNear handles GET /bases/:baseId/sectors/scans/near.
@@ -24,10 +29,10 @@ func (h *SectorHandler) GetScansNear(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	reports, err := h.queries.GetScansNear(ctx, req.Uri.BaseID, req.Query.CenterX, req.Query.CenterY, req.Query.Radius)
-	if handleCoreErr(c, err) {
+	if handleCoreErr(c, h.translator, err) {
 		return
 	}
-	c.JSON(http.StatusOK, dtos.SectorScanReportsFromReadModels(reports))
+	c.JSON(http.StatusOK, dtos.SectorScanReportsFromReadModels(reports, h.translator, getLocale(c)))
 }
 
 // GetScanByID handles GET /bases/:baseId/sectors/scans/:id.
@@ -38,10 +43,10 @@ func (h *SectorHandler) GetScanByID(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	report, err := h.queries.GetScanReportByID(ctx, req.Uri.BaseID, req.Uri.ID)
-	if handleCoreErr(c, err) {
+	if handleCoreErr(c, h.translator, err) {
 		return
 	}
-	c.JSON(http.StatusOK, dtos.SectorScanReportFromReadModel(report))
+	c.JSON(http.StatusOK, dtos.SectorScanReportFromReadModel(report, h.translator, getLocale(c)))
 }
 
 // GetLatestScanBefore handles GET /bases/:baseId/sectors/scans/before.
@@ -52,8 +57,8 @@ func (h *SectorHandler) GetLatestScanBefore(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	report, err := h.queries.GetLatestScanBefore(ctx, req.Uri.BaseID, req.Query.X, req.Query.Y, req.Query.Before)
-	if handleCoreErr(c, err) {
+	if handleCoreErr(c, h.translator, err) {
 		return
 	}
-	c.JSON(http.StatusOK, dtos.SectorScanReportFromReadModel(report))
+	c.JSON(http.StatusOK, dtos.SectorScanReportFromReadModel(report, h.translator, getLocale(c)))
 }

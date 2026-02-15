@@ -42,6 +42,7 @@ func NewModule() *Module {
 	jwtSecret := os.Getenv("GAME_JWT_SECRET")
 	staticBaseURL := os.Getenv("GAME_STATIC_BASE_URL")
 	assetsDir := os.Getenv("GAME_ASSETS_DIR")
+	i18nPath := os.Getenv("GAME_I18N_PATH")
 	rabbitURL := os.Getenv("RABBITMQ_URL")
 	authExchange := os.Getenv("AUTH_INTEGRATION_EXCHANGE")
 
@@ -62,10 +63,11 @@ func NewModule() *Module {
 	}
 	fmt.Println("Connected to database successfully!")
 
-	adapters, err := NewAdapters(db, staticBaseURL, jwtSecret)
+	adapters, err := NewAdapters(db, staticBaseURL, jwtSecret, i18nPath)
 	if err != nil {
 		log.Fatal("Failed to initialize adapters:", err)
 	}
+
 	services := NewAppServices(adapters)
 	commands := NewCommands(adapters, services)
 	queries := NewQueries(adapters, services)
@@ -99,7 +101,7 @@ func NewModule() *Module {
 		Activity:  queries.Activity,
 		Alert:     queries.Alert,
 	}
-	router := httpapi.NewRouter(httpCommands, httpQueries, adapters.Tokens, assetsDir)
+	router := httpapi.NewRouter(httpCommands, httpQueries, adapters.Tokens, adapters.Translator, assetsDir)
 	httpServer := httpapi.NewServer(router)
 
 	return &Module{

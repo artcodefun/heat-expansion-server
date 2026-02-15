@@ -8,6 +8,8 @@ import (
 	dbgen "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/gen"
 	repo "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/repo"
 	events "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/events"
+	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/i18n"
+	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/i18n/locales"
 	jobs "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/jobs"
 	readgen "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/gen"
 	readrepo "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/repo"
@@ -47,14 +49,15 @@ type Adapters struct {
 	AlertRead     ports.AlertReadRepository
 
 	// Infra
-	TxMgr     ports.TransactionManager
-	Tokens    ports.TokenValidator
-	Events    ports.EventPublisher
-	Scheduler ports.Scheduler
-	Content   ports.ContentGenerator
+	TxMgr      ports.TransactionManager
+	Tokens     ports.TokenValidator
+	Events     ports.EventPublisher
+	Scheduler  ports.Scheduler
+	Content    ports.ContentGenerator
+	Translator ports.Translator
 }
 
-func NewAdapters(db *sql.DB, staticBaseURL string, jwtSecret string) (*Adapters, error) {
+func NewAdapters(db *sql.DB, staticBaseURL string, jwtSecret string, i18nPath string) (*Adapters, error) {
 	q := dbgen.New(db)
 	rq := readgen.New(db)
 
@@ -65,6 +68,19 @@ func NewAdapters(db *sql.DB, staticBaseURL string, jwtSecret string) (*Adapters,
 
 	generator := contentgen.NewSimpleGenerator(staticBaseURL)
 	tokens := security.NewSimpleTokenValidator(jwtSecret)
+
+	translator := i18n.NewJSONTranslator()
+	// 1. Load systemic locales (Embedded in binary)
+	if err := translator.LoadFromFS(locales.Files, "."); err != nil {
+		return nil, err
+	}
+
+	// 2. Load content locales (External directory provided via bootstrap)
+	if i18nPath != "" {
+		if err := translator.LoadFromDir(i18nPath); err != nil {
+			return nil, err
+		}
+	}
 
 	sectorRead := readrepo.NewSectorReadRepo(rq)
 	opRead := readrepo.NewOperationReadRepo(rq, sectorRead)
@@ -107,5 +123,6 @@ func NewAdapters(db *sql.DB, staticBaseURL string, jwtSecret string) (*Adapters,
 		Events:        publisher,
 		Scheduler:     scheduler,
 		Content:       generator,
+		Translator:    translator,
 	}, nil
 }

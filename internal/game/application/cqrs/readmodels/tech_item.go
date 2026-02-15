@@ -1,5 +1,7 @@
 package readmodels
 
+import "github.com/artcodefun/heat-expansion-server/internal/game/domain"
+
 // TechCategory represents the category of a tech item.
 type TechCategory string
 
@@ -21,11 +23,11 @@ const (
 // TechItemPrototype is the base struct for tech item prototypes.
 type TechItemPrototype struct {
 	ID                 int
-	Name               string
+	Name               domain.TranslationKey
 	Category           TechCategory
 	UnlockTechnologyID *int // nil: available by default; non-nil: unlocked by this technology
-	ShortDescription   string
-	FullDescription    string
+	ShortDescription   domain.TranslationKey
+	FullDescription    domain.TranslationKey
 	Price              PriceModel
 	ResearchTime       int64            // how many seconds it takes to research
 	Improvement        *TechImprovement // optional numeric improvement offered by this technology

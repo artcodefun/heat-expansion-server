@@ -1,5 +1,7 @@
 package readmodels
 
+import "github.com/artcodefun/heat-expansion-server/internal/game/domain"
+
 // ArmyCategory represents the category of an army item.
 type ArmyCategory string
 
@@ -24,12 +26,12 @@ const (
 // ArmyItemPrototype is the base struct for army item prototypes.
 type ArmyItemPrototype struct {
 	ID                 int
-	Name               string
+	Name               domain.TranslationKey
 	Category           ArmyCategory
 	Faction            Faction
 	UnlockTechnologyID *int // nil: available by default; non-nil: unlocked by this technology
-	ShortDescription   string
-	FullDescription    string
+	ShortDescription   domain.TranslationKey
+	FullDescription    domain.TranslationKey
 	Price              PriceModel
 	ProductionTime     int64 // how many seconds it takes to create
 	Space              int

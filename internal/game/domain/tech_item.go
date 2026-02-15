@@ -21,11 +21,11 @@ const (
 // TechItemPrototype is the base struct for tech item prototypes.
 type TechItemPrototype struct {
 	ID                 int
-	Name               string
+	Name               TranslationKey
 	Category           TechCategory
 	UnlockTechnologyID *int // nil: available by default; non-nil: unlocked by this technology
-	ShortDescription   string
-	FullDescription    string
+	ShortDescription   TranslationKey
+	FullDescription    TranslationKey
 	Price              PriceModel
 	ResearchTime       int64            // how many seconds it takes to research
 	Improvement        *TechImprovement // optional numeric improvement offered by this technology

@@ -35,6 +35,7 @@ This service uses Hexagonal Architecture (Ports and Adapters), DDD (Domain-drive
 - **Infrastructure**: `internal/game/infrastructure`
   - `db/`: Write-side persistence using sqlc (`migrations/`, `repo/`, etc.).
   - `readstore/`: Read-side persistence and cache for queries.
+  - `i18n/`: Localization engine. Supports a hybrid model where **systemic** keys (errors) are embedded in the binary, and **content** keys (prototypes) are loaded from an external directory via `GAME_I18N_PATH`.
   - Secondary adapters for `events/`, `jobs/`, `security/`, and `content/`.
 - **Interfaces**: `internal/game/interfaces/http`
   - Primary adapters (HTTP handlers, DTOs, middleware, and router).

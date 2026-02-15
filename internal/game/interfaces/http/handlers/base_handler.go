@@ -4,17 +4,19 @@ import (
 	"net/http"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
 )
 
 type BaseHandler struct {
-	queries  cqrs.BaseQueries
-	commands cqrs.BaseCommands
+	queries    cqrs.BaseQueries
+	commands   cqrs.BaseCommands
+	translator ports.Translator
 }
 
-func NewBaseHandler(queries cqrs.BaseQueries, commands cqrs.BaseCommands) *BaseHandler {
-	return &BaseHandler{queries: queries, commands: commands}
+func NewBaseHandler(queries cqrs.BaseQueries, commands cqrs.BaseCommands, translator ports.Translator) *BaseHandler {
+	return &BaseHandler{queries: queries, commands: commands, translator: translator}
 }
 
 // GetBaseStatus handles GET /bases/:baseId/status.
@@ -26,18 +28,18 @@ func (h *BaseHandler) GetBaseStatus(c *gin.Context) {
 
 	ctx := queryCtx(c)
 	stats, err := h.queries.GetBaseStats(ctx, req.Uri.BaseID)
-	if handleCoreErr(c, err) {
+	if handleCoreErr(c, h.translator, err) {
 		return
 	}
 
-	resp := dtos.BaseResourcesFromReadModel(stats)
+	resp := dtos.BaseResourcesFromReadModel(stats, h.translator, getLocale(c))
 	c.JSON(http.StatusOK, resp)
 }
 
 // CreateBase handles POST /bases.
 func (h *BaseHandler) CreateBase(c *gin.Context) {
 	ctx := commandCtx(c)
-	if err := h.commands.CreateBase(ctx, ctx.UserID); handleCoreErr(c, err) {
+	if err := h.commands.CreateBase(ctx, ctx.UserID); handleCoreErr(c, h.translator, err) {
 		return
 	}
 
@@ -48,9 +50,9 @@ func (h *BaseHandler) CreateBase(c *gin.Context) {
 func (h *BaseHandler) ListUserBases(c *gin.Context) {
 	ctx := queryCtx(c)
 	bases, err := h.queries.ListUserBases(ctx)
-	if handleCoreErr(c, err) {
+	if handleCoreErr(c, h.translator, err) {
 		return
 	}
-	resp := dtos.UserBasesFromReadModels(bases)
+	resp := dtos.UserBasesFromReadModels(bases, h.translator, getLocale(c))
 	c.JSON(http.StatusOK, resp)
 }

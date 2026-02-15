@@ -4,17 +4,19 @@ import (
 	"net/http"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
 )
 
 type BuildingHandler struct {
-	queries  cqrs.BuildingQueries
-	commands cqrs.BuildingCommands
+	queries    cqrs.BuildingQueries
+	commands   cqrs.BuildingCommands
+	translator ports.Translator
 }
 
-func NewBuildingHandler(queries cqrs.BuildingQueries, commands cqrs.BuildingCommands) *BuildingHandler {
-	return &BuildingHandler{queries: queries, commands: commands}
+func NewBuildingHandler(queries cqrs.BuildingQueries, commands cqrs.BuildingCommands, translator ports.Translator) *BuildingHandler {
+	return &BuildingHandler{queries: queries, commands: commands, translator: translator}
 }
 
 // ListNew handles GET /bases/:baseId/buildings/new.
@@ -27,11 +29,11 @@ func (h *BuildingHandler) ListNew(c *gin.Context) {
 
 	category := dtos.BuildCategoryFromDTO(req.Query.Category)
 	items, err := h.queries.ListNewBuildItems(ctx, req.Uri.BaseID, category)
-	if handleCoreErr(c, err) {
+	if handleCoreErr(c, h.translator, err) {
 		return
 	}
 
-	resp := dtos.BuildItemsNewFromReadModels(items)
+	resp := dtos.BuildItemsNewFromReadModels(items, h.translator, getLocale(c))
 	c.JSON(http.StatusOK, resp)
 }
 
@@ -45,11 +47,11 @@ func (h *BuildingHandler) ListPending(c *gin.Context) {
 
 	category := dtos.BuildCategoryFromDTO(req.Query.Category)
 	items, err := h.queries.ListPendingBuildItems(ctx, req.Uri.BaseID, category)
-	if handleCoreErr(c, err) {
+	if handleCoreErr(c, h.translator, err) {
 		return
 	}
 
-	resp := dtos.BuildItemsPendingFromReadModels(items)
+	resp := dtos.BuildItemsPendingFromReadModels(items, h.translator, getLocale(c))
 	c.JSON(http.StatusOK, resp)
 }
 
@@ -63,11 +65,11 @@ func (h *BuildingHandler) ListInProduction(c *gin.Context) {
 
 	category := dtos.BuildCategoryFromDTO(req.Query.Category)
 	items, err := h.queries.ListInProductionBuildItems(ctx, req.Uri.BaseID, category)
-	if handleCoreErr(c, err) {
+	if handleCoreErr(c, h.translator, err) {
 		return
 	}
 
-	resp := dtos.BuildItemsInProductionFromReadModels(items)
+	resp := dtos.BuildItemsInProductionFromReadModels(items, h.translator, getLocale(c))
 	c.JSON(http.StatusOK, resp)
 }
 
@@ -81,11 +83,11 @@ func (h *BuildingHandler) ListPresent(c *gin.Context) {
 
 	category := dtos.BuildCategoryFromDTO(req.Query.Category)
 	items, err := h.queries.ListPresentBuildItems(ctx, req.Uri.BaseID, category)
-	if handleCoreErr(c, err) {
+	if handleCoreErr(c, h.translator, err) {
 		return
 	}
 
-	resp := dtos.BuildItemsPresentFromReadModels(items)
+	resp := dtos.BuildItemsPresentFromReadModels(items, h.translator, getLocale(c))
 	c.JSON(http.StatusOK, resp)
 }
 
@@ -97,7 +99,7 @@ func (h *BuildingHandler) Queue(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.QueueBuilding(ctx, req.Uri.BaseID, req.Body.PrototypeID); handleCoreErr(c, err) {
+	if err := h.commands.QueueBuilding(ctx, req.Uri.BaseID, req.Body.PrototypeID); handleCoreErr(c, h.translator, err) {
 		return
 	}
 
@@ -112,7 +114,7 @@ func (h *BuildingHandler) SpeedUpProduction(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.SpeedUpProductionWithCrystals(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, err) {
+	if err := h.commands.SpeedUpProductionWithCrystals(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
 		return
 	}
 
@@ -127,7 +129,7 @@ func (h *BuildingHandler) CancelPending(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.CancelPendingBuilding(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, err) {
+	if err := h.commands.CancelPendingBuilding(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
 		return
 	}
 
@@ -142,7 +144,7 @@ func (h *BuildingHandler) DeletePresent(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.DeletePresentBuilding(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, err) {
+	if err := h.commands.DeletePresentBuilding(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
 		return
 	}
 

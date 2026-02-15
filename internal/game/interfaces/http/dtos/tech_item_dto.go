@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 )
 
 type TechCategory string
@@ -85,7 +86,7 @@ func TechCategoryFromDTO(c string) readmodels.TechCategory {
 	return readmodels.TechCategory(strings.ToUpper(strings.TrimSpace(c)))
 }
 
-func mapTechPrototype(proto readmodels.TechItemPrototype) TechItemPrototypeDTO {
+func mapTechPrototype(proto readmodels.TechItemPrototype, tr ports.Translator, locale string) TechItemPrototypeDTO {
 	var improvement *TechImprovementDTO
 	if proto.Improvement != nil {
 		improvement = &TechImprovementDTO{
@@ -96,10 +97,10 @@ func mapTechPrototype(proto readmodels.TechItemPrototype) TechItemPrototypeDTO {
 	}
 	return TechItemPrototypeDTO{
 		ID:               proto.ID,
-		Name:             proto.Name,
+		Name:             tr.T(locale, proto.Name, nil),
 		Category:         TechCategory(proto.Category),
-		ShortDescription: proto.ShortDescription,
-		FullDescription:  proto.FullDescription,
+		ShortDescription: tr.T(locale, proto.ShortDescription, nil),
+		FullDescription:  tr.T(locale, proto.FullDescription, nil),
 		Price:            PriceModelFromReadModel(proto.Price),
 		ImageURL:         proto.ImageURL,
 		ResearchTime:     int(proto.ResearchTime),
@@ -107,23 +108,23 @@ func mapTechPrototype(proto readmodels.TechItemPrototype) TechItemPrototypeDTO {
 	}
 }
 
-func TechItemsNewFromReadModels(items []*readmodels.TechItemNew) []TechItemNewDTO {
+func TechItemsNewFromReadModels(items []*readmodels.TechItemNew, tr ports.Translator, locale string) []TechItemNewDTO {
 	out := make([]TechItemNewDTO, 0, len(items))
 	for _, item := range items {
 		out = append(out, TechItemNewDTO{
-			TechItemPrototypeDTO: mapTechPrototype(item.Prototype),
+			TechItemPrototypeDTO: mapTechPrototype(item.Prototype, tr, locale),
 			CurrentLevel:         item.CurrentLevel,
 		})
 	}
 	return out
 }
 
-func TechItemsInProgressFromReadModels(items []*readmodels.TechItemInProgress) []TechItemInProgressDTO {
+func TechItemsInProgressFromReadModels(items []*readmodels.TechItemInProgress, tr ports.Translator, locale string) []TechItemInProgressDTO {
 	out := make([]TechItemInProgressDTO, 0, len(items))
 	for _, item := range items {
 		out = append(out, TechItemInProgressDTO{
 			BaseOwnedItemDTO:  BaseOwnedItemDTOFromReadModel(item.BaseOwnedItem),
-			Prototype:         mapTechPrototype(item.Prototype),
+			Prototype:         mapTechPrototype(item.Prototype, tr, locale),
 			StartDate:         int(item.StartDate),
 			CompletionDate:    int(item.CompletionDate),
 			CrystalsSkipPrice: item.CrystalsSkipPrice,
@@ -133,12 +134,12 @@ func TechItemsInProgressFromReadModels(items []*readmodels.TechItemInProgress) [
 	return out
 }
 
-func TechItemsDoneFromReadModels(items []*readmodels.TechItemDone) []TechItemDoneDTO {
+func TechItemsDoneFromReadModels(items []*readmodels.TechItemDone, tr ports.Translator, locale string) []TechItemDoneDTO {
 	out := make([]TechItemDoneDTO, 0, len(items))
 	for _, item := range items {
 		out = append(out, TechItemDoneDTO{
 			BaseOwnedItemDTO: BaseOwnedItemDTOFromReadModel(item.BaseOwnedItem),
-			Prototype:        mapTechPrototype(item.Prototype),
+			Prototype:        mapTechPrototype(item.Prototype, tr, locale),
 			Level:            item.Level,
 		})
 	}

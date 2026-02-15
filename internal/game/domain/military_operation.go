@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/google/uuid"
@@ -129,10 +128,10 @@ type MilitaryOperation struct {
 // It validates that at least one unit is provided and that source/target are different.
 func NewAttackOperation(ownerUserID uuid.UUID, sourceBaseID int, source, target Vector2i, units []MilitaryUnitSnap, storageSnaps []StorageItemSnap) (*MilitaryOperation, error) {
 	if source == target {
-		return nil, fmt.Errorf("source and target coordinates must be different")
+		return nil, NewError("error.domain.operation.source_equals_target", nil)
 	}
 	if len(units) == 0 {
-		return nil, fmt.Errorf("no units provided for attack operation")
+		return nil, NewError("error.domain.operation.no_units_provided", nil)
 	}
 	op := &MilitaryOperation{
 		Type:              MilitaryOperationTypeAttack,
@@ -155,14 +154,14 @@ func NewAttackOperation(ownerUserID uuid.UUID, sourceBaseID int, source, target 
 // It validates that at least one unit is provided, targeting a different sector, and that all units are spies.
 func NewSpyOperation(ownerUserID uuid.UUID, sourceBaseID int, source, target Vector2i, spies []MilitaryUnitSnap, storageSnaps []StorageItemSnap) (*MilitaryOperation, error) {
 	if source == target {
-		return nil, fmt.Errorf("source and target coordinates must be different")
+		return nil, NewError("error.domain.operation.invalid_coordinates", nil)
 	}
 	if len(spies) == 0 {
-		return nil, fmt.Errorf("no units provided for spy operation")
+		return nil, NewError("error.domain.operation.no_spy_units", nil)
 	}
 	for _, u := range spies {
 		if u.Category != ArmyCategorySpy {
-			return nil, fmt.Errorf("spy operations require only spy units")
+			return nil, NewError("error.domain.operation.only_spy_units_allowed", nil)
 		}
 	}
 	op := &MilitaryOperation{
@@ -588,7 +587,7 @@ func (op *MilitaryOperation) UpdatePhaseBasedOnTime() {
 // Once it reaches the target or starts resolving, it can no longer be canceled.
 func (op *MilitaryOperation) Cancel() error {
 	if op.Phase != OperationPhasePending && op.Phase != OperationPhaseOutbound {
-		return fmt.Errorf("cannot cancel operation in phase: %s", op.Phase)
+		return NewError("error.domain.operation.cannot_cancel_in_phase", H{"phase": string(op.Phase)})
 	}
 
 	op.Result = OperationResultCanceled
@@ -683,7 +682,7 @@ func euclideanScaled(a, b Vector2i) int {
 // Returns an error if the operation is not outbound or if it never enters the circle.
 func (op *MilitaryOperation) TimeBeforeEntersCircle(center Vector2i, radius int) (int64, error) {
 	if op.Phase != OperationPhaseOutbound {
-		return 0, fmt.Errorf("operation is not in outbound travel")
+		return 0, NewError("error.domain.operation.not_in_outbound", nil)
 	}
 
 	// Quadratic intersection for P(k) = S + k(T-S), k in [0, 1]
@@ -700,7 +699,7 @@ func (op *MilitaryOperation) TimeBeforeEntersCircle(center Vector2i, radius int)
 
 	a := dx*dx + dy*dy
 	if a == 0 {
-		return 0, fmt.Errorf("operation has no movement")
+		return 0, NewError("error.domain.operation.no_movement", nil)
 	}
 	b := 2 * (dx*wx + dy*wy)
 	c := wx*wx + wy*wy - r*r
@@ -712,7 +711,7 @@ func (op *MilitaryOperation) TimeBeforeEntersCircle(center Vector2i, radius int)
 
 	delta := b*b - 4*a*c
 	if delta < 0 {
-		return 0, fmt.Errorf("operation never enters circle")
+		return 0, NewError("error.domain.operation.radar_never_enters_circle", nil)
 	}
 
 	sqrtDelta := math.Sqrt(delta)
@@ -720,10 +719,10 @@ func (op *MilitaryOperation) TimeBeforeEntersCircle(center Vector2i, radius int)
 
 	if k1 < 0 {
 		// Moving away from the circle since we started outside (c > 0)
-		return 0, fmt.Errorf("operation moving away from circle")
+		return 0, NewError("error.domain.operation.radar_moving_away", nil)
 	}
 	if k1 > 1.0 {
-		return 0, fmt.Errorf("operation reaches target before entering circle")
+		return 0, NewError("error.domain.operation.radar_reached_before_entering", nil)
 	}
 
 	travelDuration := op.OutboundArriveAt - op.OutboundDepartAt

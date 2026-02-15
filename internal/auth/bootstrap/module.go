@@ -115,6 +115,7 @@ func (m *Module) Run() {
 	router := httpapi.NewRouter(
 		httpapi.Commands{Account: m.Commands.Account},
 		httpapi.Queries{Account: m.Queries.Account},
+		m.Adapters.Translator,
 	)
 	server := httpapi.NewServer(router)
 

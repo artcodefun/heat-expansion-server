@@ -2,6 +2,7 @@ package dtos
 
 import (
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/google/uuid"
 )
 
@@ -104,7 +105,7 @@ type RadarActivityDTO struct {
 	Threat   *RadarThreatDTO `json:"threat,omitempty"`
 }
 
-func offenseActivityFromReadModel(offense *readmodels.OffenseActivity) *OffenseActivityDTO {
+func offenseActivityFromReadModel(offense *readmodels.OffenseActivity, tr ports.Translator, locale string) *OffenseActivityDTO {
 	if offense == nil {
 		return nil
 	}
@@ -113,13 +114,13 @@ func offenseActivityFromReadModel(offense *readmodels.OffenseActivity) *OffenseA
 		Subtype: OffenseActivitySubtype(offense.Subtype),
 	}
 	if offense.Operation != nil {
-		m := OperationFromReadModel(offense.Operation)
+		m := OperationFromReadModel(offense.Operation, tr, locale)
 		dto.Operation = &m
 	}
 	return dto
 }
 
-func offenderInfoFromReadModel(o *readmodels.OffenderInfo) *OffenderInfoDTO {
+func offenderInfoFromReadModel(o *readmodels.OffenderInfo, tr ports.Translator, locale string) *OffenderInfoDTO {
 	if o == nil {
 		return nil
 	}
@@ -129,15 +130,15 @@ func offenderInfoFromReadModel(o *readmodels.OffenderInfo) *OffenderInfoDTO {
 		TargetCoordinates: Vector2iDTO{X: o.TargetCoordinates.X, Y: o.TargetCoordinates.Y},
 		ContactDate:       o.ContactDate,
 		Result:            OperationResult(o.Result),
-		Units:             MilitaryUnitsFromReadModel(o.Units),
-		StorageSnaps:      storageItemSnapsFromReadModel(o.StorageSnaps),
+		Units:             MilitaryUnitsFromReadModel(o.Units, tr, locale),
+		StorageSnaps:      storageItemSnapsFromReadModel(o.StorageSnaps, tr, locale),
 		TotalModifiers:    MilitaryModifiersFromReadModel(o.TotalModifiers),
-		SpyResult:         SpyResultFromReadModel(o.SpyResult),
-		AttackResult:      AttackResultFromReadModel(o.AttackResult),
+		SpyResult:         SpyResultFromReadModel(o.SpyResult, tr, locale),
+		AttackResult:      AttackResultFromReadModel(o.AttackResult, tr, locale),
 	}
 }
 
-func defenseActivityFromReadModel(defense *readmodels.DefenseActivity) *DefenseActivityDTO {
+func defenseActivityFromReadModel(defense *readmodels.DefenseActivity, tr ports.Translator, locale string) *DefenseActivityDTO {
 	if defense == nil {
 		return nil
 	}
@@ -146,17 +147,17 @@ func defenseActivityFromReadModel(defense *readmodels.DefenseActivity) *DefenseA
 		Subtype: DefenseActivitySubtype(defense.Subtype),
 	}
 	if defense.Offender != nil {
-		o := offenderInfoFromReadModel(defense.Offender)
+		o := offenderInfoFromReadModel(defense.Offender, tr, locale)
 		dto.Offender = o
 	}
 	if defense.PriorOpponentScan != nil {
-		report := SectorScanReportFromReadModel(defense.PriorOpponentScan)
+		report := SectorScanReportFromReadModel(defense.PriorOpponentScan, tr, locale)
 		dto.PriorOpponentScan = &report
 	}
 	return dto
 }
 
-func scanActivityFromReadModel(scan *readmodels.ScanActivity) *ScanActivityDTO {
+func scanActivityFromReadModel(scan *readmodels.ScanActivity, tr ports.Translator, locale string) *ScanActivityDTO {
 	if scan == nil {
 		return nil
 	}
@@ -176,13 +177,13 @@ func scanActivityFromReadModel(scan *readmodels.ScanActivity) *ScanActivityDTO {
 		}
 	}
 	if scan.Report != nil {
-		report := SectorScanReportFromReadModel(scan.Report)
+		report := SectorScanReportFromReadModel(scan.Report, tr, locale)
 		dto.Report = &report
 	}
 	return dto
 }
 
-func radarActivityFromReadModel(radar *readmodels.RadarActivity) *RadarActivityDTO {
+func radarActivityFromReadModel(radar *readmodels.RadarActivity, tr ports.Translator, locale string) *RadarActivityDTO {
 	if radar == nil {
 		return nil
 	}
@@ -190,30 +191,30 @@ func radarActivityFromReadModel(radar *readmodels.RadarActivity) *RadarActivityD
 		ThreatID: radar.ThreatID.String(),
 	}
 	if radar.Threat != nil {
-		t := RadarThreatFromReadModel(radar.Threat)
+		t := RadarThreatFromReadModel(radar.Threat, tr, locale)
 		dto.Threat = &t
 	}
 	return dto
 }
 
-func ActivityItemDTOFromReadModel(a *readmodels.ActivityItem) ActivityItemDTO {
+func ActivityItemDTOFromReadModel(a *readmodels.ActivityItem, tr ports.Translator, locale string) ActivityItemDTO {
 	dto := ActivityItemDTO{
 		ID:        a.ID,
 		Kind:      ActivityKind(a.Kind),
 		CreatedAt: a.CreatedAt,
 		BaseID:    a.BaseID,
-		Offense:   offenseActivityFromReadModel(a.Offense),
-		Defense:   defenseActivityFromReadModel(a.Defense),
-		Scan:      scanActivityFromReadModel(a.Scan),
-		Radar:     radarActivityFromReadModel(a.Radar),
+		Offense:   offenseActivityFromReadModel(a.Offense, tr, locale),
+		Defense:   defenseActivityFromReadModel(a.Defense, tr, locale),
+		Scan:      scanActivityFromReadModel(a.Scan, tr, locale),
+		Radar:     radarActivityFromReadModel(a.Radar, tr, locale),
 	}
 	return dto
 }
 
-func ActivityItemsFromReadModels(items []*readmodels.ActivityItem) []ActivityItemDTO {
+func ActivityItemsFromReadModels(items []*readmodels.ActivityItem, tr ports.Translator, locale string) []ActivityItemDTO {
 	out := make([]ActivityItemDTO, 0, len(items))
 	for _, item := range items {
-		out = append(out, ActivityItemDTOFromReadModel(item))
+		out = append(out, ActivityItemDTOFromReadModel(item, tr, locale))
 	}
 	return out
 }

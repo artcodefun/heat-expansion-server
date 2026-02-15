@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/google/uuid"
@@ -25,7 +24,7 @@ func (s *CrystalSpendingService) SpeedUpBuildingProduction(user *User, base *Use
 		}
 	}
 	if idx == -1 {
-		return fmt.Errorf("in-production building with ID %s not found", buildingItemID)
+		return NewError("error.domain.building.in_production_not_found", H{"item_id": buildingItemID})
 	}
 
 	item := base.BuildingsInProduction[idx]
@@ -57,7 +56,7 @@ func (s *CrystalSpendingService) SpeedUpArmyProduction(user *User, base *UserBas
 		}
 	}
 	if idx == -1 {
-		return fmt.Errorf("in-production army item with ID %s not found", armyItemID)
+		return NewError("error.domain.army.in_production_not_found", H{"item_id": armyItemID})
 	}
 
 	item := base.ArmiesInProduction[idx]
@@ -89,7 +88,7 @@ func (s *CrystalSpendingService) SpeedUpTechResearch(user *User, base *UserBaseM
 		}
 	}
 	if idx == -1 {
-		return fmt.Errorf("in-progress tech with ID %s not found", techItemID)
+		return NewError("error.domain.tech.in_progress_not_found", H{"item_id": techItemID})
 	}
 
 	item := base.TechnologiesInProgress[idx]
@@ -116,7 +115,7 @@ func (s *CrystalSpendingService) SpeedUpTechResearch(user *User, base *UserBaseM
 func (s *CrystalSpendingService) SpeedUpOperation(user *User, op *MilitaryOperation) error {
 	// Only operations currently traveling can be sped up.
 	if op.Phase != OperationPhaseOutbound && op.Phase != OperationPhaseReturning {
-		return fmt.Errorf("operation is not in a travel phase")
+		return NewError("error.domain.operation.not_in_travel_phase", nil)
 	}
 
 	now := NowUnix()
@@ -132,13 +131,13 @@ func (s *CrystalSpendingService) SpeedUpOperation(user *User, op *MilitaryOperat
 
 	// Nothing meaningful to speed up if timing is invalid or already at/after arrival.
 	if arriveAt <= departAt || now >= arriveAt {
-		return fmt.Errorf("operation has no remaining travel to speed up")
+		return NewError("error.domain.operation.no_travel_remaining", nil)
 	}
 
 	total := arriveAt - departAt
 	remaining := arriveAt - now
 	if total <= 0 || remaining <= 0 {
-		return fmt.Errorf("operation has no remaining travel to speed up")
+		return NewError("error.domain.operation.no_travel_remaining", nil)
 	}
 
 	fraction := float64(remaining) / float64(total)

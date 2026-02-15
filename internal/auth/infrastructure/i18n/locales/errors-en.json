@@ -1,0 +1,7 @@
+{
+    "error.application.not_found": "Resource not found",
+    "error.application.forbidden": "Permission denied",
+    "error.application.auth.email_taken": "Email already in use",
+    "error.application.auth.invalid_creds": "Invalid email or password",
+    "error.application.internal_server_error": "Internal server error"
+}

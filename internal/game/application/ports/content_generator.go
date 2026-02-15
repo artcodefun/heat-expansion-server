@@ -3,8 +3,8 @@ package ports
 import "github.com/artcodefun/heat-expansion-server/internal/game/domain"
 
 type GeneratedLocationContent struct {
-	Name        string
-	Description string
+	Name        domain.TranslationKey
+	Description domain.TranslationKey
 	ImageURL    string
 }
 

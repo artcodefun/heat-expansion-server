@@ -4,19 +4,22 @@ import (
 	"net/http"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
 )
 
 type AlertHandler struct {
-	queries  cqrs.AlertQueries
-	commands cqrs.AlertCommands
+	queries    cqrs.AlertQueries
+	commands   cqrs.AlertCommands
+	translator ports.Translator
 }
 
-func NewAlertHandler(queries cqrs.AlertQueries, commands cqrs.AlertCommands) *AlertHandler {
+func NewAlertHandler(queries cqrs.AlertQueries, commands cqrs.AlertCommands, translator ports.Translator) *AlertHandler {
 	return &AlertHandler{
-		queries:  queries,
-		commands: commands,
+		queries:    queries,
+		commands:   commands,
+		translator: translator,
 	}
 }
 
@@ -28,10 +31,10 @@ func (h *AlertHandler) ListActive(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	alerts, err := h.queries.ListActiveAlerts(ctx, req.Uri.BaseID)
-	if handleCoreErr(c, err) {
+	if handleCoreErr(c, h.translator, err) {
 		return
 	}
-	c.JSON(http.StatusOK, dtos.AlertItemsFromReadModels(alerts))
+	c.JSON(http.StatusOK, dtos.AlertItemsFromReadModels(alerts, h.translator, getLocale(c)))
 }
 
 // GetUnreadCount handles GET /bases/:baseId/alerts/unread-count.
@@ -42,7 +45,7 @@ func (h *AlertHandler) GetUnreadCount(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	count, err := h.queries.GetUnreadAlertsCount(ctx, req.Uri.BaseID)
-	if handleCoreErr(c, err) {
+	if handleCoreErr(c, h.translator, err) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"count": count})
@@ -56,7 +59,7 @@ func (h *AlertHandler) MarkAllAsRead(c *gin.Context) {
 	}
 	ctx := commandCtx(c)
 	err := h.commands.MarkAllAsRead(req.Uri.BaseID, ctx.UserID)
-	if handleCoreErr(c, err) {
+	if handleCoreErr(c, h.translator, err) {
 		return
 	}
 	c.Status(http.StatusNoContent)

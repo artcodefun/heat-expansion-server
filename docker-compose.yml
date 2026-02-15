@@ -48,6 +48,7 @@ services:
       - GAME_PORT=8080
       - GAME_DB_URL=postgres://heatuser:heatpassword@db:5432/heatdb?sslmode=disable
       - GAME_ASSETS_DIR=/app/assets
+      - GAME_I18N_PATH=/app/i18n
       - GAME_MIGRATIONS_TABLE=game_schema_migrations
       - AUTH_PORT=8081
       - AUTH_DB_URL=postgres://heatuser:heatpassword@db:5432/heatdb?sslmode=disable
@@ -57,6 +58,7 @@ services:
       - AUTH_INTEGRATION_EXCHANGE=auth.integration
     volumes:
       - ./assets:/app/assets
+      - ./i18n:/app/i18n
 
 volumes:
   postgres_data:

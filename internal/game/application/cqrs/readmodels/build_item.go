@@ -1,5 +1,9 @@
 package readmodels
 
+import (
+	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
+)
+
 // BuildCategory represents the category of a build item.
 type BuildCategory string
 
@@ -23,12 +27,12 @@ const (
 // BuildItemPrototype is the base struct for build item prototypes.
 type BuildItemPrototype struct {
 	ID                 int
-	Name               string
+	Name               domain.TranslationKey
 	Category           BuildCategory
 	Faction            Faction
 	UnlockTechnologyID *int // nil: available by default; non-nil: unlocked by this technology
-	ShortDescription   string
-	FullDescription    string
+	ShortDescription   domain.TranslationKey
+	FullDescription    domain.TranslationKey
 	Price              PriceModel
 	ProductionTime     int64 // how many seconds it takes to create
 	Space              int

@@ -1,0 +1,7 @@
+{
+    "error.application.not_found": "Ресурс не найден",
+    "error.application.forbidden": "Доступ запрещен",
+    "error.application.auth.email_taken": "Этот адрес электронной почты уже используется",
+    "error.application.auth.invalid_creds": "Неверный адрес почты или пароль",
+    "error.application.internal_server_error": "Внутренняя ошибка сервера"
+}

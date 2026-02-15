@@ -1,5 +1,7 @@
 package readmodels
 
+import "github.com/artcodefun/heat-expansion-server/internal/game/domain"
+
 // StorageCategory represents the category of a storage item.
 type StorageCategory string
 
@@ -14,11 +16,11 @@ const (
 // StorageItemPrototype is the base struct for storage item prototypes.
 type StorageItemPrototype struct {
 	ID               int
-	Name             string
+	Name             domain.TranslationKey
 	Category         StorageCategory
 	EstimatedWorth   int // Rough worth in credits
-	ShortDescription string
-	FullDescription  string
+	ShortDescription domain.TranslationKey
+	FullDescription  domain.TranslationKey
 	ImageURL         string
 
 	// Category-specific fields

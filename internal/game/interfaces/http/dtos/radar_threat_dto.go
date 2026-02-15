@@ -2,6 +2,7 @@ package dtos
 
 import (
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 )
 
 type ThreatType string
@@ -37,7 +38,7 @@ type RadarThreatDTO struct {
 	Capacity            int          `json:"capacity"`
 }
 
-func RadarThreatFromReadModel(t *readmodels.RadarThreat) RadarThreatDTO {
+func RadarThreatFromReadModel(t *readmodels.RadarThreat, tr ports.Translator, locale string) RadarThreatDTO {
 	return RadarThreatDTO{
 		ID:                  t.ID.String(),
 		OperationID:         t.OperationID,
@@ -57,10 +58,10 @@ func RadarThreatFromReadModel(t *readmodels.RadarThreat) RadarThreatDTO {
 	}
 }
 
-func RadarThreatsFromReadModels(threats []*readmodels.RadarThreat) []RadarThreatDTO {
+func RadarThreatsFromReadModels(threats []*readmodels.RadarThreat, tr ports.Translator, locale string) []RadarThreatDTO {
 	out := make([]RadarThreatDTO, 0, len(threats))
 	for _, t := range threats {
-		out = append(out, RadarThreatFromReadModel(t))
+		out = append(out, RadarThreatFromReadModel(t, tr, locale))
 	}
 	return out
 }

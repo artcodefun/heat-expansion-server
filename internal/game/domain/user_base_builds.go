@@ -1,8 +1,6 @@
 package domain
 
 import (
-	"fmt"
-
 	"github.com/google/uuid"
 )
 
@@ -38,13 +36,16 @@ func (ub *UserBaseModel) AddToBuildQueue(proto *BuildItemPrototype) error {
 
 	// Ensure this prototype is actually available for this base
 	if len(ub.AvailableBuildings([]*BuildItemPrototype{proto})) == 0 {
-		return fmt.Errorf("this building is not available for production")
+		return NewError("error.domain.building.not_available_for_production", nil)
 	}
 
 	// Calculate total space after adding this building
 	totalSpace := ub.Stats.Space + proto.Space
 	if totalSpace > ub.Stats.MaxSpace {
-		return fmt.Errorf("not enough space to queue building: required %d, available %d", totalSpace, ub.Stats.MaxSpace)
+		return NewError("error.domain.building.not_enough_space", H{
+			"required":  totalSpace,
+			"available": ub.Stats.MaxSpace,
+		})
 	}
 
 	// Validate resources (example: credits, iron, titanium, antimatter)
@@ -125,7 +126,7 @@ func (ub *UserBaseModel) CancelPendingBuildingByID(itemID uuid.UUID) error {
 		}
 	}
 	if idx == -1 {
-		return fmt.Errorf("pending building with ID %s not found", itemID)
+		return NewError("error.domain.building.pending_not_found", H{"item_id": itemID})
 	}
 	item := ub.BuildingsPending[idx]
 	// Refund resources
@@ -147,7 +148,7 @@ func (ub *UserBaseModel) SpeedUpBuildingProduction(buildingItemID uuid.UUID) err
 		}
 	}
 	if idx == -1 {
-		return fmt.Errorf("in-production building with ID %s not found", buildingItemID)
+		return NewError("error.domain.building.in_production_not_found", H{"item_id": buildingItemID})
 	}
 	// Set completion date to now
 	ub.BuildingsInProduction[idx].CompletionDate = NowUnix()
@@ -171,7 +172,7 @@ func (ub *UserBaseModel) DeletePresentBuildingByID(itemID uuid.UUID) error {
 		}
 	}
 	if idx == -1 {
-		return fmt.Errorf("present building with ID %s not found", itemID)
+		return NewError("error.domain.building.present_not_found", H{"item_id": itemID})
 	}
 	// Refund resources to base from item's Refund field
 	ub.CreditLoot(item.Refund)

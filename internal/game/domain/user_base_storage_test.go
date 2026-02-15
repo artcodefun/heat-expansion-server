@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -32,7 +33,7 @@ func TestStorage_StartIntelDecryption_RespectsMaxDecryptions(t *testing.T) {
 	// second one should fail
 	if err := base.StartIntelDecryptionByID(item2ID); err == nil {
 		t.Errorf("expected error for exceeding MaxActiveDecryptions (1), got nil")
-	} else if err.Error() != "maximum number of simultaneous intel decryptions (1) reached" {
+	} else if !strings.HasPrefix(err.Error(), "error.domain.storage.max_decryptions_reached") {
 		t.Errorf("unexpected error message: %v", err)
 	}
 
@@ -189,7 +190,7 @@ func TestStorage_ActivateArtifact_RequiresArtifactLab(t *testing.T) {
 	err := base.ActivateArtifactByID(artifact.ID)
 	if err == nil {
 		t.Errorf("expected error when activating artifact without Artifact Lab, got nil")
-	} else if err.Error() != "artifact laboratory required to activate artifacts" {
+	} else if err.Error() != "error.domain.storage.artifact_lab_required" {
 		t.Errorf("unexpected error message: %v", err)
 	}
 

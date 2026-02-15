@@ -7,6 +7,8 @@ import (
 	"github.com/artcodefun/heat-expansion-server/internal/auth/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/db/repo"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/events"
+	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/i18n"
+	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/i18n/locales"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/security"
 )
 
@@ -19,12 +21,18 @@ type Adapters struct {
 	Events            *events.SimplePublisher
 	IntegrationOutbox ports.IntegrationOutboxRepository
 	IntegrationEvents ports.IntegrationEventPublisher
+	Translator        ports.Translator
 }
 
 func NewAdapters(db *sql.DB, jwtSecret string, rabbitURL string, integrationExchange string) (*Adapters, error) {
 	intPublisher, err := events.NewRabbitMQPublisher(rabbitURL, integrationExchange)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize RabbitMQ publisher: %w", err)
+	}
+
+	translator := i18n.NewJSONTranslator()
+	if err := translator.LoadFromFS(locales.Files, "."); err != nil {
+		return nil, fmt.Errorf("failed to load translations: %w", err)
 	}
 
 	return &Adapters{
@@ -36,5 +44,6 @@ func NewAdapters(db *sql.DB, jwtSecret string, rabbitURL string, integrationExch
 		Events:            events.NewSimplePublisher(),
 		IntegrationOutbox: repo.NewIntegrationOutboxRepo(db),
 		IntegrationEvents: intPublisher,
+		Translator:        translator,
 	}, nil
 }

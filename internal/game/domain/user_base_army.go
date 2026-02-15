@@ -1,8 +1,6 @@
 package domain
 
 import (
-	"fmt"
-
 	"github.com/google/uuid"
 )
 
@@ -33,12 +31,12 @@ func (ub *UserBaseModel) QueueArmy(proto *ArmyItemPrototype, count int) error {
 	defer ub.recalculateStats()
 
 	if count < 1 {
-		return fmt.Errorf("count must be at least 1")
+		return NewError("error.domain.army.invalid_count_min", nil)
 	}
 
 	// Ensure this prototype is actually available for this base
 	if len(ub.AvailableArmies([]*ArmyItemPrototype{proto})) == 0 {
-		return fmt.Errorf("this army item is not available for production")
+		return NewError("error.domain.army.not_available_for_production", nil)
 	}
 
 	// Validate available space (armies in queue and production should reserve space
@@ -46,7 +44,7 @@ func (ub *UserBaseModel) QueueArmy(proto *ArmyItemPrototype, count int) error {
 	requiredSpace := proto.Space * count
 	totalSpace := ub.Stats.Space + requiredSpace
 	if totalSpace > ub.Stats.MaxSpace {
-		return fmt.Errorf("not enough space to queue army: required %d, available %d", totalSpace, ub.Stats.MaxSpace)
+		return NewError("error.domain.army.not_enough_space", H{"required": totalSpace, "available": ub.Stats.MaxSpace})
 	}
 
 	// Validate resources
@@ -171,11 +169,11 @@ func (ub *UserBaseModel) CancelPendingArmyByID(itemID uuid.UUID, count int) erro
 		}
 	}
 	if idx == -1 {
-		return fmt.Errorf("pending army item with ID %s not found", itemID)
+		return NewError("error.domain.army.pending_not_found", H{"item_id": itemID})
 	}
 	item := ub.ArmiesPending[idx]
 	if count < 1 || count > item.Count {
-		return fmt.Errorf("invalid cancel count: %d (pending count: %d)", count, item.Count)
+		return NewError("error.domain.army.invalid_cancel_count", H{"count": count, "pending_count": item.Count})
 	}
 	// Refund resources for the canceled amount
 	refund := PriceModel{
@@ -207,7 +205,7 @@ func (ub *UserBaseModel) SpeedUpArmyProduction(armyItemID uuid.UUID) error {
 		}
 	}
 	if idx == -1 {
-		return fmt.Errorf("in-production army item with ID %s not found", armyItemID)
+		return NewError("error.domain.army.in_production_not_found", H{"item_id": armyItemID})
 	}
 	// Set completion date to now
 	ub.ArmiesInProduction[idx].CompletionDate = NowUnix()
@@ -231,10 +229,10 @@ func (ub *UserBaseModel) DeletePresentArmyByID(itemID uuid.UUID, count int) erro
 		}
 	}
 	if idx == -1 {
-		return fmt.Errorf("present army item with ID %s not found", itemID)
+		return NewError("error.domain.army.present_not_found", H{"item_id": itemID})
 	}
 	if count < 1 || count > item.Count {
-		return fmt.Errorf("invalid delete count: %d (present count: %d)", count, item.Count)
+		return NewError("error.domain.army.invalid_delete_count", H{"count": count, "present_count": item.Count})
 	}
 	// Refund resources for the deleted amount
 	refund := PriceModel{
@@ -276,7 +274,7 @@ type DeploymentReadyItem struct {
 // before the actual allocation mutates the base state.
 func (ub *UserBaseModel) GetReadyToDeployArmy(requests []ArmyDeploymentRequest) ([]DeploymentReadyItem, error) {
 	if len(requests) == 0 {
-		return nil, fmt.Errorf("no units provided for deployment")
+		return nil, NewError("error.domain.army.no_units_for_deployment", nil)
 	}
 	readyToDeploy := []DeploymentReadyItem{}
 	for _, request := range requests {
@@ -291,11 +289,11 @@ func (ub *UserBaseModel) GetReadyToDeployArmy(requests []ArmyDeploymentRequest) 
 			}
 		}
 		if idx == -1 {
-			return []DeploymentReadyItem{}, fmt.Errorf("present army item %s not found", presentItemID)
+			return []DeploymentReadyItem{}, NewError("error.domain.army.present_not_found", H{"item_id": presentItemID})
 		}
 		p := ub.ArmiesPresent[idx]
 		if count < 1 || count > p.Count {
-			return []DeploymentReadyItem{}, fmt.Errorf("invalid count %d (available %d)", count, p.Count)
+			return []DeploymentReadyItem{}, NewError("error.domain.army.invalid_deployment_count", H{"count": count, "available": p.Count})
 		}
 
 		readyToDeploy = append(readyToDeploy, DeploymentReadyItem{
@@ -324,11 +322,11 @@ func (ub *UserBaseModel) AllocateArmyToOperation(request ArmyDeploymentRequest, 
 		}
 	}
 	if idx == -1 {
-		return ArmyItemDeployed{}, fmt.Errorf("present army item %s not found", presentItemID)
+		return ArmyItemDeployed{}, NewError("error.domain.army.present_not_found", H{"item_id": presentItemID})
 	}
 	p := ub.ArmiesPresent[idx]
 	if count < 1 || count > p.Count {
-		return ArmyItemDeployed{}, fmt.Errorf("invalid count %d (available %d)", count, p.Count)
+		return ArmyItemDeployed{}, NewError("error.domain.army.invalid_deployment_count", H{"count": count, "available": p.Count})
 	}
 
 	// Check MaxOperations limit
@@ -337,7 +335,7 @@ func (ub *UserBaseModel) AllocateArmyToOperation(request ArmyDeploymentRequest, 
 		activeOps[d.OperationID] = true
 	}
 	if !activeOps[operationID] && len(activeOps) >= ub.Stats.MaxOperations {
-		return ArmyItemDeployed{}, fmt.Errorf("maximum number of operations (%d) reached", ub.Stats.MaxOperations)
+		return ArmyItemDeployed{}, NewError("error.domain.operation.max_reached", H{"max": ub.Stats.MaxOperations})
 	}
 
 	// Decrement/remove from present

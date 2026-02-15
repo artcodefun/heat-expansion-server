@@ -28,6 +28,13 @@ This repository is structured as a **modular monolith**: multiple services live 
    - `make migrate-up`
    - `make run`
 
+## Internationalization (i18n)
+
+The server supports multi-language responses based on the `Accept-Language` HTTP header. 
+
+- **Systemic Locales**: Embedded in the binary for stability (errors, system alerts).
+- **Content Locales**: Loaded from an external directory at runtime. Point the `GAME_I18N_PATH` environment variable to your translation files.
+
 Alternatively, use Docker Compose:
 ```bash
 docker-compose up --build

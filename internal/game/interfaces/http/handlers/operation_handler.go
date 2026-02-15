@@ -5,18 +5,24 @@ import (
 	"strings"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
 )
 
 type OperationHandler struct {
-	queries  cqrs.OperationQueries
-	commands cqrs.OperationCommands
+	queries    cqrs.OperationQueries
+	commands   cqrs.OperationCommands
+	translator ports.Translator
 }
 
-func NewOperationHandler(queries cqrs.OperationQueries, commands cqrs.OperationCommands) *OperationHandler {
-	return &OperationHandler{queries: queries, commands: commands}
+func NewOperationHandler(queries cqrs.OperationQueries, commands cqrs.OperationCommands, translator ports.Translator) *OperationHandler {
+	return &OperationHandler{
+		queries:    queries,
+		commands:   commands,
+		translator: translator,
+	}
 }
 
 func parseOperationType(raw string) (domain.MilitaryOperationType, bool) {
@@ -40,10 +46,10 @@ func (h *OperationHandler) GetOperation(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	op, err := h.queries.GetOperation(ctx, req.Uri.OperationID)
-	if handleCoreErr(c, err) {
+	if handleCoreErr(c, h.translator, err) {
 		return
 	}
-	c.JSON(http.StatusOK, dtos.OperationFromReadModel(op))
+	c.JSON(http.StatusOK, dtos.OperationFromReadModel(op, h.translator, getLocale(c)))
 }
 
 // ListByBase handles GET /bases/:baseId/operations.
@@ -54,10 +60,10 @@ func (h *OperationHandler) ListByBase(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	ops, err := h.queries.ListOperationsByBase(ctx, req.Uri.BaseID)
-	if handleCoreErr(c, err) {
+	if handleCoreErr(c, h.translator, err) {
 		return
 	}
-	c.JSON(http.StatusOK, dtos.OperationsFromReadModels(ops))
+	c.JSON(http.StatusOK, dtos.OperationsFromReadModels(ops, h.translator, getLocale(c)))
 }
 
 // ListActive handles GET /bases/:baseId/operations/active.
@@ -68,10 +74,10 @@ func (h *OperationHandler) ListActive(c *gin.Context) {
 	}
 	ctx := queryCtx(c)
 	ops, err := h.queries.ListActiveOperations(ctx, req.Uri.BaseID)
-	if handleCoreErr(c, err) {
+	if handleCoreErr(c, h.translator, err) {
 		return
 	}
-	c.JSON(http.StatusOK, dtos.OperationsFromReadModels(ops))
+	c.JSON(http.StatusOK, dtos.OperationsFromReadModels(ops, h.translator, getLocale(c)))
 }
 
 // SpeedUp handles POST /bases/:baseId/operations/:operationId/speed-up.
@@ -81,7 +87,7 @@ func (h *OperationHandler) SpeedUp(c *gin.Context) {
 		return
 	}
 	ctx := commandCtx(c)
-	if err := h.commands.SpeedUpOperationWithCrystals(ctx, req.Uri.OperationID); handleCoreErr(c, err) {
+	if err := h.commands.SpeedUpOperationWithCrystals(ctx, req.Uri.OperationID); handleCoreErr(c, h.translator, err) {
 		return
 	}
 	c.Status(http.StatusOK)
@@ -94,7 +100,7 @@ func (h *OperationHandler) Cancel(c *gin.Context) {
 		return
 	}
 	ctx := commandCtx(c)
-	if err := h.commands.CancelMilitaryOperation(ctx, req.Uri.OperationID); handleCoreErr(c, err) {
+	if err := h.commands.CancelMilitaryOperation(ctx, req.Uri.OperationID); handleCoreErr(c, h.translator, err) {
 		return
 	}
 	c.Status(http.StatusOK)
@@ -121,7 +127,7 @@ func (h *OperationHandler) Create(c *gin.Context) {
 		})
 	}
 	op, err := h.commands.CreateMilitaryOperation(ctx, opType, req.Uri.BaseID, *req.Body.TargetX, *req.Body.TargetY, deployments)
-	if handleCoreErr(c, err) {
+	if handleCoreErr(c, h.translator, err) {
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{"id": op.ID})

@@ -16,11 +16,11 @@ const (
 // StorageItemPrototype is the base struct for storage item prototypes.
 type StorageItemPrototype struct {
 	ID               int
-	Name             string
+	Name             TranslationKey
 	Category         StorageCategory
 	EstimatedWorth   int // Rough worth in credits
-	ShortDescription string
-	FullDescription  string
+	ShortDescription TranslationKey
+	FullDescription  TranslationKey
 	ImageURL         string
 
 	// Category-specific fields

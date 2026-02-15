@@ -39,22 +39,22 @@ type Queries struct {
 }
 
 // NewRouter constructs the Gin engine, registers middleware and routes.
-func NewRouter(cmd Commands, qry Queries, tokenValidator ports.TokenValidator, assetsDir string) *gin.Engine {
+func NewRouter(cmd Commands, qry Queries, tokenValidator ports.TokenValidator, tr ports.Translator, assetsDir string) *gin.Engine {
 	r := gin.Default()
 	registerCustomValidators()
 
 	// Initialize handlers at the top for consistency
-	userHandler := handlers.NewUserHandler(cmd.User, qry.User)
-	baseHandler := handlers.NewBaseHandler(qry.Base, cmd.Base)
-	buildingHandler := handlers.NewBuildingHandler(qry.Building, cmd.Building)
-	armyHandler := handlers.NewArmyHandler(qry.Army, cmd.Army)
-	techHandler := handlers.NewTechHandler(qry.Tech, cmd.Tech)
-	storageHandler := handlers.NewStorageHandler(qry.Storage, cmd.Storage)
-	sectorHandler := handlers.NewSectorHandler(qry.Sector)
-	radarHandler := handlers.NewRadarHandler(qry.Radar)
-	operationHandler := handlers.NewOperationHandler(qry.Operation, cmd.Operation)
-	activityHandler := handlers.NewActivityHandler(qry.Activity)
-	alertHandler := handlers.NewAlertHandler(qry.Alert, cmd.Alert)
+	userHandler := handlers.NewUserHandler(cmd.User, qry.User, tr)
+	baseHandler := handlers.NewBaseHandler(qry.Base, cmd.Base, tr)
+	buildingHandler := handlers.NewBuildingHandler(qry.Building, cmd.Building, tr)
+	armyHandler := handlers.NewArmyHandler(qry.Army, cmd.Army, tr)
+	techHandler := handlers.NewTechHandler(qry.Tech, cmd.Tech, tr)
+	storageHandler := handlers.NewStorageHandler(qry.Storage, cmd.Storage, tr)
+	sectorHandler := handlers.NewSectorHandler(qry.Sector, tr)
+	radarHandler := handlers.NewRadarHandler(qry.Radar, tr)
+	operationHandler := handlers.NewOperationHandler(qry.Operation, cmd.Operation, tr)
+	activityHandler := handlers.NewActivityHandler(qry.Activity, tr)
+	alertHandler := handlers.NewAlertHandler(qry.Alert, cmd.Alert, tr)
 
 	// Global routes
 	r.GET("/health", HealthHandler)

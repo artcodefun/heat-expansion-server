@@ -4,18 +4,20 @@ import (
 	"net/http"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
 type UserHandler struct {
-	commands cqrs.UserCommands
-	queries  cqrs.UserQueries
+	commands   cqrs.UserCommands
+	queries    cqrs.UserQueries
+	translator ports.Translator
 }
 
-func NewUserHandler(commands cqrs.UserCommands, queries cqrs.UserQueries) *UserHandler {
-	return &UserHandler{commands: commands, queries: queries}
+func NewUserHandler(commands cqrs.UserCommands, queries cqrs.UserQueries, translator ports.Translator) *UserHandler {
+	return &UserHandler{commands: commands, queries: queries, translator: translator}
 }
 
 // GetCrystalBalance handles GET /user/balance and returns the authenticated user's crystal balance.
@@ -28,7 +30,7 @@ func (h *UserHandler) GetCrystalBalance(c *gin.Context) {
 	}
 
 	user, err := h.queries.GetUserProfile(ctx, ctx.UserID)
-	if handleCoreErr(c, err) {
+	if handleCoreErr(c, h.translator, err) {
 		return
 	}
 

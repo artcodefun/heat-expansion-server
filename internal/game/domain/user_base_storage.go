@@ -1,8 +1,6 @@
 package domain
 
 import (
-	"fmt"
-
 	"github.com/google/uuid"
 )
 
@@ -16,7 +14,7 @@ func (ub *UserBaseModel) DeletePresentStorageItemByID(itemID uuid.UUID) error {
 		}
 	}
 	if idx == -1 {
-		return fmt.Errorf("present storage item with ID %s not found", itemID)
+		return NewError("error.domain.storage.present_not_found", H{"item_id": itemID})
 	}
 
 	// Remove from present
@@ -52,14 +50,14 @@ func (ub *UserBaseModel) ActivateBuffByID(itemID uuid.UUID) error {
 		}
 	}
 	if activeCount >= ub.Stats.MaxActiveBuffs {
-		return fmt.Errorf("maximum number of active buffs (%d) reached", ub.Stats.MaxActiveBuffs)
+		return NewError("error.domain.storage.max_buffs_reached", H{"max": ub.Stats.MaxActiveBuffs})
 	}
 
 	for i, item := range ub.StorageItemsPresent {
 		if item.ID == itemID && item.Prototype.BuffData != nil {
 			// Check if already activated
 			if item.ExpiresAt != nil {
-				return fmt.Errorf("buff item with ID %s is already activated", itemID)
+				return NewError("error.domain.storage.buff_already_active", H{"item_id": itemID})
 			}
 			// Set ExpiresAt
 			expiresAt := now + item.Prototype.BuffData.DurationSeconds
@@ -71,7 +69,7 @@ func (ub *UserBaseModel) ActivateBuffByID(itemID uuid.UUID) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("buff storage item with ID %s not found or not a buff", itemID)
+	return NewError("error.domain.storage.not_a_buff", H{"item_id": itemID})
 }
 
 // DeleteExpiredBuffs removes expired buffs from storage.
@@ -96,21 +94,21 @@ func (ub *UserBaseModel) DeleteExpiredBuffs() int {
 // DecryptIntelItemByID completes the decryption process for a specific intel item.
 func (ub *UserBaseModel) DecryptIntelItemByID(itemID uuid.UUID) (HiddenLocationType, error) {
 	if !ub.hasControlSubtype(ControlSubtypeCryptographyLab) {
-		return "", fmt.Errorf("cryptography lab required to decrypt intel")
+		return "", NewError("error.domain.storage.cryptography_lab_required", nil)
 	}
 	now := NowUnix()
 	idx := -1
 	for i, item := range ub.StorageItemsPresent {
 		if item.ID == itemID && item.Prototype.IntelData != nil {
 			if item.ExpiresAt == nil || *item.ExpiresAt > now {
-				return "", fmt.Errorf("intel item %s is not ready for decryption completion", itemID)
+				return "", NewError("error.domain.storage.intel_not_ready", H{"item_id": itemID})
 			}
 			idx = i
 			break
 		}
 	}
 	if idx == -1 {
-		return "", fmt.Errorf("ready intel item %s not found", itemID)
+		return "", NewError("error.domain.storage.intel_not_found", H{"item_id": itemID})
 	}
 
 	item := ub.StorageItemsPresent[idx]
@@ -126,7 +124,7 @@ func (ub *UserBaseModel) DecryptIntelItemByID(itemID uuid.UUID) (HiddenLocationT
 // RestoreDamagedItemByID completes the restoration process for a specific damaged item.
 func (ub *UserBaseModel) RestoreDamagedItemByID(itemID uuid.UUID, armyProtos []*ArmyItemPrototype) error {
 	if !ub.hasControlSubtype(ControlSubtypeRepairCenter) {
-		return fmt.Errorf("repair center required to restore damaged units")
+		return NewError("error.domain.storage.repair_center_required", nil)
 	}
 	defer ub.recalculateStats()
 	now := NowUnix()
@@ -134,14 +132,14 @@ func (ub *UserBaseModel) RestoreDamagedItemByID(itemID uuid.UUID, armyProtos []*
 	for i, item := range ub.StorageItemsPresent {
 		if item.ID == itemID && item.Prototype.DamagedData != nil {
 			if item.ExpiresAt == nil || *item.ExpiresAt > now {
-				return fmt.Errorf("damaged item %s is not ready for restoration completion", itemID)
+				return NewError("error.domain.storage.damaged_not_ready", H{"item_id": itemID})
 			}
 			idx = i
 			break
 		}
 	}
 	if idx == -1 {
-		return fmt.Errorf("ready damaged item %s not found", itemID)
+		return NewError("error.domain.storage.damaged_not_found", H{"item_id": itemID})
 	}
 
 	item := ub.StorageItemsPresent[idx]
@@ -155,7 +153,7 @@ func (ub *UserBaseModel) RestoreDamagedItemByID(itemID uuid.UUID, armyProtos []*
 	}
 
 	if unitProto == nil {
-		return fmt.Errorf("original unit prototype %d not found", data.OriginalUnitID)
+		return NewError("error.domain.storage.unit_prototype_not_found", H{"proto_id": data.OriginalUnitID})
 	}
 
 	// Add to present armies
@@ -187,7 +185,7 @@ func (ub *UserBaseModel) RestoreDamagedItemByID(itemID uuid.UUID, armyProtos []*
 // StartIntelDecryptionByID starts the decryption process for an intel item.
 func (ub *UserBaseModel) StartIntelDecryptionByID(itemID uuid.UUID) error {
 	if !ub.hasControlSubtype(ControlSubtypeCryptographyLab) {
-		return fmt.Errorf("cryptography lab required to start intel decryption")
+		return NewError("error.domain.storage.cryptography_lab_required", nil)
 	}
 	defer ub.recalculateStats()
 	now := NowUnix()
@@ -200,13 +198,13 @@ func (ub *UserBaseModel) StartIntelDecryptionByID(itemID uuid.UUID) error {
 		}
 	}
 	if activeCount >= ub.Stats.MaxActiveDecryptions {
-		return fmt.Errorf("maximum number of simultaneous intel decryptions (%d) reached", ub.Stats.MaxActiveDecryptions)
+		return NewError("error.domain.storage.max_decryptions_reached", H{"max": ub.Stats.MaxActiveDecryptions})
 	}
 
 	for i, item := range ub.StorageItemsPresent {
 		if item.ID == itemID && item.Prototype.IntelData != nil {
 			if item.ExpiresAt != nil {
-				return fmt.Errorf("intel item with ID %s is already being decrypted", itemID)
+				return NewError("error.domain.storage.intel_already_decrypting", H{"item_id": itemID})
 			}
 			expiresAt := now + item.Prototype.IntelData.DecryptionSeconds
 			ub.StorageItemsPresent[i].ExpiresAt = &expiresAt
@@ -216,13 +214,13 @@ func (ub *UserBaseModel) StartIntelDecryptionByID(itemID uuid.UUID) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("intel storage item with ID %s not found or not an intel item", itemID)
+	return NewError("error.domain.storage.not_intel", H{"item_id": itemID})
 }
 
 // StartDamagedItemRestorationByID starts the restoration process for a damaged item.
 func (ub *UserBaseModel) StartDamagedItemRestorationByID(itemID uuid.UUID, armyProtos []*ArmyItemPrototype) error {
 	if !ub.hasControlSubtype(ControlSubtypeRepairCenter) {
-		return fmt.Errorf("repair center required to start restoration")
+		return NewError("error.domain.storage.repair_center_required", nil)
 	}
 	defer ub.recalculateStats()
 	now := NowUnix()
@@ -235,13 +233,13 @@ func (ub *UserBaseModel) StartDamagedItemRestorationByID(itemID uuid.UUID, armyP
 		}
 	}
 	if activeRestorations >= ub.Stats.MaxActiveRestorations {
-		return fmt.Errorf("maximum number of simultaneous restorations (%d) reached", ub.Stats.MaxActiveRestorations)
+		return NewError("error.domain.storage.max_restorations_reached", H{"max": ub.Stats.MaxActiveRestorations})
 	}
 
 	for i, item := range ub.StorageItemsPresent {
 		if item.ID == itemID && item.Prototype.DamagedData != nil {
 			if item.ExpiresAt != nil {
-				return fmt.Errorf("damaged item with ID %s is already being restored", itemID)
+				return NewError("error.domain.storage.damaged_already_restoring", H{"item_id": itemID})
 			}
 			data := item.Prototype.DamagedData
 
@@ -254,12 +252,12 @@ func (ub *UserBaseModel) StartDamagedItemRestorationByID(itemID uuid.UUID, armyP
 				}
 			}
 			if unitProto == nil {
-				return fmt.Errorf("original unit prototype %d not found", data.OriginalUnitID)
+				return NewError("error.domain.storage.unit_prototype_not_found", H{"proto_id": data.OriginalUnitID})
 			}
 
 			// Validate space
 			if ub.Stats.Space+unitProto.Space > ub.Stats.MaxSpace {
-				return fmt.Errorf("not enough space to restore unit: required %d, available %d", unitProto.Space, ub.Stats.MaxSpace-ub.Stats.Space)
+				return NewError("error.domain.storage.not_enough_space", H{"required": unitProto.Space, "available": ub.Stats.MaxSpace - ub.Stats.Space})
 			}
 
 			// Validate resources
@@ -279,13 +277,13 @@ func (ub *UserBaseModel) StartDamagedItemRestorationByID(itemID uuid.UUID, armyP
 			return nil
 		}
 	}
-	return fmt.Errorf("damaged storage item with ID %s not found or not a damaged item", itemID)
+	return NewError("error.domain.storage.not_damaged", H{"item_id": itemID})
 }
 
 // ActivateArtifactByID enables the bonus of an artifact.
 func (ub *UserBaseModel) ActivateArtifactByID(itemID uuid.UUID) error {
 	if !ub.hasControlSubtype(ControlSubtypeArtifactLab) {
-		return fmt.Errorf("artifact laboratory required to activate artifacts")
+		return NewError("error.domain.storage.artifact_lab_required", nil)
 	}
 	defer ub.recalculateStats()
 
@@ -297,20 +295,20 @@ func (ub *UserBaseModel) ActivateArtifactByID(itemID uuid.UUID) error {
 		}
 	}
 	if activeCount >= ub.Stats.MaxActiveArtifacts {
-		return fmt.Errorf("maximum number of active artifacts (%d) reached", ub.Stats.MaxActiveArtifacts)
+		return NewError("error.domain.storage.max_artifacts_reached", H{"max": ub.Stats.MaxActiveArtifacts})
 	}
 
 	for i, item := range ub.StorageItemsPresent {
 		if item.ID == itemID && item.Prototype.ArtifactData != nil {
 			if item.IsActive {
-				return fmt.Errorf("artifact with ID %s is already active", itemID)
+				return NewError("error.domain.storage.artifact_already_active", H{"item_id": itemID})
 			}
 			ub.StorageItemsPresent[i].IsActive = true
 			ub.AddEvent(NewArtifactActivatedEvent(ub.ID, itemID))
 			return nil
 		}
 	}
-	return fmt.Errorf("artifact storage item with ID %s not found or not an artifact", itemID)
+	return NewError("error.domain.storage.not_artifact", H{"item_id": itemID})
 }
 
 // DeactivateArtifactByID disables the bonus of an artifact.
@@ -319,14 +317,14 @@ func (ub *UserBaseModel) DeactivateArtifactByID(itemID uuid.UUID) error {
 	for i, item := range ub.StorageItemsPresent {
 		if item.ID == itemID && item.Prototype.ArtifactData != nil {
 			if !item.IsActive {
-				return fmt.Errorf("artifact with ID %s is not active", itemID)
+				return NewError("error.domain.storage.artifact_not_active", H{"item_id": itemID})
 			}
 			ub.StorageItemsPresent[i].IsActive = false
 			ub.AddEvent(NewArtifactDeactivatedEvent(ub.ID, itemID))
 			return nil
 		}
 	}
-	return fmt.Errorf("artifact storage item with ID %s not found or not an artifact", itemID)
+	return NewError("error.domain.storage.not_artifact", H{"item_id": itemID})
 }
 
 // ActiveModifiers returns the currently-active multipliers.

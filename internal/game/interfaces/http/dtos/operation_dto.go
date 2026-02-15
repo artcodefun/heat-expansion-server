@@ -1,6 +1,9 @@
 package dtos
 
-import "github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+import (
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+)
 
 // OperationType represents the type of a military operation at the DTO level.
 type OperationType string
@@ -151,13 +154,13 @@ type MilitaryOperationDTO struct {
 	PriorScanReport    *SectorDTO           `json:"prior_scan_report,omitempty"`
 }
 
-func MilitaryUnitsFromReadModel(units []readmodels.MilitaryUnitSnap) []MilitaryUnitDTO {
+func MilitaryUnitsFromReadModel(units []readmodels.MilitaryUnitSnap, tr ports.Translator, locale string) []MilitaryUnitDTO {
 	out := make([]MilitaryUnitDTO, 0, len(units))
 	for _, unit := range units {
 		out = append(out, MilitaryUnitDTO{
 			PrototypeID:      unit.PrototypeID,
-			CurrentPrototype: mapArmyPrototype(unit.CurrentPrototype),
-			Name:             unit.Name,
+			CurrentPrototype: mapArmyPrototype(unit.CurrentPrototype, tr, locale),
+			Name:             tr.T(locale, unit.Name, nil),
 			ImageURL:         unit.ImageURL,
 			Category:         ArmyCategory(unit.Category),
 			Attack:           unit.Attack,
@@ -172,13 +175,13 @@ func MilitaryUnitsFromReadModel(units []readmodels.MilitaryUnitSnap) []MilitaryU
 	return out
 }
 
-func defenseStructuresFromReadModel(structs []readmodels.DefenseStructureSnap) []DefenseStructureDTO {
+func defenseStructuresFromReadModel(structs []readmodels.DefenseStructureSnap, tr ports.Translator, locale string) []DefenseStructureDTO {
 	out := make([]DefenseStructureDTO, 0, len(structs))
 	for _, s := range structs {
 		out = append(out, DefenseStructureDTO{
 			PrototypeID:      s.PrototypeID,
-			CurrentPrototype: mapBuildItemPrototype(s.CurrentPrototype),
-			Name:             s.Name,
+			CurrentPrototype: mapBuildItemPrototype(s.CurrentPrototype, tr, locale),
+			Name:             tr.T(locale, s.Name, nil),
 			ImageURL:         s.ImageURL,
 			Defence:          s.Defence,
 			Space:            s.Space,
@@ -188,49 +191,49 @@ func defenseStructuresFromReadModel(structs []readmodels.DefenseStructureSnap) [
 	return out
 }
 
-func trophiesFromReadModel(trophies []readmodels.TrophyStorageItem) []TrophyStorageItemDTO {
+func trophiesFromReadModel(trophies []readmodels.TrophyStorageItem, tr ports.Translator, locale string) []TrophyStorageItemDTO {
 	out := make([]TrophyStorageItemDTO, 0, len(trophies))
 	for _, t := range trophies {
 		out = append(out, TrophyStorageItemDTO{
-			Prototype: mapStorageItemPrototype(t.Prototype),
+			Prototype: mapStorageItemPrototype(t.Prototype, tr, locale),
 		})
 	}
 	return out
 }
 
-func SpyResultFromReadModel(res *readmodels.SpyResult) *SpyResultDTO {
+func SpyResultFromReadModel(res *readmodels.SpyResult, tr ports.Translator, locale string) *SpyResultDTO {
 	if res == nil {
 		return nil
 	}
 	return &SpyResultDTO{
 		Outcome:                SpyOutcome(res.Outcome),
-		AttackerRemaining:      MilitaryUnitsFromReadModel(res.AttackerRemaining),
-		DefenderRemaining:      MilitaryUnitsFromReadModel(res.DefenderRemaining),
-		DefendersBefore:        MilitaryUnitsFromReadModel(res.DefendersBefore),
-		DefenderStorageSnaps:   storageItemSnapsFromReadModel(res.DefenderStorageSnaps),
+		AttackerRemaining:      MilitaryUnitsFromReadModel(res.AttackerRemaining, tr, locale),
+		DefenderRemaining:      MilitaryUnitsFromReadModel(res.DefenderRemaining, tr, locale),
+		DefendersBefore:        MilitaryUnitsFromReadModel(res.DefendersBefore, tr, locale),
+		DefenderStorageSnaps:   storageItemSnapsFromReadModel(res.DefenderStorageSnaps, tr, locale),
 		TotalDefenderModifiers: MilitaryModifiersFromReadModel(res.TotalDefenderModifiers),
 	}
 }
 
-func AttackResultFromReadModel(res *readmodels.AttackResult) *AttackResultDTO {
+func AttackResultFromReadModel(res *readmodels.AttackResult, tr ports.Translator, locale string) *AttackResultDTO {
 	if res == nil {
 		return nil
 	}
 	return &AttackResultDTO{
 		Outcome:                AttackOutcome(res.Outcome),
-		AttackerRemaining:      MilitaryUnitsFromReadModel(res.AttackerRemaining),
-		DefenderRemaining:      MilitaryUnitsFromReadModel(res.DefenderRemaining),
-		RemainingStructures:    defenseStructuresFromReadModel(res.RemainingStructures),
+		AttackerRemaining:      MilitaryUnitsFromReadModel(res.AttackerRemaining, tr, locale),
+		DefenderRemaining:      MilitaryUnitsFromReadModel(res.DefenderRemaining, tr, locale),
+		RemainingStructures:    defenseStructuresFromReadModel(res.RemainingStructures, tr, locale),
 		Loot:                   PriceModelFromReadModel(res.Loot),
-		Trophies:               trophiesFromReadModel(res.Trophies),
-		DefendersBefore:        MilitaryUnitsFromReadModel(res.DefendersBefore),
-		StructuresBefore:       defenseStructuresFromReadModel(res.StructuresBefore),
-		DefenderStorageSnaps:   storageItemSnapsFromReadModel(res.DefenderStorageSnaps),
+		Trophies:               trophiesFromReadModel(res.Trophies, tr, locale),
+		DefendersBefore:        MilitaryUnitsFromReadModel(res.DefendersBefore, tr, locale),
+		StructuresBefore:       defenseStructuresFromReadModel(res.StructuresBefore, tr, locale),
+		DefenderStorageSnaps:   storageItemSnapsFromReadModel(res.DefenderStorageSnaps, tr, locale),
 		TotalDefenderModifiers: MilitaryModifiersFromReadModel(res.TotalDefenderModifiers),
 	}
 }
 
-func OperationFromReadModel(m *readmodels.MilitaryOperation) MilitaryOperationDTO {
+func OperationFromReadModel(m *readmodels.MilitaryOperation, tr ports.Translator, locale string) MilitaryOperationDTO {
 	dto := MilitaryOperationDTO{
 		ID:                m.ID,
 		Type:              OperationType(m.Type),
@@ -245,24 +248,24 @@ func OperationFromReadModel(m *readmodels.MilitaryOperation) MilitaryOperationDT
 		ReturnArriveAt:    m.ReturnArriveAt,
 		CompletedAt:       m.CompletedAt,
 		CrystalsSkipPrice: m.CrystalsSkipPrice,
-		Units:             MilitaryUnitsFromReadModel(m.Units),
-		StorageSnaps:      storageItemSnapsFromReadModel(m.StorageSnaps),
+		Units:             MilitaryUnitsFromReadModel(m.Units, tr, locale),
+		StorageSnaps:      storageItemSnapsFromReadModel(m.StorageSnaps, tr, locale),
 		TotalModifiers:    MilitaryModifiersFromReadModel(m.TotalModifiers),
-		SpyResult:         SpyResultFromReadModel(m.SpyResult),
-		AttackResult:      AttackResultFromReadModel(m.AttackResult),
+		SpyResult:         SpyResultFromReadModel(m.SpyResult, tr, locale),
+		AttackResult:      AttackResultFromReadModel(m.AttackResult, tr, locale),
 	}
 	if m.ProducedScanReport != nil {
-		report := SectorScanReportFromReadModel(m.ProducedScanReport)
+		report := SectorScanReportFromReadModel(m.ProducedScanReport, tr, locale)
 		dto.ProducedScanReport = &report
 	}
 	if m.PriorScanReport != nil {
-		report := SectorScanReportFromReadModel(m.PriorScanReport)
+		report := SectorScanReportFromReadModel(m.PriorScanReport, tr, locale)
 		dto.PriorScanReport = &report
 	}
 	return dto
 }
 
-func storageItemSnapsFromReadModel(snaps []readmodels.StorageItemSnap) []StorageItemSnapDTO {
+func storageItemSnapsFromReadModel(snaps []readmodels.StorageItemSnap, tr ports.Translator, locale string) []StorageItemSnapDTO {
 	if len(snaps) == 0 {
 		return []StorageItemSnapDTO{}
 	}
@@ -285,9 +288,9 @@ func storageItemSnapsFromReadModel(snaps []readmodels.StorageItemSnap) []Storage
 		}
 		out = append(out, StorageItemSnapDTO{
 			PrototypeID:      s.PrototypeID,
-			CurrentPrototype: mapStorageItemPrototype(s.CurrentPrototype),
-			Name:             s.Name,
-			ShortDescription: s.ShortDescription,
+			CurrentPrototype: mapStorageItemPrototype(s.CurrentPrototype, tr, locale),
+			Name:             tr.T(locale, s.Name, nil),
+			ShortDescription: tr.T(locale, s.ShortDescription, nil),
 			ImageURL:         s.ImageURL,
 			Category:         StorageCategory(s.Category),
 			BuffData:         buff,
@@ -307,10 +310,10 @@ func MilitaryModifiersFromReadModel(m readmodels.MilitaryModifiers) MilitaryModi
 	}
 }
 
-func OperationsFromReadModels(items []*readmodels.MilitaryOperation) []MilitaryOperationDTO {
+func OperationsFromReadModels(items []*readmodels.MilitaryOperation, tr ports.Translator, locale string) []MilitaryOperationDTO {
 	out := make([]MilitaryOperationDTO, 0, len(items))
 	for _, item := range items {
-		out = append(out, OperationFromReadModel(item))
+		out = append(out, OperationFromReadModel(item, tr, locale))
 	}
 	return out
 }

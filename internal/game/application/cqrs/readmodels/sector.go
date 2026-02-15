@@ -1,6 +1,9 @@
 package readmodels
 
-import "github.com/google/uuid"
+import (
+	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
+	"github.com/google/uuid"
+)
 
 // LocationType represents the occupant classification at given coordinates.
 // Derived from presence of user base / resource / dangerous location; persisted here temporarily.
@@ -27,8 +30,8 @@ type SectorModel struct {
 }
 
 type LocationDetails struct {
-	Name        string
-	Description string
+	Name        domain.TranslationKey
+	Description domain.TranslationKey
 	ImageURL    string
 }
 

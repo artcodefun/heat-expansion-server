@@ -66,7 +66,7 @@ func (c *StorageCommands) DeletePresentStorageItem(ctx cqrs.CommandContext, base
 			return repoErr(err)
 		}
 		if err := base.DeletePresentStorageItemByID(itemID); err != nil {
-			return cqrs.NewDomainError(err)
+			return err
 		}
 		if err := bRepo.Update(base); err != nil {
 			return err
@@ -90,7 +90,7 @@ func (c *StorageCommands) ActivateBuff(ctx cqrs.CommandContext, baseID int, item
 			return repoErr(err)
 		}
 		if err = base.ActivateBuffByID(itemID); err != nil {
-			return cqrs.NewDomainError(err)
+			return err
 		}
 		if err := bRepo.Update(base); err != nil {
 			return err
@@ -114,7 +114,7 @@ func (c *StorageCommands) StartIntelDecryption(ctx cqrs.CommandContext, baseID i
 			return repoErr(err)
 		}
 		if err = base.StartIntelDecryptionByID(itemID); err != nil {
-			return cqrs.NewDomainError(err)
+			return err
 		}
 		if err := bRepo.Update(base); err != nil {
 			return err
@@ -142,7 +142,7 @@ func (c *StorageCommands) StartDamagedItemRestoration(ctx cqrs.CommandContext, b
 			return repoErr(err)
 		}
 		if err = base.StartDamagedItemRestorationByID(itemID, armyProtos); err != nil {
-			return cqrs.NewDomainError(err)
+			return err
 		}
 		if err := bRepo.Update(base); err != nil {
 			return err
@@ -166,7 +166,7 @@ func (c *StorageCommands) ActivateArtifact(ctx cqrs.CommandContext, baseID int, 
 			return repoErr(err)
 		}
 		if err = base.ActivateArtifactByID(itemID); err != nil {
-			return cqrs.NewDomainError(err)
+			return err
 		}
 		if err := bRepo.Update(base); err != nil {
 			return err
@@ -190,7 +190,7 @@ func (c *StorageCommands) DeactivateArtifact(ctx cqrs.CommandContext, baseID int
 			return repoErr(err)
 		}
 		if err = base.DeactivateArtifactByID(itemID); err != nil {
-			return cqrs.NewDomainError(err)
+			return err
 		}
 		if err := bRepo.Update(base); err != nil {
 			return err
@@ -244,7 +244,7 @@ func (c *StorageCommands) OpenConsumableBox(ctx cqrs.CommandContext, baseID int,
 
 		_, err = c.rewards.OpenBox(base, user, itemID, buffProtos, intelProtos, damagedProtos, artifactProtos)
 		if err != nil {
-			return cqrs.NewDomainError(err)
+			return err
 		}
 
 		if err := bRepo.Update(base); err != nil {

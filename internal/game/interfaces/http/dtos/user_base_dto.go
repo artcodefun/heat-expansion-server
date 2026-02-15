@@ -1,6 +1,11 @@
 package dtos
 
-import "github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+import (
+	"fmt"
+
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+)
 
 // UserBaseDTO is a lightweight representation of a user's base for listings.
 type UserBaseDTO struct {
@@ -11,20 +16,20 @@ type UserBaseDTO struct {
 	ImageURL    string      `json:"image_url,omitempty"`
 }
 
-func UserBaseFromReadModel(m *readmodels.UserBaseModel) UserBaseDTO {
+func UserBaseFromReadModel(m *readmodels.UserBaseModel, tr ports.Translator, locale string) UserBaseDTO {
 	return UserBaseDTO{
 		ID:          m.ID,
 		Coordinates: Vector2iFromReadModel(m.Coordinates),
-		Name:        m.LocationDetails.Name,
-		Description: m.LocationDetails.Description,
+		Name:        fmt.Sprintf("%s #%d", tr.T(locale, m.LocationDetails.Name, nil), m.ID),
+		Description: tr.T(locale, m.LocationDetails.Description, nil),
 		ImageURL:    m.LocationDetails.ImageURL,
 	}
 }
 
-func UserBasesFromReadModels(models []*readmodels.UserBaseModel) []UserBaseDTO {
+func UserBasesFromReadModels(models []*readmodels.UserBaseModel, tr ports.Translator, locale string) []UserBaseDTO {
 	out := make([]UserBaseDTO, 0, len(models))
 	for _, m := range models {
-		out = append(out, UserBaseFromReadModel(m))
+		out = append(out, UserBaseFromReadModel(m, tr, locale))
 	}
 	return out
 }

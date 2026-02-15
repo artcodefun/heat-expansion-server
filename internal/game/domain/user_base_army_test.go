@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -420,7 +421,7 @@ func TestArmy_AllocateArmyToOperation_RespectsMaxOperations(t *testing.T) {
 	// 3rd operation should fail
 	if _, err := base.AllocateArmyToOperation(ArmyDeploymentRequest{PresentItemID: presentID, Count: 1}, 3); err == nil {
 		t.Errorf("expected error for exceeding MaxOperations (2), got nil")
-	} else if err.Error() != "maximum number of operations (2) reached" {
+	} else if !strings.HasPrefix(err.Error(), "error.domain.operation.max_reached") {
 		t.Errorf("unexpected error message: %v", err)
 	}
 

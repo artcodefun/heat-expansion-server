@@ -4,17 +4,23 @@ import (
 	"net/http"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
 )
 
 type StorageHandler struct {
-	queries  cqrs.StorageQueries
-	commands cqrs.StorageCommands
+	queries    cqrs.StorageQueries
+	commands   cqrs.StorageCommands
+	translator ports.Translator
 }
 
-func NewStorageHandler(queries cqrs.StorageQueries, commands cqrs.StorageCommands) *StorageHandler {
-	return &StorageHandler{queries: queries, commands: commands}
+func NewStorageHandler(queries cqrs.StorageQueries, commands cqrs.StorageCommands, translator ports.Translator) *StorageHandler {
+	return &StorageHandler{
+		queries:    queries,
+		commands:   commands,
+		translator: translator,
+	}
 }
 
 // ListPresent handles GET /bases/:baseId/storage/present.
@@ -26,10 +32,10 @@ func (h *StorageHandler) ListPresent(c *gin.Context) {
 	ctx := queryCtx(c)
 	category := dtos.StorageCategoryFromDTO(req.Query.Category)
 	items, err := h.queries.ListPresentStorageItems(ctx, req.Uri.BaseID, category)
-	if handleCoreErr(c, err) {
+	if handleCoreErr(c, h.translator, err) {
 		return
 	}
-	c.JSON(http.StatusOK, dtos.StorageItemsPresentFromReadModels(items))
+	c.JSON(http.StatusOK, dtos.StorageItemsPresentFromReadModels(items, h.translator, getLocale(c)))
 }
 
 // DeleteItem handles DELETE /bases/:baseId/storage/items/:itemId.
@@ -39,7 +45,7 @@ func (h *StorageHandler) DeleteItem(c *gin.Context) {
 		return
 	}
 	ctx := commandCtx(c)
-	if err := h.commands.DeletePresentStorageItem(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, err) {
+	if err := h.commands.DeletePresentStorageItem(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
 		return
 	}
 	c.Status(http.StatusOK)
@@ -53,7 +59,7 @@ func (h *StorageHandler) ActivateBuff(c *gin.Context) {
 	}
 
 	ctx := commandCtx(c)
-	if err := h.commands.ActivateBuff(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, err) {
+	if err := h.commands.ActivateBuff(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
 		return
 	}
 	c.Status(http.StatusOK)
@@ -66,7 +72,7 @@ func (h *StorageHandler) StartIntelDecryption(c *gin.Context) {
 		return
 	}
 	ctx := commandCtx(c)
-	if err := h.commands.StartIntelDecryption(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, err) {
+	if err := h.commands.StartIntelDecryption(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
 		return
 	}
 	c.Status(http.StatusOK)
@@ -79,7 +85,7 @@ func (h *StorageHandler) StartDamagedItemRestoration(c *gin.Context) {
 		return
 	}
 	ctx := commandCtx(c)
-	if err := h.commands.StartDamagedItemRestoration(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, err) {
+	if err := h.commands.StartDamagedItemRestoration(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
 		return
 	}
 	c.Status(http.StatusOK)
@@ -92,7 +98,7 @@ func (h *StorageHandler) ActivateArtifact(c *gin.Context) {
 		return
 	}
 	ctx := commandCtx(c)
-	if err := h.commands.ActivateArtifact(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, err) {
+	if err := h.commands.ActivateArtifact(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
 		return
 	}
 	c.Status(http.StatusOK)
@@ -105,7 +111,7 @@ func (h *StorageHandler) DeactivateArtifact(c *gin.Context) {
 		return
 	}
 	ctx := commandCtx(c)
-	if err := h.commands.DeactivateArtifact(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, err) {
+	if err := h.commands.DeactivateArtifact(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
 		return
 	}
 	c.Status(http.StatusOK)
@@ -118,7 +124,7 @@ func (h *StorageHandler) OpenBox(c *gin.Context) {
 		return
 	}
 	ctx := commandCtx(c)
-	if err := h.commands.OpenConsumableBox(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, err) {
+	if err := h.commands.OpenConsumableBox(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
 		return
 	}
 	c.Status(http.StatusOK)

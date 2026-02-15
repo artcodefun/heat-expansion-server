@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 )
 
 type BuildCategory string
@@ -119,14 +120,14 @@ type BuildItemPresentDTO struct {
 	Refund    PriceModelDTO         `json:"refund"`
 }
 
-func mapBuildItemPrototype(proto readmodels.BuildItemPrototype) BuildItemPrototypeDTO {
+func mapBuildItemPrototype(proto readmodels.BuildItemPrototype, tr ports.Translator, locale string) BuildItemPrototypeDTO {
 	dto := BuildItemPrototypeDTO{
 		ID:               proto.ID,
-		Name:             proto.Name,
+		Name:             tr.T(locale, proto.Name, nil),
 		Category:         BuildCategory(proto.Category),
 		Faction:          Faction(proto.Faction),
-		ShortDescription: proto.ShortDescription,
-		FullDescription:  proto.FullDescription,
+		ShortDescription: tr.T(locale, proto.ShortDescription, nil),
+		FullDescription:  tr.T(locale, proto.FullDescription, nil),
 		Price:            PriceModelFromReadModel(proto.Price),
 		Space:            proto.Space,
 		ImageURL:         proto.ImageURL,
@@ -172,31 +173,31 @@ func mapBuildItemPrototype(proto readmodels.BuildItemPrototype) BuildItemPrototy
 	return dto
 }
 
-func BuildItemsNewFromReadModels(items []*readmodels.BuildItemNew) []BuildItemNewDTO {
+func BuildItemsNewFromReadModels(items []*readmodels.BuildItemNew, tr ports.Translator, locale string) []BuildItemNewDTO {
 	out := make([]BuildItemNewDTO, 0, len(items))
 	for _, item := range items {
-		out = append(out, BuildItemNewDTO{BuildItemPrototypeDTO: mapBuildItemPrototype(item.Prototype)})
+		out = append(out, BuildItemNewDTO{BuildItemPrototypeDTO: mapBuildItemPrototype(item.Prototype, tr, locale)})
 	}
 	return out
 }
 
-func BuildItemsPendingFromReadModels(items []*readmodels.BuildItemPending) []BuildItemPendingDTO {
+func BuildItemsPendingFromReadModels(items []*readmodels.BuildItemPending, tr ports.Translator, locale string) []BuildItemPendingDTO {
 	out := make([]BuildItemPendingDTO, 0, len(items))
 	for _, item := range items {
 		out = append(out, BuildItemPendingDTO{
 			BaseOwnedItemDTO: BaseOwnedItemDTOFromReadModel(item.BaseOwnedItem),
-			Prototype:        mapBuildItemPrototype(item.Prototype),
+			Prototype:        mapBuildItemPrototype(item.Prototype, tr, locale),
 		})
 	}
 	return out
 }
 
-func BuildItemsInProductionFromReadModels(items []*readmodels.BuildItemInProduction) []BuildItemInProductionDTO {
+func BuildItemsInProductionFromReadModels(items []*readmodels.BuildItemInProduction, tr ports.Translator, locale string) []BuildItemInProductionDTO {
 	out := make([]BuildItemInProductionDTO, 0, len(items))
 	for _, item := range items {
 		out = append(out, BuildItemInProductionDTO{
 			BaseOwnedItemDTO:  BaseOwnedItemDTOFromReadModel(item.BaseOwnedItem),
-			Prototype:         mapBuildItemPrototype(item.Prototype),
+			Prototype:         mapBuildItemPrototype(item.Prototype, tr, locale),
 			StartDate:         int(item.StartDate),
 			CompletionDate:    int(item.CompletionDate),
 			CrystalsSkipPrice: item.CrystalsSkipPrice,
@@ -205,12 +206,12 @@ func BuildItemsInProductionFromReadModels(items []*readmodels.BuildItemInProduct
 	return out
 }
 
-func BuildItemsPresentFromReadModels(items []*readmodels.BuildItemPresent) []BuildItemPresentDTO {
+func BuildItemsPresentFromReadModels(items []*readmodels.BuildItemPresent, tr ports.Translator, locale string) []BuildItemPresentDTO {
 	out := make([]BuildItemPresentDTO, 0, len(items))
 	for _, item := range items {
 		out = append(out, BuildItemPresentDTO{
 			BaseOwnedItemDTO: BaseOwnedItemDTOFromReadModel(item.BaseOwnedItem),
-			Prototype:        mapBuildItemPrototype(item.Prototype),
+			Prototype:        mapBuildItemPrototype(item.Prototype, tr, locale),
 			Refund:           PriceModelFromReadModel(item.Refund),
 		})
 	}

@@ -1,0 +1,9 @@
+{
+    "alert.combat.attack.title": "База атакована",
+    "alert.combat.spy.content": "Внутри базы замечены шпионы!",
+    "alert.combat.attack.content": "Иноземная армия атаковала базу!",
+    "alert.intel.scan.title": "Обнаружено внешнее сканирование",
+    "alert.intel.scan.content": "Ваши датчики обнаружили внешнее сканирование вашей базы!",
+    "alert.intel.threat.title": "Обнаружена входящая угроза",
+    "alert.intel.threat.content": "Радары обнаружили приближающуюся угрозу!"
+}

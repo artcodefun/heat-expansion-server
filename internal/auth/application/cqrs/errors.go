@@ -16,23 +16,26 @@ const (
 )
 
 type AppError struct {
-	Code    string                 // Machine readable code
-	Message string                 // Developer-friendly message
-	Kind    ErrorKind              // High-level category
-	Params  map[string]interface{} // Dynamic context for i18n
+	Kind   ErrorKind
+	Code   string
+	Params map[string]any
 }
 
 func (e AppError) Error() string {
-	return fmt.Sprintf("[%s] %s", e.Code, e.Message)
+	return fmt.Sprintf("[%d] %s", e.Kind, e.Code)
 }
 
-func NewAppError(kind ErrorKind, code, msg string) AppError {
-	return AppError{Kind: kind, Code: code, Message: msg}
+func NewAppError(kind ErrorKind, code string) AppError {
+	return AppError{Kind: kind, Code: code}
+}
+
+func NewAppErrorWithParams(kind ErrorKind, code string, params map[string]any) AppError {
+	return AppError{Kind: kind, Code: code, Params: params}
 }
 
 var (
-	ErrNotFound           = NewAppError(KindNotFound, "common.not_found", "resource not found")
-	ErrForbidden          = NewAppError(KindForbidden, "common.forbidden", "permission denied")
-	ErrEmailAlreadyInUse  = NewAppError(KindConflict, "auth.email_taken", "email already in use")
-	ErrInvalidCredentials = NewAppError(KindUnauthenticated, "auth.invalid_creds", "invalid email or password")
+	ErrNotFound           = NewAppError(KindNotFound, "error.application.not_found")
+	ErrForbidden          = NewAppError(KindForbidden, "error.application.forbidden")
+	ErrEmailAlreadyInUse  = NewAppError(KindConflict, "error.application.auth.email_taken")
+	ErrInvalidCredentials = NewAppError(KindUnauthenticated, "error.application.auth.invalid_creds")
 )

@@ -19,14 +19,14 @@ type Alert struct {
 	BaseID     int
 	ActivityID *uuid.UUID
 	Kind       AlertKind
-	Title      string
-	Content    string
+	Title      TranslationKey
+	Content    TranslationKey
 	IsRead     bool
 	CreatedAt  int64
 	ExpiresAt  int64
 }
 
-func NewAlert(baseID int, activityID *uuid.UUID, kind AlertKind, title, content string, ttl time.Duration) *Alert {
+func NewAlert(baseID int, activityID *uuid.UUID, kind AlertKind, title, content TranslationKey, ttl time.Duration) *Alert {
 	now := time.Now().Unix()
 	return &Alert{
 		ID:         uuid.Must(uuid.NewV7()),

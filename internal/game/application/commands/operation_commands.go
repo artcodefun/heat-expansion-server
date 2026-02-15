@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
@@ -61,7 +60,7 @@ func (c *OperationCommands) CreateMilitaryOperation(ctx cqrs.CommandContext, opT
 		}
 		readyToDeploy, err := base.GetReadyToDeployArmy(deployments)
 		if err != nil {
-			return cqrs.NewDomainError(err)
+			return err
 		}
 
 		snaps := base.ActiveStorageSnaps()
@@ -81,17 +80,17 @@ func (c *OperationCommands) CreateMilitaryOperation(ctx cqrs.CommandContext, opT
 		case domain.MilitaryOperationTypeSpy:
 			createdOp, opCreationErr = domain.NewSpyOperation(base.UserID, sourceBaseID, sourceSector.Coordinates, targetSector.Coordinates, units, snaps)
 		default:
-			return errors.New("unsupported operation type")
+			return cqrs.NewAppError(cqrs.KindInvalidInput, "error.application.invalid_operation_type")
 		}
 		if opCreationErr != nil {
-			return cqrs.NewDomainError(opCreationErr)
+			return opCreationErr
 		}
 		if err := oRepo.Create(createdOp); err != nil {
 			return err
 		}
 		for _, ready := range readyToDeploy {
 			if _, err := base.AllocateArmyToOperation(domain.ArmyDeploymentRequest{PresentItemID: ready.PresentItemID, Count: ready.Count}, createdOp.ID); err != nil {
-				return cqrs.NewDomainError(err)
+				return err
 			}
 		}
 		if err := bRepo.Update(base); err != nil {
@@ -125,7 +124,7 @@ func (c *OperationCommands) CancelMilitaryOperation(ctx cqrs.CommandContext, ope
 		}
 
 		if err := op.Cancel(); err != nil {
-			return cqrs.NewDomainError(err)
+			return err
 		}
 
 		if err := oRepo.Update(op); err != nil {
@@ -162,7 +161,7 @@ func (c *OperationCommands) SpeedUpOperationWithCrystals(ctx cqrs.CommandContext
 		}
 
 		if err := c.crystalService.SpeedUpOperation(user, op); err != nil {
-			return cqrs.NewDomainError(err)
+			return err
 		}
 
 		if err := uRepo.Update(user); err != nil {

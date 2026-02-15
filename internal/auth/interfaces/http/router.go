@@ -2,6 +2,7 @@ package http
 
 import (
 	"github.com/artcodefun/heat-expansion-server/internal/auth/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/auth/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/interfaces/http/handlers"
 	"github.com/gin-gonic/gin"
 )
@@ -16,10 +17,10 @@ type Queries struct {
 	Account cqrs.AccountQueries
 }
 
-func NewRouter(cmd Commands, qry Queries) *gin.Engine {
+func NewRouter(cmd Commands, qry Queries, tr ports.Translator) *gin.Engine {
 	r := gin.Default()
 
-	handler := handlers.NewAccountHandler(cmd.Account, qry.Account)
+	handler := handlers.NewAccountHandler(cmd.Account, qry.Account, tr)
 
 	r.GET("/health", HealthHandler)
 

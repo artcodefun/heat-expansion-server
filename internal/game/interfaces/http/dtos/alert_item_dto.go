@@ -2,6 +2,7 @@ package dtos
 
 import (
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/google/uuid"
 )
 
@@ -25,24 +26,24 @@ type AlertItemDTO struct {
 	ExpiresAt  int64      `json:"expiresAt"`
 }
 
-func AlertItemDTOFromReadModel(a *readmodels.AlertItem) AlertItemDTO {
+func AlertItemDTOFromReadModel(a *readmodels.AlertItem, tr ports.Translator, locale string) AlertItemDTO {
 	return AlertItemDTO{
 		ID:         a.ID,
 		BaseID:     a.BaseID,
 		ActivityID: a.ActivityID,
 		Kind:       AlertKind(a.Kind),
-		Title:      a.Title,
-		Content:    a.Content,
+		Title:      tr.T(locale, a.Title, nil),
+		Content:    tr.T(locale, a.Content, nil),
 		IsRead:     a.IsRead,
 		CreatedAt:  a.CreatedAt,
 		ExpiresAt:  a.ExpiresAt,
 	}
 }
 
-func AlertItemsFromReadModels(items []*readmodels.AlertItem) []AlertItemDTO {
+func AlertItemsFromReadModels(items []*readmodels.AlertItem, tr ports.Translator, locale string) []AlertItemDTO {
 	out := make([]AlertItemDTO, 0, len(items))
 	for _, item := range items {
-		out = append(out, AlertItemDTOFromReadModel(item))
+		out = append(out, AlertItemDTOFromReadModel(item, tr, locale))
 	}
 	return out
 }

@@ -1,9 +1,5 @@
 package domain
 
-import (
-	"fmt"
-)
-
 // Default capacities and stats for UserBaseStats
 const (
 	DefaultCreditsCapacity       = 1000
@@ -48,16 +44,16 @@ type UserBaseStats struct {
 
 func (s *UserBaseStats) CheckResources(price PriceModel) error {
 	if float64(price.Credits) > s.Credits {
-		return fmt.Errorf("insufficient credits")
+		return NewError("error.domain.resources.insufficient_credits", nil)
 	}
 	if float64(price.Iron) > s.Iron {
-		return fmt.Errorf("insufficient iron")
+		return NewError("error.domain.resources.insufficient_iron", nil)
 	}
 	if float64(price.Titanium) > s.Titanium {
-		return fmt.Errorf("insufficient titanium")
+		return NewError("error.domain.resources.insufficient_titanium", nil)
 	}
 	if float64(price.Antimatter) > s.Antimatter {
-		return fmt.Errorf("insufficient antimatter")
+		return NewError("error.domain.resources.insufficient_antimatter", nil)
 	}
 	return nil
 }

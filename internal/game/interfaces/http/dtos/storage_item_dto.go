@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 )
 
 type StorageCategory string
@@ -126,7 +127,7 @@ func StorageCategoryFromDTO(c string) readmodels.StorageCategory {
 	return readmodels.StorageCategory(strings.ToUpper(strings.TrimSpace(c)))
 }
 
-func mapStorageItemPrototype(proto readmodels.StorageItemPrototype) StorageItemPrototypeDTO {
+func mapStorageItemPrototype(proto readmodels.StorageItemPrototype, tr ports.Translator, locale string) StorageItemPrototypeDTO {
 	var buff *BuffStorageDataDTO
 	if proto.BuffData != nil {
 		buff = &BuffStorageDataDTO{
@@ -171,10 +172,10 @@ func mapStorageItemPrototype(proto readmodels.StorageItemPrototype) StorageItemP
 
 	return StorageItemPrototypeDTO{
 		ID:               proto.ID,
-		Name:             proto.Name,
+		Name:             tr.T(locale, proto.Name, nil),
 		Category:         StorageCategory(proto.Category),
-		ShortDescription: proto.ShortDescription,
-		FullDescription:  proto.FullDescription,
+		ShortDescription: tr.T(locale, proto.ShortDescription, nil),
+		FullDescription:  tr.T(locale, proto.FullDescription, nil),
 		ImageURL:         proto.ImageURL,
 		BuffData:         buff,
 		IntelData:        intel,
@@ -184,12 +185,12 @@ func mapStorageItemPrototype(proto readmodels.StorageItemPrototype) StorageItemP
 	}
 }
 
-func StorageItemsPresentFromReadModels(items []*readmodels.StorageItemPresent) []StorageItemPresentDTO {
+func StorageItemsPresentFromReadModels(items []*readmodels.StorageItemPresent, tr ports.Translator, locale string) []StorageItemPresentDTO {
 	out := make([]StorageItemPresentDTO, 0, len(items))
 	for _, item := range items {
 		out = append(out, StorageItemPresentDTO{
 			BaseOwnedItemDTO: BaseOwnedItemDTOFromReadModel(item.BaseOwnedItem),
-			Prototype:        mapStorageItemPrototype(item.Prototype),
+			Prototype:        mapStorageItemPrototype(item.Prototype, tr, locale),
 			ExpiresAt:        item.ExpiresAt,
 			IsActive:         item.IsActive,
 		})

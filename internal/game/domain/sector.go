@@ -37,8 +37,8 @@ type SectorModel struct {
 }
 
 type LocationDetails struct {
-	Name        string
-	Description string
+	Name        TranslationKey
+	Description TranslationKey
 	ImageURL    string
 }
 

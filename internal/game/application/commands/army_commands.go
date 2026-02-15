@@ -39,7 +39,7 @@ func (c *ArmyCommands) QueueArmy(ctx cqrs.CommandContext, baseID int, prototypeI
 			return repoErr(err)
 		}
 		if err := base.QueueArmy(proto, count); err != nil {
-			return cqrs.NewDomainError(err)
+			return err
 		}
 		if err := bRepo.Update(base); err != nil {
 			return err
@@ -63,7 +63,7 @@ func (c *ArmyCommands) CancelPendingArmy(ctx cqrs.CommandContext, baseID int, it
 			return repoErr(err)
 		}
 		if err := base.CancelPendingArmyByID(itemID, count); err != nil {
-			return cqrs.NewDomainError(err)
+			return err
 		}
 		if err := bRepo.Update(base); err != nil {
 			return err
@@ -92,7 +92,7 @@ func (c *ArmyCommands) SpeedUpArmyProductionWithCrystals(ctx cqrs.CommandContext
 			return repoErr(err)
 		}
 		if err := c.crystalService.SpeedUpArmyProduction(user, base, armyItemID); err != nil {
-			return cqrs.NewDomainError(err)
+			return err
 		}
 		if err := uRepo.Update(user); err != nil {
 			return err
@@ -119,7 +119,7 @@ func (c *ArmyCommands) DeletePresentArmy(ctx cqrs.CommandContext, baseID int, it
 			return repoErr(err)
 		}
 		if err := base.DeletePresentArmyByID(itemID, count); err != nil {
-			return cqrs.NewDomainError(err)
+			return err
 		}
 		if err := bRepo.Update(base); err != nil {
 			return err

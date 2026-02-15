@@ -47,29 +47,27 @@ func (g *SimpleGenerator) GenerateEmptySectorContent(sector *domain.SectorModel)
 		idx = g.getCoordIndex(sector.Coordinates)
 	}
 	return ports.GeneratedLocationContent{
-		Name:        "Empty Sector",
-		Description: "A desolate volcanic wasteland with no detectable resources or inhabitants.",
+		Name:        "location.empty_sector.name",
+		Description: "location.empty_sector.description",
 		ImageURL:    g.buildURL("empty_sectors", "empty_sector", idx),
 	}
 }
 
 func (g *SimpleGenerator) GenerateBaseContent(base *domain.UserBaseModel) ports.GeneratedLocationContent {
 	idx := 0
-	name := "Human Expedition Base"
 	if base != nil {
 		idx = g.getCoordIndex(base.Coordinates)
-		name = fmt.Sprintf("Base #%d", base.UserID)
 	}
 	return ports.GeneratedLocationContent{
-		Name:        name,
-		Description: "A fortified expeditionary outpost established by the Exo-Coalition.",
+		Name:        "location.user_base.name",
+		Description: "location.user_base.description",
 		ImageURL:    g.buildURL("user_bases", "user_base", idx),
 	}
 }
 
 func (g *SimpleGenerator) GenerateResourceLocationContent(resource *domain.ResourceLocationModel) ports.GeneratedLocationContent {
-	name := "Resource Field"
-	desc := "Rich in valuable materials."
+	name := domain.TranslationKey("location.resource.default.name")
+	desc := domain.TranslationKey("location.resource.default.description")
 	fileBase := ""
 	idx := 0
 
@@ -77,20 +75,20 @@ func (g *SimpleGenerator) GenerateResourceLocationContent(resource *domain.Resou
 		idx = g.getCoordIndex(resource.Coordinates)
 		switch resource.Type {
 		case domain.ResourceTypeIron:
-			name = "Iron Rich Location"
-			desc = "Large-scale metallic formations indicate high concentrations of raw iron ore."
+			name = "location.resource.iron.name"
+			desc = "location.resource.iron.description"
 			fileBase = "resource_iron"
 		case domain.ResourceTypeTitanium:
-			name = "Titanium Rich Location"
-			desc = "Volcanic vents surrounding jagged orange crystal clusters, a sign of rich titanium deposits."
+			name = "location.resource.titanium.name"
+			desc = "location.resource.titanium.description"
 			fileBase = "resource_titanium"
 		case domain.ResourceTypeAntimatter:
-			name = "Antimatter Rich Location"
-			desc = "An unstable rift leaking pure antimatter, causing localized gravitational distortions."
+			name = "location.resource.antimatter.name"
+			desc = "location.resource.antimatter.description"
 			fileBase = "resource_antimatter"
 		case domain.ResourceTypeCredits:
-			name = "Credit Rich Location"
-			desc = "A ramshackle outpost built over the ruins of an old merchant hub, likely containing hoarded credits."
+			name = "location.resource.credits.name"
+			desc = "location.resource.credits.description"
 			fileBase = "resource_credits"
 		}
 	}
@@ -103,8 +101,8 @@ func (g *SimpleGenerator) GenerateResourceLocationContent(resource *domain.Resou
 }
 
 func (g *SimpleGenerator) GenerateDangerousLocationContent(danger *domain.DangerousLocationModel) ports.GeneratedLocationContent {
-	name := "Hazard Zone"
-	desc := "Hostile entities detected."
+	name := domain.TranslationKey("location.dangerous.default.name")
+	desc := domain.TranslationKey("location.dangerous.default.description")
 	fileBase := ""
 	idx := 0
 
@@ -112,20 +110,20 @@ func (g *SimpleGenerator) GenerateDangerousLocationContent(danger *domain.Danger
 		idx = g.getCoordIndex(danger.Coordinates)
 		switch danger.DefenderFaction {
 		case domain.FactionCustodianProtocol:
-			name = "Dangerous Vault"
-			desc = "A monolithic precursor structure guarding the entrance to a long-forgotten vault."
+			name = "location.dangerous.vault.name"
+			desc = "location.dangerous.vault.description"
 			fileBase = "dangerous_vault"
 		case domain.FactionNeuralWormApex:
-			name = "Dangerous Caverns"
-			desc = "Subterranean depths filled with bioluminescent neural filaments and ancient data archives."
+			name = "location.dangerous.caverns.name"
+			desc = "location.dangerous.caverns.description"
 			fileBase = "dangerous_caverns"
 		case domain.FactionObsidianSentinels:
-			name = "Dangerous Spires"
-			desc = "A forest of floating obsidian spires that hum with a rhythmic, defensive energy."
+			name = "location.dangerous.spires.name"
+			desc = "location.dangerous.spires.description"
 			fileBase = "dangerous_spires"
 		case domain.FactionScorchWalkers:
-			name = "Dangerous Monolith"
-			desc = "A massive, featureless black monolith that seems to absorb all light and nearby scans."
+			name = "location.dangerous.monolith.name"
+			desc = "location.dangerous.monolith.description"
 			fileBase = "dangerous_monolith"
 		}
 	}

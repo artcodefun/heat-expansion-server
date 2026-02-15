@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 )
 
 type ArmyCategory string
@@ -85,14 +86,14 @@ type ArmyItemPresentDTO struct {
 	Refund    PriceModelDTO        `json:"refund"`
 }
 
-func mapArmyPrototype(proto readmodels.ArmyItemPrototype) ArmyItemPrototypeDTO {
+func mapArmyPrototype(proto readmodels.ArmyItemPrototype, tr ports.Translator, locale string) ArmyItemPrototypeDTO {
 	return ArmyItemPrototypeDTO{
 		ID:               proto.ID,
-		Name:             proto.Name,
+		Name:             tr.T(locale, proto.Name, nil),
 		Category:         ArmyCategory(proto.Category),
 		Faction:          Faction(proto.Faction),
-		ShortDescription: proto.ShortDescription,
-		FullDescription:  proto.FullDescription,
+		ShortDescription: tr.T(locale, proto.ShortDescription, nil),
+		FullDescription:  tr.T(locale, proto.FullDescription, nil),
 		Price:            PriceModelFromReadModel(proto.Price),
 		Space:            proto.Space,
 		ImageURL:         proto.ImageURL,
@@ -105,32 +106,32 @@ func mapArmyPrototype(proto readmodels.ArmyItemPrototype) ArmyItemPrototypeDTO {
 	}
 }
 
-func ArmyItemsNewFromReadModels(items []*readmodels.ArmyItemNew) []ArmyItemNewDTO {
+func ArmyItemsNewFromReadModels(items []*readmodels.ArmyItemNew, tr ports.Translator, locale string) []ArmyItemNewDTO {
 	out := make([]ArmyItemNewDTO, 0, len(items))
 	for _, item := range items {
-		out = append(out, ArmyItemNewDTO{ArmyItemPrototypeDTO: mapArmyPrototype(item.Prototype)})
+		out = append(out, ArmyItemNewDTO{ArmyItemPrototypeDTO: mapArmyPrototype(item.Prototype, tr, locale)})
 	}
 	return out
 }
 
-func ArmyItemsPendingFromReadModels(items []*readmodels.ArmyItemPending) []ArmyItemPendingDTO {
+func ArmyItemsPendingFromReadModels(items []*readmodels.ArmyItemPending, tr ports.Translator, locale string) []ArmyItemPendingDTO {
 	out := make([]ArmyItemPendingDTO, 0, len(items))
 	for _, item := range items {
 		out = append(out, ArmyItemPendingDTO{
 			BaseOwnedItemDTO: BaseOwnedItemDTOFromReadModel(item.BaseOwnedItem),
-			Prototype:        mapArmyPrototype(item.Prototype),
+			Prototype:        mapArmyPrototype(item.Prototype, tr, locale),
 			Count:            item.Count,
 		})
 	}
 	return out
 }
 
-func ArmyItemsInProductionFromReadModels(items []*readmodels.ArmyItemInProduction) []ArmyItemInProductionDTO {
+func ArmyItemsInProductionFromReadModels(items []*readmodels.ArmyItemInProduction, tr ports.Translator, locale string) []ArmyItemInProductionDTO {
 	out := make([]ArmyItemInProductionDTO, 0, len(items))
 	for _, item := range items {
 		out = append(out, ArmyItemInProductionDTO{
 			BaseOwnedItemDTO:  BaseOwnedItemDTOFromReadModel(item.BaseOwnedItem),
-			Prototype:         mapArmyPrototype(item.Prototype),
+			Prototype:         mapArmyPrototype(item.Prototype, tr, locale),
 			StartDate:         int(item.StartDate),
 			CompletionDate:    int(item.CompletionDate),
 			CrystalsSkipPrice: item.CrystalsSkipPrice,
@@ -139,12 +140,12 @@ func ArmyItemsInProductionFromReadModels(items []*readmodels.ArmyItemInProductio
 	return out
 }
 
-func ArmyItemsPresentFromReadModels(items []*readmodels.ArmyItemPresent) []ArmyItemPresentDTO {
+func ArmyItemsPresentFromReadModels(items []*readmodels.ArmyItemPresent, tr ports.Translator, locale string) []ArmyItemPresentDTO {
 	out := make([]ArmyItemPresentDTO, 0, len(items))
 	for _, item := range items {
 		out = append(out, ArmyItemPresentDTO{
 			BaseOwnedItemDTO: BaseOwnedItemDTOFromReadModel(item.BaseOwnedItem),
-			Prototype:        mapArmyPrototype(item.Prototype),
+			Prototype:        mapArmyPrototype(item.Prototype, tr, locale),
 			Count:            item.Count,
 			Refund:           PriceModelFromReadModel(item.Refund),
 		})

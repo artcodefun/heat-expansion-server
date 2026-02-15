@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"fmt"
 	"math/rand"
 
 	"github.com/google/uuid"
@@ -42,11 +41,11 @@ func (s *ConsumableRewardService) OpenBox(
 	}
 
 	if box == nil {
-		return nil, fmt.Errorf("box not found")
+		return nil, NewError("error.domain.storage.box_not_found", nil)
 	}
 
 	if box.Prototype.Category != StorageCategoryConsumable || box.Prototype.ConsumableData == nil {
-		return nil, fmt.Errorf("item is not a consumable box")
+		return nil, NewError("error.domain.storage.not_a_consumable_box", nil)
 	}
 
 	data := box.Prototype.ConsumableData

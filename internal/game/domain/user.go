@@ -1,8 +1,6 @@
 package domain
 
 import (
-	"fmt"
-
 	"github.com/google/uuid"
 )
 
@@ -35,10 +33,10 @@ func NewUser(id uuid.UUID, name string) *User {
 // have enough crystals available.
 func (u *User) SpendCrystals(amount int) error {
 	if amount <= 0 {
-		return fmt.Errorf("invalid crystal spend amount: %d", amount)
+		return NewError("error.domain.user.invalid_crystal_spend_amount", H{"amount": amount})
 	}
 	if u.Crystals < amount {
-		return fmt.Errorf("not enough crystals")
+		return NewError("error.domain.user.not_enough_crystals", nil)
 	}
 	u.Crystals -= amount
 	return nil

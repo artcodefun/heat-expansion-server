@@ -1,6 +1,9 @@
 package dtos
 
-import "github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+import (
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+)
 
 type BaseResourcesDTO struct {
 	Credits              float64 `json:"credits"`
@@ -23,7 +26,7 @@ type BaseResourcesDTO struct {
 }
 
 // BaseResourcesFromReadModel maps a readmodel.UserBaseStats to BaseResourcesDTO.
-func BaseResourcesFromReadModel(m *readmodels.UserBaseStats) BaseResourcesDTO {
+func BaseResourcesFromReadModel(m *readmodels.UserBaseStats, tr ports.Translator, locale string) BaseResourcesDTO {
 	return BaseResourcesDTO{
 		Credits:              m.Credits,
 		CreditsCapacity:      m.CreditsCapacity,

@@ -1,8 +1,6 @@
 package domain
 
 import (
-	"fmt"
-
 	"github.com/google/uuid"
 )
 
@@ -69,7 +67,7 @@ func (ub *UserBaseModel) StartTechResearch(proto *TechItemPrototype) error {
 	defer ub.recalculateStats()
 	// Ensure this prototype is actually available for this base
 	if len(ub.AvailableTechnologies([]*TechItemPrototype{proto})) == 0 {
-		return fmt.Errorf("this technology is not available for research")
+		return NewError("error.domain.tech.not_available_for_research", nil)
 	}
 
 	// Validate resources
@@ -140,7 +138,7 @@ func (ub *UserBaseModel) SpeedUpTechResearch(techItemID uuid.UUID) error {
 		}
 	}
 	if idx == -1 {
-		return fmt.Errorf("in-progress tech with ID %s not found", techItemID)
+		return NewError("error.domain.tech.in_progress_not_found", H{"item_id": techItemID})
 	}
 	// Set completion date to now
 	ub.TechnologiesInProgress[idx].CompletionDate = NowUnix()

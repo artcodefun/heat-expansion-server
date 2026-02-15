@@ -22,8 +22,9 @@
 # Environment files
 .env
 
-# Assets
+# Runtime Resources
 /assets/
+/i18n/
 
 # OS generated files
 .DS_Store
