@@ -118,6 +118,7 @@ type Querier interface {
 	MarkAllAlertsAsRead(ctx context.Context, baseID int64) error
 	MarkOutboxEventPublished(ctx context.Context, arg MarkOutboxEventPublishedParams) error
 	MarkScheduledJobDispatched(ctx context.Context, arg MarkScheduledJobDispatchedParams) error
+	NotifyOutboxEvent(ctx context.Context) error
 	RadarThreatExists(ctx context.Context, arg RadarThreatExistsParams) (bool, error)
 	RecentReportExistsByScanner(ctx context.Context, arg RecentReportExistsByScannerParams) (bool, error)
 	UpdateBase(ctx context.Context, arg UpdateBaseParams) (UserBase, error)

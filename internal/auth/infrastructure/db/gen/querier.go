@@ -19,6 +19,8 @@ type Querier interface {
 	IntegrationEventExists(ctx context.Context, arg IntegrationEventExistsParams) (bool, error)
 	MarkEventPublished(ctx context.Context, arg MarkEventPublishedParams) error
 	MarkIntegrationEventPublished(ctx context.Context, arg MarkIntegrationEventPublishedParams) error
+	NotifyIntegrationOutboxEvent(ctx context.Context) error
+	NotifyOutboxEvent(ctx context.Context) error
 	SaveIntegrationEvent(ctx context.Context, arg SaveIntegrationEventParams) error
 	SaveOutboxEvent(ctx context.Context, arg SaveOutboxEventParams) error
 }

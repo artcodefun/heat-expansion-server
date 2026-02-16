@@ -46,7 +46,10 @@ func (r *IntegrationOutboxRepo) Save(ctx context.Context, event auth.Integration
 			Valid: event.OriginID != uuid.Nil,
 		},
 	})
-	return err
+	if err != nil {
+		return err
+	}
+	return r.db.NotifyIntegrationOutboxEvent(ctx)
 }
 
 func (r *IntegrationOutboxRepo) Exists(ctx context.Context, originID uuid.UUID, eventType string) (bool, error) {

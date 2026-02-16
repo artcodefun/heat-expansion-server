@@ -21,3 +21,7 @@ UPDATE game.domain_events
 SET published = TRUE,
     published_at = @published_at
 WHERE id = @id;
+
+-- name: NotifyOutboxEvent :exec
+NOTIFY game_domain_events;
+

@@ -73,6 +73,15 @@ func (q *Queries) MarkEventPublished(ctx context.Context, arg MarkEventPublished
 	return err
 }
 
+const notifyOutboxEvent = `-- name: NotifyOutboxEvent :exec
+NOTIFY auth_domain_events
+`
+
+func (q *Queries) NotifyOutboxEvent(ctx context.Context) error {
+	_, err := q.exec(ctx, q.notifyOutboxEventStmt, notifyOutboxEvent)
+	return err
+}
+
 const saveOutboxEvent = `-- name: SaveOutboxEvent :exec
 INSERT INTO auth.domain_events (id, kind, payload, created_at)
 VALUES ($1, $2, $3, $4)

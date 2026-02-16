@@ -5,13 +5,10 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"log/slog"
 	"os"
-	"time"
 
 	_ "github.com/lib/pq"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/repo"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/events"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/jobs"
 	httpapi "github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http"
@@ -29,6 +26,7 @@ type Module struct {
 	DB         *sql.DB
 	Adapters   *Adapters
 	Services   *AppServices
+	Workers    *Workers
 	Commands   *Commands
 	Queries    *Queries
 	HTTPServer *httpapi.Server
@@ -63,6 +61,7 @@ func NewModule() *Module {
 	}
 
 	services := NewAppServices(adapters)
+	workers := NewWorkers(dbURL, services.Outbox)
 	commands := NewCommands(adapters, services)
 	queries := NewQueries(adapters, services)
 
@@ -108,6 +107,7 @@ func NewModule() *Module {
 		DB:            db,
 		Adapters:      adapters,
 		Services:      services,
+		Workers:       workers,
 		Commands:      commands,
 		Queries:       queries,
 		HTTPServer:    httpServer,
@@ -131,31 +131,8 @@ func (m *Module) Run() {
 		log.Printf("Warning: Failed to start RabbitMQ consumer: %v", err)
 	}
 
-	go func() {
-		ctx := context.Background()
-		ticker := time.NewTicker(5 * time.Second)
-		defer ticker.Stop()
-
-		var signalChan <-chan struct{}
-		if txMgr, ok := m.Adapters.TxMgr.(*repo.DBTxManager); ok {
-			signalChan = txMgr.CommitSignal
-		}
-
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-ticker.C:
-				if err := m.Services.Outbox.ProcessBatch(100); err != nil {
-					slog.Error("outbox dispatch failed (polling)", "error", err.Error())
-				}
-			case <-signalChan:
-				if err := m.Services.Outbox.ProcessBatch(100); err != nil {
-					slog.Error("outbox dispatch failed (signaled)", "error", err.Error())
-				}
-			}
-		}
-	}()
+	// Start background workers
+	go m.Workers.OutboxLoop(context.Background())
 
 	addr := fmt.Sprintf(":%s", m.Port)
 	fmt.Printf("Listening on %s\n", addr)

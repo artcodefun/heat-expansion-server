@@ -89,6 +89,15 @@ func (q *Queries) MarkIntegrationEventPublished(ctx context.Context, arg MarkInt
 	return err
 }
 
+const notifyIntegrationOutboxEvent = `-- name: NotifyIntegrationOutboxEvent :exec
+NOTIFY auth_integration_events
+`
+
+func (q *Queries) NotifyIntegrationOutboxEvent(ctx context.Context) error {
+	_, err := q.exec(ctx, q.notifyIntegrationOutboxEventStmt, notifyIntegrationOutboxEvent)
+	return err
+}
+
 const saveIntegrationEvent = `-- name: SaveIntegrationEvent :exec
 INSERT INTO auth.integration_events (id, kind, payload, created_at, origin_id)
 VALUES ($1, $2, $3, $4, $5)

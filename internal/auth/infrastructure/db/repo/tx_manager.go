@@ -3,19 +3,18 @@ package repo
 import (
 	"context"
 	"database/sql"
+
 	"github.com/artcodefun/heat-expansion-server/internal/auth/application/ports"
 )
 
 // DBTxManager is a minimal TransactionManager over *sql.DB.
 type DBTxManager struct {
-	db           *sql.DB
-	CommitSignal chan struct{}
+	db *sql.DB
 }
 
 func NewDBTxManager(db *sql.DB) *DBTxManager {
 	return &DBTxManager{
-		db:           db,
-		CommitSignal: make(chan struct{}, 1),
+		db: db,
 	}
 }
 
@@ -36,12 +35,6 @@ func (m *DBTxManager) WithTx(fn func(tx ports.Transaction) error) error {
 	}
 	if err := tx.Commit(); err != nil {
 		return err
-	}
-
-	// Non-blocking signal
-	select {
-	case m.CommitSignal <- struct{}{}:
-	default:
 	}
 
 	return nil

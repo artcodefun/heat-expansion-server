@@ -17,3 +17,7 @@ LIMIT $1;
 UPDATE auth.integration_events
 SET published = TRUE, published_at = $2
 WHERE id = $1;
+
+-- name: NotifyIntegrationOutboxEvent :exec
+NOTIFY auth_integration_events;
+

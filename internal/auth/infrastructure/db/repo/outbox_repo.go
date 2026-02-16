@@ -47,7 +47,7 @@ func (r *OutboxEventRepo) Save(ctx context.Context, events []domain.DomainEvent)
 			return err
 		}
 	}
-	return nil
+	return r.db.NotifyOutboxEvent(ctx)
 }
 
 func (r *OutboxEventRepo) ClaimUnpublished(limit int) ([]domain.DomainEvent, error) {

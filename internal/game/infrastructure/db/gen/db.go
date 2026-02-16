@@ -288,6 +288,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.markScheduledJobDispatchedStmt, err = db.PrepareContext(ctx, markScheduledJobDispatched); err != nil {
 		return nil, fmt.Errorf("error preparing query MarkScheduledJobDispatched: %w", err)
 	}
+	if q.notifyOutboxEventStmt, err = db.PrepareContext(ctx, notifyOutboxEvent); err != nil {
+		return nil, fmt.Errorf("error preparing query NotifyOutboxEvent: %w", err)
+	}
 	if q.radarThreatExistsStmt, err = db.PrepareContext(ctx, radarThreatExists); err != nil {
 		return nil, fmt.Errorf("error preparing query RadarThreatExists: %w", err)
 	}
@@ -760,6 +763,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing markScheduledJobDispatchedStmt: %w", cerr)
 		}
 	}
+	if q.notifyOutboxEventStmt != nil {
+		if cerr := q.notifyOutboxEventStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing notifyOutboxEventStmt: %w", cerr)
+		}
+	}
 	if q.radarThreatExistsStmt != nil {
 		if cerr := q.radarThreatExistsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing radarThreatExistsStmt: %w", cerr)
@@ -932,6 +940,7 @@ type Queries struct {
 	markAllAlertsAsReadStmt                   *sql.Stmt
 	markOutboxEventPublishedStmt              *sql.Stmt
 	markScheduledJobDispatchedStmt            *sql.Stmt
+	notifyOutboxEventStmt                     *sql.Stmt
 	radarThreatExistsStmt                     *sql.Stmt
 	recentReportExistsByScannerStmt           *sql.Stmt
 	updateBaseStmt                            *sql.Stmt
@@ -1035,6 +1044,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		markAllAlertsAsReadStmt:                   q.markAllAlertsAsReadStmt,
 		markOutboxEventPublishedStmt:              q.markOutboxEventPublishedStmt,
 		markScheduledJobDispatchedStmt:            q.markScheduledJobDispatchedStmt,
+		notifyOutboxEventStmt:                     q.notifyOutboxEventStmt,
 		radarThreatExistsStmt:                     q.radarThreatExistsStmt,
 		recentReportExistsByScannerStmt:           q.recentReportExistsByScannerStmt,
 		updateBaseStmt:                            q.updateBaseStmt,

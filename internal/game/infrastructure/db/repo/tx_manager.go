@@ -8,17 +8,13 @@ import (
 )
 
 // DBTxManager is a minimal TransactionManager over *sql.DB.
-// It includes a CommitSignal channel that background workers can use
-// to be notified immediately after a successful transaction commit.
 type DBTxManager struct {
-	db           *sql.DB
-	CommitSignal chan struct{}
+	db *sql.DB
 }
 
 func NewDBTxManager(db *sql.DB) *DBTxManager {
 	return &DBTxManager{
-		db:           db,
-		CommitSignal: make(chan struct{}, 1),
+		db: db,
 	}
 }
 
@@ -40,12 +36,6 @@ func (m *DBTxManager) WithTx(fn func(tx ports.Transaction) error) error {
 	}
 	if err := tx.Commit(); err != nil {
 		return err
-	}
-
-	// Non-blocking signal
-	select {
-	case m.CommitSignal <- struct{}{}:
-	default:
 	}
 
 	return nil

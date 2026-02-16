@@ -5,20 +5,20 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"log/slog"
 	"os"
-	"time"
 
-	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/db/repo"
 	httpapi "github.com/artcodefun/heat-expansion-server/internal/auth/interfaces/http"
 	_ "github.com/lib/pq"
 )
 
 type Module struct {
-	Port     string
+	Port  string
+	DBURL string
+
 	DB       *sql.DB
 	Adapters *Adapters
 	Services *AppServices
+	Workers  *Workers
 	Commands *Commands
 	Queries  *Queries
 }
@@ -49,6 +49,7 @@ func NewModule() *Module {
 	}
 
 	services := NewAppServices(adapters)
+	workers := NewWorkers(dbURL, services.Outbox, services.IntegrationOutbox)
 	commands := NewCommands(adapters)
 	queries := NewQueries(adapters)
 
@@ -56,9 +57,11 @@ func NewModule() *Module {
 
 	return &Module{
 		Port:     port,
+		DBURL:    dbURL,
 		DB:       db,
 		Adapters: adapters,
 		Services: services,
+		Workers:  workers,
 		Commands: commands,
 		Queries:  queries,
 	}
@@ -68,48 +71,9 @@ func (m *Module) Run() {
 	fmt.Printf("Starting auth service on port %s\n", m.Port)
 	ctx := context.Background()
 
-	// Outbox loop
-	go func() {
-		ticker := time.NewTicker(5 * time.Second)
-		defer ticker.Stop()
-
-		var signalChan <-chan struct{}
-		if txMgr, ok := m.Adapters.TxMgr.(*repo.DBTxManager); ok {
-			signalChan = txMgr.CommitSignal
-		}
-
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-ticker.C:
-				if err := m.Services.Outbox.ProcessBatch(100); err != nil {
-					slog.Error("auth outbox dispatch failed (polling)", "error", err.Error())
-				}
-			case <-signalChan:
-				if err := m.Services.Outbox.ProcessBatch(100); err != nil {
-					slog.Error("auth outbox dispatch failed (signaled)", "error", err.Error())
-				}
-			}
-		}
-	}()
-
-	// Integration Outbox loop
-	go func() {
-		ticker := time.NewTicker(5 * time.Second)
-		defer ticker.Stop()
-
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-ticker.C:
-				if err := m.Services.IntegrationOutbox.ProcessBatch(100); err != nil {
-					slog.Error("auth integration outbox dispatch failed", "error", err.Error())
-				}
-			}
-		}
-	}()
+	// Start background workers
+	go m.Workers.DomainOutboxLoop(ctx)
+	go m.Workers.IntegrationOutboxLoop(ctx)
 
 	// HTTP Server
 	router := httpapi.NewRouter(

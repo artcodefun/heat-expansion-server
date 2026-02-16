@@ -48,6 +48,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.markIntegrationEventPublishedStmt, err = db.PrepareContext(ctx, markIntegrationEventPublished); err != nil {
 		return nil, fmt.Errorf("error preparing query MarkIntegrationEventPublished: %w", err)
 	}
+	if q.notifyIntegrationOutboxEventStmt, err = db.PrepareContext(ctx, notifyIntegrationOutboxEvent); err != nil {
+		return nil, fmt.Errorf("error preparing query NotifyIntegrationOutboxEvent: %w", err)
+	}
+	if q.notifyOutboxEventStmt, err = db.PrepareContext(ctx, notifyOutboxEvent); err != nil {
+		return nil, fmt.Errorf("error preparing query NotifyOutboxEvent: %w", err)
+	}
 	if q.saveIntegrationEventStmt, err = db.PrepareContext(ctx, saveIntegrationEvent); err != nil {
 		return nil, fmt.Errorf("error preparing query SaveIntegrationEvent: %w", err)
 	}
@@ -97,6 +103,16 @@ func (q *Queries) Close() error {
 	if q.markIntegrationEventPublishedStmt != nil {
 		if cerr := q.markIntegrationEventPublishedStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing markIntegrationEventPublishedStmt: %w", cerr)
+		}
+	}
+	if q.notifyIntegrationOutboxEventStmt != nil {
+		if cerr := q.notifyIntegrationOutboxEventStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing notifyIntegrationOutboxEventStmt: %w", cerr)
+		}
+	}
+	if q.notifyOutboxEventStmt != nil {
+		if cerr := q.notifyOutboxEventStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing notifyOutboxEventStmt: %w", cerr)
 		}
 	}
 	if q.saveIntegrationEventStmt != nil {
@@ -156,6 +172,8 @@ type Queries struct {
 	integrationEventExistsStmt            *sql.Stmt
 	markEventPublishedStmt                *sql.Stmt
 	markIntegrationEventPublishedStmt     *sql.Stmt
+	notifyIntegrationOutboxEventStmt      *sql.Stmt
+	notifyOutboxEventStmt                 *sql.Stmt
 	saveIntegrationEventStmt              *sql.Stmt
 	saveOutboxEventStmt                   *sql.Stmt
 }
@@ -172,6 +190,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		integrationEventExistsStmt:            q.integrationEventExistsStmt,
 		markEventPublishedStmt:                q.markEventPublishedStmt,
 		markIntegrationEventPublishedStmt:     q.markIntegrationEventPublishedStmt,
+		notifyIntegrationOutboxEventStmt:      q.notifyIntegrationOutboxEventStmt,
+		notifyOutboxEventStmt:                 q.notifyOutboxEventStmt,
 		saveIntegrationEventStmt:              q.saveIntegrationEventStmt,
 		saveOutboxEventStmt:                   q.saveOutboxEventStmt,
 	}

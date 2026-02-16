@@ -18,7 +18,7 @@ type Adapters struct {
 	TokenProvider     ports.TokenProvider
 	Outbox            ports.OutboxEventRepository
 	TxMgr             ports.TransactionManager
-	Events            *events.SimplePublisher
+	Events            ports.EventPublisher
 	IntegrationOutbox ports.IntegrationOutboxRepository
 	IntegrationEvents ports.IntegrationEventPublisher
 	Translator        ports.Translator

@@ -14,3 +14,7 @@ LIMIT $1;
 UPDATE auth.domain_events
 SET published = TRUE, published_at = $2
 WHERE id = $1;
+
+-- name: NotifyOutboxEvent :exec
+NOTIFY auth_domain_events;
+

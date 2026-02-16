@@ -90,3 +90,12 @@ func (q *Queries) MarkOutboxEventPublished(ctx context.Context, arg MarkOutboxEv
 	_, err := q.exec(ctx, q.markOutboxEventPublishedStmt, markOutboxEventPublished, arg.PublishedAt, arg.ID)
 	return err
 }
+
+const notifyOutboxEvent = `-- name: NotifyOutboxEvent :exec
+NOTIFY game_domain_events
+`
+
+func (q *Queries) NotifyOutboxEvent(ctx context.Context) error {
+	_, err := q.exec(ctx, q.notifyOutboxEventStmt, notifyOutboxEvent)
+	return err
+}

@@ -51,7 +51,7 @@ func (r *OutboxEventRepo) Save(events []domain.DomainEvent) error {
 		}
 	}
 
-	return nil
+	return r.q.NotifyOutboxEvent(context.Background())
 }
 
 func (r *OutboxEventRepo) ClaimUnpublished(limit int) ([]*ports.OutboxEventRecord, error) {
