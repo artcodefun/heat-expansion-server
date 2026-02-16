@@ -17,19 +17,19 @@ import (
 func bindRequest[U, Q, B any](c *gin.Context, req *dtos.Request[U, Q, B]) bool {
 	if needsBind[U]() {
 		if err := bindUri(c, &req.Uri); err != nil {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{"error": bindErrorMessage(err, &req.Uri)})
+			c.JSON(http.StatusBadRequest, gin.H{"error": bindErrorMessage(err, &req.Uri)})
 			return false
 		}
 	}
 	if needsBind[Q]() {
 		if err := bindQuery(c, &req.Query); err != nil {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{"error": bindErrorMessage(err, &req.Query)})
+			c.JSON(http.StatusBadRequest, gin.H{"error": bindErrorMessage(err, &req.Query)})
 			return false
 		}
 	}
 	if needsBind[B]() {
 		if err := bindJSON(c, &req.Body); err != nil {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{"error": bindErrorMessage(err, &req.Body)})
+			c.JSON(http.StatusBadRequest, gin.H{"error": bindErrorMessage(err, &req.Body)})
 			return false
 		}
 	}

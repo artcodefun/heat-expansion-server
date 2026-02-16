@@ -69,10 +69,10 @@ func handleCoreErr(c *gin.Context, tr ports.Translator, err error) bool {
 		return true
 	}
 
-	// Domain errors: 400 with domain-provided message.
+	// Domain errors: 422 with domain-provided message.
 	var domErr domain.Error
 	if errors.As(err, &domErr) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": tr.T(locale, domErr.Key, domErr.Params)})
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": tr.T(locale, domErr.Key, domErr.Params)})
 		return true
 	}
 
