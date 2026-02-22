@@ -1,8 +1,6 @@
 package dtos
 
 import (
-	"fmt"
-
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 )
@@ -20,7 +18,7 @@ func UserBaseFromReadModel(m *readmodels.UserBaseModel, tr ports.Translator, loc
 	return UserBaseDTO{
 		ID:          m.ID,
 		Coordinates: Vector2iFromReadModel(m.Coordinates),
-		Name:        fmt.Sprintf("%s #%d", tr.T(locale, m.LocationDetails.Name, nil), m.ID),
+		Name:        tr.T(locale, m.LocationDetails.Name, nil),
 		Description: tr.T(locale, m.LocationDetails.Description, nil),
 		ImageURL:    m.LocationDetails.ImageURL,
 	}

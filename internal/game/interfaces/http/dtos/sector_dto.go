@@ -1,8 +1,6 @@
 package dtos
 
 import (
-	"fmt"
-
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 )
@@ -87,15 +85,10 @@ func SectorScanReportFromReadModel(r *readmodels.SectorScanReport, tr ports.Tran
 		source = ScanSourceOperation
 	}
 
-	name := tr.T(locale, r.Details.Name, nil)
-	if r.Type == readmodels.LocationTypeUserBase && r.BaseID > 0 {
-		name = fmt.Sprintf("%s #%d", name, r.BaseID)
-	}
-
 	return SectorDTO{
 		Coordinates:  Vector2iFromReadModel(r.Coordinates),
 		Type:         sectorTypeFromLocation(r.Type),
-		Name:         name,
+		Name:         tr.T(locale, r.Details.Name, nil),
 		Description:  tr.T(locale, r.Details.Description, nil),
 		ImageURL:     r.Details.ImageURL,
 		ScanDate:     int(r.CreatedAt),

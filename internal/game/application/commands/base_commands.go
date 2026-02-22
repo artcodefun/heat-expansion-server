@@ -47,11 +47,11 @@ func (c *BaseCommands) CreateBase(ctx cqrs.CommandContext, userID uuid.UUID) err
 
 		const maxAttempts = 10
 		for attempt := 0; attempt < maxAttempts; attempt++ {
-			occupied, err := sRepo.ListOccupiedCoordinates()
+			occupiedCoordinates, err := sRepo.ListOccupiedCoordinates()
 			if err != nil {
 				return repoErr(err)
 			}
-			x, y := c.basePlacement.FindFreeChunkForBase(occupied)
+			x, y := c.basePlacement.FindFreeChunkForBase(occupiedCoordinates)
 			base := domain.NewUserBaseModel(0, userID, domain.Vector2i{X: x, Y: y})
 
 			// Add starter buildings and units via domain logic

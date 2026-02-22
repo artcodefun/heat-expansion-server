@@ -53,9 +53,9 @@ func NewWorldGenerationCommands(
 		Provisioner:          provisioner,
 		Scheduler:            scheduler,
 		TxMgr:                txMgr,
-		SpawnRadius:          10,
-		MaxResourcefulNearby: 12,
-		MaxDangerousNearby:   6,
+		SpawnRadius:          7,
+		MaxResourcefulNearby: 10,
+		MaxDangerousNearby:   3,
 		RespawnPeriodSeconds: 3600,
 		SpawnAttemptsPerJob:  20,
 	}
@@ -157,7 +157,7 @@ func (c *WorldGenerationCommands) HandleSpawnNearbyLocationsJob(job ports.SpawnN
 			}
 			faction := dangFactions[r.Intn(len(dangFactions))]
 
-			worth := int(float64(1000+r.Intn(2000)) * scaleFactor)
+			worth := int(float64(2000+r.Intn(3000)) * scaleFactor)
 			loc := domain.NewDangerousLocation(
 				tSector.Coordinates,
 				faction,
