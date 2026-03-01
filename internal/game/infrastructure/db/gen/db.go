@@ -141,9 +141,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getNextScheduledJobStmt, err = db.PrepareContext(ctx, getNextScheduledJob); err != nil {
 		return nil, fmt.Errorf("error preparing query GetNextScheduledJob: %w", err)
 	}
-	if q.getPendingScheduledJobByKindPayloadStmt, err = db.PrepareContext(ctx, getPendingScheduledJobByKindPayload); err != nil {
-		return nil, fmt.Errorf("error preparing query GetPendingScheduledJobByKindPayload: %w", err)
-	}
 	if q.getRadarThreatStmt, err = db.PrepareContext(ctx, getRadarThreat); err != nil {
 		return nil, fmt.Errorf("error preparing query GetRadarThreat: %w", err)
 	}
@@ -275,9 +272,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.listUsersStmt, err = db.PrepareContext(ctx, listUsers); err != nil {
 		return nil, fmt.Errorf("error preparing query ListUsers: %w", err)
-	}
-	if q.lockScheduledJobsTableStmt, err = db.PrepareContext(ctx, lockScheduledJobsTable); err != nil {
-		return nil, fmt.Errorf("error preparing query LockScheduledJobsTable: %w", err)
 	}
 	if q.markAllAlertsAsReadStmt, err = db.PrepareContext(ctx, markAllAlertsAsRead); err != nil {
 		return nil, fmt.Errorf("error preparing query MarkAllAlertsAsRead: %w", err)
@@ -518,11 +512,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getNextScheduledJobStmt: %w", cerr)
 		}
 	}
-	if q.getPendingScheduledJobByKindPayloadStmt != nil {
-		if cerr := q.getPendingScheduledJobByKindPayloadStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getPendingScheduledJobByKindPayloadStmt: %w", cerr)
-		}
-	}
 	if q.getRadarThreatStmt != nil {
 		if cerr := q.getRadarThreatStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getRadarThreatStmt: %w", cerr)
@@ -743,11 +732,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listUsersStmt: %w", cerr)
 		}
 	}
-	if q.lockScheduledJobsTableStmt != nil {
-		if cerr := q.lockScheduledJobsTableStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing lockScheduledJobsTableStmt: %w", cerr)
-		}
-	}
 	if q.markAllAlertsAsReadStmt != nil {
 		if cerr := q.markAllAlertsAsReadStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing markAllAlertsAsReadStmt: %w", cerr)
@@ -891,7 +875,6 @@ type Queries struct {
 	getMilitaryOperationByIDStmt              *sql.Stmt
 	getMilitaryOperationByIDForUpdateStmt     *sql.Stmt
 	getNextScheduledJobStmt                   *sql.Stmt
-	getPendingScheduledJobByKindPayloadStmt   *sql.Stmt
 	getRadarThreatStmt                        *sql.Stmt
 	getRadarThreatByOperationIDStmt           *sql.Stmt
 	getResourceLocationByIDStmt               *sql.Stmt
@@ -936,7 +919,6 @@ type Queries struct {
 	listStoragePrototypesStmt                 *sql.Stmt
 	listTechPrototypesStmt                    *sql.Stmt
 	listUsersStmt                             *sql.Stmt
-	lockScheduledJobsTableStmt                *sql.Stmt
 	markAllAlertsAsReadStmt                   *sql.Stmt
 	markOutboxEventPublishedStmt              *sql.Stmt
 	markScheduledJobDispatchedStmt            *sql.Stmt
@@ -995,7 +977,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getMilitaryOperationByIDStmt:              q.getMilitaryOperationByIDStmt,
 		getMilitaryOperationByIDForUpdateStmt:     q.getMilitaryOperationByIDForUpdateStmt,
 		getNextScheduledJobStmt:                   q.getNextScheduledJobStmt,
-		getPendingScheduledJobByKindPayloadStmt:   q.getPendingScheduledJobByKindPayloadStmt,
 		getRadarThreatStmt:                        q.getRadarThreatStmt,
 		getRadarThreatByOperationIDStmt:           q.getRadarThreatByOperationIDStmt,
 		getResourceLocationByIDStmt:               q.getResourceLocationByIDStmt,
@@ -1040,7 +1021,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listStoragePrototypesStmt:                 q.listStoragePrototypesStmt,
 		listTechPrototypesStmt:                    q.listTechPrototypesStmt,
 		listUsersStmt:                             q.listUsersStmt,
-		lockScheduledJobsTableStmt:                q.lockScheduledJobsTableStmt,
 		markAllAlertsAsReadStmt:                   q.markAllAlertsAsReadStmt,
 		markOutboxEventPublishedStmt:              q.markOutboxEventPublishedStmt,
 		markScheduledJobDispatchedStmt:            q.markScheduledJobDispatchedStmt,

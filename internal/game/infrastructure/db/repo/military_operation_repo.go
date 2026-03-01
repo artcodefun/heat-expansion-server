@@ -26,8 +26,8 @@ func (r *MilitaryOperationRepo) Tx(tx ports.Transaction) ports.MilitaryOperation
 	return r
 }
 
-func (r *MilitaryOperationRepo) Create(op *domain.MilitaryOperation) error {
-	id, err := r.q.InsertMilitaryOperation(context.Background(), mappers.InsertMilitaryOperationParamsFromDomain(op))
+func (r *MilitaryOperationRepo) Create(ctx context.Context, op *domain.MilitaryOperation) error {
+	id, err := r.q.InsertMilitaryOperation(ctx, mappers.InsertMilitaryOperationParamsFromDomain(op))
 	if err != nil {
 		return err
 	}
@@ -35,8 +35,8 @@ func (r *MilitaryOperationRepo) Create(op *domain.MilitaryOperation) error {
 	return nil
 }
 
-func (r *MilitaryOperationRepo) FindByID(id int) (*domain.MilitaryOperation, error) {
-	row, err := r.q.GetMilitaryOperationByID(context.Background(), int64(id))
+func (r *MilitaryOperationRepo) FindByID(ctx context.Context, id int) (*domain.MilitaryOperation, error) {
+	row, err := r.q.GetMilitaryOperationByID(ctx, int64(id))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ports.ErrNotFound
@@ -46,8 +46,8 @@ func (r *MilitaryOperationRepo) FindByID(id int) (*domain.MilitaryOperation, err
 	return mappers.MilitaryOperationFromDB(row), nil
 }
 
-func (r *MilitaryOperationRepo) FindByIDForUpdate(id int) (*domain.MilitaryOperation, error) {
-	row, err := r.q.GetMilitaryOperationByIDForUpdate(context.Background(), int64(id))
+func (r *MilitaryOperationRepo) FindByIDForUpdate(ctx context.Context, id int) (*domain.MilitaryOperation, error) {
+	row, err := r.q.GetMilitaryOperationByIDForUpdate(ctx, int64(id))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ports.ErrNotFound
@@ -57,10 +57,10 @@ func (r *MilitaryOperationRepo) FindByIDForUpdate(id int) (*domain.MilitaryOpera
 	return mappers.MilitaryOperationFromDB(row), nil
 }
 
-func (r *MilitaryOperationRepo) Update(op *domain.MilitaryOperation) error {
-	return r.q.UpdateMilitaryOperation(context.Background(), mappers.UpdateMilitaryOperationParamsFromDomain(op))
+func (r *MilitaryOperationRepo) Update(ctx context.Context, op *domain.MilitaryOperation) error {
+	return r.q.UpdateMilitaryOperation(ctx, mappers.UpdateMilitaryOperationParamsFromDomain(op))
 }
 
-func (r *MilitaryOperationRepo) Delete(id int) error {
-	return r.q.DeleteMilitaryOperation(context.Background(), int64(id))
+func (r *MilitaryOperationRepo) Delete(ctx context.Context, id int) error {
+	return r.q.DeleteMilitaryOperation(ctx, int64(id))
 }

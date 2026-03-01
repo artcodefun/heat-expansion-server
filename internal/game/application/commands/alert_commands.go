@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"log"
 	"time"
 
@@ -24,14 +25,14 @@ func NewAlertCommands(repo ports.AlertRepository, access *services.AccessControl
 	}
 }
 
-func (c *AlertCommands) MarkAllAsRead(baseID int, userID uuid.UUID) error {
-	if err := c.Access.EnsureBaseOwnership(userID, baseID); err != nil {
+func (c *AlertCommands) MarkAllAsRead(ctx context.Context, baseID int, userID uuid.UUID) error {
+	if err := c.Access.EnsureBaseOwnership(ctx, userID, baseID); err != nil {
 		return err
 	}
-	return c.AlertRepo.MarkAllAsRead(baseID)
+	return c.AlertRepo.MarkAllAsRead(ctx, baseID)
 }
 
-func (c *AlertCommands) HandleActivityCreatedEvent(e domain.ActivityCreatedEvent) error {
+func (c *AlertCommands) HandleActivityCreatedEvent(ctx context.Context, e domain.ActivityCreatedEvent) error {
 	var kind domain.AlertKind
 	var title, content string
 	var ttl time.Duration = 24 * 3 * time.Hour // 3 days default
@@ -60,13 +61,13 @@ func (c *AlertCommands) HandleActivityCreatedEvent(e domain.ActivityCreatedEvent
 		return nil // No alert for other kinds
 	}
 
-	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
+	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		repo := c.AlertRepo.Tx(tx)
-		if exists, _ := repo.ExistsForActivity(e.ActivityID); exists {
+		if exists, _ := repo.ExistsForActivity(ctx, e.ActivityID); exists {
 			return nil
 		}
 		alert := domain.NewAlert(e.BaseID, &e.ActivityID, kind, title, content, ttl)
-		err := repo.Create(alert)
+		err := repo.Create(ctx, alert)
 		if err != nil {
 			log.Printf("Failed to create alert for activity %s: %v", e.ActivityID, err)
 		}

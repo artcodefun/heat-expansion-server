@@ -1,14 +1,11 @@
 package cqrs
 
-import "github.com/google/uuid"
-
-// CommandContext carries caller identity & auth scope for mutations.
-type CommandContext struct {
-	AccountID uuid.UUID
-}
+import (
+	"context"
+)
 
 // AccountCommands defines the available command actions for the account aggregate.
 type AccountCommands interface {
-	RegisterAccount(ctx CommandContext, name, email, password string) error
-	Login(ctx CommandContext, email, password string) (string, error)
+	RegisterAccount(ctx context.Context, actor Actor, name, email, password string) error
+	Login(ctx context.Context, actor Actor, email, password string) (string, error)
 }

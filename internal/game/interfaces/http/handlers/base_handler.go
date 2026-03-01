@@ -26,8 +26,8 @@ func (h *BaseHandler) GetBaseStatus(c *gin.Context) {
 		return
 	}
 
-	ctx := queryCtx(c)
-	stats, err := h.queries.GetBaseStats(ctx, req.Uri.BaseID)
+	actor := actor(c)
+	stats, err := h.queries.GetBaseStats(c.Request.Context(), actor, req.Uri.BaseID)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
@@ -38,8 +38,8 @@ func (h *BaseHandler) GetBaseStatus(c *gin.Context) {
 
 // CreateBase handles POST /bases.
 func (h *BaseHandler) CreateBase(c *gin.Context) {
-	ctx := commandCtx(c)
-	if err := h.commands.CreateBase(ctx, ctx.UserID); handleCoreErr(c, h.translator, err) {
+	actor := actor(c)
+	if err := h.commands.CreateBase(c.Request.Context(), actor, actor.UserID); handleCoreErr(c, h.translator, err) {
 		return
 	}
 
@@ -48,8 +48,8 @@ func (h *BaseHandler) CreateBase(c *gin.Context) {
 
 // ListUserBases handles GET /bases (list bases owned by the authenticated user).
 func (h *BaseHandler) ListUserBases(c *gin.Context) {
-	ctx := queryCtx(c)
-	bases, err := h.queries.ListUserBases(ctx)
+	actor := actor(c)
+	bases, err := h.queries.ListUserBases(c.Request.Context(), actor)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}

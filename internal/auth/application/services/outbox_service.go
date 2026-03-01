@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"time"
 
 	"github.com/artcodefun/heat-expansion-server/internal/auth/application/ports"
@@ -21,15 +22,15 @@ func NewOutboxService(outbox ports.OutboxEventRepository, publisher ports.EventP
 // ProcessBatch claims up to the given limit of unpublished events,
 // publishes them via the EventPublisher, and marks successfully published
 // events as published.
-func (s *OutboxService) ProcessBatch(limit int) error {
+func (s *OutboxService) ProcessBatch(ctx context.Context, limit int) error {
 	if limit <= 0 {
 		limit = 100
 	}
 
-	return s.TxMgr.WithTx(func(tx ports.Transaction) error {
+	return s.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		repo := s.Outbox.Tx(tx)
 
-		events, err := repo.ClaimUnpublished(limit)
+		events, err := repo.ClaimUnpublished(ctx, limit)
 		if err != nil {
 			return err
 		}
@@ -39,12 +40,12 @@ func (s *OutboxService) ProcessBatch(limit int) error {
 
 		now := time.Now().Unix()
 		for _, evt := range events {
-			if err := s.Publisher.Publish(evt); err != nil {
+			if err := s.Publisher.Publish(ctx, evt); err != nil {
 				// If publishing fails, skip marking this event as published
 				continue
 			}
 
-			if err := repo.MarkPublished(evt.ID(), now); err != nil {
+			if err := repo.MarkPublished(ctx, evt.ID(), now); err != nil {
 				return err
 			}
 		}

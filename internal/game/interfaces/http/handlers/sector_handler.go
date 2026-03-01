@@ -27,8 +27,8 @@ func (h *SectorHandler) GetScansNear(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := queryCtx(c)
-	reports, err := h.queries.GetScansNear(ctx, req.Uri.BaseID, req.Query.CenterX, req.Query.CenterY, req.Query.Radius)
+	actor := actor(c)
+	reports, err := h.queries.GetScansNear(c.Request.Context(), actor, req.Uri.BaseID, req.Query.CenterX, req.Query.CenterY, req.Query.Radius)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
@@ -41,8 +41,8 @@ func (h *SectorHandler) GetScanByID(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := queryCtx(c)
-	report, err := h.queries.GetScanReportByID(ctx, req.Uri.BaseID, req.Uri.ID)
+	actor := actor(c)
+	report, err := h.queries.GetScanReportByID(c.Request.Context(), actor, req.Uri.BaseID, req.Uri.ID)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
@@ -55,8 +55,8 @@ func (h *SectorHandler) GetLatestScanBefore(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := queryCtx(c)
-	report, err := h.queries.GetLatestScanBefore(ctx, req.Uri.BaseID, req.Query.X, req.Query.Y, req.Query.Before)
+	actor := actor(c)
+	report, err := h.queries.GetLatestScanBefore(c.Request.Context(), actor, req.Uri.BaseID, req.Query.X, req.Query.Y, req.Query.Before)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}

@@ -29,8 +29,8 @@ func (h *AlertHandler) ListActive(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := queryCtx(c)
-	alerts, err := h.queries.ListActiveAlerts(ctx, req.Uri.BaseID)
+	actor := actor(c)
+	alerts, err := h.queries.ListActiveAlerts(c.Request.Context(), actor, req.Uri.BaseID)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
@@ -43,8 +43,8 @@ func (h *AlertHandler) GetUnreadCount(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := queryCtx(c)
-	count, err := h.queries.GetUnreadAlertsCount(ctx, req.Uri.BaseID)
+	actor := actor(c)
+	count, err := h.queries.GetUnreadAlertsCount(c.Request.Context(), actor, req.Uri.BaseID)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
@@ -57,8 +57,8 @@ func (h *AlertHandler) MarkAllAsRead(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := commandCtx(c)
-	err := h.commands.MarkAllAsRead(req.Uri.BaseID, ctx.UserID)
+	actor := actor(c)
+	err := h.commands.MarkAllAsRead(c.Request.Context(), req.Uri.BaseID, actor.UserID)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}

@@ -1,5 +1,7 @@
 package ports
 
+import "context"
+
 // Transaction is an opaque handle representing a database transaction.
 // IMPORTANT: Commit/Rollback are intentionally NOT exposed here. The lifecycle
 // (begin/commit/rollback) is owned by the TransactionManager.WithTx implementation.
@@ -16,14 +18,14 @@ type Transaction interface{}
 // - If fn returns error or panics: ROLLBACK (re-panics after rollback)
 // This keeps commit/rollback out of application code and prevents misuse.
 //
-// Usage pattern in use cases (MVP without context):
+// Usage pattern in use cases:
 //
-//	TxMgr.WithTx(func(tx Transaction) error {
+//	TxMgr.WithTx(ctx, func(tx Transaction) error {
 //	    baseRepo := userBaseRepo.Tx(tx)
 //	    if err := baseRepo.Update(base); err != nil { return err }
 //	    // enqueue outbox, etc.
 //	    return nil
 //	})
 type TransactionManager interface {
-	WithTx(fn func(tx Transaction) error) error
+	WithTx(ctx context.Context, fn func(tx Transaction) error) error
 }

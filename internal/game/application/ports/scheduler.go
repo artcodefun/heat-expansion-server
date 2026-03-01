@@ -1,6 +1,10 @@
 package ports
 
-import "github.com/google/uuid"
+import (
+	"context"
+
+	"github.com/google/uuid"
+)
 
 // MoveBuildQueueJob is a serializable domain job to move the build queue forward.
 type MoveBuildQueueJob struct {
@@ -66,5 +70,5 @@ type SchadulableJob any
 // Scheduler defines the interface for scheduling domain actions at a future time.
 type Scheduler interface {
 	// Schedule schedules a domain job (payload struct) to be executed at the specified Unix timestamp.
-	Schedule(job SchadulableJob, executeAt int64) error
+	Schedule(ctx context.Context, job SchadulableJob, executeAt int64) error
 }

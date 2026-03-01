@@ -25,8 +25,8 @@ func (r *UserRepo) Tx(tx ports.Transaction) ports.UserRepository {
 	return r
 }
 
-func (r *UserRepo) Create(user *domain.User) error {
-	err := r.q.InsertUser(context.Background(), gen.InsertUserParams{
+func (r *UserRepo) Create(ctx context.Context, user *domain.User) error {
+	err := r.q.InsertUser(ctx, gen.InsertUserParams{
 		ID:       user.ID,
 		Name:     user.Name,
 		Crystals: int32(user.Crystals),
@@ -34,8 +34,8 @@ func (r *UserRepo) Create(user *domain.User) error {
 	return err
 }
 
-func (r *UserRepo) FindByID(id uuid.UUID) (*domain.User, error) {
-	u, err := r.q.GetUserByID(context.Background(), id)
+func (r *UserRepo) FindByID(ctx context.Context, id uuid.UUID) (*domain.User, error) {
+	u, err := r.q.GetUserByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ports.ErrNotFound
@@ -46,13 +46,13 @@ func (r *UserRepo) FindByID(id uuid.UUID) (*domain.User, error) {
 }
 
 // FindByIDForUpdate uses a FOR UPDATE lock. Requires a transaction-bound repo.
-func (r *UserRepo) FindByIDForUpdate(id uuid.UUID) (*domain.User, error) {
+func (r *UserRepo) FindByIDForUpdate(ctx context.Context, id uuid.UUID) (*domain.User, error) {
 	// sqlc does not generate a FOR UPDATE variant yet; placeholder for future query.
-	return r.FindByID(id)
+	return r.FindByID(ctx, id)
 }
 
-func (r *UserRepo) Update(user *domain.User) error {
-	err := r.q.UpdateUser(context.Background(), gen.UpdateUserParams{
+func (r *UserRepo) Update(ctx context.Context, user *domain.User) error {
+	err := r.q.UpdateUser(ctx, gen.UpdateUserParams{
 		ID:       user.ID,
 		Name:     user.Name,
 		Crystals: int32(user.Crystals),
@@ -60,7 +60,7 @@ func (r *UserRepo) Update(user *domain.User) error {
 	return err
 }
 
-func (r *UserRepo) Delete(id uuid.UUID) error {
+func (r *UserRepo) Delete(_ context.Context, id uuid.UUID) error {
 	// No delete query defined yet; placeholder error to avoid silent omission.
 	return errors.New("Delete not implemented for users")
 }

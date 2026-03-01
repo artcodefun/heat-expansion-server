@@ -25,10 +25,10 @@ func (h *BuildingHandler) ListNew(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := queryCtx(c)
+	actor := actor(c)
 
 	category := dtos.BuildCategoryFromDTO(req.Query.Category)
-	items, err := h.queries.ListNewBuildItems(ctx, req.Uri.BaseID, category)
+	items, err := h.queries.ListNewBuildItems(c.Request.Context(), actor, req.Uri.BaseID, category)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
@@ -43,10 +43,10 @@ func (h *BuildingHandler) ListPending(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := queryCtx(c)
+	actor := actor(c)
 
 	category := dtos.BuildCategoryFromDTO(req.Query.Category)
-	items, err := h.queries.ListPendingBuildItems(ctx, req.Uri.BaseID, category)
+	items, err := h.queries.ListPendingBuildItems(c.Request.Context(), actor, req.Uri.BaseID, category)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
@@ -61,10 +61,10 @@ func (h *BuildingHandler) ListInProduction(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := queryCtx(c)
+	actor := actor(c)
 
 	category := dtos.BuildCategoryFromDTO(req.Query.Category)
-	items, err := h.queries.ListInProductionBuildItems(ctx, req.Uri.BaseID, category)
+	items, err := h.queries.ListInProductionBuildItems(c.Request.Context(), actor, req.Uri.BaseID, category)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
@@ -79,10 +79,10 @@ func (h *BuildingHandler) ListPresent(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := queryCtx(c)
+	actor := actor(c)
 
 	category := dtos.BuildCategoryFromDTO(req.Query.Category)
-	items, err := h.queries.ListPresentBuildItems(ctx, req.Uri.BaseID, category)
+	items, err := h.queries.ListPresentBuildItems(c.Request.Context(), actor, req.Uri.BaseID, category)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
@@ -98,8 +98,8 @@ func (h *BuildingHandler) Queue(c *gin.Context) {
 		return
 	}
 
-	ctx := commandCtx(c)
-	if err := h.commands.QueueBuilding(ctx, req.Uri.BaseID, req.Body.PrototypeID); handleCoreErr(c, h.translator, err) {
+	actor := actor(c)
+	if err := h.commands.QueueBuilding(c.Request.Context(), actor, req.Uri.BaseID, req.Body.PrototypeID); handleCoreErr(c, h.translator, err) {
 		return
 	}
 
@@ -113,8 +113,8 @@ func (h *BuildingHandler) SpeedUpProduction(c *gin.Context) {
 		return
 	}
 
-	ctx := commandCtx(c)
-	if err := h.commands.SpeedUpProductionWithCrystals(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
+	actor := actor(c)
+	if err := h.commands.SpeedUpProductionWithCrystals(c.Request.Context(), actor, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
 		return
 	}
 
@@ -128,8 +128,8 @@ func (h *BuildingHandler) CancelPending(c *gin.Context) {
 		return
 	}
 
-	ctx := commandCtx(c)
-	if err := h.commands.CancelPendingBuilding(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
+	actor := actor(c)
+	if err := h.commands.CancelPendingBuilding(c.Request.Context(), actor, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
 		return
 	}
 
@@ -143,8 +143,8 @@ func (h *BuildingHandler) DeletePresent(c *gin.Context) {
 		return
 	}
 
-	ctx := commandCtx(c)
-	if err := h.commands.DeletePresentBuilding(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
+	actor := actor(c)
+	if err := h.commands.DeletePresentBuilding(c.Request.Context(), actor, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
 		return
 	}
 

@@ -32,11 +32,11 @@ func NewWorkers(
 				case <-ctx.Done():
 					return
 				case <-ticker.C:
-					if err := outbox.ProcessBatch(100); err != nil {
+					if err := outbox.ProcessBatch(ctx, 100); err != nil {
 						slog.Error("auth outbox dispatch failed", "error", err.Error())
 					}
 				case <-signalChan:
-					if err := outbox.ProcessBatch(100); err != nil {
+					if err := outbox.ProcessBatch(ctx, 100); err != nil {
 						slog.Error("auth outbox dispatch failed", "error", err.Error())
 					}
 				}
@@ -54,11 +54,11 @@ func NewWorkers(
 				case <-ctx.Done():
 					return
 				case <-ticker.C:
-					if err := intOutbox.ProcessBatch(100); err != nil {
+					if err := intOutbox.ProcessBatch(ctx, 100); err != nil {
 						slog.Error("auth integration outbox dispatch failed", "error", err.Error())
 					}
 				case <-signalChan:
-					if err := intOutbox.ProcessBatch(100); err != nil {
+					if err := intOutbox.ProcessBatch(ctx, 100); err != nil {
 						slog.Error("auth integration outbox dispatch failed", "error", err.Error())
 					}
 				}

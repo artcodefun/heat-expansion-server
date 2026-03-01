@@ -12,11 +12,11 @@ type BuildReadRepo struct{ q *gen.Queries }
 
 func NewBuildReadRepo(q *gen.Queries) *BuildReadRepo { return &BuildReadRepo{q: q} }
 
-func (r *BuildReadRepo) ListNewBuildItemsByPrototypeIDs(ids []int) ([]*readmodels.BuildItemNew, error) {
+func (r *BuildReadRepo) ListNewBuildItemsByPrototypeIDs(ctx context.Context, ids []int) ([]*readmodels.BuildItemNew, error) {
 	if len(ids) == 0 {
 		return []*readmodels.BuildItemNew{}, nil
 	}
-	rows, err := r.q.ListBuildPrototypesByIDs(context.Background(), mappers.IdsToInt64(ids))
+	rows, err := r.q.ListBuildPrototypesByIDs(ctx, mappers.IdsToInt64(ids))
 	if err != nil {
 		return nil, err
 	}
@@ -28,8 +28,8 @@ func (r *BuildReadRepo) ListNewBuildItemsByPrototypeIDs(ids []int) ([]*readmodel
 	return out, nil
 }
 
-func (r *BuildReadRepo) ListPendingBuildItems(baseID int, category readmodels.BuildCategory) ([]*readmodels.BuildItemPending, error) {
-	rs, err := r.q.ListPendingBuildItems(context.Background(), gen.ListPendingBuildItemsParams{BaseID: int64(baseID), Category: string(category)})
+func (r *BuildReadRepo) ListPendingBuildItems(ctx context.Context, baseID int, category readmodels.BuildCategory) ([]*readmodels.BuildItemPending, error) {
+	rs, err := r.q.ListPendingBuildItems(ctx, gen.ListPendingBuildItemsParams{BaseID: int64(baseID), Category: string(category)})
 	if err != nil {
 		return nil, err
 	}
@@ -41,8 +41,8 @@ func (r *BuildReadRepo) ListPendingBuildItems(baseID int, category readmodels.Bu
 	return out, nil
 }
 
-func (r *BuildReadRepo) ListInProductionBuildItems(baseID int, category readmodels.BuildCategory) ([]*readmodels.BuildItemInProduction, error) {
-	rows, err := r.q.ListInProductionBuildItems(context.Background(), gen.ListInProductionBuildItemsParams{BaseID: int64(baseID), Category: string(category)})
+func (r *BuildReadRepo) ListInProductionBuildItems(ctx context.Context, baseID int, category readmodels.BuildCategory) ([]*readmodels.BuildItemInProduction, error) {
+	rows, err := r.q.ListInProductionBuildItems(ctx, gen.ListInProductionBuildItemsParams{BaseID: int64(baseID), Category: string(category)})
 	if err != nil {
 		return nil, err
 	}
@@ -54,8 +54,8 @@ func (r *BuildReadRepo) ListInProductionBuildItems(baseID int, category readmode
 	return out, nil
 }
 
-func (r *BuildReadRepo) ListPresentBuildItems(baseID int, category readmodels.BuildCategory) ([]*readmodels.BuildItemPresent, error) {
-	rows, err := r.q.ListPresentBuildItems(context.Background(), gen.ListPresentBuildItemsParams{BaseID: int64(baseID), Category: string(category)})
+func (r *BuildReadRepo) ListPresentBuildItems(ctx context.Context, baseID int, category readmodels.BuildCategory) ([]*readmodels.BuildItemPresent, error) {
+	rows, err := r.q.ListPresentBuildItems(ctx, gen.ListPresentBuildItemsParams{BaseID: int64(baseID), Category: string(category)})
 	if err != nil {
 		return nil, err
 	}

@@ -18,15 +18,15 @@ func NewIntegrationProducerService(outbox ports.IntegrationOutboxRepository, txM
 	return &IntegrationProducerService{outbox: outbox, txMgr: txMgr}
 }
 
-func (s *IntegrationProducerService) HandleAccountRegistered(ev domain.AccountRegisteredEvent) error {
-	return s.txMgr.WithTx(func(tx ports.Transaction) error {
+func (s *IntegrationProducerService) HandleAccountRegistered(ctx context.Context, ev domain.AccountRegisteredEvent) error {
+	return s.txMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		outbox := s.outbox.Tx(tx)
 
 		originID := ev.ID()
 		eventType := v1.EventAccountRegisteredV1
 
 		// Check idempotency
-		exists, err := outbox.Exists(context.Background(), originID, eventType)
+		exists, err := outbox.Exists(ctx, originID, eventType)
 		if err != nil {
 			return err
 		}
@@ -43,6 +43,6 @@ func (s *IntegrationProducerService) HandleAccountRegistered(ev domain.AccountRe
 				Email:  ev.Email,
 			},
 		)
-		return outbox.Save(context.Background(), integrationEvent)
+		return outbox.Save(ctx, integrationEvent)
 	})
 }

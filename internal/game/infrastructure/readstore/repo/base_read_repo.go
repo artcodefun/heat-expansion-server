@@ -18,8 +18,8 @@ type BaseReadRepo struct{ q *gen.Queries }
 
 func NewBaseReadRepo(q *gen.Queries) *BaseReadRepo { return &BaseReadRepo{q: q} }
 
-func (r *BaseReadRepo) GetBaseStats(baseID int) (*readmodels.UserBaseStats, error) {
-	row, err := r.q.GetBaseStats(context.Background(), int64(baseID))
+func (r *BaseReadRepo) GetBaseStats(ctx context.Context, baseID int) (*readmodels.UserBaseStats, error) {
+	row, err := r.q.GetBaseStats(ctx, int64(baseID))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ports.ErrNotFound
@@ -34,8 +34,8 @@ func (r *BaseReadRepo) GetBaseStats(baseID int) (*readmodels.UserBaseStats, erro
 	return &domainStats, nil
 }
 
-func (r *BaseReadRepo) ListUserBases(userID uuid.UUID) ([]*readmodels.UserBaseModel, error) {
-	rows, err := r.q.ListUserBases(context.Background(), userID)
+func (r *BaseReadRepo) ListUserBases(ctx context.Context, userID uuid.UUID) ([]*readmodels.UserBaseModel, error) {
+	rows, err := r.q.ListUserBases(ctx, userID)
 	if err != nil {
 		return nil, err
 	}

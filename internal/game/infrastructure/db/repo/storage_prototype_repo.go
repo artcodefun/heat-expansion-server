@@ -26,12 +26,12 @@ func (r *StoragePrototypeRepo) Tx(tx ports.Transaction) ports.StoragePrototypeRe
 	return r
 }
 
-func (r *StoragePrototypeRepo) CreatePrototype(proto *domain.StorageItemPrototype) error {
+func (r *StoragePrototypeRepo) CreatePrototype(_ context.Context, proto *domain.StorageItemPrototype) error {
 	return errors.New("CreatePrototype not implemented for storage prototypes (read-only in this service)")
 }
 
-func (r *StoragePrototypeRepo) FindPrototypeByID(id int) (*domain.StorageItemPrototype, error) {
-	p, err := r.q.GetStoragePrototypeByID(context.Background(), int64(id))
+func (r *StoragePrototypeRepo) FindPrototypeByID(ctx context.Context, id int) (*domain.StorageItemPrototype, error) {
+	p, err := r.q.GetStoragePrototypeByID(ctx, int64(id))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ports.ErrNotFound
@@ -41,18 +41,18 @@ func (r *StoragePrototypeRepo) FindPrototypeByID(id int) (*domain.StorageItemPro
 	return mappers.StoragePrototypeFromDB(p), nil
 }
 
-func (r *StoragePrototypeRepo) FindAllPrototypes() ([]*domain.StorageItemPrototype, error) {
-	rows, err := r.q.ListStoragePrototypes(context.Background())
+func (r *StoragePrototypeRepo) FindAllPrototypes(ctx context.Context) ([]*domain.StorageItemPrototype, error) {
+	rows, err := r.q.ListStoragePrototypes(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return mappers.StoragePrototypesFromDB(rows), nil
 }
 
-func (r *StoragePrototypeRepo) UpdatePrototype(proto *domain.StorageItemPrototype) error {
+func (r *StoragePrototypeRepo) UpdatePrototype(_ context.Context, proto *domain.StorageItemPrototype) error {
 	return errors.New("UpdatePrototype not implemented for storage prototypes (read-only in this service)")
 }
 
-func (r *StoragePrototypeRepo) DeletePrototype(id int) error {
+func (r *StoragePrototypeRepo) DeletePrototype(_ context.Context, id int) error {
 	return errors.New("DeletePrototype not implemented for storage prototypes (read-only in this service)")
 }

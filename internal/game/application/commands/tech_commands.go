@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"context"
+
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
@@ -23,28 +25,28 @@ func NewTechCommands(baseRepo ports.UserBaseRepository, techRepo ports.TechProto
 	return &TechCommands{BaseRepo: baseRepo, TechRepo: techRepo, UserRepo: userRepo, crystalService: domain.NewCrystalSpendingService(), Outbox: outbox, Scheduler: scheduler, TxMgr: txMgr, Access: access}
 }
 
-func (c *TechCommands) StartTechResearch(ctx cqrs.CommandContext, baseID int, prototypeID int) error {
-	if err := c.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+func (c *TechCommands) StartTechResearch(ctx context.Context, actor cqrs.Actor, baseID int, prototypeID int) error {
+	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}
-	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
+	err := c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		bRepo := c.BaseRepo.Tx(tx)
 		tRepo := c.TechRepo.Tx(tx)
-		base, err := bRepo.FindByIDForUpdate(baseID)
+		base, err := bRepo.FindByIDForUpdate(ctx, baseID)
 		if err != nil {
 			return repoErr(err)
 		}
-		proto, err := tRepo.FindPrototypeByID(prototypeID)
+		proto, err := tRepo.FindPrototypeByID(ctx, prototypeID)
 		if err != nil {
 			return repoErr(err)
 		}
 		if err := base.StartTechResearch(proto); err != nil {
 			return err
 		}
-		if err := bRepo.Update(base); err != nil {
+		if err := bRepo.Update(ctx, base); err != nil {
 			return err
 		}
-		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+		if err := c.Outbox.Tx(tx).Save(ctx, base.EventProducer.PullEvents()); err != nil {
 			return err
 		}
 		return nil
@@ -52,31 +54,31 @@ func (c *TechCommands) StartTechResearch(ctx cqrs.CommandContext, baseID int, pr
 	return err
 }
 
-func (c *TechCommands) SpeedUpTechResearchWithCrystals(ctx cqrs.CommandContext, baseID int, techItemID uuid.UUID) error {
-	if err := c.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+func (c *TechCommands) SpeedUpTechResearchWithCrystals(ctx context.Context, actor cqrs.Actor, baseID int, techItemID uuid.UUID) error {
+	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}
-	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
+	err := c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		bRepo := c.BaseRepo.Tx(tx)
 		uRepo := c.UserRepo.Tx(tx)
-		base, err := bRepo.FindByIDForUpdate(baseID)
+		base, err := bRepo.FindByIDForUpdate(ctx, baseID)
 		if err != nil {
 			return repoErr(err)
 		}
-		user, err := uRepo.FindByIDForUpdate(ctx.UserID)
+		user, err := uRepo.FindByIDForUpdate(ctx, actor.UserID)
 		if err != nil {
 			return repoErr(err)
 		}
 		if err := c.crystalService.SpeedUpTechResearch(user, base, techItemID); err != nil {
 			return err
 		}
-		if err := uRepo.Update(user); err != nil {
+		if err := uRepo.Update(ctx, user); err != nil {
 			return err
 		}
-		if err := bRepo.Update(base); err != nil {
+		if err := bRepo.Update(ctx, base); err != nil {
 			return err
 		}
-		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+		if err := c.Outbox.Tx(tx).Save(ctx, base.EventProducer.PullEvents()); err != nil {
 			return err
 		}
 		return nil
@@ -84,23 +86,23 @@ func (c *TechCommands) SpeedUpTechResearchWithCrystals(ctx cqrs.CommandContext, 
 	return err
 }
 
-func (c *TechCommands) HandleTechResearchStartedEvent(event *domain.TechResearchStartedEvent) error {
+func (c *TechCommands) HandleTechResearchStartedEvent(ctx context.Context, event domain.TechResearchStartedEvent) error {
 	cmd := ports.MoveTechQueueJob{BaseID: event.BaseID}
-	return c.Scheduler.Schedule(cmd, event.CompletionDate)
+	return c.Scheduler.Schedule(ctx, cmd, event.CompletionDate)
 }
 
-func (c *TechCommands) HandleMoveTechQueueJob(cmd ports.MoveTechQueueJob) error {
-	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
+func (c *TechCommands) HandleMoveTechQueueJob(ctx context.Context, cmd ports.MoveTechQueueJob) error {
+	err := c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		bRepo := c.BaseRepo.Tx(tx)
-		base, err := bRepo.FindByIDForUpdate(cmd.BaseID)
+		base, err := bRepo.FindByIDForUpdate(ctx, cmd.BaseID)
 		if err != nil {
 			return err
 		}
 		base.MoveTechQueue()
-		if err := bRepo.Update(base); err != nil {
+		if err := bRepo.Update(ctx, base); err != nil {
 			return err
 		}
-		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+		if err := c.Outbox.Tx(tx).Save(ctx, base.EventProducer.PullEvents()); err != nil {
 			return err
 		}
 		return nil

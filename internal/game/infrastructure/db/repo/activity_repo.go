@@ -23,20 +23,20 @@ func (r *ActivityRepo) Tx(tx ports.Transaction) ports.ActivityRepository {
 	return r
 }
 
-func (r *ActivityRepo) Create(item *domain.ActivityItem) error {
+func (r *ActivityRepo) Create(ctx context.Context, item *domain.ActivityItem) error {
 	params := mappers.InsertActivityParamsFromDomain(item)
-	_, err := r.q.InsertActivity(context.Background(), params)
+	_, err := r.q.InsertActivity(ctx, params)
 	return err
 }
 
-func (r *ActivityRepo) ExistsForOperation(baseID int, kind string, opID int) (bool, error) {
-	return r.q.ExistsForOperation(context.Background(), gen.ExistsForOperationParams{
+func (r *ActivityRepo) ExistsForOperation(ctx context.Context, baseID int, kind string, opID int) (bool, error) {
+	return r.q.ExistsForOperation(ctx, gen.ExistsForOperationParams{
 		BaseID: int64(baseID),
 		Kind:   kind,
 		OpID:   int64(opID),
 	})
 }
 
-func (r *ActivityRepo) ExistsForScanReport(reportID int) (bool, error) {
-	return r.q.ExistsForScanReport(context.Background(), int64(reportID))
+func (r *ActivityRepo) ExistsForScanReport(ctx context.Context, reportID int) (bool, error) {
+	return r.q.ExistsForScanReport(ctx, int64(reportID))
 }

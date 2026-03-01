@@ -27,8 +27,8 @@ func (h *RadarHandler) ListIncomingThreats(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := queryCtx(c)
-	threats, err := h.queries.ListIncomingThreats(ctx, req.Uri.BaseID)
+	actor := actor(c)
+	threats, err := h.queries.ListIncomingThreats(c.Request.Context(), actor, req.Uri.BaseID)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}

@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
@@ -45,16 +46,16 @@ func NewOperationCommands(userBaseRepo ports.UserBaseRepository, userRepo ports.
 	}
 }
 
-func (c *OperationCommands) CreateMilitaryOperation(ctx cqrs.CommandContext, opType domain.MilitaryOperationType, sourceBaseID int, targetX int, targetY int, deployments []domain.ArmyDeploymentRequest) (*domain.MilitaryOperation, error) {
-	if err := c.Access.EnsureBaseOwnership(ctx.UserID, sourceBaseID); err != nil {
+func (c *OperationCommands) CreateMilitaryOperation(ctx context.Context, actor cqrs.Actor, opType domain.MilitaryOperationType, sourceBaseID int, targetX int, targetY int, deployments []domain.ArmyDeploymentRequest) (*domain.MilitaryOperation, error) {
+	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, sourceBaseID); err != nil {
 		return nil, err
 	}
 	var createdOp *domain.MilitaryOperation
-	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
+	err := c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		bRepo := c.UserBaseRepo.Tx(tx)
 		sRepo := c.SectorRepo.Tx(tx)
 		oRepo := c.OperationRepo.Tx(tx)
-		base, err := bRepo.FindByIDForUpdate(sourceBaseID)
+		base, err := bRepo.FindByIDForUpdate(ctx, sourceBaseID)
 		if err != nil {
 			return repoErr(err)
 		}
@@ -65,11 +66,11 @@ func (c *OperationCommands) CreateMilitaryOperation(ctx cqrs.CommandContext, opT
 
 		snaps := base.ActiveStorageSnaps()
 		units := domain.MilitaryUnitsFromDeployed(readyToDeploy)
-		sourceSector, err := c.Provisioner.EnsureSectorExists(sRepo, base.Coordinates.X, base.Coordinates.Y)
+		sourceSector, err := c.Provisioner.EnsureSectorExists(ctx, sRepo, base.Coordinates.X, base.Coordinates.Y)
 		if err != nil {
 			return err
 		}
-		targetSector, err := c.Provisioner.EnsureSectorExists(sRepo, targetX, targetY)
+		targetSector, err := c.Provisioner.EnsureSectorExists(ctx, sRepo, targetX, targetY)
 		if err != nil {
 			return err
 		}
@@ -85,7 +86,7 @@ func (c *OperationCommands) CreateMilitaryOperation(ctx cqrs.CommandContext, opT
 		if opCreationErr != nil {
 			return opCreationErr
 		}
-		if err := oRepo.Create(createdOp); err != nil {
+		if err := oRepo.Create(ctx, createdOp); err != nil {
 			return err
 		}
 		for _, ready := range readyToDeploy {
@@ -93,14 +94,14 @@ func (c *OperationCommands) CreateMilitaryOperation(ctx cqrs.CommandContext, opT
 				return err
 			}
 		}
-		if err := bRepo.Update(base); err != nil {
+		if err := bRepo.Update(ctx, base); err != nil {
 			return err
 		}
 		createdOp.Start()
-		if err := oRepo.Update(createdOp); err != nil {
+		if err := oRepo.Update(ctx, createdOp); err != nil {
 			return err
 		}
-		if err := c.Outbox.Tx(tx).Save(createdOp.EventProducer.PullEvents()); err != nil {
+		if err := c.Outbox.Tx(tx).Save(ctx, createdOp.EventProducer.PullEvents()); err != nil {
 			return err
 		}
 		return nil
@@ -111,15 +112,15 @@ func (c *OperationCommands) CreateMilitaryOperation(ctx cqrs.CommandContext, opT
 	return createdOp, nil
 }
 
-func (c *OperationCommands) CancelMilitaryOperation(ctx cqrs.CommandContext, operationID int) error {
-	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
+func (c *OperationCommands) CancelMilitaryOperation(ctx context.Context, actor cqrs.Actor, operationID int) error {
+	err := c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		oRepo := c.OperationRepo.Tx(tx)
-		op, err := oRepo.FindByIDForUpdate(operationID)
+		op, err := oRepo.FindByIDForUpdate(ctx, operationID)
 		if err != nil {
 			return repoErr(err)
 		}
 
-		if err := c.Access.EnsureBaseOwnership(ctx.UserID, op.SourceBaseID); err != nil {
+		if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, op.SourceBaseID); err != nil {
 			return err
 		}
 
@@ -127,10 +128,10 @@ func (c *OperationCommands) CancelMilitaryOperation(ctx cqrs.CommandContext, ope
 			return err
 		}
 
-		if err := oRepo.Update(op); err != nil {
+		if err := oRepo.Update(ctx, op); err != nil {
 			return err
 		}
-		if err := c.Outbox.Tx(tx).Save(op.EventProducer.PullEvents()); err != nil {
+		if err := c.Outbox.Tx(tx).Save(ctx, op.EventProducer.PullEvents()); err != nil {
 			return err
 		}
 		return nil
@@ -140,22 +141,22 @@ func (c *OperationCommands) CancelMilitaryOperation(ctx cqrs.CommandContext, ope
 
 // SpeedUpOperationWithCrystals allows a user to spend crystals to fast-forward
 // an in-flight military operation (outbound or returning) to its arrival.
-func (c *OperationCommands) SpeedUpOperationWithCrystals(ctx cqrs.CommandContext, operationID int) error {
-	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
+func (c *OperationCommands) SpeedUpOperationWithCrystals(ctx context.Context, actor cqrs.Actor, operationID int) error {
+	err := c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		oRepo := c.OperationRepo.Tx(tx)
 		uRepo := c.UserRepo.Tx(tx)
 
-		op, err := oRepo.FindByIDForUpdate(operationID)
+		op, err := oRepo.FindByIDForUpdate(ctx, operationID)
 		if err != nil {
 			return repoErr(err)
 		}
 
 		// Ensure the caller owns the source base for this operation.
-		if err := c.Access.EnsureBaseOwnership(ctx.UserID, op.SourceBaseID); err != nil {
+		if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, op.SourceBaseID); err != nil {
 			return err
 		}
 
-		user, err := uRepo.FindByIDForUpdate(ctx.UserID)
+		user, err := uRepo.FindByIDForUpdate(ctx, actor.UserID)
 		if err != nil {
 			return repoErr(err)
 		}
@@ -164,13 +165,13 @@ func (c *OperationCommands) SpeedUpOperationWithCrystals(ctx cqrs.CommandContext
 			return err
 		}
 
-		if err := uRepo.Update(user); err != nil {
+		if err := uRepo.Update(ctx, user); err != nil {
 			return err
 		}
-		if err := oRepo.Update(op); err != nil {
+		if err := oRepo.Update(ctx, op); err != nil {
 			return err
 		}
-		if err := c.Outbox.Tx(tx).Save(op.EventProducer.PullEvents()); err != nil {
+		if err := c.Outbox.Tx(tx).Save(ctx, op.EventProducer.PullEvents()); err != nil {
 			return err
 		}
 		return nil
@@ -178,18 +179,18 @@ func (c *OperationCommands) SpeedUpOperationWithCrystals(ctx cqrs.CommandContext
 	return err
 }
 
-func (c *OperationCommands) HandleUpdateMilitaryOperationJob(cmd ports.UpdateMilitaryOperationJob) error {
-	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
+func (c *OperationCommands) HandleUpdateMilitaryOperationJob(ctx context.Context, cmd ports.UpdateMilitaryOperationJob) error {
+	err := c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		oRepo := c.OperationRepo.Tx(tx)
-		op, err := oRepo.FindByIDForUpdate(cmd.OperationID)
+		op, err := oRepo.FindByIDForUpdate(ctx, cmd.OperationID)
 		if err != nil {
 			return err
 		}
 		op.UpdatePhaseBasedOnTime()
-		if err := oRepo.Update(op); err != nil {
+		if err := oRepo.Update(ctx, op); err != nil {
 			return err
 		}
-		if err := c.Outbox.Tx(tx).Save(op.EventProducer.PullEvents()); err != nil {
+		if err := c.Outbox.Tx(tx).Save(ctx, op.EventProducer.PullEvents()); err != nil {
 			return err
 		}
 		return nil
@@ -197,48 +198,48 @@ func (c *OperationCommands) HandleUpdateMilitaryOperationJob(cmd ports.UpdateMil
 	return err
 }
 
-func (c *OperationCommands) HandleMilitaryOperationStartedEvent(event domain.MilitaryOperationStartedEvent) error {
-	return c.Scheduler.Schedule(ports.UpdateMilitaryOperationJob{OperationID: event.OperationID}, event.OutboundArriveAt)
+func (c *OperationCommands) HandleMilitaryOperationStartedEvent(ctx context.Context, event domain.MilitaryOperationStartedEvent) error {
+	return c.Scheduler.Schedule(ctx, ports.UpdateMilitaryOperationJob{OperationID: event.OperationID}, event.OutboundArriveAt)
 }
 
-func (c *OperationCommands) HandleMilitaryOperationArrivedEvent(event domain.MilitaryOperationArrivedEvent) error {
-	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
+func (c *OperationCommands) HandleMilitaryOperationArrivedEvent(ctx context.Context, event domain.MilitaryOperationArrivedEvent) error {
+	err := c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		oRepo := c.OperationRepo.Tx(tx)
 		sRepo := c.SectorRepo.Tx(tx)
 		bRepo := c.UserBaseRepo.Tx(tx)
 		rRepo := c.ResourceRepo.Tx(tx)
 		dRepo := c.DangerousRepo.Tx(tx)
 		srRepo := c.ScanReportRepo.Tx(tx)
-		op, err := oRepo.FindByIDForUpdate(event.OperationID)
+		op, err := oRepo.FindByIDForUpdate(ctx, event.OperationID)
 		if err != nil {
 			return err
 		}
 		if op.Phase != domain.OperationPhaseAtTarget {
 			return nil // Already handled or inconsistent state
 		}
-		sector, err := c.Provisioner.EnsureSectorExists(sRepo, op.TargetCoordinates.X, op.TargetCoordinates.Y)
+		sector, err := c.Provisioner.EnsureSectorExists(ctx, sRepo, op.TargetCoordinates.X, op.TargetCoordinates.Y)
 		if err != nil {
 			return err
 		}
-		attackerBase, err := bRepo.FindByIDForUpdate(op.SourceBaseID)
+		attackerBase, err := bRepo.FindByIDForUpdate(ctx, op.SourceBaseID)
 		if err != nil {
 			return err
 		}
 		svc := domain.NewMilitaryOperationService(op, attackerBase)
-		events, report, err := c.resolveOperationAtTarget(op, sector, svc, sRepo, bRepo, rRepo, dRepo)
+		events, report, err := c.resolveOperationAtTarget(ctx, op, sector, svc, sRepo, bRepo, rRepo, dRepo)
 		if err != nil {
 			return err
 		}
 		if report != nil {
 			report.SourceOperationID = op.ID
-			if err := srRepo.Create(report); err == nil {
+			if err := srRepo.Create(ctx, report); err == nil {
 				report.EmitCreated()
 			}
 		}
-		if err := bRepo.Update(attackerBase); err != nil {
+		if err := bRepo.Update(ctx, attackerBase); err != nil {
 			return err
 		}
-		if err := oRepo.Update(op); err != nil {
+		if err := oRepo.Update(ctx, op); err != nil {
 			return err
 		}
 		var allEvents []domain.DomainEvent
@@ -247,7 +248,7 @@ func (c *OperationCommands) HandleMilitaryOperationArrivedEvent(event domain.Mil
 		if report != nil {
 			allEvents = append(allEvents, report.EventProducer.PullEvents()...)
 		}
-		if err := c.Outbox.Tx(tx).Save(allEvents); err != nil {
+		if err := c.Outbox.Tx(tx).Save(ctx, allEvents); err != nil {
 			return err
 		}
 		return nil
@@ -258,6 +259,7 @@ func (c *OperationCommands) HandleMilitaryOperationArrivedEvent(event domain.Mil
 // resolveOperationAtTarget encapsulates location-type-specific resolution and optional scan report creation.
 // It mutates the target location through the provided repositories and returns an in-memory scan report (if any).
 func (_ *OperationCommands) resolveOperationAtTarget(
+	ctx context.Context,
 	op *domain.MilitaryOperation,
 	sector *domain.SectorModel,
 	svc domain.MilitaryOperationService,
@@ -266,7 +268,7 @@ func (_ *OperationCommands) resolveOperationAtTarget(
 	rRepo ports.ResourceLocationRepository,
 	dRepo ports.DangerousLocationRepository,
 ) ([]domain.DomainEvent, *domain.SectorScanReport, error) {
-	occType, err := sRepo.GetLocationTypeByCoordinates(sector.Coordinates.X, sector.Coordinates.Y)
+	occType, err := sRepo.GetLocationTypeByCoordinates(ctx, sector.Coordinates.X, sector.Coordinates.Y)
 	if err != nil {
 		return nil, nil, repoErr(err)
 	}
@@ -274,12 +276,12 @@ func (_ *OperationCommands) resolveOperationAtTarget(
 	var events []domain.DomainEvent
 	switch occType {
 	case domain.LocationTypeUserBase:
-		base, err := bRepo.FindByCoordinatesForUpdate(op.TargetCoordinates.X, op.TargetCoordinates.Y)
+		base, err := bRepo.FindByCoordinatesForUpdate(ctx, op.TargetCoordinates.X, op.TargetCoordinates.Y)
 		if err != nil {
 			return nil, nil, err
 		}
 		svc.ResolveAgainstUserBase(base)
-		if err := bRepo.Update(base); err != nil {
+		if err := bRepo.Update(ctx, base); err != nil {
 			return nil, nil, err
 		}
 		events = append(events, base.EventProducer.PullEvents()...)
@@ -291,12 +293,12 @@ func (_ *OperationCommands) resolveOperationAtTarget(
 			}
 		}
 	case domain.LocationTypeResourceful:
-		res, err := rRepo.FindByCoordinatesForUpdate(op.TargetCoordinates.X, op.TargetCoordinates.Y)
+		res, err := rRepo.FindByCoordinatesForUpdate(ctx, op.TargetCoordinates.X, op.TargetCoordinates.Y)
 		if err != nil {
 			return nil, nil, err
 		}
 		svc.ResolveAgainstResourceLocation(res)
-		if err := rRepo.Update(res); err != nil {
+		if err := rRepo.Update(ctx, res); err != nil {
 			return nil, nil, err
 		}
 		events = append(events, res.EventProducer.PullEvents()...)
@@ -308,12 +310,12 @@ func (_ *OperationCommands) resolveOperationAtTarget(
 			}
 		}
 	case domain.LocationTypeDangerous:
-		dl, err := dRepo.FindByCoordinatesForUpdate(op.TargetCoordinates.X, op.TargetCoordinates.Y)
+		dl, err := dRepo.FindByCoordinatesForUpdate(ctx, op.TargetCoordinates.X, op.TargetCoordinates.Y)
 		if err != nil {
 			return nil, nil, err
 		}
 		svc.ResolveAgainstDangerousLocation(dl)
-		if err := dRepo.Update(dl); err != nil {
+		if err := dRepo.Update(ctx, dl); err != nil {
 			return nil, nil, err
 		}
 		events = append(events, dl.EventProducer.PullEvents()...)
@@ -333,19 +335,19 @@ func (_ *OperationCommands) resolveOperationAtTarget(
 	return events, report, nil
 }
 
-func (c *OperationCommands) HandleMilitaryOperationReturnStartedEvent(event domain.MilitaryOperationReturnStartedEvent) error {
-	return c.Scheduler.Schedule(ports.UpdateMilitaryOperationJob{OperationID: event.OperationID}, event.ReturnArriveAt)
+func (c *OperationCommands) HandleMilitaryOperationReturnStartedEvent(ctx context.Context, event domain.MilitaryOperationReturnStartedEvent) error {
+	return c.Scheduler.Schedule(ctx, ports.UpdateMilitaryOperationJob{OperationID: event.OperationID}, event.ReturnArriveAt)
 }
 
-func (c *OperationCommands) HandleMilitaryOperationReturnArrivedEvent(event domain.MilitaryOperationReturnArrivedEvent) error {
-	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
+func (c *OperationCommands) HandleMilitaryOperationReturnArrivedEvent(ctx context.Context, event domain.MilitaryOperationReturnArrivedEvent) error {
+	err := c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		oRepo := c.OperationRepo.Tx(tx)
 		bRepo := c.UserBaseRepo.Tx(tx)
-		op, err := oRepo.FindByID(event.OperationID)
+		op, err := oRepo.FindByID(ctx, event.OperationID)
 		if err != nil {
 			return err
 		}
-		base, err := bRepo.FindByIDForUpdate(op.SourceBaseID)
+		base, err := bRepo.FindByIDForUpdate(ctx, op.SourceBaseID)
 		if err != nil {
 			return err
 		}
@@ -354,7 +356,7 @@ func (c *OperationCommands) HandleMilitaryOperationReturnArrivedEvent(event doma
 			base.CreditLoot(op.AttackResult.Loot)
 
 			if len(op.AttackResult.Trophies) > 0 {
-				protos, err := c.StorageProtos.Tx(tx).FindAllPrototypes()
+				protos, err := c.StorageProtos.Tx(tx).FindAllPrototypes(ctx)
 				if err == nil {
 					protoMap := make(map[int]domain.StorageItemPrototype, len(protos))
 					for _, p := range protos {
@@ -364,10 +366,10 @@ func (c *OperationCommands) HandleMilitaryOperationReturnArrivedEvent(event doma
 				}
 			}
 		}
-		if err := bRepo.Update(base); err != nil {
+		if err := bRepo.Update(ctx, base); err != nil {
 			return err
 		}
-		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+		if err := c.Outbox.Tx(tx).Save(ctx, base.EventProducer.PullEvents()); err != nil {
 			return err
 		}
 		return nil

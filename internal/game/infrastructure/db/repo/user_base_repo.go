@@ -25,8 +25,8 @@ func (r *UserBaseRepo) Tx(tx ports.Transaction) ports.UserBaseRepository {
 	return r
 }
 
-func (r *UserBaseRepo) Create(base *domain.UserBaseModel) error {
-	row, err := r.q.CreateBase(context.Background(), mappers.InsertBaseParamsFromDomain(base))
+func (r *UserBaseRepo) Create(ctx context.Context, base *domain.UserBaseModel) error {
+	row, err := r.q.CreateBase(ctx, mappers.InsertBaseParamsFromDomain(base))
 	if err != nil {
 		return err
 	}
@@ -37,11 +37,11 @@ func (r *UserBaseRepo) Create(base *domain.UserBaseModel) error {
 	base.Description = created.Description
 	base.ImageURL = created.ImageURL
 
-	return r.persistAllItems(base)
+	return r.persistAllItems(ctx, base)
 }
 
-func (r *UserBaseRepo) FindByID(id int) (*domain.UserBaseModel, error) {
-	row, err := r.q.GetBaseByID(context.Background(), int64(id))
+func (r *UserBaseRepo) FindByID(ctx context.Context, id int) (*domain.UserBaseModel, error) {
+	row, err := r.q.GetBaseByID(ctx, int64(id))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ports.ErrNotFound
@@ -49,12 +49,12 @@ func (r *UserBaseRepo) FindByID(id int) (*domain.UserBaseModel, error) {
 		return nil, err
 	}
 	base := mappers.UserBaseFromDB(row)
-	_ = r.hydrateBase(base)
+	_ = r.hydrateBase(ctx, base)
 	return base, nil
 }
 
-func (r *UserBaseRepo) FindByIDForUpdate(id int) (*domain.UserBaseModel, error) {
-	row, err := r.q.GetBaseByIDForUpdate(context.Background(), int64(id))
+func (r *UserBaseRepo) FindByIDForUpdate(ctx context.Context, id int) (*domain.UserBaseModel, error) {
+	row, err := r.q.GetBaseByIDForUpdate(ctx, int64(id))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ports.ErrNotFound
@@ -62,39 +62,39 @@ func (r *UserBaseRepo) FindByIDForUpdate(id int) (*domain.UserBaseModel, error) 
 		return nil, err
 	}
 	base := mappers.UserBaseFromDB(row)
-	_ = r.hydrateBase(base)
+	_ = r.hydrateBase(ctx, base)
 	return base, nil
 }
 
 // Update replaces all per-item rows (army/build/tech/storage) with the current aggregate state and updates base stats.
-func (r *UserBaseRepo) Update(base *domain.UserBaseModel) error {
+func (r *UserBaseRepo) Update(ctx context.Context, base *domain.UserBaseModel) error {
 	// Update base stats and metadata first.
-	if _, err := r.q.UpdateBase(context.Background(), mappers.UpdateBaseParamsFromDomain(base)); err != nil {
+	if _, err := r.q.UpdateBase(ctx, mappers.UpdateBaseParamsFromDomain(base)); err != nil {
 		return err
 	}
-	return r.persistAllItems(base)
+	return r.persistAllItems(ctx, base)
 }
 
-func (r *UserBaseRepo) Delete(id int) error {
-	return r.q.DeleteBase(context.Background(), int64(id))
+func (r *UserBaseRepo) Delete(ctx context.Context, id int) error {
+	return r.q.DeleteBase(ctx, int64(id))
 }
 
-func (r *UserBaseRepo) FindByUserID(userID uuid.UUID) ([]*domain.UserBaseModel, error) {
-	rows, err := r.q.ListBasesByUserID(context.Background(), userID)
+func (r *UserBaseRepo) FindByUserID(ctx context.Context, userID uuid.UUID) ([]*domain.UserBaseModel, error) {
+	rows, err := r.q.ListBasesByUserID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 	out := make([]*domain.UserBaseModel, 0, len(rows))
 	for _, b := range rows {
 		base := mappers.UserBaseFromDB(b)
-		_ = r.hydrateBase(base)
+		_ = r.hydrateBase(ctx, base)
 		out = append(out, base)
 	}
 	return out, nil
 }
 
-func (r *UserBaseRepo) FindByCoordinates(x, y int) (*domain.UserBaseModel, error) {
-	row, err := r.q.GetBaseByCoordinates(context.Background(), gen.GetBaseByCoordinatesParams{SectorX: int32(x), SectorY: int32(y)})
+func (r *UserBaseRepo) FindByCoordinates(ctx context.Context, x, y int) (*domain.UserBaseModel, error) {
+	row, err := r.q.GetBaseByCoordinates(ctx, gen.GetBaseByCoordinatesParams{SectorX: int32(x), SectorY: int32(y)})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ports.ErrNotFound
@@ -102,12 +102,12 @@ func (r *UserBaseRepo) FindByCoordinates(x, y int) (*domain.UserBaseModel, error
 		return nil, err
 	}
 	base := mappers.UserBaseFromDB(row)
-	_ = r.hydrateBase(base)
+	_ = r.hydrateBase(ctx, base)
 	return base, nil
 }
 
-func (r *UserBaseRepo) FindByCoordinatesForUpdate(x, y int) (*domain.UserBaseModel, error) {
-	row, err := r.q.GetBaseByCoordinatesForUpdate(context.Background(), gen.GetBaseByCoordinatesForUpdateParams{SectorX: int32(x), SectorY: int32(y)})
+func (r *UserBaseRepo) FindByCoordinatesForUpdate(ctx context.Context, x, y int) (*domain.UserBaseModel, error) {
+	row, err := r.q.GetBaseByCoordinatesForUpdate(ctx, gen.GetBaseByCoordinatesForUpdateParams{SectorX: int32(x), SectorY: int32(y)})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ports.ErrNotFound
@@ -115,12 +115,12 @@ func (r *UserBaseRepo) FindByCoordinatesForUpdate(x, y int) (*domain.UserBaseMod
 		return nil, err
 	}
 	base := mappers.UserBaseFromDB(row)
-	_ = r.hydrateBase(base)
+	_ = r.hydrateBase(ctx, base)
 	return base, nil
 }
 
-func (r *UserBaseRepo) FindClosest(x, y int) (*domain.UserBaseModel, error) {
-	row, err := r.q.FindClosestBase(context.Background(), gen.FindClosestBaseParams{X: int32(x), Y: int32(y)})
+func (r *UserBaseRepo) FindClosest(ctx context.Context, x, y int) (*domain.UserBaseModel, error) {
+	row, err := r.q.FindClosestBase(ctx, gen.FindClosestBaseParams{X: int32(x), Y: int32(y)})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ports.ErrNotFound
@@ -128,12 +128,12 @@ func (r *UserBaseRepo) FindClosest(x, y int) (*domain.UserBaseModel, error) {
 		return nil, err
 	}
 	base := mappers.UserBaseFromDB(row)
-	_ = r.hydrateBase(base)
+	_ = r.hydrateBase(ctx, base)
 	return base, nil
 }
 
-func (r *UserBaseRepo) FindAll() ([]*domain.UserBaseModel, error) {
-	rows, err := r.q.ListAllBases(context.Background())
+func (r *UserBaseRepo) FindAll(ctx context.Context) ([]*domain.UserBaseModel, error) {
+	rows, err := r.q.ListAllBases(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -146,8 +146,8 @@ func (r *UserBaseRepo) FindAll() ([]*domain.UserBaseModel, error) {
 }
 
 // GetOwnerID returns the owning user ID for a base.
-func (r *UserBaseRepo) GetOwnerID(baseID int) (uuid.UUID, error) {
-	row, err := r.q.GetBaseByID(context.Background(), int64(baseID))
+func (r *UserBaseRepo) GetOwnerID(ctx context.Context, baseID int) (uuid.UUID, error) {
+	row, err := r.q.GetBaseByID(ctx, int64(baseID))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return uuid.Nil, ports.ErrNotFound
@@ -158,17 +158,17 @@ func (r *UserBaseRepo) GetOwnerID(baseID int) (uuid.UUID, error) {
 }
 
 // persistAllItems updates the base stats row and fully replaces all item rows with the current aggregate collections.
-func (r *UserBaseRepo) persistAllItems(base *domain.UserBaseModel) error {
-	if err := r.persistArmyItems(base); err != nil {
+func (r *UserBaseRepo) persistAllItems(ctx context.Context, base *domain.UserBaseModel) error {
+	if err := r.persistArmyItems(ctx, base); err != nil {
 		return err
 	}
-	if err := r.persistBuildItems(base); err != nil {
+	if err := r.persistBuildItems(ctx, base); err != nil {
 		return err
 	}
-	if err := r.persistTechItems(base); err != nil {
+	if err := r.persistTechItems(ctx, base); err != nil {
 		return err
 	}
-	if err := r.persistStorageItems(base); err != nil {
+	if err := r.persistStorageItems(ctx, base); err != nil {
 		return err
 	}
 	return nil
@@ -176,8 +176,7 @@ func (r *UserBaseRepo) persistAllItems(base *domain.UserBaseModel) error {
 
 // --- Internal per-table persistence helpers ---
 
-func (r *UserBaseRepo) persistArmyItems(base *domain.UserBaseModel) error {
-	ctx := context.Background()
+func (r *UserBaseRepo) persistArmyItems(ctx context.Context, base *domain.UserBaseModel) error {
 	if err := r.q.DeleteBaseArmyItemsByBase(ctx, int64(base.ID)); err != nil {
 		return err
 	}
@@ -190,8 +189,7 @@ func (r *UserBaseRepo) persistArmyItems(base *domain.UserBaseModel) error {
 	return nil
 }
 
-func (r *UserBaseRepo) persistBuildItems(base *domain.UserBaseModel) error {
-	ctx := context.Background()
+func (r *UserBaseRepo) persistBuildItems(ctx context.Context, base *domain.UserBaseModel) error {
 	if err := r.q.DeleteBaseBuildItemsByBase(ctx, int64(base.ID)); err != nil {
 		return err
 	}
@@ -204,8 +202,7 @@ func (r *UserBaseRepo) persistBuildItems(base *domain.UserBaseModel) error {
 	return nil
 }
 
-func (r *UserBaseRepo) persistTechItems(base *domain.UserBaseModel) error {
-	ctx := context.Background()
+func (r *UserBaseRepo) persistTechItems(ctx context.Context, base *domain.UserBaseModel) error {
 	if err := r.q.DeleteBaseTechItemsByBase(ctx, int64(base.ID)); err != nil {
 		return err
 	}
@@ -218,8 +215,7 @@ func (r *UserBaseRepo) persistTechItems(base *domain.UserBaseModel) error {
 	return nil
 }
 
-func (r *UserBaseRepo) persistStorageItems(base *domain.UserBaseModel) error {
-	ctx := context.Background()
+func (r *UserBaseRepo) persistStorageItems(ctx context.Context, base *domain.UserBaseModel) error {
 	if err := r.q.DeleteBaseStorageItemsByBase(ctx, int64(base.ID)); err != nil {
 		return err
 	}
@@ -233,8 +229,7 @@ func (r *UserBaseRepo) persistStorageItems(base *domain.UserBaseModel) error {
 }
 
 // hydrateBase loads all item rows and prototypes, and populates domain collections.
-func (r *UserBaseRepo) hydrateBase(base *domain.UserBaseModel) error {
-	ctx := context.Background()
+func (r *UserBaseRepo) hydrateBase(ctx context.Context, base *domain.UserBaseModel) error {
 
 	// Load item rows
 	armyRows, err := r.q.ListBaseArmyItems(ctx, int64(base.ID))
@@ -256,22 +251,22 @@ func (r *UserBaseRepo) hydrateBase(base *domain.UserBaseModel) error {
 
 	// Load prototypes via existing read-only repos
 	armyProtoRepo := NewArmyPrototypeRepo(r.q)
-	armyProtos, err := armyProtoRepo.FindAllPrototypes()
+	armyProtos, err := armyProtoRepo.FindAllPrototypes(ctx)
 	if err != nil {
 		return err
 	}
 	buildProtoRepo := NewBuildPrototypeRepo(r.q)
-	buildProtos, err := buildProtoRepo.FindAllPrototypes()
+	buildProtos, err := buildProtoRepo.FindAllPrototypes(ctx)
 	if err != nil {
 		return err
 	}
 	techProtoRepo := NewTechPrototypeRepo(r.q)
-	techProtos, err := techProtoRepo.FindAllPrototypes()
+	techProtos, err := techProtoRepo.FindAllPrototypes(ctx)
 	if err != nil {
 		return err
 	}
 	storageProtoRepo := NewStoragePrototypeRepo(r.q)
-	storageProtos, err := storageProtoRepo.FindAllPrototypes()
+	storageProtos, err := storageProtoRepo.FindAllPrototypes(ctx)
 	if err != nil {
 		return err
 	}

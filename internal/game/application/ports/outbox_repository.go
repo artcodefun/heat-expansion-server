@@ -1,6 +1,10 @@
 package ports
 
-import "github.com/artcodefun/heat-expansion-server/internal/game/domain"
+import (
+	"context"
+
+	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
+)
 
 // OutboxEventRecord represents a persisted domain event entry used by a
 // transactional outbox. The concrete event payload is held as a typed
@@ -22,13 +26,13 @@ type OutboxEventRecord struct {
 type OutboxEventRepository interface {
 	// Save persists a batch of domain events into the outbox. Implementations
 	// are responsible for translating typed events into concrete records.
-	Save(events []domain.DomainEvent) error
+	Save(ctx context.Context, events []domain.DomainEvent) error
 	// ClaimUnpublished returns a batch of not-yet-published events ordered by ID
 	// up to the provided limit, using database-level locking so that multiple
 	// workers can safely process the outbox in parallel.
-	ClaimUnpublished(limit int) ([]*OutboxEventRecord, error)
+	ClaimUnpublished(ctx context.Context, limit int) ([]*OutboxEventRecord, error)
 	// MarkPublished marks an event as published at the given timestamp.
-	MarkPublished(id int64, publishedAt int64) error
+	MarkPublished(ctx context.Context, id int64, publishedAt int64) error
 	// Tx binds the repository to a concrete transaction implementation.
 	Tx(tx Transaction) OutboxEventRepository
 }

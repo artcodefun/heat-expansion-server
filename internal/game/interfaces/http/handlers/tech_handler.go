@@ -29,9 +29,9 @@ func (h *TechHandler) ListNew(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := queryCtx(c)
+	actor := actor(c)
 	category := dtos.TechCategoryFromDTO(req.Query.Category)
-	items, err := h.queries.ListNewTechItems(ctx, req.Uri.BaseID, category)
+	items, err := h.queries.ListNewTechItems(c.Request.Context(), actor, req.Uri.BaseID, category)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
@@ -44,9 +44,9 @@ func (h *TechHandler) ListInProgress(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := queryCtx(c)
+	actor := actor(c)
 	category := dtos.TechCategoryFromDTO(req.Query.Category)
-	items, err := h.queries.ListInResearchTechItems(ctx, req.Uri.BaseID, category)
+	items, err := h.queries.ListInResearchTechItems(c.Request.Context(), actor, req.Uri.BaseID, category)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
@@ -59,9 +59,9 @@ func (h *TechHandler) ListDone(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := queryCtx(c)
+	actor := actor(c)
 	category := dtos.TechCategoryFromDTO(req.Query.Category)
-	items, err := h.queries.ListDoneTechItems(ctx, req.Uri.BaseID, category)
+	items, err := h.queries.ListDoneTechItems(c.Request.Context(), actor, req.Uri.BaseID, category)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
@@ -74,8 +74,8 @@ func (h *TechHandler) Queue(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := commandCtx(c)
-	if err := h.commands.StartTechResearch(ctx, req.Uri.BaseID, req.Body.PrototypeID); handleCoreErr(c, h.translator, err) {
+	actor := actor(c)
+	if err := h.commands.StartTechResearch(c.Request.Context(), actor, req.Uri.BaseID, req.Body.PrototypeID); handleCoreErr(c, h.translator, err) {
 		return
 	}
 	c.Status(http.StatusAccepted)
@@ -87,8 +87,8 @@ func (h *TechHandler) SpeedUpProduction(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := commandCtx(c)
-	if err := h.commands.SpeedUpTechResearchWithCrystals(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
+	actor := actor(c)
+	if err := h.commands.SpeedUpTechResearchWithCrystals(c.Request.Context(), actor, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
 		return
 	}
 	c.Status(http.StatusOK)

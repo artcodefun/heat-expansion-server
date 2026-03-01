@@ -18,8 +18,8 @@ func NewDBTxManager(db *sql.DB) *DBTxManager {
 	}
 }
 
-func (m *DBTxManager) WithTx(fn func(tx ports.Transaction) error) error {
-	tx, err := m.db.BeginTx(context.Background(), nil)
+func (m *DBTxManager) WithTx(ctx context.Context, fn func(tx ports.Transaction) error) error {
+	tx, err := m.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}

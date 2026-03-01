@@ -29,9 +29,9 @@ func (h *StorageHandler) ListPresent(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := queryCtx(c)
+	actor := actor(c)
 	category := dtos.StorageCategoryFromDTO(req.Query.Category)
-	items, err := h.queries.ListPresentStorageItems(ctx, req.Uri.BaseID, category)
+	items, err := h.queries.ListPresentStorageItems(c.Request.Context(), actor, req.Uri.BaseID, category)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
@@ -44,8 +44,8 @@ func (h *StorageHandler) DeleteItem(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := commandCtx(c)
-	if err := h.commands.DeletePresentStorageItem(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
+	actor := actor(c)
+	if err := h.commands.DeletePresentStorageItem(c.Request.Context(), actor, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
 		return
 	}
 	c.Status(http.StatusOK)
@@ -58,8 +58,8 @@ func (h *StorageHandler) ActivateBuff(c *gin.Context) {
 		return
 	}
 
-	ctx := commandCtx(c)
-	if err := h.commands.ActivateBuff(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
+	actor := actor(c)
+	if err := h.commands.ActivateBuff(c.Request.Context(), actor, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
 		return
 	}
 	c.Status(http.StatusOK)
@@ -71,8 +71,8 @@ func (h *StorageHandler) StartIntelDecryption(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := commandCtx(c)
-	if err := h.commands.StartIntelDecryption(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
+	actor := actor(c)
+	if err := h.commands.StartIntelDecryption(c.Request.Context(), actor, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
 		return
 	}
 	c.Status(http.StatusOK)
@@ -84,8 +84,8 @@ func (h *StorageHandler) StartDamagedItemRestoration(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := commandCtx(c)
-	if err := h.commands.StartDamagedItemRestoration(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
+	actor := actor(c)
+	if err := h.commands.StartDamagedItemRestoration(c.Request.Context(), actor, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
 		return
 	}
 	c.Status(http.StatusOK)
@@ -97,8 +97,8 @@ func (h *StorageHandler) ActivateArtifact(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := commandCtx(c)
-	if err := h.commands.ActivateArtifact(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
+	actor := actor(c)
+	if err := h.commands.ActivateArtifact(c.Request.Context(), actor, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
 		return
 	}
 	c.Status(http.StatusOK)
@@ -110,8 +110,8 @@ func (h *StorageHandler) DeactivateArtifact(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := commandCtx(c)
-	if err := h.commands.DeactivateArtifact(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
+	actor := actor(c)
+	if err := h.commands.DeactivateArtifact(c.Request.Context(), actor, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
 		return
 	}
 	c.Status(http.StatusOK)
@@ -123,8 +123,8 @@ func (h *StorageHandler) OpenBox(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := commandCtx(c)
-	if err := h.commands.OpenConsumableBox(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
+	actor := actor(c)
+	if err := h.commands.OpenConsumableBox(c.Request.Context(), actor, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
 		return
 	}
 	c.Status(http.StatusOK)

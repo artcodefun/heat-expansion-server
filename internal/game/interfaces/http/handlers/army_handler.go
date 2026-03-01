@@ -25,10 +25,10 @@ func (h *ArmyHandler) ListNew(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := queryCtx(c)
+	actor := actor(c)
 
 	category := dtos.ArmyCategoryFromDTO(req.Query.Category)
-	items, err := h.queries.ListNewArmyItems(ctx, req.Uri.BaseID, category)
+	items, err := h.queries.ListNewArmyItems(c.Request.Context(), actor, req.Uri.BaseID, category)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
@@ -42,10 +42,10 @@ func (h *ArmyHandler) ListPending(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := queryCtx(c)
+	actor := actor(c)
 
 	category := dtos.ArmyCategoryFromDTO(req.Query.Category)
-	items, err := h.queries.ListPendingArmyItems(ctx, req.Uri.BaseID, category)
+	items, err := h.queries.ListPendingArmyItems(c.Request.Context(), actor, req.Uri.BaseID, category)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
@@ -60,10 +60,10 @@ func (h *ArmyHandler) ListInProduction(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := queryCtx(c)
+	actor := actor(c)
 
 	category := dtos.ArmyCategoryFromDTO(req.Query.Category)
-	items, err := h.queries.ListInProductionArmyItems(ctx, req.Uri.BaseID, category)
+	items, err := h.queries.ListInProductionArmyItems(c.Request.Context(), actor, req.Uri.BaseID, category)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
@@ -78,10 +78,10 @@ func (h *ArmyHandler) ListPresent(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := queryCtx(c)
+	actor := actor(c)
 
 	category := dtos.ArmyCategoryFromDTO(req.Query.Category)
-	items, err := h.queries.ListPresentArmyItems(ctx, req.Uri.BaseID, category)
+	items, err := h.queries.ListPresentArmyItems(c.Request.Context(), actor, req.Uri.BaseID, category)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
@@ -97,8 +97,8 @@ func (h *ArmyHandler) Queue(c *gin.Context) {
 		return
 	}
 
-	ctx := commandCtx(c)
-	if err := h.commands.QueueArmy(ctx, req.Uri.BaseID, req.Body.PrototypeID, req.Body.Count); handleCoreErr(c, h.translator, err) {
+	actor := actor(c)
+	if err := h.commands.QueueArmy(c.Request.Context(), actor, req.Uri.BaseID, req.Body.PrototypeID, req.Body.Count); handleCoreErr(c, h.translator, err) {
 		return
 	}
 
@@ -112,8 +112,8 @@ func (h *ArmyHandler) SpeedUpProduction(c *gin.Context) {
 		return
 	}
 
-	ctx := commandCtx(c)
-	if err := h.commands.SpeedUpArmyProductionWithCrystals(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
+	actor := actor(c)
+	if err := h.commands.SpeedUpArmyProductionWithCrystals(c.Request.Context(), actor, req.Uri.BaseID, req.Uri.ItemID.Uuid()); handleCoreErr(c, h.translator, err) {
 		return
 	}
 
@@ -127,8 +127,8 @@ func (h *ArmyHandler) CancelPending(c *gin.Context) {
 		return
 	}
 
-	ctx := commandCtx(c)
-	if err := h.commands.CancelPendingArmy(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid(), req.Body.Count); handleCoreErr(c, h.translator, err) {
+	actor := actor(c)
+	if err := h.commands.CancelPendingArmy(c.Request.Context(), actor, req.Uri.BaseID, req.Uri.ItemID.Uuid(), req.Body.Count); handleCoreErr(c, h.translator, err) {
 		return
 	}
 
@@ -142,8 +142,8 @@ func (h *ArmyHandler) DeletePresent(c *gin.Context) {
 		return
 	}
 
-	ctx := commandCtx(c)
-	if err := h.commands.DeletePresentArmy(ctx, req.Uri.BaseID, req.Uri.ItemID.Uuid(), req.Body.Count); handleCoreErr(c, h.translator, err) {
+	actor := actor(c)
+	if err := h.commands.DeletePresentArmy(c.Request.Context(), actor, req.Uri.BaseID, req.Uri.ItemID.Uuid(), req.Body.Count); handleCoreErr(c, h.translator, err) {
 		return
 	}
 

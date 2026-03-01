@@ -1,6 +1,8 @@
 package queries
 
 import (
+	"context"
+
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
@@ -19,16 +21,16 @@ func NewAlertQueries(readRepo ports.AlertReadRepository, access *services.Access
 	}
 }
 
-func (q *AlertQueries) ListActiveAlerts(ctx cqrs.QueryContext, baseID int) ([]*readmodels.AlertItem, error) {
-	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+func (q *AlertQueries) ListActiveAlerts(ctx context.Context, actor cqrs.Actor, baseID int) ([]*readmodels.AlertItem, error) {
+	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}
-	return q.AlertReadRepo.ListActiveAlerts(baseID)
+	return q.AlertReadRepo.ListActiveAlerts(ctx, baseID)
 }
 
-func (q *AlertQueries) GetUnreadAlertsCount(ctx cqrs.QueryContext, baseID int) (int, error) {
-	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+func (q *AlertQueries) GetUnreadAlertsCount(ctx context.Context, actor cqrs.Actor, baseID int) (int, error) {
+	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return 0, err
 	}
-	return q.AlertReadRepo.GetUnreadAlertsCount(baseID)
+	return q.AlertReadRepo.GetUnreadAlertsCount(ctx, baseID)
 }

@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"math/rand"
 	"time"
 
@@ -37,8 +38,8 @@ func NewIntelligenceScannerCommands(baseRepo ports.UserBaseRepository, sectorRep
 	}
 }
 
-func (c *IntelligenceScannerCommands) HandleBuildingProductionFinishedEvent(event *domain.BuildingProductionFinishedEvent) error {
-	base, err := c.BaseRepo.FindByID(event.BaseID)
+func (c *IntelligenceScannerCommands) HandleBuildingProductionFinishedEvent(ctx context.Context, event domain.BuildingProductionFinishedEvent) error {
+	base, err := c.BaseRepo.FindByID(ctx, event.BaseID)
 	if err != nil {
 		return nil
 	}
@@ -50,7 +51,7 @@ func (c *IntelligenceScannerCommands) HandleBuildingProductionFinishedEvent(even
 					cooldown = 3600
 				}
 				firstAt := time.Now().Unix() + cooldown
-				_ = c.Scheduler.Schedule(ports.IntelligenceScanJob{BaseID: event.BaseID, BuildingID: b.ID}, firstAt)
+				_ = c.Scheduler.Schedule(ctx, ports.IntelligenceScanJob{BaseID: event.BaseID, BuildingID: b.ID}, firstAt)
 			}
 			break
 		}
@@ -58,15 +59,15 @@ func (c *IntelligenceScannerCommands) HandleBuildingProductionFinishedEvent(even
 	return nil
 }
 
-func (c *IntelligenceScannerCommands) HandleIntelligenceScanJob(job ports.IntelligenceScanJob) error {
+func (c *IntelligenceScannerCommands) HandleIntelligenceScanJob(ctx context.Context, job ports.IntelligenceScanJob) error {
 	// 1. Idempotency: skip if already scanned recently
 	now := domain.NowUnix()
-	exists, err := c.ScanReportRepo.RecentReportExistsByScanner(job.BuildingID, now-60) // small buffer for overlapping runs
+	exists, err := c.ScanReportRepo.RecentReportExistsByScanner(ctx, job.BuildingID, now-60) // small buffer for overlapping runs
 	if err != nil || exists {
 		return err
 	}
 
-	base, err := c.BaseRepo.FindByID(job.BaseID)
+	base, err := c.BaseRepo.FindByID(ctx, job.BaseID)
 	if err != nil {
 		return err
 	}
@@ -95,62 +96,62 @@ func (c *IntelligenceScannerCommands) HandleIntelligenceScanJob(job ports.Intell
 	}
 
 	target := randomSectorInRange(base.Coordinates, rangeTiles)
-	sector, err := c.SectorRepo.FindByCoordinates(target.X, target.Y)
+	sector, err := c.SectorRepo.FindByCoordinates(ctx, target.X, target.Y)
 	if err == ports.ErrNotFound || sector == nil {
-		_ = c.TxMgr.WithTx(func(tx ports.Transaction) error {
+		_ = c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 			var inErr error
-			sector, inErr = c.SectorProvisioner.EnsureSectorExists(c.SectorRepo.Tx(tx), target.X, target.Y)
+			sector, inErr = c.SectorProvisioner.EnsureSectorExists(ctx, c.SectorRepo.Tx(tx), target.X, target.Y)
 			return inErr
 		})
 	} else if err != nil {
-		c.reschedule(job, periodSec)
+		c.reschedule(ctx, job, periodSec)
 		return nil
 	}
 
-	occType, _ := c.SectorRepo.GetLocationTypeByCoordinates(sector.Coordinates.X, sector.Coordinates.Y)
+	occType, _ := c.SectorRepo.GetLocationTypeByCoordinates(ctx, sector.Coordinates.X, sector.Coordinates.Y)
 	var report *domain.SectorScanReport
 
 	switch occType {
 	case domain.LocationTypeUserBase:
-		defenderBase, _ := c.BaseRepo.FindByCoordinates(sector.Coordinates.X, sector.Coordinates.Y)
+		defenderBase, _ := c.BaseRepo.FindByCoordinates(ctx, sector.Coordinates.X, sector.Coordinates.Y)
 		if c.intelService.ResolveScanVisibility(scanStrength, defenderBase) {
 			report = domain.NewSectorScanReportFromUserBase(base.ID, sector, defenderBase)
 		} else {
 			report = domain.NewSectorScanReportFromUserBase(base.ID, sector, nil)
 		}
 	case domain.LocationTypeResourceful:
-		res, _ := c.ResourceRepo.FindByCoordinates(sector.Coordinates.X, sector.Coordinates.Y)
+		res, _ := c.ResourceRepo.FindByCoordinates(ctx, sector.Coordinates.X, sector.Coordinates.Y)
 		report = domain.NewSectorScanReportFromResourceLocation(base.ID, sector, res)
 	case domain.LocationTypeDangerous:
-		dl, _ := c.DangerousRepo.FindByCoordinates(sector.Coordinates.X, sector.Coordinates.Y)
+		dl, _ := c.DangerousRepo.FindByCoordinates(ctx, sector.Coordinates.X, sector.Coordinates.Y)
 		report = domain.NewSectorScanReportFromDangerousLocation(base.ID, sector, dl)
 	case domain.LocationTypeEmpty:
 		report = domain.NewSectorScanReportFromEmptySector(base.ID, sector)
 	default:
-		c.reschedule(job, periodSec)
+		c.reschedule(ctx, job, periodSec)
 		return nil
 	}
 
 	report.SourceScannerID = &job.BuildingID
-	err = c.TxMgr.WithTx(func(tx ports.Transaction) error {
+	err = c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		srRepo := c.ScanReportRepo.Tx(tx)
-		if err := srRepo.Create(report); err != nil {
+		if err := srRepo.Create(ctx, report); err != nil {
 			return err
 		}
 		report.EmitCreated()
-		if err := c.Outbox.Tx(tx).Save(report.EventProducer.PullEvents()); err != nil {
+		if err := c.Outbox.Tx(tx).Save(ctx, report.EventProducer.PullEvents()); err != nil {
 			return err
 		}
 		return nil
 	})
 
-	c.reschedule(job, periodSec)
+	c.reschedule(ctx, job, periodSec)
 	return err
 }
 
-func (c *IntelligenceScannerCommands) reschedule(job ports.IntelligenceScanJob, periodSec int64) {
+func (c *IntelligenceScannerCommands) reschedule(ctx context.Context, job ports.IntelligenceScanJob, periodSec int64) {
 	jitter := int64(rand.Intn(60) - 30)
-	_ = c.Scheduler.Schedule(job, time.Now().Unix()+periodSec+jitter)
+	_ = c.Scheduler.Schedule(ctx, job, time.Now().Unix()+periodSec+jitter)
 }
 
 func randomSectorInRange(origin domain.Vector2i, r int) domain.Vector2i {

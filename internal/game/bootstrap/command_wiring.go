@@ -1,6 +1,7 @@
 package bootstrap
 
 import (
+	"context"
 	"log"
 
 	"github.com/artcodefun/heat-expansion-server/contracts/auth"
@@ -14,7 +15,7 @@ import (
 
 // WireCommandIntegrationEvents wires external integration events to command handlers.
 func WireCommandIntegrationEvents(c *Commands, consumer *infraevents.RabbitMQConsumer, authExchange, authQueue string) {
-	consumer.Subscribe(authExchange, authQueue, "auth.#", func(d amqp.Delivery) error {
+	consumer.Subscribe(authExchange, authQueue, "auth.#", func(ctx context.Context, d amqp.Delivery) error {
 		envelope, err := auth.Unmarshal(d.Body)
 		if err != nil {
 			return err
@@ -22,7 +23,7 @@ func WireCommandIntegrationEvents(c *Commands, consumer *infraevents.RabbitMQCon
 
 		switch ev := envelope.Payload.(type) {
 		case *v1.AccountRegisteredV1:
-			return c.User.HandleAccountRegisteredV1Event(*ev)
+			return c.User.HandleAccountRegisteredV1Event(ctx, *ev)
 		default:
 			log.Printf("Received unknown identity integration event type: %T", ev)
 		}
@@ -37,55 +38,55 @@ func WireCommandEvents(c *Commands, pub ports.EventPublisher) {
 	if !ok {
 		return
 	}
-	p.Listen(func(e domain.DomainEvent) error {
+	p.Listen(func(ctx context.Context, e domain.DomainEvent) error {
 		switch ev := e.(type) {
 		case domain.ActivityCreatedEvent:
-			return c.Alert.HandleActivityCreatedEvent(ev)
+			return c.Alert.HandleActivityCreatedEvent(ctx, ev)
 		case domain.UserAccountCreatedEvent:
-			return c.Base.HandleUserAccountCreatedEvent(ev)
+			return c.Base.HandleUserAccountCreatedEvent(ctx, ev)
 		case domain.UserBaseCreatedEvent:
-			return c.World.HandleUserBaseCreatedEvent(ev)
+			return c.World.HandleUserBaseCreatedEvent(ctx, ev)
 		case domain.BuildingProductionStartedEvent:
-			return c.Building.HandleProductionStartedEvent(&ev)
+			return c.Building.HandleProductionStartedEvent(ctx, ev)
 		case domain.BuildingProductionFinishedEvent:
-			return c.Scanner.HandleBuildingProductionFinishedEvent(&ev)
+			return c.Scanner.HandleBuildingProductionFinishedEvent(ctx, ev)
 		case domain.ArmyProductionStartedEvent:
-			return c.Army.HandleProductionStartedEvent(&ev)
+			return c.Army.HandleProductionStartedEvent(ctx, ev)
 		case domain.TechResearchStartedEvent:
-			return c.Tech.HandleTechResearchStartedEvent(&ev)
+			return c.Tech.HandleTechResearchStartedEvent(ctx, ev)
 		case domain.BuffActivatedEvent:
-			return c.Storage.HandleBuffActivatedEvent(&ev)
+			return c.Storage.HandleBuffActivatedEvent(ctx, ev)
 		case domain.IntelDecryptionStartedEvent:
-			return c.Storage.HandleIntelDecryptionStartedEvent(&ev)
+			return c.Storage.HandleIntelDecryptionStartedEvent(ctx, ev)
 		case domain.DamagedItemRestorationStartedEvent:
-			return c.Storage.HandleDamagedItemRestorationStartedEvent(&ev)
+			return c.Storage.HandleDamagedItemRestorationStartedEvent(ctx, ev)
 		case domain.MilitaryOperationStartedEvent:
-			if err := c.Operation.HandleMilitaryOperationStartedEvent(ev); err != nil {
+			if err := c.Operation.HandleMilitaryOperationStartedEvent(ctx, ev); err != nil {
 				return err
 			}
-			if err := c.Radar.HandleMilitaryOperationStartedEvent(ev); err != nil {
+			if err := c.Radar.HandleMilitaryOperationStartedEvent(ctx, ev); err != nil {
 				return err
 			}
-			return c.Activity.HandleMilitaryOperationStartedEvent(ev)
+			return c.Activity.HandleMilitaryOperationStartedEvent(ctx, ev)
 		case domain.MilitaryOperationArrivedEvent:
-			if err := c.Operation.HandleMilitaryOperationArrivedEvent(ev); err != nil {
+			if err := c.Operation.HandleMilitaryOperationArrivedEvent(ctx, ev); err != nil {
 				return err
 			}
-			return c.RadarThreat.HandleMilitaryOperationArrivedEvent(ev)
+			return c.RadarThreat.HandleMilitaryOperationArrivedEvent(ctx, ev)
 		case domain.MilitaryOperationCancelledEvent:
-			return c.RadarThreat.HandleMilitaryOperationCancelledEvent(ev)
+			return c.RadarThreat.HandleMilitaryOperationCancelledEvent(ctx, ev)
 		case domain.RadarThreatDetectedEvent:
-			return c.Activity.HandleRadarThreatDetectedEvent(ev)
+			return c.Activity.HandleRadarThreatDetectedEvent(ctx, ev)
 		case domain.MilitaryOperationResolvedEvent:
-			return c.Activity.HandleMilitaryOperationResolvedEvent(ev)
+			return c.Activity.HandleMilitaryOperationResolvedEvent(ctx, ev)
 		case domain.MilitaryOperationReturnStartedEvent:
-			return c.Operation.HandleMilitaryOperationReturnStartedEvent(ev)
+			return c.Operation.HandleMilitaryOperationReturnStartedEvent(ctx, ev)
 		case domain.MilitaryOperationReturnArrivedEvent:
-			return c.Operation.HandleMilitaryOperationReturnArrivedEvent(ev)
+			return c.Operation.HandleMilitaryOperationReturnArrivedEvent(ctx, ev)
 		case domain.ScanReportCreatedEvent:
-			return c.Activity.HandleScanReportCreatedEvent(ev)
+			return c.Activity.HandleScanReportCreatedEvent(ctx, ev)
 		case domain.LocationDrainedEvent:
-			return c.World.HandleLocationDrainedEvent(ev)
+			return c.World.HandleLocationDrainedEvent(ctx, ev)
 		}
 		return nil
 	})
@@ -98,28 +99,28 @@ func WireCommandSchedulerHandler(c *Commands, sch ports.Scheduler) {
 	if !ok {
 		return
 	}
-	s.Listen(func(j ports.SchadulableJob) error {
+	s.Listen(func(ctx context.Context, j ports.SchadulableJob) error {
 		switch job := j.(type) {
 		case ports.MoveBuildQueueJob:
-			return c.Building.HandleMoveBuildQueueJob(job)
+			return c.Building.HandleMoveBuildQueueJob(ctx, job)
 		case ports.MoveArmyQueueJob:
-			return c.Army.HandleMoveArmyQueueJob(job)
+			return c.Army.HandleMoveArmyQueueJob(ctx, job)
 		case ports.MoveTechQueueJob:
-			return c.Tech.HandleMoveTechQueueJob(job)
+			return c.Tech.HandleMoveTechQueueJob(ctx, job)
 		case ports.UpdateMilitaryOperationJob:
-			return c.Operation.HandleUpdateMilitaryOperationJob(job)
+			return c.Operation.HandleUpdateMilitaryOperationJob(ctx, job)
 		case ports.IntelligenceScanJob:
-			return c.Scanner.HandleIntelligenceScanJob(job)
+			return c.Scanner.HandleIntelligenceScanJob(ctx, job)
 		case ports.IntelligenceRadarJob:
-			return c.Radar.HandleIntelligenceRadarJob(job)
+			return c.Radar.HandleIntelligenceRadarJob(ctx, job)
 		case ports.DeleteExpiredBuffJob:
-			return c.Storage.HandleDeleteExpiredBuffJob(job)
+			return c.Storage.HandleDeleteExpiredBuffJob(ctx, job)
 		case ports.DecryptIntelItemJob:
-			return c.Storage.HandleDecryptIntelItemJob(job)
+			return c.Storage.HandleDecryptIntelItemJob(ctx, job)
 		case ports.RestoreDamagedItemJob:
-			return c.Storage.HandleRestoreDamagedItemJob(job)
+			return c.Storage.HandleRestoreDamagedItemJob(ctx, job)
 		case ports.SpawnNearbyLocationsJob:
-			return c.World.HandleSpawnNearbyLocationsJob(job)
+			return c.World.HandleSpawnNearbyLocationsJob(ctx, job)
 		}
 		return nil
 	})

@@ -12,22 +12,13 @@ import (
 	"github.com/google/uuid"
 )
 
-func queryCtx(c *gin.Context) cqrs.QueryContext {
+func actor(c *gin.Context) cqrs.Actor {
 	if v, ok := c.Get("accountID"); ok {
 		if id, ok2 := v.(uuid.UUID); ok2 {
-			return cqrs.QueryContext{AccountID: id}
+			return cqrs.Actor{AccountID: id}
 		}
 	}
-	return cqrs.QueryContext{AccountID: uuid.Nil}
-}
-
-func commandCtx(c *gin.Context) cqrs.CommandContext {
-	if v, ok := c.Get("accountID"); ok {
-		if id, ok2 := v.(uuid.UUID); ok2 {
-			return cqrs.CommandContext{AccountID: id}
-		}
-	}
-	return cqrs.CommandContext{AccountID: uuid.Nil}
+	return cqrs.Actor{AccountID: uuid.Nil}
 }
 
 func getLocale(c *gin.Context) string {

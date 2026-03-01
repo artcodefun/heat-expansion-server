@@ -44,8 +44,8 @@ func (h *OperationHandler) GetOperation(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := queryCtx(c)
-	op, err := h.queries.GetOperation(ctx, req.Uri.OperationID)
+	actor := actor(c)
+	op, err := h.queries.GetOperation(c.Request.Context(), actor, req.Uri.OperationID)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
@@ -58,8 +58,8 @@ func (h *OperationHandler) ListByBase(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := queryCtx(c)
-	ops, err := h.queries.ListOperationsByBase(ctx, req.Uri.BaseID)
+	actor := actor(c)
+	ops, err := h.queries.ListOperationsByBase(c.Request.Context(), actor, req.Uri.BaseID)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
@@ -72,8 +72,8 @@ func (h *OperationHandler) ListActive(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := queryCtx(c)
-	ops, err := h.queries.ListActiveOperations(ctx, req.Uri.BaseID)
+	actor := actor(c)
+	ops, err := h.queries.ListActiveOperations(c.Request.Context(), actor, req.Uri.BaseID)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
@@ -86,8 +86,8 @@ func (h *OperationHandler) SpeedUp(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := commandCtx(c)
-	if err := h.commands.SpeedUpOperationWithCrystals(ctx, req.Uri.OperationID); handleCoreErr(c, h.translator, err) {
+	actor := actor(c)
+	if err := h.commands.SpeedUpOperationWithCrystals(c.Request.Context(), actor, req.Uri.OperationID); handleCoreErr(c, h.translator, err) {
 		return
 	}
 	c.Status(http.StatusOK)
@@ -99,8 +99,8 @@ func (h *OperationHandler) Cancel(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := commandCtx(c)
-	if err := h.commands.CancelMilitaryOperation(ctx, req.Uri.OperationID); handleCoreErr(c, h.translator, err) {
+	actor := actor(c)
+	if err := h.commands.CancelMilitaryOperation(c.Request.Context(), actor, req.Uri.OperationID); handleCoreErr(c, h.translator, err) {
 		return
 	}
 	c.Status(http.StatusOK)
@@ -117,7 +117,7 @@ func (h *OperationHandler) Create(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid type"})
 		return
 	}
-	ctx := commandCtx(c)
+	actor := actor(c)
 	// Map DTOs into domain-level deployment requests by item ID.
 	deployments := make([]domain.ArmyDeploymentRequest, 0, len(req.Body.Deployed))
 	for _, d := range req.Body.Deployed {
@@ -126,7 +126,7 @@ func (h *OperationHandler) Create(c *gin.Context) {
 			Count:         d.Count,
 		})
 	}
-	op, err := h.commands.CreateMilitaryOperation(ctx, opType, req.Uri.BaseID, *req.Body.TargetX, *req.Body.TargetY, deployments)
+	op, err := h.commands.CreateMilitaryOperation(c.Request.Context(), actor, opType, req.Uri.BaseID, *req.Body.TargetX, *req.Body.TargetY, deployments)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}

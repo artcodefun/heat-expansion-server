@@ -32,8 +32,8 @@ func (r *DangerousLocationRepo) Tx(tx ports.Transaction) ports.DangerousLocation
 	return r
 }
 
-func (r *DangerousLocationRepo) Create(loc *domain.DangerousLocationModel) error {
-	id, err := r.q.InsertDangerousLocation(context.Background(), mappers.InsertDangerousLocationParamsFromDomain(loc))
+func (r *DangerousLocationRepo) Create(ctx context.Context, loc *domain.DangerousLocationModel) error {
+	id, err := r.q.InsertDangerousLocation(ctx, mappers.InsertDangerousLocationParamsFromDomain(loc))
 	if err != nil {
 		return err
 	}
@@ -41,8 +41,7 @@ func (r *DangerousLocationRepo) Create(loc *domain.DangerousLocationModel) error
 	return nil
 }
 
-func (r *DangerousLocationRepo) FindByID(id int) (*domain.DangerousLocationModel, error) {
-	ctx := context.Background()
+func (r *DangerousLocationRepo) FindByID(ctx context.Context, id int) (*domain.DangerousLocationModel, error) {
 	row, err := r.q.GetDangerousLocationByID(ctx, int64(id))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -58,8 +57,7 @@ func (r *DangerousLocationRepo) FindByID(id int) (*domain.DangerousLocationModel
 	return loc, nil
 }
 
-func (r *DangerousLocationRepo) FindByCoordinates(x, y int) (*domain.DangerousLocationModel, error) {
-	ctx := context.Background()
+func (r *DangerousLocationRepo) FindByCoordinates(ctx context.Context, x, y int) (*domain.DangerousLocationModel, error) {
 	row, err := r.q.GetDangerousLocationBySector(ctx, gen.GetDangerousLocationBySectorParams{SectorX: int32(x), SectorY: int32(y)})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -75,8 +73,7 @@ func (r *DangerousLocationRepo) FindByCoordinates(x, y int) (*domain.DangerousLo
 	return loc, nil
 }
 
-func (r *DangerousLocationRepo) FindByCoordinatesForUpdate(x, y int) (*domain.DangerousLocationModel, error) {
-	ctx := context.Background()
+func (r *DangerousLocationRepo) FindByCoordinatesForUpdate(ctx context.Context, x, y int) (*domain.DangerousLocationModel, error) {
 	row, err := r.q.GetDangerousLocationBySectorForUpdate(ctx, gen.GetDangerousLocationBySectorForUpdateParams{SectorX: int32(x), SectorY: int32(y)})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -92,8 +89,7 @@ func (r *DangerousLocationRepo) FindByCoordinatesForUpdate(x, y int) (*domain.Da
 	return loc, nil
 }
 
-func (r *DangerousLocationRepo) FindClosest(x, y int) (*domain.DangerousLocationModel, error) {
-	ctx := context.Background()
+func (r *DangerousLocationRepo) FindClosest(ctx context.Context, x, y int) (*domain.DangerousLocationModel, error) {
 	row, err := r.q.FindClosestDangerousLocation(ctx, gen.FindClosestDangerousLocationParams{X: int32(x), Y: int32(y)})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -109,16 +105,16 @@ func (r *DangerousLocationRepo) FindClosest(x, y int) (*domain.DangerousLocation
 	return loc, nil
 }
 
-func (r *DangerousLocationRepo) Update(loc *domain.DangerousLocationModel) error {
-	return r.q.UpdateDangerousLocation(context.Background(), mappers.UpdateDangerousLocationParamsFromDomain(loc))
+func (r *DangerousLocationRepo) Update(ctx context.Context, loc *domain.DangerousLocationModel) error {
+	return r.q.UpdateDangerousLocation(ctx, mappers.UpdateDangerousLocationParamsFromDomain(loc))
 }
 
-func (r *DangerousLocationRepo) Delete(id int) error {
-	return r.q.DeleteDangerousLocation(context.Background(), int64(id))
+func (r *DangerousLocationRepo) Delete(ctx context.Context, id int) error {
+	return r.q.DeleteDangerousLocation(ctx, int64(id))
 }
 
-func (r *DangerousLocationRepo) DeleteByCoordinates(x, y int) error {
-	return r.q.DeleteDangerousLocationBySector(context.Background(), gen.DeleteDangerousLocationBySectorParams{
+func (r *DangerousLocationRepo) DeleteByCoordinates(ctx context.Context, x, y int) error {
+	return r.q.DeleteDangerousLocationBySector(ctx, gen.DeleteDangerousLocationBySectorParams{
 		SectorX: int32(x),
 		SectorY: int32(y),
 	})
@@ -126,11 +122,11 @@ func (r *DangerousLocationRepo) DeleteByCoordinates(x, y int) error {
 
 func (r *DangerousLocationRepo) loadPrototypes(ctx context.Context) (map[int]*domain.ArmyItemPrototype, map[int]*domain.BuildItemPrototype, error) {
 	// For now, load all of them as they are relatively few. In a larger game, we'd fetch only needed ones.
-	armyList, err := r.armyProtoRepo.FindAllPrototypes()
+	armyList, err := r.armyProtoRepo.FindAllPrototypes(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
-	buildList, err := r.buildProtoRepo.FindAllPrototypes()
+	buildList, err := r.buildProtoRepo.FindAllPrototypes(ctx)
 	if err != nil {
 		return nil, nil, err
 	}

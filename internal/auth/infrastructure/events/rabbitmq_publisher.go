@@ -82,7 +82,7 @@ func (p *RabbitMQPublisher) connect() error {
 	return nil
 }
 
-func (p *RabbitMQPublisher) Publish(event auth.IntegrationEvent) error {
+func (p *RabbitMQPublisher) Publish(ctx context.Context, event auth.IntegrationEvent) error {
 	p.mu.RLock()
 	conn := p.conn
 	p.mu.RUnlock()
@@ -109,7 +109,7 @@ func (p *RabbitMQPublisher) Publish(event auth.IntegrationEvent) error {
 		return fmt.Errorf("failed to marshal event: %w", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
 	err = ch.PublishWithContext(ctx,

@@ -10,7 +10,6 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/events"
-	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/jobs"
 	httpapi "github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http"
 )
 
@@ -61,7 +60,6 @@ func NewModule() *Module {
 	}
 
 	services := NewAppServices(adapters)
-	workers := NewWorkers(dbURL, services.Outbox)
 	commands := NewCommands(adapters, services)
 	queries := NewQueries(adapters, services)
 
@@ -70,6 +68,7 @@ func NewModule() *Module {
 
 	consumer := events.NewRabbitMQConsumer(rabbitURL)
 	WireCommandIntegrationEvents(commands, consumer, authExchange, "game.auth.integration.events")
+	workers := NewWorkers(dbURL, services.Outbox, adapters.Scheduler, consumer)
 
 	httpCommands := httpapi.Commands{
 		User:      commands.User,
@@ -122,17 +121,11 @@ func (m *Module) Run() {
 	fmt.Printf("Static base URL: %s\n", m.StaticBaseURL)
 	fmt.Printf("RabbitMQ URL: %s\n", m.RabbitURL)
 	fmt.Printf("Auth Exchange: %s\n", m.AuthExchange)
+	ctx := context.Background()
 
-	if runner, ok := m.Adapters.Scheduler.(*jobs.DBScheduler); ok {
-		go runner.Run(context.Background())
-	}
-
-	if err := m.Consumer.Start(context.Background()); err != nil {
-		log.Printf("Warning: Failed to start RabbitMQ consumer: %v", err)
-	}
-
-	// Start background workers
-	go m.Workers.OutboxLoop(context.Background())
+	go m.Workers.SchedulerLoop(ctx)
+	go m.Workers.IntegrationEvtLoop(ctx)
+	go m.Workers.OutboxLoop(ctx)
 
 	addr := fmt.Sprintf(":%s", m.Port)
 	fmt.Printf("Listening on %s\n", addr)

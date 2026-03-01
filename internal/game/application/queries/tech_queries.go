@@ -1,6 +1,8 @@
 package queries
 
 import (
+	"context"
+
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
@@ -18,15 +20,15 @@ func NewTechQueries(repo ports.TechReadRepository, protoRepo ports.TechPrototype
 	return &TechQueries{Repo: repo, ProtoRepo: protoRepo, BaseRepo: baseRepo, Access: access}
 }
 
-func (q *TechQueries) ListNewTechItems(ctx cqrs.QueryContext, baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemNew, error) {
-	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+func (q *TechQueries) ListNewTechItems(ctx context.Context, actor cqrs.Actor, baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemNew, error) {
+	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}
-	allProtos, err := q.ProtoRepo.FindAllPrototypes()
+	allProtos, err := q.ProtoRepo.FindAllPrototypes(ctx)
 	if err != nil {
 		return nil, repoErr(err)
 	}
-	base, err := q.BaseRepo.FindByID(baseID)
+	base, err := q.BaseRepo.FindByID(ctx, baseID)
 	if err != nil {
 		return nil, repoErr(err)
 	}
@@ -37,20 +39,20 @@ func (q *TechQueries) ListNewTechItems(ctx cqrs.QueryContext, baseID int, catego
 			ids = append(ids, p.ID)
 		}
 	}
-	items, err := q.Repo.ListNewTechItemsByPrototypeIDs(baseID, ids)
+	items, err := q.Repo.ListNewTechItemsByPrototypeIDs(ctx, baseID, ids)
 	return items, repoErr(err)
 }
-func (q *TechQueries) ListInResearchTechItems(ctx cqrs.QueryContext, baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemInProgress, error) {
-	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+func (q *TechQueries) ListInResearchTechItems(ctx context.Context, actor cqrs.Actor, baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemInProgress, error) {
+	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}
-	items, err := q.Repo.ListInResearchTechItems(baseID, category)
+	items, err := q.Repo.ListInResearchTechItems(ctx, baseID, category)
 	return items, repoErr(err)
 }
-func (q *TechQueries) ListDoneTechItems(ctx cqrs.QueryContext, baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemDone, error) {
-	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+func (q *TechQueries) ListDoneTechItems(ctx context.Context, actor cqrs.Actor, baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemDone, error) {
+	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}
-	items, err := q.Repo.ListDoneTechItems(baseID, category)
+	items, err := q.Repo.ListDoneTechItems(ctx, baseID, category)
 	return items, repoErr(err)
 }

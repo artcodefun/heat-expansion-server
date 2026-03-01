@@ -9,7 +9,7 @@ import (
 
 type OutboxEventRepository interface {
 	Save(ctx context.Context, events []domain.DomainEvent) error
-	ClaimUnpublished(limit int) ([]domain.DomainEvent, error)
-	MarkPublished(id uuid.UUID, publishedAt int64) error
+	ClaimUnpublished(ctx context.Context, limit int) ([]domain.DomainEvent, error)
+	MarkPublished(ctx context.Context, id uuid.UUID, publishedAt int64) error
 	Tx(tx Transaction) OutboxEventRepository
 }

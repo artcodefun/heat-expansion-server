@@ -30,19 +30,19 @@ func (r *AlertRepo) Tx(tx ports.Transaction) ports.AlertRepository {
 	return r
 }
 
-func (r *AlertRepo) Create(alert *domain.Alert) error {
+func (r *AlertRepo) Create(ctx context.Context, alert *domain.Alert) error {
 	params := mappers.InsertAlertParamsFromDomain(alert)
-	return r.q.InsertAlert(context.Background(), params)
+	return r.q.InsertAlert(ctx, params)
 }
 
-func (r *AlertRepo) ExistsForActivity(activityID uuid.UUID) (bool, error) {
-	return r.q.ExistsForActivity(context.Background(), uuid.NullUUID{UUID: activityID, Valid: true})
+func (r *AlertRepo) ExistsForActivity(ctx context.Context, activityID uuid.UUID) (bool, error) {
+	return r.q.ExistsForActivity(ctx, uuid.NullUUID{UUID: activityID, Valid: true})
 }
 
-func (r *AlertRepo) MarkAllAsRead(baseID int) error {
-	return r.q.MarkAllAlertsAsRead(context.Background(), int64(baseID))
+func (r *AlertRepo) MarkAllAsRead(ctx context.Context, baseID int) error {
+	return r.q.MarkAllAlertsAsRead(ctx, int64(baseID))
 }
 
-func (r *AlertRepo) DeleteExpired(now int64) error {
-	return r.q.DeleteExpiredAlerts(context.Background(), now)
+func (r *AlertRepo) DeleteExpired(ctx context.Context, now int64) error {
+	return r.q.DeleteExpiredAlerts(ctx, now)
 }

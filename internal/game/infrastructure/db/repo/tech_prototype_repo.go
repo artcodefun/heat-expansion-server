@@ -26,12 +26,12 @@ func (r *TechPrototypeRepo) Tx(tx ports.Transaction) ports.TechPrototypeReposito
 	return r
 }
 
-func (r *TechPrototypeRepo) CreatePrototype(proto *domain.TechItemPrototype) error {
+func (r *TechPrototypeRepo) CreatePrototype(_ context.Context, proto *domain.TechItemPrototype) error {
 	return errors.New("CreatePrototype not implemented for tech prototypes (read-only in this service)")
 }
 
-func (r *TechPrototypeRepo) FindPrototypeByID(id int) (*domain.TechItemPrototype, error) {
-	p, err := r.q.GetTechPrototypeByID(context.Background(), int64(id))
+func (r *TechPrototypeRepo) FindPrototypeByID(ctx context.Context, id int) (*domain.TechItemPrototype, error) {
+	p, err := r.q.GetTechPrototypeByID(ctx, int64(id))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ports.ErrNotFound
@@ -41,18 +41,18 @@ func (r *TechPrototypeRepo) FindPrototypeByID(id int) (*domain.TechItemPrototype
 	return mappers.TechPrototypeFromDB(p), nil
 }
 
-func (r *TechPrototypeRepo) FindAllPrototypes() ([]*domain.TechItemPrototype, error) {
-	rows, err := r.q.ListTechPrototypes(context.Background())
+func (r *TechPrototypeRepo) FindAllPrototypes(ctx context.Context) ([]*domain.TechItemPrototype, error) {
+	rows, err := r.q.ListTechPrototypes(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return mappers.TechPrototypesFromDB(rows), nil
 }
 
-func (r *TechPrototypeRepo) UpdatePrototype(proto *domain.TechItemPrototype) error {
+func (r *TechPrototypeRepo) UpdatePrototype(_ context.Context, proto *domain.TechItemPrototype) error {
 	return errors.New("UpdatePrototype not implemented for tech prototypes (read-only in this service)")
 }
 
-func (r *TechPrototypeRepo) DeletePrototype(id int) error {
+func (r *TechPrototypeRepo) DeletePrototype(_ context.Context, id int) error {
 	return errors.New("DeletePrototype not implemented for tech prototypes (read-only in this service)")
 }

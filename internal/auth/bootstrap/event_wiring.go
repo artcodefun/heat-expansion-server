@@ -1,6 +1,8 @@
 package bootstrap
 
 import (
+	"context"
+
 	"github.com/artcodefun/heat-expansion-server/internal/auth/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/domain"
 	infraevents "github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/events"
@@ -13,10 +15,10 @@ func WireIntegrationEvents(s *AppServices, pub ports.EventPublisher) {
 		return
 	}
 
-	p.Listen(func(e domain.DomainEvent) error {
+	p.Listen(func(ctx context.Context, e domain.DomainEvent) error {
 		switch ev := e.(type) {
 		case domain.AccountRegisteredEvent:
-			return s.IntegrationProducer.HandleAccountRegistered(ev)
+			return s.IntegrationProducer.HandleAccountRegistered(ctx, ev)
 		}
 		return nil
 	})

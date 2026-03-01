@@ -17,7 +17,7 @@ type DBScheduler struct {
 	txMgr ports.TransactionManager
 	repo  *repo.ScheduledJobRepo
 
-	listener func(ports.SchadulableJob) error
+	listener func(context.Context, ports.SchadulableJob) error
 }
 
 var _ ports.Scheduler = (*DBScheduler)(nil)
@@ -31,7 +31,7 @@ func NewDBScheduler(txMgr ports.TransactionManager, r *repo.ScheduledJobRepo) *D
 }
 
 // Schedule persists a job into the scheduled_jobs table.
-func (s *DBScheduler) Schedule(job ports.SchadulableJob, executeAt int64) error {
+func (s *DBScheduler) Schedule(ctx context.Context, job ports.SchadulableJob, executeAt int64) error {
 	if job == nil {
 		return fmt.Errorf("nil job")
 	}
@@ -39,43 +39,13 @@ func (s *DBScheduler) Schedule(job ports.SchadulableJob, executeAt int64) error 
 	if executeAt <= 0 {
 		executeAt = now
 	}
-	_, err := s.repo.Insert(context.Background(), job, executeAt, now)
+	_, err := s.repo.Insert(ctx, job, executeAt, now)
 	return err
-}
-
-// EnsureScheduled ensures that there is at most one pending job with the same
-// identity (kind + payload) in the scheduled_jobs table. It uses a table-level
-// lock and is intended for rare singleton jobs such as SpawnNearbyLocationsJob
-// seeded at startup.
-func (s *DBScheduler) EnsureScheduled(job ports.SchadulableJob, executeAt int64) error {
-	if job == nil {
-		return fmt.Errorf("nil job")
-	}
-	return s.txMgr.WithTx(func(tx ports.Transaction) error {
-		now := time.Now().Unix()
-		if executeAt <= 0 {
-			executeAt = now
-		}
-		repoTx := s.repo.Tx(tx)
-		ctx := context.Background()
-		if err := repoTx.LockTable(ctx); err != nil {
-			return err
-		}
-		existing, err := repoTx.FindPendingByJobIdentity(ctx, job)
-		if err != nil {
-			return err
-		}
-		if existing != nil {
-			return nil
-		}
-		_, err = repoTx.Insert(ctx, job, executeAt, now)
-		return err
-	})
 }
 
 // Listen registers a single callback to receive job payloads as they are dispatched.
 // Returns an unsubscribe function.
-func (s *DBScheduler) Listen(cb func(ports.SchadulableJob) error) (unsubscribe func()) {
+func (s *DBScheduler) Listen(cb func(context.Context, ports.SchadulableJob) error) (unsubscribe func()) {
 	s.listener = cb
 	return func() {
 		s.listener = nil
@@ -117,7 +87,7 @@ func (s *DBScheduler) Run(ctx context.Context) {
 }
 
 func (s *DBScheduler) processDueJobs(ctx context.Context, now int64, limit int32) error {
-	return s.txMgr.WithTx(func(tx ports.Transaction) error {
+	return s.txMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		repoTx := s.repo.Tx(tx)
 
 		records, err := repoTx.ClaimDue(ctx, now, limit)
@@ -132,7 +102,7 @@ func (s *DBScheduler) processDueJobs(ctx context.Context, now int64, limit int32
 		for _, row := range records {
 			// Deliver the job to listener before marking it as dispatched.
 			// If a handler fails, skip marking dispatched so it can be retried.
-			if err := s.notifyListener(row.Job); err != nil {
+			if err := s.notifyListener(ctx, row.Job); err != nil {
 				continue
 			}
 
@@ -144,10 +114,10 @@ func (s *DBScheduler) processDueJobs(ctx context.Context, now int64, limit int32
 	})
 }
 
-func (s *DBScheduler) notifyListener(job ports.SchadulableJob) error {
+func (s *DBScheduler) notifyListener(ctx context.Context, job ports.SchadulableJob) error {
 	listener := s.listener
 	if listener == nil {
 		return nil
 	}
-	return listener(job)
+	return listener(ctx, job)
 }

@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"context"
+
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
@@ -55,23 +57,23 @@ func NewStorageCommands(
 	}
 }
 
-func (c *StorageCommands) DeletePresentStorageItem(ctx cqrs.CommandContext, baseID int, itemID uuid.UUID) error {
-	if err := c.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+func (c *StorageCommands) DeletePresentStorageItem(ctx context.Context, actor cqrs.Actor, baseID int, itemID uuid.UUID) error {
+	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}
-	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
+	err := c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		bRepo := c.BaseRepo.Tx(tx)
-		base, err := bRepo.FindByIDForUpdate(baseID)
+		base, err := bRepo.FindByIDForUpdate(ctx, baseID)
 		if err != nil {
 			return repoErr(err)
 		}
 		if err := base.DeletePresentStorageItemByID(itemID); err != nil {
 			return err
 		}
-		if err := bRepo.Update(base); err != nil {
+		if err := bRepo.Update(ctx, base); err != nil {
 			return err
 		}
-		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+		if err := c.Outbox.Tx(tx).Save(ctx, base.EventProducer.PullEvents()); err != nil {
 			return err
 		}
 		return nil
@@ -79,23 +81,23 @@ func (c *StorageCommands) DeletePresentStorageItem(ctx cqrs.CommandContext, base
 	return err
 }
 
-func (c *StorageCommands) ActivateBuff(ctx cqrs.CommandContext, baseID int, itemID uuid.UUID) error {
-	if err := c.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+func (c *StorageCommands) ActivateBuff(ctx context.Context, actor cqrs.Actor, baseID int, itemID uuid.UUID) error {
+	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}
-	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
+	err := c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		bRepo := c.BaseRepo.Tx(tx)
-		base, err := bRepo.FindByIDForUpdate(baseID)
+		base, err := bRepo.FindByIDForUpdate(ctx, baseID)
 		if err != nil {
 			return repoErr(err)
 		}
 		if err = base.ActivateBuffByID(itemID); err != nil {
 			return err
 		}
-		if err := bRepo.Update(base); err != nil {
+		if err := bRepo.Update(ctx, base); err != nil {
 			return err
 		}
-		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+		if err := c.Outbox.Tx(tx).Save(ctx, base.EventProducer.PullEvents()); err != nil {
 			return err
 		}
 		return nil
@@ -103,23 +105,23 @@ func (c *StorageCommands) ActivateBuff(ctx cqrs.CommandContext, baseID int, item
 	return err
 }
 
-func (c *StorageCommands) StartIntelDecryption(ctx cqrs.CommandContext, baseID int, itemID uuid.UUID) error {
-	if err := c.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+func (c *StorageCommands) StartIntelDecryption(ctx context.Context, actor cqrs.Actor, baseID int, itemID uuid.UUID) error {
+	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}
-	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
+	err := c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		bRepo := c.BaseRepo.Tx(tx)
-		base, err := bRepo.FindByIDForUpdate(baseID)
+		base, err := bRepo.FindByIDForUpdate(ctx, baseID)
 		if err != nil {
 			return repoErr(err)
 		}
 		if err = base.StartIntelDecryptionByID(itemID); err != nil {
 			return err
 		}
-		if err := bRepo.Update(base); err != nil {
+		if err := bRepo.Update(ctx, base); err != nil {
 			return err
 		}
-		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+		if err := c.Outbox.Tx(tx).Save(ctx, base.EventProducer.PullEvents()); err != nil {
 			return err
 		}
 		return nil
@@ -127,27 +129,27 @@ func (c *StorageCommands) StartIntelDecryption(ctx cqrs.CommandContext, baseID i
 	return err
 }
 
-func (c *StorageCommands) StartDamagedItemRestoration(ctx cqrs.CommandContext, baseID int, itemID uuid.UUID) error {
-	if err := c.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+func (c *StorageCommands) StartDamagedItemRestoration(ctx context.Context, actor cqrs.Actor, baseID int, itemID uuid.UUID) error {
+	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}
-	armyProtos, err := c.ArmyPrototypes.FindAllPrototypes()
+	armyProtos, err := c.ArmyPrototypes.FindAllPrototypes(ctx)
 	if err != nil {
 		return err
 	}
-	err = c.TxMgr.WithTx(func(tx ports.Transaction) error {
+	err = c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		bRepo := c.BaseRepo.Tx(tx)
-		base, err := bRepo.FindByIDForUpdate(baseID)
+		base, err := bRepo.FindByIDForUpdate(ctx, baseID)
 		if err != nil {
 			return repoErr(err)
 		}
 		if err = base.StartDamagedItemRestorationByID(itemID, armyProtos); err != nil {
 			return err
 		}
-		if err := bRepo.Update(base); err != nil {
+		if err := bRepo.Update(ctx, base); err != nil {
 			return err
 		}
-		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+		if err := c.Outbox.Tx(tx).Save(ctx, base.EventProducer.PullEvents()); err != nil {
 			return err
 		}
 		return nil
@@ -155,23 +157,23 @@ func (c *StorageCommands) StartDamagedItemRestoration(ctx cqrs.CommandContext, b
 	return err
 }
 
-func (c *StorageCommands) ActivateArtifact(ctx cqrs.CommandContext, baseID int, itemID uuid.UUID) error {
-	if err := c.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+func (c *StorageCommands) ActivateArtifact(ctx context.Context, actor cqrs.Actor, baseID int, itemID uuid.UUID) error {
+	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}
-	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
+	err := c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		bRepo := c.BaseRepo.Tx(tx)
-		base, err := bRepo.FindByIDForUpdate(baseID)
+		base, err := bRepo.FindByIDForUpdate(ctx, baseID)
 		if err != nil {
 			return repoErr(err)
 		}
 		if err = base.ActivateArtifactByID(itemID); err != nil {
 			return err
 		}
-		if err := bRepo.Update(base); err != nil {
+		if err := bRepo.Update(ctx, base); err != nil {
 			return err
 		}
-		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+		if err := c.Outbox.Tx(tx).Save(ctx, base.EventProducer.PullEvents()); err != nil {
 			return err
 		}
 		return nil
@@ -179,23 +181,23 @@ func (c *StorageCommands) ActivateArtifact(ctx cqrs.CommandContext, baseID int, 
 	return err
 }
 
-func (c *StorageCommands) DeactivateArtifact(ctx cqrs.CommandContext, baseID int, itemID uuid.UUID) error {
-	if err := c.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+func (c *StorageCommands) DeactivateArtifact(ctx context.Context, actor cqrs.Actor, baseID int, itemID uuid.UUID) error {
+	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}
-	err := c.TxMgr.WithTx(func(tx ports.Transaction) error {
+	err := c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		bRepo := c.BaseRepo.Tx(tx)
-		base, err := bRepo.FindByIDForUpdate(baseID)
+		base, err := bRepo.FindByIDForUpdate(ctx, baseID)
 		if err != nil {
 			return repoErr(err)
 		}
 		if err = base.DeactivateArtifactByID(itemID); err != nil {
 			return err
 		}
-		if err := bRepo.Update(base); err != nil {
+		if err := bRepo.Update(ctx, base); err != nil {
 			return err
 		}
-		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+		if err := c.Outbox.Tx(tx).Save(ctx, base.EventProducer.PullEvents()); err != nil {
 			return err
 		}
 		return nil
@@ -203,13 +205,13 @@ func (c *StorageCommands) DeactivateArtifact(ctx cqrs.CommandContext, baseID int
 	return err
 }
 
-func (c *StorageCommands) OpenConsumableBox(ctx cqrs.CommandContext, baseID int, itemID uuid.UUID) error {
-	if err := c.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+func (c *StorageCommands) OpenConsumableBox(ctx context.Context, actor cqrs.Actor, baseID int, itemID uuid.UUID) error {
+	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}
 
 	// Load all prototypes for the reward service
-	allProtos, err := c.StoragePrototypes.FindAllPrototypes()
+	allProtos, err := c.StoragePrototypes.FindAllPrototypes(ctx)
 	if err != nil {
 		return err
 	}
@@ -229,15 +231,15 @@ func (c *StorageCommands) OpenConsumableBox(ctx cqrs.CommandContext, baseID int,
 		}
 	}
 
-	err = c.TxMgr.WithTx(func(tx ports.Transaction) error {
+	err = c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		bRepo := c.BaseRepo.Tx(tx)
 		uRepo := c.UserRepo.Tx(tx)
 
-		base, err := bRepo.FindByIDForUpdate(baseID)
+		base, err := bRepo.FindByIDForUpdate(ctx, baseID)
 		if err != nil {
 			return repoErr(err)
 		}
-		user, err := uRepo.FindByIDForUpdate(ctx.UserID)
+		user, err := uRepo.FindByIDForUpdate(ctx, actor.UserID)
 		if err != nil {
 			return repoErr(err)
 		}
@@ -247,13 +249,13 @@ func (c *StorageCommands) OpenConsumableBox(ctx cqrs.CommandContext, baseID int,
 			return err
 		}
 
-		if err := bRepo.Update(base); err != nil {
+		if err := bRepo.Update(ctx, base); err != nil {
 			return err
 		}
-		if err := uRepo.Update(user); err != nil {
+		if err := uRepo.Update(ctx, user); err != nil {
 			return err
 		}
-		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+		if err := c.Outbox.Tx(tx).Save(ctx, base.EventProducer.PullEvents()); err != nil {
 			return err
 		}
 		return nil
@@ -261,8 +263,8 @@ func (c *StorageCommands) OpenConsumableBox(ctx cqrs.CommandContext, baseID int,
 	return err
 }
 
-func (c *StorageCommands) HandleBuffActivatedEvent(event *domain.BuffActivatedEvent) error {
-	base, err := c.BaseRepo.FindByID(event.BaseID)
+func (c *StorageCommands) HandleBuffActivatedEvent(ctx context.Context, event domain.BuffActivatedEvent) error {
+	base, err := c.BaseRepo.FindByID(ctx, event.BaseID)
 	if err != nil {
 		return err
 	}
@@ -277,11 +279,11 @@ func (c *StorageCommands) HandleBuffActivatedEvent(event *domain.BuffActivatedEv
 		return nil
 	}
 	cmd := ports.DeleteExpiredBuffJob{BaseID: event.BaseID, ItemID: event.ItemID}
-	return c.Scheduler.Schedule(cmd, *activatedBuff.ExpiresAt)
+	return c.Scheduler.Schedule(ctx, cmd, *activatedBuff.ExpiresAt)
 }
 
-func (c *StorageCommands) HandleIntelDecryptionStartedEvent(event *domain.IntelDecryptionStartedEvent) error {
-	base, err := c.BaseRepo.FindByID(event.BaseID)
+func (c *StorageCommands) HandleIntelDecryptionStartedEvent(ctx context.Context, event domain.IntelDecryptionStartedEvent) error {
+	base, err := c.BaseRepo.FindByID(ctx, event.BaseID)
 	if err != nil {
 		return err
 	}
@@ -296,11 +298,11 @@ func (c *StorageCommands) HandleIntelDecryptionStartedEvent(event *domain.IntelD
 		return nil
 	}
 	cmd := ports.DecryptIntelItemJob{BaseID: event.BaseID, ItemID: event.ItemID}
-	return c.Scheduler.Schedule(cmd, *intelItem.ExpiresAt)
+	return c.Scheduler.Schedule(ctx, cmd, *intelItem.ExpiresAt)
 }
 
-func (c *StorageCommands) HandleDamagedItemRestorationStartedEvent(event *domain.DamagedItemRestorationStartedEvent) error {
-	base, err := c.BaseRepo.FindByID(event.BaseID)
+func (c *StorageCommands) HandleDamagedItemRestorationStartedEvent(ctx context.Context, event domain.DamagedItemRestorationStartedEvent) error {
+	base, err := c.BaseRepo.FindByID(ctx, event.BaseID)
 	if err != nil {
 		return err
 	}
@@ -315,31 +317,31 @@ func (c *StorageCommands) HandleDamagedItemRestorationStartedEvent(event *domain
 		return nil
 	}
 	cmd := ports.RestoreDamagedItemJob{BaseID: event.BaseID, ItemID: event.ItemID}
-	return c.Scheduler.Schedule(cmd, *damagedItem.ExpiresAt)
+	return c.Scheduler.Schedule(ctx, cmd, *damagedItem.ExpiresAt)
 }
 
-func (c *StorageCommands) HandleDeleteExpiredBuffJob(cmd ports.DeleteExpiredBuffJob) error {
-	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
+func (c *StorageCommands) HandleDeleteExpiredBuffJob(ctx context.Context, cmd ports.DeleteExpiredBuffJob) error {
+	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		bRepo := c.BaseRepo.Tx(tx)
-		base, err := bRepo.FindByIDForUpdate(cmd.BaseID)
+		base, err := bRepo.FindByIDForUpdate(ctx, cmd.BaseID)
 		if err != nil {
 			return err
 		}
 		base.DeleteExpiredBuffs()
-		if err := bRepo.Update(base); err != nil {
+		if err := bRepo.Update(ctx, base); err != nil {
 			return err
 		}
-		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+		if err := c.Outbox.Tx(tx).Save(ctx, base.EventProducer.PullEvents()); err != nil {
 			return err
 		}
 		return nil
 	})
 }
 
-func (c *StorageCommands) HandleDecryptIntelItemJob(cmd ports.DecryptIntelItemJob) error {
-	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
+func (c *StorageCommands) HandleDecryptIntelItemJob(ctx context.Context, cmd ports.DecryptIntelItemJob) error {
+	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		bRepo := c.BaseRepo.Tx(tx)
-		base, err := bRepo.FindByIDForUpdate(cmd.BaseID)
+		base, err := bRepo.FindByIDForUpdate(ctx, cmd.BaseID)
 		if err != nil {
 			return err
 		}
@@ -352,25 +354,25 @@ func (c *StorageCommands) HandleDecryptIntelItemJob(cmd ports.DecryptIntelItemJo
 		var report *domain.SectorScanReport
 		switch intelType {
 		case domain.HiddenLocationTypeResourceful:
-			loc, err := c.ResourceLocations.Tx(tx).FindClosest(base.Coordinates.X, base.Coordinates.Y)
+			loc, err := c.ResourceLocations.Tx(tx).FindClosest(ctx, base.Coordinates.X, base.Coordinates.Y)
 			if err == nil {
-				sector, _ := c.SectorRepo.Tx(tx).FindByCoordinates(loc.Coordinates.X, loc.Coordinates.Y)
+				sector, _ := c.SectorRepo.Tx(tx).FindByCoordinates(ctx, loc.Coordinates.X, loc.Coordinates.Y)
 				if sector != nil {
 					report = domain.NewSectorScanReportFromResourceLocation(base.ID, sector, loc)
 				}
 			}
 		case domain.HiddenLocationTypeDangerous:
-			loc, err := c.DangerousLocations.Tx(tx).FindClosest(base.Coordinates.X, base.Coordinates.Y)
+			loc, err := c.DangerousLocations.Tx(tx).FindClosest(ctx, base.Coordinates.X, base.Coordinates.Y)
 			if err == nil {
-				sector, _ := c.SectorRepo.Tx(tx).FindByCoordinates(loc.Coordinates.X, loc.Coordinates.Y)
+				sector, _ := c.SectorRepo.Tx(tx).FindByCoordinates(ctx, loc.Coordinates.X, loc.Coordinates.Y)
 				if sector != nil {
 					report = domain.NewSectorScanReportFromDangerousLocation(base.ID, sector, loc)
 				}
 			}
 		case domain.HiddenLocationTypeUserBase:
-			target, err := c.BaseRepo.Tx(tx).FindClosest(base.Coordinates.X, base.Coordinates.Y)
+			target, err := c.BaseRepo.Tx(tx).FindClosest(ctx, base.Coordinates.X, base.Coordinates.Y)
 			if err == nil {
-				sector, _ := c.SectorRepo.Tx(tx).FindByCoordinates(target.Coordinates.X, target.Coordinates.Y)
+				sector, _ := c.SectorRepo.Tx(tx).FindByCoordinates(ctx, target.Coordinates.X, target.Coordinates.Y)
 				if sector != nil {
 					report = domain.NewSectorScanReportFromUserBase(base.ID, sector, target)
 				}
@@ -379,44 +381,44 @@ func (c *StorageCommands) HandleDecryptIntelItemJob(cmd ports.DecryptIntelItemJo
 
 		if report != nil {
 			report.SourceIntelItemID = &cmd.ItemID
-			if err := c.ScanReports.Tx(tx).Create(report); err != nil {
+			if err := c.ScanReports.Tx(tx).Create(ctx, report); err != nil {
 				return err
 			}
 			report.EmitCreated()
-			if err := c.Outbox.Tx(tx).Save(report.PullEvents()); err != nil {
+			if err := c.Outbox.Tx(tx).Save(ctx, report.PullEvents()); err != nil {
 				return err
 			}
 		}
 
-		if err := bRepo.Update(base); err != nil {
+		if err := bRepo.Update(ctx, base); err != nil {
 			return err
 		}
-		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+		if err := c.Outbox.Tx(tx).Save(ctx, base.EventProducer.PullEvents()); err != nil {
 			return err
 		}
 		return nil
 	})
 }
 
-func (c *StorageCommands) HandleRestoreDamagedItemJob(cmd ports.RestoreDamagedItemJob) error {
-	armyProtos, err := c.ArmyPrototypes.FindAllPrototypes()
+func (c *StorageCommands) HandleRestoreDamagedItemJob(ctx context.Context, cmd ports.RestoreDamagedItemJob) error {
+	armyProtos, err := c.ArmyPrototypes.FindAllPrototypes(ctx)
 	if err != nil {
 		return err
 	}
 
-	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
+	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		bRepo := c.BaseRepo.Tx(tx)
-		base, err := bRepo.FindByIDForUpdate(cmd.BaseID)
+		base, err := bRepo.FindByIDForUpdate(ctx, cmd.BaseID)
 		if err != nil {
 			return err
 		}
 		if err := base.RestoreDamagedItemByID(cmd.ItemID, armyProtos); err != nil {
 			return err
 		}
-		if err := bRepo.Update(base); err != nil {
+		if err := bRepo.Update(ctx, base); err != nil {
 			return err
 		}
-		if err := c.Outbox.Tx(tx).Save(base.EventProducer.PullEvents()); err != nil {
+		if err := c.Outbox.Tx(tx).Save(ctx, base.EventProducer.PullEvents()); err != nil {
 			return err
 		}
 		return nil

@@ -26,12 +26,12 @@ func (r *BuildPrototypeRepo) Tx(tx ports.Transaction) ports.BuildPrototypeReposi
 	return r
 }
 
-func (r *BuildPrototypeRepo) CreatePrototype(proto *domain.BuildItemPrototype) error {
+func (r *BuildPrototypeRepo) CreatePrototype(_ context.Context, proto *domain.BuildItemPrototype) error {
 	return errors.New("CreatePrototype not implemented for build prototypes (read-only in this service)")
 }
 
-func (r *BuildPrototypeRepo) FindPrototypeByID(id int) (*domain.BuildItemPrototype, error) {
-	p, err := r.q.GetBuildPrototypeByID(context.Background(), int64(id))
+func (r *BuildPrototypeRepo) FindPrototypeByID(ctx context.Context, id int) (*domain.BuildItemPrototype, error) {
+	p, err := r.q.GetBuildPrototypeByID(ctx, int64(id))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ports.ErrNotFound
@@ -41,18 +41,18 @@ func (r *BuildPrototypeRepo) FindPrototypeByID(id int) (*domain.BuildItemPrototy
 	return mappers.BuildPrototypeFromDB(p), nil
 }
 
-func (r *BuildPrototypeRepo) FindAllPrototypes() ([]*domain.BuildItemPrototype, error) {
-	rows, err := r.q.ListBuildPrototypes(context.Background())
+func (r *BuildPrototypeRepo) FindAllPrototypes(ctx context.Context) ([]*domain.BuildItemPrototype, error) {
+	rows, err := r.q.ListBuildPrototypes(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return mappers.BuildPrototypesFromDB(rows), nil
 }
 
-func (r *BuildPrototypeRepo) UpdatePrototype(proto *domain.BuildItemPrototype) error {
+func (r *BuildPrototypeRepo) UpdatePrototype(_ context.Context, proto *domain.BuildItemPrototype) error {
 	return errors.New("UpdatePrototype not implemented for build prototypes (read-only in this service)")
 }
 
-func (r *BuildPrototypeRepo) DeletePrototype(id int) error {
+func (r *BuildPrototypeRepo) DeletePrototype(_ context.Context, id int) error {
 	return errors.New("DeletePrototype not implemented for build prototypes (read-only in this service)")
 }

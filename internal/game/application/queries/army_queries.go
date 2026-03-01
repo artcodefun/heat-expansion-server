@@ -1,6 +1,8 @@
 package queries
 
 import (
+	"context"
+
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
@@ -18,16 +20,16 @@ func NewArmyQueries(repo ports.ArmyReadRepository, protoRepo ports.ArmyPrototype
 	return &ArmyQueries{Repo: repo, ProtoRepo: protoRepo, BaseRepo: baseRepo, Access: access}
 }
 
-func (q *ArmyQueries) ListNewArmyItems(ctx cqrs.QueryContext, baseID int, category readmodels.ArmyCategory) ([]*readmodels.ArmyItemNew, error) {
-	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+func (q *ArmyQueries) ListNewArmyItems(ctx context.Context, actor cqrs.Actor, baseID int, category readmodels.ArmyCategory) ([]*readmodels.ArmyItemNew, error) {
+	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}
 	// Load all army prototypes and user base aggregate
-	allProtos, err := q.ProtoRepo.FindAllPrototypes()
+	allProtos, err := q.ProtoRepo.FindAllPrototypes(ctx)
 	if err != nil {
 		return nil, repoErr(err)
 	}
-	base, err := q.BaseRepo.FindByID(baseID)
+	base, err := q.BaseRepo.FindByID(ctx, baseID)
 	if err != nil {
 		return nil, repoErr(err)
 	}
@@ -41,27 +43,27 @@ func (q *ArmyQueries) ListNewArmyItems(ctx cqrs.QueryContext, baseID int, catego
 			ids = append(ids, p.ID)
 		}
 	}
-	items, err := q.Repo.ListNewArmyItemsByPrototypeIDs(ids)
+	items, err := q.Repo.ListNewArmyItemsByPrototypeIDs(ctx, ids)
 	return items, repoErr(err)
 }
-func (q *ArmyQueries) ListPendingArmyItems(ctx cqrs.QueryContext, baseID int, category readmodels.ArmyCategory) ([]*readmodels.ArmyItemPending, error) {
-	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+func (q *ArmyQueries) ListPendingArmyItems(ctx context.Context, actor cqrs.Actor, baseID int, category readmodels.ArmyCategory) ([]*readmodels.ArmyItemPending, error) {
+	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}
-	items, err := q.Repo.ListPendingArmyItems(baseID, category)
+	items, err := q.Repo.ListPendingArmyItems(ctx, baseID, category)
 	return items, repoErr(err)
 }
-func (q *ArmyQueries) ListInProductionArmyItems(ctx cqrs.QueryContext, baseID int, category readmodels.ArmyCategory) ([]*readmodels.ArmyItemInProduction, error) {
-	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+func (q *ArmyQueries) ListInProductionArmyItems(ctx context.Context, actor cqrs.Actor, baseID int, category readmodels.ArmyCategory) ([]*readmodels.ArmyItemInProduction, error) {
+	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}
-	items, err := q.Repo.ListInProductionArmyItems(baseID, category)
+	items, err := q.Repo.ListInProductionArmyItems(ctx, baseID, category)
 	return items, repoErr(err)
 }
-func (q *ArmyQueries) ListPresentArmyItems(ctx cqrs.QueryContext, baseID int, category readmodels.ArmyCategory) ([]*readmodels.ArmyItemPresent, error) {
-	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+func (q *ArmyQueries) ListPresentArmyItems(ctx context.Context, actor cqrs.Actor, baseID int, category readmodels.ArmyCategory) ([]*readmodels.ArmyItemPresent, error) {
+	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}
-	items, err := q.Repo.ListPresentArmyItems(baseID, category)
+	items, err := q.Repo.ListPresentArmyItems(ctx, baseID, category)
 	return items, repoErr(err)
 }

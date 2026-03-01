@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
@@ -28,26 +29,26 @@ func NewBaseCommands(userBaseRepo ports.UserBaseRepository, sectorRepo ports.Sec
 }
 
 // CreateBase creates a new base for a user.
-func (c *BaseCommands) CreateBase(ctx cqrs.CommandContext, userID uuid.UUID) error {
-	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
+func (c *BaseCommands) CreateBase(ctx context.Context, actor cqrs.Actor, userID uuid.UUID) error {
+	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		sRepo := c.SectorRepo.Tx(tx)
 		bRepo := c.UserBaseRepo.Tx(tx)
 		biRepo := c.BuildRepo.Tx(tx)
 		aiRepo := c.ArmyRepo.Tx(tx)
 
 		// 1. Fetch starter prototypes
-		allBuildProtos, err := biRepo.FindAllPrototypes()
+		allBuildProtos, err := biRepo.FindAllPrototypes(ctx)
 		if err != nil {
 			return repoErr(err)
 		}
-		allArmyProtos, err := aiRepo.FindAllPrototypes()
+		allArmyProtos, err := aiRepo.FindAllPrototypes(ctx)
 		if err != nil {
 			return repoErr(err)
 		}
 
 		const maxAttempts = 10
 		for attempt := 0; attempt < maxAttempts; attempt++ {
-			occupiedCoordinates, err := sRepo.ListOccupiedCoordinates()
+			occupiedCoordinates, err := sRepo.ListOccupiedCoordinates(ctx)
 			if err != nil {
 				return repoErr(err)
 			}
@@ -60,13 +61,13 @@ func (c *BaseCommands) CreateBase(ctx cqrs.CommandContext, userID uuid.UUID) err
 			// Fill up starter resources
 			base.FillStarterResources()
 
-			created, err := c.SectorProvisioner.CreateUserBaseIfEmpty(sRepo, bRepo, base)
+			created, err := c.SectorProvisioner.CreateUserBaseIfEmpty(ctx, sRepo, bRepo, base)
 			if err != nil {
 				return err
 			}
 			if created {
 				base.EmitCreated()
-				return c.Outbox.Tx(tx).Save(base.PullEvents())
+				return c.Outbox.Tx(tx).Save(ctx, base.PullEvents())
 			}
 		}
 		return fmt.Errorf("no free sector after attempts")
@@ -74,6 +75,6 @@ func (c *BaseCommands) CreateBase(ctx cqrs.CommandContext, userID uuid.UUID) err
 }
 
 // HandleUserAccountCreatedEvent reacts to user creation.
-func (c *BaseCommands) HandleUserAccountCreatedEvent(ev domain.UserAccountCreatedEvent) error {
-	return c.CreateBase(cqrs.CommandContext{}, ev.UserID)
+func (c *BaseCommands) HandleUserAccountCreatedEvent(ctx context.Context, ev domain.UserAccountCreatedEvent) error {
+	return c.CreateBase(ctx, cqrs.Actor{UserID: ev.UserID}, ev.UserID)
 }

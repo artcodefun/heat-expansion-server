@@ -23,12 +23,12 @@ func NewActivityHandler(queries cqrs.ActivityQueries, translator ports.Translato
 
 // ListOffense handles GET /bases/:baseId/activities/offense.
 func (h *ActivityHandler) ListOffense(c *gin.Context) {
+	actor := actor(c)
 	var req dtos.OffenseActivityListRequest
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := queryCtx(c)
-	activities, err := h.queries.ListOffenseActivities(ctx, req.Uri.BaseID, req.Query.Subtype, req.Query.Limit)
+	activities, err := h.queries.ListOffenseActivities(c.Request.Context(), actor, req.Uri.BaseID, req.Query.Subtype, req.Query.Limit)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
@@ -37,12 +37,12 @@ func (h *ActivityHandler) ListOffense(c *gin.Context) {
 
 // ListDefense handles GET /bases/:baseId/activities/defense.
 func (h *ActivityHandler) ListDefense(c *gin.Context) {
+	actor := actor(c)
 	var req dtos.DefenseActivityListRequest
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := queryCtx(c)
-	activities, err := h.queries.ListDefenseActivities(ctx, req.Uri.BaseID, req.Query.Subtype, req.Query.Limit)
+	activities, err := h.queries.ListDefenseActivities(c.Request.Context(), actor, req.Uri.BaseID, req.Query.Subtype, req.Query.Limit)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
@@ -51,12 +51,12 @@ func (h *ActivityHandler) ListDefense(c *gin.Context) {
 
 // ListScan handles GET /bases/:baseId/activities/scan.
 func (h *ActivityHandler) ListScan(c *gin.Context) {
+	actor := actor(c)
 	var req dtos.ScanActivityListRequest
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := queryCtx(c)
-	activities, err := h.queries.ListScanActivities(ctx, req.Uri.BaseID, req.Query.Subtype, req.Query.Limit)
+	activities, err := h.queries.ListScanActivities(c.Request.Context(), actor, req.Uri.BaseID, req.Query.Subtype, req.Query.Limit)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
@@ -65,12 +65,12 @@ func (h *ActivityHandler) ListScan(c *gin.Context) {
 
 // ListRadar handles GET /bases/:baseId/activities/radar.
 func (h *ActivityHandler) ListRadar(c *gin.Context) {
+	actor := actor(c)
 	var req dtos.ActivityListRequest
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := queryCtx(c)
-	activities, err := h.queries.ListRadarActivities(ctx, req.Uri.BaseID, req.Query.Limit)
+	activities, err := h.queries.ListRadarActivities(c.Request.Context(), actor, req.Uri.BaseID, req.Query.Limit)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
@@ -79,12 +79,12 @@ func (h *ActivityHandler) ListRadar(c *gin.Context) {
 
 // ListTrade handles GET /bases/:baseId/activities/trade.
 func (h *ActivityHandler) ListTrade(c *gin.Context) {
+	actor := actor(c)
 	var req dtos.ActivityListRequest
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := queryCtx(c)
-	activities, err := h.queries.ListTradeActivities(ctx, req.Uri.BaseID, req.Query.Limit)
+	activities, err := h.queries.ListTradeActivities(c.Request.Context(), actor, req.Uri.BaseID, req.Query.Limit)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}

@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"context"
+
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 )
@@ -20,9 +22,9 @@ func NewRadarThreatCommands(radarThreatRepo ports.RadarThreatRepository, outbox 
 }
 
 // HandleMilitaryOperationArrivedEvent updates the radar threat status when the operation arrives at target.
-func (c *RadarThreatCommands) HandleMilitaryOperationArrivedEvent(event domain.MilitaryOperationArrivedEvent) error {
-	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
-		threat, err := c.RadarThreatRepo.Tx(tx).FindByOperationID(event.OperationID)
+func (c *RadarThreatCommands) HandleMilitaryOperationArrivedEvent(ctx context.Context, event domain.MilitaryOperationArrivedEvent) error {
+	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
+		threat, err := c.RadarThreatRepo.Tx(tx).FindByOperationID(ctx, event.OperationID)
 		if err != nil {
 			if err == ports.ErrNotFound {
 				return nil
@@ -31,14 +33,14 @@ func (c *RadarThreatCommands) HandleMilitaryOperationArrivedEvent(event domain.M
 		}
 
 		threat.MarkArrived()
-		return c.RadarThreatRepo.Tx(tx).Update(threat)
+		return c.RadarThreatRepo.Tx(tx).Update(ctx, threat)
 	})
 }
 
 // HandleMilitaryOperationCancelledEvent updates the radar threat status when the operation is cancelled.
-func (c *RadarThreatCommands) HandleMilitaryOperationCancelledEvent(event domain.MilitaryOperationCancelledEvent) error {
-	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
-		threat, err := c.RadarThreatRepo.Tx(tx).FindByOperationID(event.OperationID)
+func (c *RadarThreatCommands) HandleMilitaryOperationCancelledEvent(ctx context.Context, event domain.MilitaryOperationCancelledEvent) error {
+	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
+		threat, err := c.RadarThreatRepo.Tx(tx).FindByOperationID(ctx, event.OperationID)
 		if err != nil {
 			if err == ports.ErrNotFound {
 				return nil
@@ -47,6 +49,6 @@ func (c *RadarThreatCommands) HandleMilitaryOperationCancelledEvent(event domain
 		}
 
 		threat.MarkLost()
-		return c.RadarThreatRepo.Tx(tx).Update(threat)
+		return c.RadarThreatRepo.Tx(tx).Update(ctx, threat)
 	})
 }

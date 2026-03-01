@@ -1,6 +1,8 @@
 package queries
 
 import (
+	"context"
+
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
@@ -16,21 +18,21 @@ func NewOperationQueries(repo ports.OperationReadRepository, access *services.Ac
 	return &OperationQueries{Repo: repo, Access: access}
 }
 
-func (q *OperationQueries) GetOperation(_ cqrs.QueryContext, operationID int) (*readmodels.MilitaryOperation, error) {
-	op, err := q.Repo.GetOperation(operationID)
+func (q *OperationQueries) GetOperation(ctx context.Context, _ cqrs.Actor, operationID int) (*readmodels.MilitaryOperation, error) {
+	op, err := q.Repo.GetOperation(ctx, operationID)
 	return op, repoErr(err)
 }
-func (q *OperationQueries) ListOperationsByBase(ctx cqrs.QueryContext, baseID int) ([]*readmodels.MilitaryOperation, error) {
-	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+func (q *OperationQueries) ListOperationsByBase(ctx context.Context, actor cqrs.Actor, baseID int) ([]*readmodels.MilitaryOperation, error) {
+	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}
-	ops, err := q.Repo.ListOperationsByBase(baseID)
+	ops, err := q.Repo.ListOperationsByBase(ctx, baseID)
 	return ops, repoErr(err)
 }
-func (q *OperationQueries) ListActiveOperations(ctx cqrs.QueryContext, baseID int) ([]*readmodels.MilitaryOperation, error) {
-	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+func (q *OperationQueries) ListActiveOperations(ctx context.Context, actor cqrs.Actor, baseID int) ([]*readmodels.MilitaryOperation, error) {
+	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}
-	ops, err := q.Repo.ListActiveOperations(baseID)
+	ops, err := q.Repo.ListActiveOperations(ctx, baseID)
 	return ops, repoErr(err)
 }

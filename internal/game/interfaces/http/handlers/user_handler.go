@@ -22,14 +22,14 @@ func NewUserHandler(commands cqrs.UserCommands, queries cqrs.UserQueries, transl
 
 // GetCrystalBalance handles GET /user/balance and returns the authenticated user's crystal balance.
 func (h *UserHandler) GetCrystalBalance(c *gin.Context) {
-	ctx := queryCtx(c)
-	if ctx.UserID == uuid.Nil {
+	actor := actor(c)
+	if actor.UserID == uuid.Nil {
 		// Should not normally happen with Auth middleware, but guard just in case.
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
 
-	user, err := h.queries.GetUserProfile(ctx, ctx.UserID)
+	user, err := h.queries.GetUserProfile(c.Request.Context(), actor, actor.UserID)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}

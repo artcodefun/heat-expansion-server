@@ -24,8 +24,8 @@ func (h *AccountHandler) Register(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := commandCtx(c)
-	if err := h.commands.RegisterAccount(ctx, req.Name, req.Email, req.Password); handleCoreErr(c, h.translator, err) {
+	actor := actor(c)
+	if err := h.commands.RegisterAccount(c.Request.Context(), actor, req.Name, req.Email, req.Password); handleCoreErr(c, h.translator, err) {
 		return
 	}
 	c.Status(http.StatusCreated)
@@ -36,8 +36,8 @@ func (h *AccountHandler) Login(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	ctx := commandCtx(c)
-	token, err := h.commands.Login(ctx, req.Email, req.Password)
+	actor := actor(c)
+	token, err := h.commands.Login(c.Request.Context(), actor, req.Email, req.Password)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}

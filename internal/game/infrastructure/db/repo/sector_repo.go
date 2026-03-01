@@ -25,23 +25,23 @@ func (r *SectorRepo) Tx(tx ports.Transaction) ports.SectorRepository {
 }
 
 // Create persists a sector. Location details are stored in sector row (name/description/image_url).
-func (r *SectorRepo) Create(sector *domain.SectorModel) error {
+func (r *SectorRepo) Create(ctx context.Context, sector *domain.SectorModel) error {
 	params := mappers.InsertSectorParamsFromDomain(sector)
-	_, err := r.q.CreateSector(context.Background(), params)
+	_, err := r.q.CreateSector(ctx, params)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *SectorRepo) Update(sector *domain.SectorModel) error {
+func (r *SectorRepo) Update(ctx context.Context, sector *domain.SectorModel) error {
 	params := mappers.UpdateSectorParamsFromDomain(sector)
-	_, err := r.q.UpdateSector(context.Background(), params)
+	_, err := r.q.UpdateSector(ctx, params)
 	return err
 }
 
-func (r *SectorRepo) FindByCoordinates(x int, y int) (*domain.SectorModel, error) {
-	row, err := r.q.GetSectorByCoordinates(context.Background(), gen.GetSectorByCoordinatesParams{X: int32(x), Y: int32(y)})
+func (r *SectorRepo) FindByCoordinates(ctx context.Context, x int, y int) (*domain.SectorModel, error) {
+	row, err := r.q.GetSectorByCoordinates(ctx, gen.GetSectorByCoordinatesParams{X: int32(x), Y: int32(y)})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ports.ErrNotFound
@@ -51,8 +51,8 @@ func (r *SectorRepo) FindByCoordinates(x int, y int) (*domain.SectorModel, error
 	return mappers.SectorFromDB(row), nil
 }
 
-func (r *SectorRepo) FindAll() ([]*domain.SectorModel, error) {
-	rows, err := r.q.ListSectors(context.Background())
+func (r *SectorRepo) FindAll(ctx context.Context) ([]*domain.SectorModel, error) {
+	rows, err := r.q.ListSectors(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -63,8 +63,8 @@ func (r *SectorRepo) FindAll() ([]*domain.SectorModel, error) {
 	return out, nil
 }
 
-func (r *SectorRepo) FindByCoordinatesForUpdate(x int, y int) (*domain.SectorModel, error) {
-	row, err := r.q.GetSectorByCoordinatesForUpdate(context.Background(), gen.GetSectorByCoordinatesForUpdateParams{X: int32(x), Y: int32(y)})
+func (r *SectorRepo) FindByCoordinatesForUpdate(ctx context.Context, x int, y int) (*domain.SectorModel, error) {
+	row, err := r.q.GetSectorByCoordinatesForUpdate(ctx, gen.GetSectorByCoordinatesForUpdateParams{X: int32(x), Y: int32(y)})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ports.ErrNotFound
@@ -74,8 +74,8 @@ func (r *SectorRepo) FindByCoordinatesForUpdate(x int, y int) (*domain.SectorMod
 	return mappers.SectorFromDB(row), nil
 }
 
-func (r *SectorRepo) ListOccupiedCoordinates() ([]domain.Vector2i, error) {
-	rows, err := r.q.ListOccupiedSectorCoordinates(context.Background())
+func (r *SectorRepo) ListOccupiedCoordinates(ctx context.Context) ([]domain.Vector2i, error) {
+	rows, err := r.q.ListOccupiedSectorCoordinates(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -86,8 +86,8 @@ func (r *SectorRepo) ListOccupiedCoordinates() ([]domain.Vector2i, error) {
 	return out, nil
 }
 
-func (r *SectorRepo) GetLocationTypeByCoordinates(x int, y int) (domain.LocationType, error) {
-	row, err := r.q.GetLocationTypeByCoordinates(context.Background(), gen.GetLocationTypeByCoordinatesParams{X: int32(x), Y: int32(y)})
+func (r *SectorRepo) GetLocationTypeByCoordinates(ctx context.Context, x int, y int) (domain.LocationType, error) {
+	row, err := r.q.GetLocationTypeByCoordinates(ctx, gen.GetLocationTypeByCoordinatesParams{X: int32(x), Y: int32(y)})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return domain.LocationTypeEmpty, ports.ErrNotFound
@@ -97,8 +97,7 @@ func (r *SectorRepo) GetLocationTypeByCoordinates(x int, y int) (domain.Location
 	return domain.LocationType(row), nil
 }
 
-func (r *SectorRepo) CountLocationsInRange(x, y, radius int) (resourceful int, dangerous int, err error) {
-	ctx := context.Background()
+func (r *SectorRepo) CountLocationsInRange(ctx context.Context, x, y, radius int) (resourceful int, dangerous int, err error) {
 	params := gen.CountResourcefulLocationsInRangeParams{
 		CenterX: int32(x),
 		CenterY: int32(y),

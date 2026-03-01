@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"math/rand"
 	"time"
 
@@ -61,14 +62,14 @@ func NewWorldGenerationCommands(
 	}
 }
 
-func (c *WorldGenerationCommands) HandleSpawnNearbyLocationsJob(job ports.SpawnNearbyLocationsJob) error {
+func (c *WorldGenerationCommands) HandleSpawnNearbyLocationsJob(ctx context.Context, job ports.SpawnNearbyLocationsJob) error {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	if job.BaseID == 0 {
 		return nil
 	}
 
-	base, err := c.UserBases.FindByID(job.BaseID)
+	base, err := c.UserBases.FindByID(ctx, job.BaseID)
 	if err != nil {
 		// If base is gone, stop rescheduling
 		return nil
@@ -77,14 +78,14 @@ func (c *WorldGenerationCommands) HandleSpawnNearbyLocationsJob(job ports.SpawnN
 	center := base.Coordinates
 
 	// 2. Count locations in range using SQL
-	resourceCount, dangerousCount, err := c.Sectors.CountLocationsInRange(center.X, center.Y, c.SpawnRadius)
+	resourceCount, dangerousCount, err := c.Sectors.CountLocationsInRange(ctx, center.X, center.Y, c.SpawnRadius)
 	if err != nil {
-		c.reschedule(job.BaseID)
+		c.reschedule(ctx, job.BaseID)
 		return nil
 	}
 
 	if resourceCount >= c.MaxResourcefulNearby && dangerousCount >= c.MaxDangerousNearby {
-		c.reschedule(job.BaseID)
+		c.reschedule(ctx, job.BaseID)
 		return nil
 	}
 
@@ -94,9 +95,9 @@ func (c *WorldGenerationCommands) HandleSpawnNearbyLocationsJob(job ports.SpawnN
 		scaleFactor = 1.0
 	}
 
-	storageProtos, _ := c.StoragePrototypes.FindAllPrototypes()
-	armyProtos, _ := c.ArmyPrototypes.FindAllPrototypes()
-	buildProtos, _ := c.BuildPrototypes.FindAllPrototypes()
+	storageProtos, _ := c.StoragePrototypes.FindAllPrototypes(ctx)
+	armyProtos, _ := c.ArmyPrototypes.FindAllPrototypes(ctx)
+	buildProtos, _ := c.BuildPrototypes.FindAllPrototypes(ctx)
 
 	r2 := c.SpawnRadius * c.SpawnRadius
 	for i := 0; i < c.SpawnAttemptsPerJob; i++ {
@@ -107,15 +108,15 @@ func (c *WorldGenerationCommands) HandleSpawnNearbyLocationsJob(job ports.SpawnN
 		}
 		targetX := center.X + dx
 		targetY := center.Y + dy
-		tSector, _ := c.Sectors.FindByCoordinates(targetX, targetY)
+		tSector, _ := c.Sectors.FindByCoordinates(ctx, targetX, targetY)
 		if tSector == nil {
-			_ = c.TxMgr.WithTx(func(tx ports.Transaction) error {
+			_ = c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 				var err error
-				tSector, err = c.Provisioner.EnsureSectorExists(c.Sectors.Tx(tx), targetX, targetY)
+				tSector, err = c.Provisioner.EnsureSectorExists(ctx, c.Sectors.Tx(tx), targetX, targetY)
 				return err
 			})
 		}
-		lt, _ := c.Sectors.GetLocationTypeByCoordinates(targetX, targetY)
+		lt, _ := c.Sectors.GetLocationTypeByCoordinates(ctx, targetX, targetY)
 		if lt != domain.LocationTypeEmpty {
 			continue
 		}
@@ -145,7 +146,7 @@ func (c *WorldGenerationCommands) HandleSpawnNearbyLocationsJob(job ports.SpawnN
 				buildProtos,
 			)
 
-			_ = c.persistResourceful(loc)
+			_ = c.persistResourceful(ctx, loc)
 			break
 		} else if dangerousCount < c.MaxDangerousNearby {
 			// Pick a random dangerous NPC faction
@@ -167,22 +168,22 @@ func (c *WorldGenerationCommands) HandleSpawnNearbyLocationsJob(job ports.SpawnN
 				buildProtos,
 			)
 
-			_ = c.persistDangerous(loc)
+			_ = c.persistDangerous(ctx, loc)
 			break
 		}
 	}
-	c.reschedule(job.BaseID)
+	c.reschedule(ctx, job.BaseID)
 	return nil
 }
 
-func (c *WorldGenerationCommands) HandleUserBaseCreatedEvent(ev domain.UserBaseCreatedEvent) error {
+func (c *WorldGenerationCommands) HandleUserBaseCreatedEvent(ctx context.Context, ev domain.UserBaseCreatedEvent) error {
 	// 1. Immediately spawn specific resourceful locations nearby.
 	// - 1 Credit and 1 Iron at radius 1.
 	// - 4 locations (one of each type) at radius 2 (but not radius 1).
-	base, err := c.UserBases.FindByID(ev.BaseID)
+	base, err := c.UserBases.FindByID(ctx, ev.BaseID)
 	if err == nil {
-		armyProtos, _ := c.ArmyPrototypes.FindAllPrototypes()
-		buildProtos, _ := c.BuildPrototypes.FindAllPrototypes()
+		armyProtos, _ := c.ArmyPrototypes.FindAllPrototypes(ctx)
+		buildProtos, _ := c.BuildPrototypes.FindAllPrototypes(ctx)
 
 		r := rand.New(rand.NewSource(time.Now().UnixNano()))
 		center := base.Coordinates
@@ -210,18 +211,18 @@ func (c *WorldGenerationCommands) HandleUserBaseCreatedEvent(ev domain.UserBaseC
 			for _, target := range candidates {
 				targetX, targetY := target.X, target.Y
 
-				_ = c.TxMgr.WithTx(func(tx ports.Transaction) error {
+				_ = c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 					sRepo := c.Sectors.Tx(tx)
 					rRepo := c.ResourceLocations.Tx(tx)
 
 					// Ensure sector exists
-					tSector, err := c.Provisioner.EnsureSectorExists(sRepo, targetX, targetY)
+					tSector, err := c.Provisioner.EnsureSectorExists(ctx, sRepo, targetX, targetY)
 					if err != nil {
 						return err
 					}
 
 					// Check if empty
-					lt, _ := sRepo.GetLocationTypeByCoordinates(targetX, targetY)
+					lt, _ := sRepo.GetLocationTypeByCoordinates(ctx, targetX, targetY)
 					if lt != domain.LocationTypeEmpty {
 						return nil // Try another spot
 					}
@@ -249,7 +250,7 @@ func (c *WorldGenerationCommands) HandleUserBaseCreatedEvent(ev domain.UserBaseC
 						buildProtos,
 					)
 
-					if err := c.Provisioner.CreateResourceLocationIfEmpty(sRepo, rRepo, loc); err != nil {
+					if err := c.Provisioner.CreateResourceLocationIfEmpty(ctx, sRepo, rRepo, loc); err != nil {
 						return err
 					}
 
@@ -265,7 +266,7 @@ func (c *WorldGenerationCommands) HandleUserBaseCreatedEvent(ev domain.UserBaseC
 	}
 
 	jitter := int64(rand.Intn(60))
-	return c.Scheduler.Schedule(ports.SpawnNearbyLocationsJob{BaseID: ev.BaseID}, time.Now().Unix()+jitter)
+	return c.Scheduler.Schedule(ctx, ports.SpawnNearbyLocationsJob{BaseID: ev.BaseID}, time.Now().Unix()+jitter)
 }
 
 func (c *WorldGenerationCommands) getHexRing(center domain.Vector2i, dist int) []domain.Vector2i {
@@ -322,30 +323,30 @@ func cubeToOffset(c cube) domain.Vector2i {
 	return domain.Vector2i{X: x, Y: y}
 }
 
-func (c *WorldGenerationCommands) persistResourceful(loc *domain.ResourceLocationModel) error {
-	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
+func (c *WorldGenerationCommands) persistResourceful(ctx context.Context, loc *domain.ResourceLocationModel) error {
+	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		sRepo := c.Sectors.Tx(tx)
 		rRepo := c.ResourceLocations.Tx(tx)
-		return c.Provisioner.CreateResourceLocationIfEmpty(sRepo, rRepo, loc)
+		return c.Provisioner.CreateResourceLocationIfEmpty(ctx, sRepo, rRepo, loc)
 	})
 }
 
-func (c *WorldGenerationCommands) persistDangerous(loc *domain.DangerousLocationModel) error {
-	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
+func (c *WorldGenerationCommands) persistDangerous(ctx context.Context, loc *domain.DangerousLocationModel) error {
+	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		sRepo := c.Sectors.Tx(tx)
 		dRepo := c.DangerousLocations.Tx(tx)
-		return c.Provisioner.CreateDangerousLocationIfEmpty(sRepo, dRepo, loc)
+		return c.Provisioner.CreateDangerousLocationIfEmpty(ctx, sRepo, dRepo, loc)
 	})
 }
 
-func (c *WorldGenerationCommands) HandleLocationDrainedEvent(event domain.LocationDrainedEvent) error {
-	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
+func (c *WorldGenerationCommands) HandleLocationDrainedEvent(ctx context.Context, event domain.LocationDrainedEvent) error {
+	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		// 1. Delete the location record
 		var err error
 		if event.Type == domain.LocationTypeResourceful {
-			err = c.ResourceLocations.Tx(tx).DeleteByCoordinates(event.X, event.Y)
+			err = c.ResourceLocations.Tx(tx).DeleteByCoordinates(ctx, event.X, event.Y)
 		} else {
-			err = c.DangerousLocations.Tx(tx).DeleteByCoordinates(event.X, event.Y)
+			err = c.DangerousLocations.Tx(tx).DeleteByCoordinates(ctx, event.X, event.Y)
 		}
 		if err != nil {
 			return err
@@ -357,7 +358,7 @@ func (c *WorldGenerationCommands) HandleLocationDrainedEvent(event domain.Locati
 	})
 }
 
-func (c *WorldGenerationCommands) reschedule(baseID int) {
+func (c *WorldGenerationCommands) reschedule(ctx context.Context, baseID int) {
 	jitter := int64(rand.Intn(300))
-	_ = c.Scheduler.Schedule(ports.SpawnNearbyLocationsJob{BaseID: baseID}, time.Now().Unix()+c.RespawnPeriodSeconds+jitter)
+	_ = c.Scheduler.Schedule(ctx, ports.SpawnNearbyLocationsJob{BaseID: baseID}, time.Now().Unix()+c.RespawnPeriodSeconds+jitter)
 }

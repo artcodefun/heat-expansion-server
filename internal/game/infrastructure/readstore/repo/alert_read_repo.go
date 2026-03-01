@@ -19,9 +19,9 @@ func NewAlertReadRepository(q *gen.Queries) *AlertReadRepository {
 	}
 }
 
-func (r *AlertReadRepository) ListActiveAlerts(baseID int) ([]*readmodels.AlertItem, error) {
+func (r *AlertReadRepository) ListActiveAlerts(ctx context.Context, baseID int) ([]*readmodels.AlertItem, error) {
 	now := time.Now().Unix()
-	rows, err := r.q.ListAlertsByBase(context.Background(), gen.ListAlertsByBaseParams{
+	rows, err := r.q.ListAlertsByBase(ctx, gen.ListAlertsByBaseParams{
 		BaseID:    int64(baseID),
 		ExpiresAt: now,
 	})
@@ -32,9 +32,9 @@ func (r *AlertReadRepository) ListActiveAlerts(baseID int) ([]*readmodels.AlertI
 	return mappers.AlertItemsFromModels(rows), nil
 }
 
-func (r *AlertReadRepository) GetUnreadAlertsCount(baseID int) (int, error) {
+func (r *AlertReadRepository) GetUnreadAlertsCount(ctx context.Context, baseID int) (int, error) {
 	now := time.Now().Unix()
-	count, err := r.q.CountUnreadAlertsByBase(context.Background(), gen.CountUnreadAlertsByBaseParams{
+	count, err := r.q.CountUnreadAlertsByBase(ctx, gen.CountUnreadAlertsByBaseParams{
 		BaseID:    int64(baseID),
 		ExpiresAt: now,
 	})

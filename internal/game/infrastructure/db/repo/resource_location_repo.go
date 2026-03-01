@@ -32,8 +32,8 @@ func (r *ResourceLocationRepo) Tx(tx ports.Transaction) ports.ResourceLocationRe
 	return r
 }
 
-func (r *ResourceLocationRepo) Create(loc *domain.ResourceLocationModel) error {
-	id, err := r.q.InsertResourceLocation(context.Background(), mappers.InsertResourceLocationParamsFromDomain(loc))
+func (r *ResourceLocationRepo) Create(ctx context.Context, loc *domain.ResourceLocationModel) error {
+	id, err := r.q.InsertResourceLocation(ctx, mappers.InsertResourceLocationParamsFromDomain(loc))
 	if err != nil {
 		return err
 	}
@@ -41,8 +41,7 @@ func (r *ResourceLocationRepo) Create(loc *domain.ResourceLocationModel) error {
 	return nil
 }
 
-func (r *ResourceLocationRepo) FindByID(id int) (*domain.ResourceLocationModel, error) {
-	ctx := context.Background()
+func (r *ResourceLocationRepo) FindByID(ctx context.Context, id int) (*domain.ResourceLocationModel, error) {
 	row, err := r.q.GetResourceLocationByID(ctx, int64(id))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -58,8 +57,7 @@ func (r *ResourceLocationRepo) FindByID(id int) (*domain.ResourceLocationModel, 
 	return loc, nil
 }
 
-func (r *ResourceLocationRepo) FindByCoordinates(x, y int) (*domain.ResourceLocationModel, error) {
-	ctx := context.Background()
+func (r *ResourceLocationRepo) FindByCoordinates(ctx context.Context, x, y int) (*domain.ResourceLocationModel, error) {
 	row, err := r.q.GetResourceLocationBySector(ctx, gen.GetResourceLocationBySectorParams{SectorX: int32(x), SectorY: int32(y)})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -75,8 +73,7 @@ func (r *ResourceLocationRepo) FindByCoordinates(x, y int) (*domain.ResourceLoca
 	return loc, nil
 }
 
-func (r *ResourceLocationRepo) FindByCoordinatesForUpdate(x, y int) (*domain.ResourceLocationModel, error) {
-	ctx := context.Background()
+func (r *ResourceLocationRepo) FindByCoordinatesForUpdate(ctx context.Context, x, y int) (*domain.ResourceLocationModel, error) {
 	row, err := r.q.GetResourceLocationBySectorForUpdate(ctx, gen.GetResourceLocationBySectorForUpdateParams{SectorX: int32(x), SectorY: int32(y)})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -92,8 +89,7 @@ func (r *ResourceLocationRepo) FindByCoordinatesForUpdate(x, y int) (*domain.Res
 	return loc, nil
 }
 
-func (r *ResourceLocationRepo) FindClosest(x, y int) (*domain.ResourceLocationModel, error) {
-	ctx := context.Background()
+func (r *ResourceLocationRepo) FindClosest(ctx context.Context, x, y int) (*domain.ResourceLocationModel, error) {
 	row, err := r.q.FindClosestResourceLocation(ctx, gen.FindClosestResourceLocationParams{X: int32(x), Y: int32(y)})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -109,27 +105,27 @@ func (r *ResourceLocationRepo) FindClosest(x, y int) (*domain.ResourceLocationMo
 	return loc, nil
 }
 
-func (r *ResourceLocationRepo) Update(loc *domain.ResourceLocationModel) error {
-	return r.q.UpdateResourceLocation(context.Background(), mappers.UpdateResourceLocationParamsFromDomain(loc))
+func (r *ResourceLocationRepo) Update(ctx context.Context, loc *domain.ResourceLocationModel) error {
+	return r.q.UpdateResourceLocation(ctx, mappers.UpdateResourceLocationParamsFromDomain(loc))
 }
 
-func (r *ResourceLocationRepo) Delete(id int) error {
-	return r.q.DeleteResourceLocation(context.Background(), int64(id))
+func (r *ResourceLocationRepo) Delete(ctx context.Context, id int) error {
+	return r.q.DeleteResourceLocation(ctx, int64(id))
 }
 
-func (r *ResourceLocationRepo) DeleteByCoordinates(x, y int) error {
-	return r.q.DeleteResourceLocationBySector(context.Background(), gen.DeleteResourceLocationBySectorParams{
+func (r *ResourceLocationRepo) DeleteByCoordinates(ctx context.Context, x, y int) error {
+	return r.q.DeleteResourceLocationBySector(ctx, gen.DeleteResourceLocationBySectorParams{
 		SectorX: int32(x),
 		SectorY: int32(y),
 	})
 }
 
 func (r *ResourceLocationRepo) loadPrototypes(ctx context.Context) (map[int]*domain.ArmyItemPrototype, map[int]*domain.BuildItemPrototype, error) {
-	armyList, err := r.armyProtoRepo.FindAllPrototypes()
+	armyList, err := r.armyProtoRepo.FindAllPrototypes(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
-	buildList, err := r.buildProtoRepo.FindAllPrototypes()
+	buildList, err := r.buildProtoRepo.FindAllPrototypes(ctx)
 	if err != nil {
 		return nil, nil, err
 	}

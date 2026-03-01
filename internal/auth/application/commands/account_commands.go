@@ -32,7 +32,9 @@ func NewAccountCommands(
 	}
 }
 
-func (c *AccountCommands) RegisterAccount(ctx cqrs.CommandContext, name, email, password string) error {
+func (c *AccountCommands) RegisterAccount(ctx context.Context, actor cqrs.Actor, name, email, password string) error {
+	_ = actor
+
 	hash, err := c.hasher.Hash(password)
 	if err != nil {
 		return err
@@ -40,12 +42,12 @@ func (c *AccountCommands) RegisterAccount(ctx cqrs.CommandContext, name, email, 
 
 	acc := domain.RegisterAccount(name, email, hash)
 
-	return c.txMgr.WithTx(func(tx ports.Transaction) error {
+	return c.txMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		repo := c.repo.Tx(tx)
 		outbox := c.outbox.Tx(tx)
 
 		// Check if email already exists
-		existing, err := repo.FindByEmail(context.Background(), email)
+		existing, err := repo.FindByEmail(ctx, email)
 		if err != nil {
 			return err
 		}
@@ -53,16 +55,18 @@ func (c *AccountCommands) RegisterAccount(ctx cqrs.CommandContext, name, email, 
 			return cqrs.ErrEmailAlreadyInUse
 		}
 
-		if err := repo.Create(context.Background(), acc); err != nil {
+		if err := repo.Create(ctx, acc); err != nil {
 			return err
 		}
 
-		return outbox.Save(context.Background(), acc.PullEvents())
+		return outbox.Save(ctx, acc.PullEvents())
 	})
 }
 
-func (c *AccountCommands) Login(ctx cqrs.CommandContext, email, password string) (string, error) {
-	acc, err := c.repo.FindByEmail(context.Background(), email)
+func (c *AccountCommands) Login(ctx context.Context, actor cqrs.Actor, email, password string) (string, error) {
+	_ = actor
+
+	acc, err := c.repo.FindByEmail(ctx, email)
 	if err != nil {
 		return "", err
 	}

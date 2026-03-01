@@ -50,8 +50,8 @@ func (r *OutboxEventRepo) Save(ctx context.Context, events []domain.DomainEvent)
 	return r.db.NotifyOutboxEvent(ctx)
 }
 
-func (r *OutboxEventRepo) ClaimUnpublished(limit int) ([]domain.DomainEvent, error) {
-	rows, err := r.db.ClaimUnpublishedEvents(context.Background(), int32(limit))
+func (r *OutboxEventRepo) ClaimUnpublished(ctx context.Context, limit int) ([]domain.DomainEvent, error) {
+	rows, err := r.db.ClaimUnpublishedEvents(ctx, int32(limit))
 	if err != nil {
 		return nil, err
 	}
@@ -69,8 +69,8 @@ func (r *OutboxEventRepo) ClaimUnpublished(limit int) ([]domain.DomainEvent, err
 	return events, nil
 }
 
-func (r *OutboxEventRepo) MarkPublished(id uuid.UUID, publishedAt int64) error {
-	return r.db.MarkEventPublished(context.Background(), gen.MarkEventPublishedParams{
+func (r *OutboxEventRepo) MarkPublished(ctx context.Context, id uuid.UUID, publishedAt int64) error {
+	return r.db.MarkEventPublished(ctx, gen.MarkEventPublishedParams{
 		ID: id,
 		PublishedAt: sql.NullInt64{
 			Int64: publishedAt,

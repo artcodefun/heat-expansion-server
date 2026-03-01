@@ -8,9 +8,6 @@ INSERT INTO game.scheduled_jobs (
 )
 RETURNING id;
 
--- name: LockScheduledJobsTable :exec
-LOCK TABLE game.scheduled_jobs IN EXCLUSIVE MODE;
-
 -- name: ClaimDueScheduledJobs :many
 SELECT id, kind, payload, execute_at, created_at, dispatched, dispatched_at
 FROM game.scheduled_jobs
@@ -25,14 +22,6 @@ UPDATE game.scheduled_jobs
 SET dispatched = TRUE,
     dispatched_at = @dispatched_at
 WHERE id = @id;
-
--- name: GetPendingScheduledJobByKindPayload :one
-SELECT id, kind, payload, execute_at, created_at, dispatched, dispatched_at
-FROM game.scheduled_jobs
-WHERE dispatched = FALSE
-  AND kind = $1
-  AND payload = $2
-LIMIT 1;
 
 -- name: GetNextScheduledJob :one
 SELECT id, kind, payload, execute_at, created_at, dispatched, dispatched_at

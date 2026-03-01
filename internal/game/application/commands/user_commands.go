@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"errors"
 
 	v1 "github.com/artcodefun/heat-expansion-server/contracts/auth/v1"
@@ -18,12 +19,12 @@ func NewUserCommands(userRepo ports.UserRepository, outbox ports.OutboxEventRepo
 	return &UserCommands{UserRepo: userRepo, Outbox: outbox, TxMgr: txMgr}
 }
 
-func (c *UserCommands) HandleAccountRegisteredV1Event(ev v1.AccountRegisteredV1) error {
-	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
+func (c *UserCommands) HandleAccountRegisteredV1Event(ctx context.Context, ev v1.AccountRegisteredV1) error {
+	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		uRepo := c.UserRepo.Tx(tx)
 
 		// Check for idempotency: if user already exists, skip creation
-		existing, err := uRepo.FindByID(ev.UserID)
+		existing, err := uRepo.FindByID(ctx, ev.UserID)
 		if err != nil && !errors.Is(err, ports.ErrNotFound) {
 			return err
 		}
@@ -33,11 +34,11 @@ func (c *UserCommands) HandleAccountRegisteredV1Event(ev v1.AccountRegisteredV1)
 
 		user := domain.NewUser(ev.UserID, ev.Name)
 
-		if err := uRepo.Create(user); err != nil {
+		if err := uRepo.Create(ctx, user); err != nil {
 			return err
 		}
 
-		if err := c.Outbox.Tx(tx).Save(user.EventProducer.PullEvents()); err != nil {
+		if err := c.Outbox.Tx(tx).Save(ctx, user.EventProducer.PullEvents()); err != nil {
 			return err
 		}
 

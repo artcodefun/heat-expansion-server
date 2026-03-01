@@ -62,8 +62,8 @@ func (r *IntegrationOutboxRepo) Exists(ctx context.Context, originID uuid.UUID, 
 	})
 }
 
-func (r *IntegrationOutboxRepo) ClaimUnpublished(limit int) ([]auth.IntegrationEvent, error) {
-	rows, err := r.db.ClaimUnpublishedIntegrationEvents(context.Background(), int32(limit))
+func (r *IntegrationOutboxRepo) ClaimUnpublished(ctx context.Context, limit int) ([]auth.IntegrationEvent, error) {
+	rows, err := r.db.ClaimUnpublishedIntegrationEvents(ctx, int32(limit))
 	if err != nil {
 		return nil, err
 	}
@@ -81,8 +81,8 @@ func (r *IntegrationOutboxRepo) ClaimUnpublished(limit int) ([]auth.IntegrationE
 	return events, nil
 }
 
-func (r *IntegrationOutboxRepo) MarkPublished(id uuid.UUID, publishedAt int64) error {
-	return r.db.MarkIntegrationEventPublished(context.Background(), gen.MarkIntegrationEventPublishedParams{
+func (r *IntegrationOutboxRepo) MarkPublished(ctx context.Context, id uuid.UUID, publishedAt int64) error {
+	return r.db.MarkIntegrationEventPublished(ctx, gen.MarkIntegrationEventPublishedParams{
 		ID: id,
 		PublishedAt: sql.NullInt64{
 			Int64: publishedAt,

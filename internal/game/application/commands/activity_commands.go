@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"context"
+
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 )
@@ -40,35 +42,35 @@ func NewActivityCommands(
 	}
 }
 
-func (c *ActivityCommands) HandleMilitaryOperationStartedEvent(event domain.MilitaryOperationStartedEvent) error {
-	op, err := c.OperationRepo.FindByID(event.OperationID)
+func (c *ActivityCommands) HandleMilitaryOperationStartedEvent(ctx context.Context, event domain.MilitaryOperationStartedEvent) error {
+	op, err := c.OperationRepo.FindByID(ctx, event.OperationID)
 	if err != nil {
 		return err
 	}
 
 	item := domain.NewActivityFromOffenseOperation(op.SourceBaseID, op)
-	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
+	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		repo := c.ActivityRepo.Tx(tx)
-		if ok, _ := repo.ExistsForOperation(op.SourceBaseID, string(domain.ActivityKindOffense), event.OperationID); ok {
+		if ok, _ := repo.ExistsForOperation(ctx, op.SourceBaseID, string(domain.ActivityKindOffense), event.OperationID); ok {
 			return nil
 		}
-		if err := repo.Create(&item); err != nil {
+		if err := repo.Create(ctx, &item); err != nil {
 			return err
 		}
-		return c.OutboxEvents.Tx(tx).Save(item.PullEvents())
+		return c.OutboxEvents.Tx(tx).Save(ctx, item.PullEvents())
 	})
 }
 
-func (c *ActivityCommands) HandleMilitaryOperationResolvedEvent(event domain.MilitaryOperationResolvedEvent) error {
-	op, err := c.OperationRepo.FindByID(event.OperationID)
+func (c *ActivityCommands) HandleMilitaryOperationResolvedEvent(ctx context.Context, event domain.MilitaryOperationResolvedEvent) error {
+	op, err := c.OperationRepo.FindByID(ctx, event.OperationID)
 	if err != nil {
 		return err
 	}
-	occType, _ := c.SectorRepo.GetLocationTypeByCoordinates(op.TargetCoordinates.X, op.TargetCoordinates.Y)
+	occType, _ := c.SectorRepo.GetLocationTypeByCoordinates(ctx, op.TargetCoordinates.X, op.TargetCoordinates.Y)
 	if occType != domain.LocationTypeUserBase {
 		return nil
 	}
-	base, err := c.UserBaseRepo.FindByCoordinates(op.TargetCoordinates.X, op.TargetCoordinates.Y)
+	base, err := c.UserBaseRepo.FindByCoordinates(ctx, op.TargetCoordinates.X, op.TargetCoordinates.Y)
 	if err != nil {
 		return err
 	}
@@ -76,20 +78,20 @@ func (c *ActivityCommands) HandleMilitaryOperationResolvedEvent(event domain.Mil
 	if ts := event.OccurredAt(); ts != 0 {
 		item.CreatedAt = ts
 	}
-	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
+	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		repo := c.ActivityRepo.Tx(tx)
-		if ok, _ := repo.ExistsForOperation(base.ID, string(domain.ActivityKindDefense), event.OperationID); ok {
+		if ok, _ := repo.ExistsForOperation(ctx, base.ID, string(domain.ActivityKindDefense), event.OperationID); ok {
 			return nil
 		}
-		if err := repo.Create(&item); err != nil {
+		if err := repo.Create(ctx, &item); err != nil {
 			return err
 		}
-		return c.OutboxEvents.Tx(tx).Save(item.PullEvents())
+		return c.OutboxEvents.Tx(tx).Save(ctx, item.PullEvents())
 	})
 }
 
-func (c *ActivityCommands) HandleScanReportCreatedEvent(event domain.ScanReportCreatedEvent) error {
-	report, err := c.ScanRepo.FindByID(event.ReportID)
+func (c *ActivityCommands) HandleScanReportCreatedEvent(ctx context.Context, event domain.ScanReportCreatedEvent) error {
+	report, err := c.ScanRepo.FindByID(ctx, event.ReportID)
 	if err != nil {
 		return err
 	}
@@ -98,10 +100,10 @@ func (c *ActivityCommands) HandleScanReportCreatedEvent(event domain.ScanReportC
 
 	// Defender side detection
 	var defenderActivity *domain.ActivityItem
-	occType, _ := c.SectorRepo.GetLocationTypeByCoordinates(report.Coordinates.X, report.Coordinates.Y)
+	occType, _ := c.SectorRepo.GetLocationTypeByCoordinates(ctx, report.Coordinates.X, report.Coordinates.Y)
 	if occType == domain.LocationTypeUserBase {
-		defenderBase, err := c.UserBaseRepo.FindByCoordinates(report.Coordinates.X, report.Coordinates.Y)
-		attackerBase, _ := c.UserBaseRepo.FindByID(event.BaseID)
+		defenderBase, err := c.UserBaseRepo.FindByCoordinates(ctx, report.Coordinates.X, report.Coordinates.Y)
+		attackerBase, _ := c.UserBaseRepo.FindByID(ctx, event.BaseID)
 
 		if err == nil && defenderBase != nil && attackerBase != nil {
 			interceptInfo := c.intelService.TriangulateScanSource(attackerBase.Coordinates, defenderBase, !report.IsCloaked)
@@ -111,26 +113,26 @@ func (c *ActivityCommands) HandleScanReportCreatedEvent(event domain.ScanReportC
 		}
 	}
 
-	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
+	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		repo := c.ActivityRepo.Tx(tx)
 		outbox := c.OutboxEvents.Tx(tx)
 
-		if ok, _ := repo.ExistsForScanReport(event.ReportID); ok {
+		if ok, _ := repo.ExistsForScanReport(ctx, event.ReportID); ok {
 			return nil
 		}
 
-		if err := repo.Create(&attackerActivity); err != nil {
+		if err := repo.Create(ctx, &attackerActivity); err != nil {
 			return err
 		}
-		if err := outbox.Save(attackerActivity.PullEvents()); err != nil {
+		if err := outbox.Save(ctx, attackerActivity.PullEvents()); err != nil {
 			return err
 		}
 
 		if defenderActivity != nil {
-			if err := repo.Create(defenderActivity); err != nil {
+			if err := repo.Create(ctx, defenderActivity); err != nil {
 				return err
 			}
-			if err := outbox.Save(defenderActivity.PullEvents()); err != nil {
+			if err := outbox.Save(ctx, defenderActivity.PullEvents()); err != nil {
 				return err
 			}
 		}
@@ -138,21 +140,21 @@ func (c *ActivityCommands) HandleScanReportCreatedEvent(event domain.ScanReportC
 	})
 }
 
-func (c *ActivityCommands) HandleRadarThreatDetectedEvent(event domain.RadarThreatDetectedEvent) error {
-	threat, err := c.RadarThreatRepo.FindByID(event.RadarThreatID)
+func (c *ActivityCommands) HandleRadarThreatDetectedEvent(ctx context.Context, event domain.RadarThreatDetectedEvent) error {
+	threat, err := c.RadarThreatRepo.FindByID(ctx, event.RadarThreatID)
 	if err != nil {
 		return err
 	}
 
 	activity := domain.NewActivityFromRadarThreat(threat)
-	return c.TxMgr.WithTx(func(tx ports.Transaction) error {
+	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		repo := c.ActivityRepo.Tx(tx)
-		if ok, _ := repo.ExistsForOperation(event.OwnerBaseID, string(domain.ActivityKindRadar), event.OperationID); ok {
+		if ok, _ := repo.ExistsForOperation(ctx, event.OwnerBaseID, string(domain.ActivityKindRadar), event.OperationID); ok {
 			return nil
 		}
-		if err := repo.Create(&activity); err != nil {
+		if err := repo.Create(ctx, &activity); err != nil {
 			return err
 		}
-		return c.OutboxEvents.Tx(tx).Save(activity.PullEvents())
+		return c.OutboxEvents.Tx(tx).Save(ctx, activity.PullEvents())
 	})
 }

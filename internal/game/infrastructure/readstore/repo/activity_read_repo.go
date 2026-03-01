@@ -21,15 +21,15 @@ func NewActivityReadRepo(q *gen.Queries, ops ports.OperationReadRepository, sect
 	return &ActivityReadRepo{q: q, ops: ops, sectors: sectors, radar: radar}
 }
 
-func (r *ActivityReadRepo) ListOffenseActivities(baseID int, subtype readmodels.OffenseActivitySubtype, limit int) ([]*readmodels.ActivityItem, error) {
-	rows, err := r.q.ListOffenseActivities(context.Background(), gen.ListOffenseActivitiesParams{BaseID: int64(baseID), Column2: string(subtype), Limit: int32(limit)})
+func (r *ActivityReadRepo) ListOffenseActivities(ctx context.Context, baseID int, subtype readmodels.OffenseActivitySubtype, limit int) ([]*readmodels.ActivityItem, error) {
+	rows, err := r.q.ListOffenseActivities(ctx, gen.ListOffenseActivitiesParams{BaseID: int64(baseID), Column2: string(subtype), Limit: int32(limit)})
 	if err != nil {
 		return nil, err
 	}
 	out := make([]*readmodels.ActivityItem, 0, len(rows))
 	for _, a := range rows {
 		v := mappers.ActivityItemFromModel(a)
-		if err := r.enrichActivity(&v); err != nil {
+		if err := r.enrichActivity(ctx, &v); err != nil {
 			return nil, err
 		}
 		out = append(out, &v)
@@ -37,15 +37,15 @@ func (r *ActivityReadRepo) ListOffenseActivities(baseID int, subtype readmodels.
 	return out, nil
 }
 
-func (r *ActivityReadRepo) ListDefenseActivities(baseID int, subtype readmodels.DefenseActivitySubtype, limit int) ([]*readmodels.ActivityItem, error) {
-	rows, err := r.q.ListDefenseActivities(context.Background(), gen.ListDefenseActivitiesParams{BaseID: int64(baseID), Column2: string(subtype), Limit: int32(limit)})
+func (r *ActivityReadRepo) ListDefenseActivities(ctx context.Context, baseID int, subtype readmodels.DefenseActivitySubtype, limit int) ([]*readmodels.ActivityItem, error) {
+	rows, err := r.q.ListDefenseActivities(ctx, gen.ListDefenseActivitiesParams{BaseID: int64(baseID), Column2: string(subtype), Limit: int32(limit)})
 	if err != nil {
 		return nil, err
 	}
 	out := make([]*readmodels.ActivityItem, 0, len(rows))
 	for _, a := range rows {
 		v := mappers.ActivityItemFromModel(a)
-		if err := r.enrichActivity(&v); err != nil {
+		if err := r.enrichActivity(ctx, &v); err != nil {
 			return nil, err
 		}
 		out = append(out, &v)
@@ -53,15 +53,15 @@ func (r *ActivityReadRepo) ListDefenseActivities(baseID int, subtype readmodels.
 	return out, nil
 }
 
-func (r *ActivityReadRepo) ListScanActivities(baseID int, subtype readmodels.ScanActivitySubtype, limit int) ([]*readmodels.ActivityItem, error) {
-	rows, err := r.q.ListScanActivities(context.Background(), gen.ListScanActivitiesParams{BaseID: int64(baseID), Column2: string(subtype), Limit: int32(limit)})
+func (r *ActivityReadRepo) ListScanActivities(ctx context.Context, baseID int, subtype readmodels.ScanActivitySubtype, limit int) ([]*readmodels.ActivityItem, error) {
+	rows, err := r.q.ListScanActivities(ctx, gen.ListScanActivitiesParams{BaseID: int64(baseID), Column2: string(subtype), Limit: int32(limit)})
 	if err != nil {
 		return nil, err
 	}
 	out := make([]*readmodels.ActivityItem, 0, len(rows))
 	for _, a := range rows {
 		v := mappers.ActivityItemFromModel(a)
-		if err := r.enrichActivity(&v); err != nil {
+		if err := r.enrichActivity(ctx, &v); err != nil {
 			return nil, err
 		}
 		out = append(out, &v)
@@ -69,15 +69,15 @@ func (r *ActivityReadRepo) ListScanActivities(baseID int, subtype readmodels.Sca
 	return out, nil
 }
 
-func (r *ActivityReadRepo) ListRadarActivities(baseID int, limit int) ([]*readmodels.ActivityItem, error) {
-	rows, err := r.q.ListRadarActivities(context.Background(), gen.ListRadarActivitiesParams{BaseID: int64(baseID), Limit: int32(limit)})
+func (r *ActivityReadRepo) ListRadarActivities(ctx context.Context, baseID int, limit int) ([]*readmodels.ActivityItem, error) {
+	rows, err := r.q.ListRadarActivities(ctx, gen.ListRadarActivitiesParams{BaseID: int64(baseID), Limit: int32(limit)})
 	if err != nil {
 		return nil, err
 	}
 	out := make([]*readmodels.ActivityItem, 0, len(rows))
 	for _, a := range rows {
 		v := mappers.ActivityItemFromModel(a)
-		if err := r.enrichActivity(&v); err != nil {
+		if err := r.enrichActivity(ctx, &v); err != nil {
 			return nil, err
 		}
 		out = append(out, &v)
@@ -85,15 +85,15 @@ func (r *ActivityReadRepo) ListRadarActivities(baseID int, limit int) ([]*readmo
 	return out, nil
 }
 
-func (r *ActivityReadRepo) ListTradeActivities(baseID int, limit int) ([]*readmodels.ActivityItem, error) {
-	rows, err := r.q.ListTradeActivities(context.Background(), gen.ListTradeActivitiesParams{BaseID: int64(baseID), Limit: int32(limit)})
+func (r *ActivityReadRepo) ListTradeActivities(ctx context.Context, baseID int, limit int) ([]*readmodels.ActivityItem, error) {
+	rows, err := r.q.ListTradeActivities(ctx, gen.ListTradeActivitiesParams{BaseID: int64(baseID), Limit: int32(limit)})
 	if err != nil {
 		return nil, err
 	}
 	out := make([]*readmodels.ActivityItem, 0, len(rows))
 	for _, a := range rows {
 		v := mappers.ActivityItemFromModel(a)
-		if err := r.enrichActivity(&v); err != nil {
+		if err := r.enrichActivity(ctx, &v); err != nil {
 			return nil, err
 		}
 		out = append(out, &v)
@@ -101,9 +101,9 @@ func (r *ActivityReadRepo) ListTradeActivities(baseID int, limit int) ([]*readmo
 	return out, nil
 }
 
-func (r *ActivityReadRepo) enrichActivity(v *readmodels.ActivityItem) error {
+func (r *ActivityReadRepo) enrichActivity(ctx context.Context, v *readmodels.ActivityItem) error {
 	if v.Offense != nil {
-		op, err := r.ops.GetOperation(v.Offense.OpID)
+		op, err := r.ops.GetOperation(ctx, v.Offense.OpID)
 		if err != nil && !errors.Is(err, ports.ErrNotFound) {
 			return err
 		}
@@ -112,7 +112,7 @@ func (r *ActivityReadRepo) enrichActivity(v *readmodels.ActivityItem) error {
 		}
 	}
 	if v.Defense != nil {
-		op, err := r.ops.GetOperation(v.Defense.OpID)
+		op, err := r.ops.GetOperation(ctx, v.Defense.OpID)
 		if err != nil && !errors.Is(err, ports.ErrNotFound) {
 			return err
 		}
@@ -131,7 +131,7 @@ func (r *ActivityReadRepo) enrichActivity(v *readmodels.ActivityItem) error {
 			}
 			// Enrich with prior opponent scan for the defender (scan of the offender's source coordinates)
 			if op.SourceCoordinates != (readmodels.Vector2i{}) && op.OutboundArriveAt > 0 {
-				report, err := r.sectors.GetLatestScanBefore(v.BaseID, op.SourceCoordinates.X, op.SourceCoordinates.Y, op.OutboundArriveAt)
+				report, err := r.sectors.GetLatestScanBefore(ctx, v.BaseID, op.SourceCoordinates.X, op.SourceCoordinates.Y, op.OutboundArriveAt)
 				if err != nil && !errors.Is(err, ports.ErrNotFound) {
 					return err
 				}
@@ -142,7 +142,7 @@ func (r *ActivityReadRepo) enrichActivity(v *readmodels.ActivityItem) error {
 		}
 	}
 	if v.Scan != nil && v.Scan.ReportID != nil {
-		report, err := r.sectors.GetScanReportByID(v.BaseID, *v.Scan.ReportID)
+		report, err := r.sectors.GetScanReportByID(ctx, v.BaseID, *v.Scan.ReportID)
 		if err != nil && !errors.Is(err, ports.ErrNotFound) {
 			return err
 		}
@@ -151,7 +151,7 @@ func (r *ActivityReadRepo) enrichActivity(v *readmodels.ActivityItem) error {
 		}
 	}
 	if v.Radar != nil {
-		threat, err := r.radar.GetRadarThreat(v.Radar.ThreatID)
+		threat, err := r.radar.GetRadarThreat(ctx, v.Radar.ThreatID)
 		if err != nil && !errors.Is(err, ports.ErrNotFound) {
 			return err
 		}

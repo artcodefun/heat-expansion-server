@@ -26,20 +26,20 @@ func (r *RadarThreatRepo) Tx(tx ports.Transaction) ports.RadarThreatRepository {
 	return r
 }
 
-func (r *RadarThreatRepo) Create(threat *domain.RadarThreat) error {
+func (r *RadarThreatRepo) Create(ctx context.Context, threat *domain.RadarThreat) error {
 	params := mappers.InsertRadarThreatParamsFromDomain(threat)
-	_, err := r.q.InsertRadarThreat(context.Background(), params)
+	_, err := r.q.InsertRadarThreat(ctx, params)
 	return err
 }
 
-func (r *RadarThreatRepo) Update(threat *domain.RadarThreat) error {
+func (r *RadarThreatRepo) Update(ctx context.Context, threat *domain.RadarThreat) error {
 	params := mappers.UpdateRadarThreatParamsFromDomain(threat)
-	_, err := r.q.UpdateRadarThreat(context.Background(), params)
+	_, err := r.q.UpdateRadarThreat(ctx, params)
 	return err
 }
 
-func (r *RadarThreatRepo) FindByID(id uuid.UUID) (*domain.RadarThreat, error) {
-	m, err := r.q.GetRadarThreat(context.Background(), id)
+func (r *RadarThreatRepo) FindByID(ctx context.Context, id uuid.UUID) (*domain.RadarThreat, error) {
+	m, err := r.q.GetRadarThreat(ctx, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, ports.ErrNotFound
@@ -49,8 +49,8 @@ func (r *RadarThreatRepo) FindByID(id uuid.UUID) (*domain.RadarThreat, error) {
 	return mappers.RadarThreatFromModel(m), nil
 }
 
-func (r *RadarThreatRepo) FindByOperationID(opID int) (*domain.RadarThreat, error) {
-	m, err := r.q.GetRadarThreatByOperationID(context.Background(), int64(opID))
+func (r *RadarThreatRepo) FindByOperationID(ctx context.Context, opID int) (*domain.RadarThreat, error) {
+	m, err := r.q.GetRadarThreatByOperationID(ctx, int64(opID))
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, ports.ErrNotFound
@@ -60,8 +60,8 @@ func (r *RadarThreatRepo) FindByOperationID(opID int) (*domain.RadarThreat, erro
 	return mappers.RadarThreatFromModel(m), nil
 }
 
-func (r *RadarThreatRepo) RadarThreatExists(ownerBaseID int, opID int) (bool, error) {
-	return r.q.RadarThreatExists(context.Background(), gen.RadarThreatExistsParams{
+func (r *RadarThreatRepo) RadarThreatExists(ctx context.Context, ownerBaseID int, opID int) (bool, error) {
+	return r.q.RadarThreatExists(ctx, gen.RadarThreatExistsParams{
 		OwnerBaseID: int64(ownerBaseID),
 		OperationID: int64(opID),
 	})

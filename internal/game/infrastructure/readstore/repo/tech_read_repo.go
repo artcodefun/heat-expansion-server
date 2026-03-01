@@ -12,12 +12,12 @@ type TechReadRepo struct{ q *gen.Queries }
 
 func NewTechReadRepo(q *gen.Queries) *TechReadRepo { return &TechReadRepo{q: q} }
 
-func (r *TechReadRepo) ListNewTechItemsByPrototypeIDs(baseID int, ids []int) ([]*readmodels.TechItemNew, error) {
+func (r *TechReadRepo) ListNewTechItemsByPrototypeIDs(ctx context.Context, baseID int, ids []int) ([]*readmodels.TechItemNew, error) {
 	if len(ids) == 0 {
 		return []*readmodels.TechItemNew{}, nil
 	}
 	// Get finished items to find current levels
-	doneRows, err := r.q.ListDoneTechItemsAll(context.Background(), int64(baseID))
+	doneRows, err := r.q.ListDoneTechItemsAll(ctx, int64(baseID))
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +27,7 @@ func (r *TechReadRepo) ListNewTechItemsByPrototypeIDs(baseID int, ids []int) ([]
 		levels[v.Prototype.ID] = v.Level
 	}
 
-	rows, err := r.q.ListTechPrototypesByIDs(context.Background(), mappers.IdsToInt64(ids))
+	rows, err := r.q.ListTechPrototypesByIDs(ctx, mappers.IdsToInt64(ids))
 	if err != nil {
 		return nil, err
 	}
@@ -40,9 +40,9 @@ func (r *TechReadRepo) ListNewTechItemsByPrototypeIDs(baseID int, ids []int) ([]
 	return out, nil
 }
 
-func (r *TechReadRepo) ListInResearchTechItems(baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemInProgress, error) {
+func (r *TechReadRepo) ListInResearchTechItems(ctx context.Context, baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemInProgress, error) {
 	// Get finished items to find current levels
-	doneRows, err := r.q.ListDoneTechItemsAll(context.Background(), int64(baseID))
+	doneRows, err := r.q.ListDoneTechItemsAll(ctx, int64(baseID))
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (r *TechReadRepo) ListInResearchTechItems(baseID int, category readmodels.T
 		levels[v.Prototype.ID] = v.Level
 	}
 
-	rows, err := r.q.ListInResearchTechItems(context.Background(), gen.ListInResearchTechItemsParams{
+	rows, err := r.q.ListInResearchTechItems(ctx, gen.ListInResearchTechItemsParams{
 		BaseID:   int64(baseID),
 		Category: string(category),
 	})
@@ -68,8 +68,8 @@ func (r *TechReadRepo) ListInResearchTechItems(baseID int, category readmodels.T
 	return out, nil
 }
 
-func (r *TechReadRepo) ListDoneTechItems(baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemDone, error) {
-	rows, err := r.q.ListDoneTechItems(context.Background(), gen.ListDoneTechItemsParams{
+func (r *TechReadRepo) ListDoneTechItems(ctx context.Context, baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemDone, error) {
+	rows, err := r.q.ListDoneTechItems(ctx, gen.ListDoneTechItemsParams{
 		BaseID:   int64(baseID),
 		Category: string(category),
 	})

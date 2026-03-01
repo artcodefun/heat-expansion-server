@@ -1,6 +1,8 @@
 package queries
 
 import (
+	"context"
+
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
@@ -16,42 +18,42 @@ func NewActivityQueries(repo ports.ActivityReadRepository, access *services.Acce
 	return &ActivityQueries{Repo: repo, Access: access}
 }
 
-func (q *ActivityQueries) ListOffenseActivities(ctx cqrs.QueryContext, baseID int, subtype readmodels.OffenseActivitySubtype, limit int) ([]*readmodels.ActivityItem, error) {
-	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+func (q *ActivityQueries) ListOffenseActivities(ctx context.Context, actor cqrs.Actor, baseID int, subtype readmodels.OffenseActivitySubtype, limit int) ([]*readmodels.ActivityItem, error) {
+	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}
-	items, err := q.Repo.ListOffenseActivities(baseID, subtype, limit)
+	items, err := q.Repo.ListOffenseActivities(ctx, baseID, subtype, limit)
 	return items, repoErr(err)
 }
 
-func (q *ActivityQueries) ListDefenseActivities(ctx cqrs.QueryContext, baseID int, subtype readmodels.DefenseActivitySubtype, limit int) ([]*readmodels.ActivityItem, error) {
-	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+func (q *ActivityQueries) ListDefenseActivities(ctx context.Context, actor cqrs.Actor, baseID int, subtype readmodels.DefenseActivitySubtype, limit int) ([]*readmodels.ActivityItem, error) {
+	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}
-	items, err := q.Repo.ListDefenseActivities(baseID, subtype, limit)
+	items, err := q.Repo.ListDefenseActivities(ctx, baseID, subtype, limit)
 	return items, repoErr(err)
 }
 
-func (q *ActivityQueries) ListScanActivities(ctx cqrs.QueryContext, baseID int, subtype readmodels.ScanActivitySubtype, limit int) ([]*readmodels.ActivityItem, error) {
-	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+func (q *ActivityQueries) ListScanActivities(ctx context.Context, actor cqrs.Actor, baseID int, subtype readmodels.ScanActivitySubtype, limit int) ([]*readmodels.ActivityItem, error) {
+	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}
-	items, err := q.Repo.ListScanActivities(baseID, subtype, limit)
+	items, err := q.Repo.ListScanActivities(ctx, baseID, subtype, limit)
 	return items, repoErr(err)
 }
 
-func (q *ActivityQueries) ListRadarActivities(ctx cqrs.QueryContext, baseID int, limit int) ([]*readmodels.ActivityItem, error) {
-	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+func (q *ActivityQueries) ListRadarActivities(ctx context.Context, actor cqrs.Actor, baseID int, limit int) ([]*readmodels.ActivityItem, error) {
+	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}
-	items, err := q.Repo.ListRadarActivities(baseID, limit)
+	items, err := q.Repo.ListRadarActivities(ctx, baseID, limit)
 	return items, repoErr(err)
 }
 
-func (q *ActivityQueries) ListTradeActivities(ctx cqrs.QueryContext, baseID int, limit int) ([]*readmodels.ActivityItem, error) {
-	if err := q.Access.EnsureBaseOwnership(ctx.UserID, baseID); err != nil {
+func (q *ActivityQueries) ListTradeActivities(ctx context.Context, actor cqrs.Actor, baseID int, limit int) ([]*readmodels.ActivityItem, error) {
+	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}
-	items, err := q.Repo.ListTradeActivities(baseID, limit)
+	items, err := q.Repo.ListTradeActivities(ctx, baseID, limit)
 	return items, repoErr(err)
 }

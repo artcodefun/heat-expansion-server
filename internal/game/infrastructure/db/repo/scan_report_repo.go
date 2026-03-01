@@ -26,8 +26,8 @@ func (r *ScanReportRepo) Tx(tx ports.Transaction) ports.ScanReportRepository {
 	return r
 }
 
-func (r *ScanReportRepo) Create(report *domain.SectorScanReport) error {
-	id, err := r.q.InsertScanReport(context.Background(), mappers.InsertScanReportParamsFromDomain(report))
+func (r *ScanReportRepo) Create(ctx context.Context, report *domain.SectorScanReport) error {
+	id, err := r.q.InsertScanReport(ctx, mappers.InsertScanReportParamsFromDomain(report))
 	if err != nil {
 		return err
 	}
@@ -35,8 +35,8 @@ func (r *ScanReportRepo) Create(report *domain.SectorScanReport) error {
 	return nil
 }
 
-func (r *ScanReportRepo) FindByID(id int) (*domain.SectorScanReport, error) {
-	row, err := r.q.GetScanReportByID(context.Background(), int64(id))
+func (r *ScanReportRepo) FindByID(ctx context.Context, id int) (*domain.SectorScanReport, error) {
+	row, err := r.q.GetScanReportByID(ctx, int64(id))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ports.ErrNotFound
@@ -46,16 +46,16 @@ func (r *ScanReportRepo) FindByID(id int) (*domain.SectorScanReport, error) {
 	return mappers.ScanReportFromDB(row), nil
 }
 
-func (r *ScanReportRepo) RecentReportExistsByScanner(scannerID uuid.UUID, since int64) (bool, error) {
-	exists, err := r.q.RecentReportExistsByScanner(context.Background(), gen.RecentReportExistsByScannerParams{
+func (r *ScanReportRepo) RecentReportExistsByScanner(ctx context.Context, scannerID uuid.UUID, since int64) (bool, error) {
+	exists, err := r.q.RecentReportExistsByScanner(ctx, gen.RecentReportExistsByScannerParams{
 		SourceScannerID: uuid.NullUUID{UUID: scannerID, Valid: true},
 		Since:           since,
 	})
 	return exists, err
 }
 
-func (r *ScanReportRepo) FindByBaseAndCoordinates(baseID int, x int, y int) ([]*domain.SectorScanReport, error) {
-	rows, err := r.q.ListScanReportsByBaseAndCoordinates(context.Background(), gen.ListScanReportsByBaseAndCoordinatesParams{BaseID: int64(baseID), SectorX: int32(x), SectorY: int32(y)})
+func (r *ScanReportRepo) FindByBaseAndCoordinates(ctx context.Context, baseID int, x int, y int) ([]*domain.SectorScanReport, error) {
+	rows, err := r.q.ListScanReportsByBaseAndCoordinates(ctx, gen.ListScanReportsByBaseAndCoordinatesParams{BaseID: int64(baseID), SectorX: int32(x), SectorY: int32(y)})
 	if err != nil {
 		return nil, err
 	}
@@ -66,8 +66,8 @@ func (r *ScanReportRepo) FindByBaseAndCoordinates(baseID int, x int, y int) ([]*
 	return out, nil
 }
 
-func (r *ScanReportRepo) GetLatestScansByBase(baseID int) ([]*domain.SectorScanReport, error) {
-	rows, err := r.q.GetLatestScanReportsByBase(context.Background(), int64(baseID))
+func (r *ScanReportRepo) GetLatestScansByBase(ctx context.Context, baseID int) ([]*domain.SectorScanReport, error) {
+	rows, err := r.q.GetLatestScanReportsByBase(ctx, int64(baseID))
 	if err != nil {
 		return nil, err
 	}
@@ -78,17 +78,17 @@ func (r *ScanReportRepo) GetLatestScansByBase(baseID int) ([]*domain.SectorScanR
 	return out, nil
 }
 
-func (r *ScanReportRepo) Delete(id int) error {
-	return r.q.DeleteScanReport(context.Background(), int64(id))
+func (r *ScanReportRepo) Delete(ctx context.Context, id int) error {
+	return r.q.DeleteScanReport(ctx, int64(id))
 }
 
 // FindByBaseWithinArea provides a naive in-memory filtering implementation over the latest scans.
 // For production efficiency, add a dedicated SQL query joining sectors with coordinate filtering.
-func (r *ScanReportRepo) FindByBaseWithinArea(baseID int, centerX int, centerY int, radius int) ([]*domain.SectorScanReport, error) {
+func (r *ScanReportRepo) FindByBaseWithinArea(ctx context.Context, baseID int, centerX int, centerY int, radius int) ([]*domain.SectorScanReport, error) {
 	if radius < 0 {
 		return nil, errors.New("radius must be non-negative")
 	}
-	rows, err := r.q.ListScanReportsByBaseWithinArea(context.Background(), gen.ListScanReportsByBaseWithinAreaParams{
+	rows, err := r.q.ListScanReportsByBaseWithinArea(ctx, gen.ListScanReportsByBaseWithinAreaParams{
 		BaseID:  int64(baseID),
 		CenterX: int32(centerX),
 		CenterY: int32(centerY),

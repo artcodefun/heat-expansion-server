@@ -26,7 +26,7 @@ func (r *OutboxEventRepo) Tx(tx ports.Transaction) ports.OutboxEventRepository {
 	return r
 }
 
-func (r *OutboxEventRepo) Save(events []domain.DomainEvent) error {
+func (r *OutboxEventRepo) Save(ctx context.Context, events []domain.DomainEvent) error {
 	if len(events) == 0 {
 		return nil
 	}
@@ -42,7 +42,7 @@ func (r *OutboxEventRepo) Save(events []domain.DomainEvent) error {
 			return err
 		}
 
-		if _, err := r.q.InsertOutboxEvent(context.Background(), gen.InsertOutboxEventParams{
+		if _, err := r.q.InsertOutboxEvent(ctx, gen.InsertOutboxEventParams{
 			Kind:      kind,
 			Payload:   payload,
 			CreatedAt: now,
@@ -51,15 +51,15 @@ func (r *OutboxEventRepo) Save(events []domain.DomainEvent) error {
 		}
 	}
 
-	return r.q.NotifyOutboxEvent(context.Background())
+	return r.q.NotifyOutboxEvent(ctx)
 }
 
-func (r *OutboxEventRepo) ClaimUnpublished(limit int) ([]*ports.OutboxEventRecord, error) {
+func (r *OutboxEventRepo) ClaimUnpublished(ctx context.Context, limit int) ([]*ports.OutboxEventRecord, error) {
 	if limit <= 0 {
 		limit = 100
 	}
 
-	rows, err := r.q.ClaimUnpublishedOutboxEvents(context.Background(), int32(limit))
+	rows, err := r.q.ClaimUnpublishedOutboxEvents(ctx, int32(limit))
 	if err != nil {
 		return nil, err
 	}
@@ -89,12 +89,12 @@ func (r *OutboxEventRepo) ClaimUnpublished(limit int) ([]*ports.OutboxEventRecor
 	return out, nil
 }
 
-func (r *OutboxEventRepo) MarkPublished(id int64, publishedAt int64) error {
+func (r *OutboxEventRepo) MarkPublished(ctx context.Context, id int64, publishedAt int64) error {
 	if publishedAt == 0 {
 		publishedAt = time.Now().Unix()
 	}
 
-	return r.q.MarkOutboxEventPublished(context.Background(), gen.MarkOutboxEventPublishedParams{
+	return r.q.MarkOutboxEventPublished(ctx, gen.MarkOutboxEventPublishedParams{
 		PublishedAt: sql.NullInt64{Int64: publishedAt, Valid: true},
 		ID:          id,
 	})

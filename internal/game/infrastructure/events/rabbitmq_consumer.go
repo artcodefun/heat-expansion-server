@@ -9,7 +9,7 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type DeliveryHandler func(d amqp.Delivery) error
+type DeliveryHandler func(ctx context.Context, d amqp.Delivery) error
 
 type Subscription struct {
 	Exchange   string
@@ -179,7 +179,7 @@ func (c *RabbitMQConsumer) consumeLoop(ctx context.Context, sub Subscription) {
 					done = true
 					break
 				}
-				if err := sub.Handler(d); err != nil {
+				if err := sub.Handler(ctx, d); err != nil {
 					log.Printf("Error handling delivery from queue %s: %v", sub.Queue, err)
 					d.Nack(false, true)
 				} else {

@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"errors"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
@@ -22,11 +23,11 @@ func NewAccessControlService(bases ports.UserBaseRepository) *AccessControlServi
 // userID == uuid.Nil -> ErrForbidden (unauthenticated)
 // base not found -> ErrNotFound
 // mismatch owner -> ErrForbidden
-func (s *AccessControlService) EnsureBaseOwnership(userID uuid.UUID, baseID int) error {
+func (s *AccessControlService) EnsureBaseOwnership(ctx context.Context, userID uuid.UUID, baseID int) error {
 	if userID == uuid.Nil {
 		return cqrs.ErrForbidden
 	}
-	ownerID, err := s.Bases.GetOwnerID(baseID)
+	ownerID, err := s.Bases.GetOwnerID(ctx, baseID)
 	if err != nil {
 		if errors.Is(err, ports.ErrNotFound) {
 			return cqrs.ErrNotFound

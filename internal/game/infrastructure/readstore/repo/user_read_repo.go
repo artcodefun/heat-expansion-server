@@ -16,8 +16,8 @@ type UserReadRepo struct{ q *gen.Queries }
 
 func NewUserReadRepo(q *gen.Queries) *UserReadRepo { return &UserReadRepo{q: q} }
 
-func (r *UserReadRepo) GetUserProfile(userID uuid.UUID) (*readmodels.User, error) {
-	row, err := r.q.GetUserProfile(context.Background(), userID)
+func (r *UserReadRepo) GetUserProfile(ctx context.Context, userID uuid.UUID) (*readmodels.User, error) {
+	row, err := r.q.GetUserProfile(ctx, userID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ports.ErrNotFound
