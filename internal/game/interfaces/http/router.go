@@ -75,7 +75,6 @@ func NewRouter(cmd Commands, qry Queries, tokenValidator ports.TokenValidator, t
 		// Base
 		api.GET("/bases", baseHandler.ListUserBases)
 		api.GET("/bases/:baseId/status", baseHandler.GetBaseStatus)
-		api.POST("/bases", baseHandler.CreateBase)
 
 		// Buildings
 		buildings := api.Group("/bases/:baseId/buildings")

@@ -36,16 +36,6 @@ func (h *BaseHandler) GetBaseStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// CreateBase handles POST /bases.
-func (h *BaseHandler) CreateBase(c *gin.Context) {
-	actor := actor(c)
-	if err := h.commands.CreateBase(c.Request.Context(), actor, actor.UserID); handleCoreErr(c, h.translator, err) {
-		return
-	}
-
-	c.Status(http.StatusCreated)
-}
-
 // ListUserBases handles GET /bases (list bases owned by the authenticated user).
 func (h *BaseHandler) ListUserBases(c *gin.Context) {
 	actor := actor(c)

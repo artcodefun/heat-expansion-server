@@ -13,7 +13,6 @@ type UserCommands interface {
 
 // BaseCommands encapsulates base creation operations.
 type BaseCommands interface {
-	CreateBase(ctx context.Context, actor Actor, userID uuid.UUID) error
 }
 
 // BuildingCommands encapsulates building queue & production mutations.
