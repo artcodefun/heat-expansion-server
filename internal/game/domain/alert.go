@@ -27,7 +27,7 @@ type Alert struct {
 }
 
 func NewAlert(baseID int, activityID *uuid.UUID, kind AlertKind, title, content TranslationKey, ttl time.Duration) *Alert {
-	now := time.Now().Unix()
+	now := NowUnix()
 	return &Alert{
 		ID:         uuid.Must(uuid.NewV7()),
 		BaseID:     baseID,

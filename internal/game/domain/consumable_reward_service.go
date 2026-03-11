@@ -85,22 +85,28 @@ func (s *ConsumableRewardService) RollSingleReward(
 
 	switch contentType {
 	case ConsumableContentsCredits:
-		val := 100 + rand.Intn(400) // Placeholder logic
+		val := int(500 + rand.Float64()*1500) // ~500-2000 credits worth
 		ub.CreditLoot(PriceModel{Credits: val})
 		return BoxRewardOutcome{Type: contentType, Value: val}
 
 	case ConsumableContentsIron:
-		val := 50 + rand.Intn(200)
+		// 1 Iron = 4 Credits. Reward: ~125-500 Iron
+		val := int((500 + rand.Float64()*1500) / WorthIron)
 		ub.CreditLoot(PriceModel{Iron: val})
 		return BoxRewardOutcome{Type: contentType, Value: val}
 
 	case ConsumableContentsTitanium:
-		val := 25 + rand.Intn(100)
+		// 1 Titanium = 20 Credits. Reward: ~25-100 Titanium
+		val := int((500 + rand.Float64()*1500) / WorthTitanium)
 		ub.CreditLoot(PriceModel{Titanium: val})
 		return BoxRewardOutcome{Type: contentType, Value: val}
 
 	case ConsumableContentsAntimatter:
-		val := 10 + rand.Intn(40)
+		// 1 Antimatter = 333 Credits. Reward: ~1.5-6 Antimatter
+		val := int((500 + rand.Float64()*1500) / WorthAntimatter)
+		if val < 1 {
+			val = 1
+		}
 		ub.CreditLoot(PriceModel{Antimatter: val})
 		return BoxRewardOutcome{Type: contentType, Value: val}
 

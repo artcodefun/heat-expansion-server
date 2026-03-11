@@ -2,7 +2,6 @@ package domain
 
 import (
 	"math/rand"
-	"time"
 )
 
 // BasePlacementService provides logic for finding a free chunk for a new base.
@@ -22,7 +21,7 @@ func NewBasePlacementServiceWithConfig(minBaseDistance int, random *rand.Rand) *
 		minBaseDistance = 0
 	}
 	if random == nil {
-		random = rand.New(rand.NewSource(time.Now().UnixNano()))
+		random = rand.New(rand.NewSource(NowUnixNano()))
 	}
 	return &BasePlacementService{minBaseDistance: minBaseDistance, random: random}
 }

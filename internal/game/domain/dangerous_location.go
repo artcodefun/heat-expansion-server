@@ -1,5 +1,9 @@
 package domain
 
+import (
+	"math/rand"
+)
+
 // DangerousLocationModel represents a dangerous site in a sector.
 type DangerousLocationModel struct {
 	EventProducer
@@ -71,9 +75,15 @@ func (dl *DangerousLocationModel) FillTrophiesAndResources(availableTrophies []*
 
 	spentOnTrophies := 0.0
 
-	// 1. Try to pick trophies that fit in the 80% budget
-	// Shuffling or better selection logic could be applied here.
-	for _, p := range availableTrophies {
+	// 1. Shuffle to ensure variety and prevent cheap buffs from eating the whole budget
+	shuffled := make([]*StorageItemPrototype, len(availableTrophies))
+	copy(shuffled, availableTrophies)
+	r := rand.New(rand.NewSource(NowUnixNano()))
+	r.Shuffle(len(shuffled), func(i, j int) {
+		shuffled[i], shuffled[j] = shuffled[j], shuffled[i]
+	})
+
+	for _, p := range shuffled {
 		worth := float64(p.EstimatedWorth)
 		if worth > 0 && worth <= (trophyBudget-spentOnTrophies) {
 			dl.Trophies = append(dl.Trophies, TrophyStorageItem{
