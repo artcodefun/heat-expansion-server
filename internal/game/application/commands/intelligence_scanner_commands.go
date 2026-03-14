@@ -158,7 +158,16 @@ func randomSectorInRange(origin domain.Vector2i, r int) domain.Vector2i {
 	if r <= 0 {
 		return origin
 	}
-	dx := rand.Intn(r*2+1) - r
-	dy := rand.Intn(r*2+1) - r
-	return domain.Vector2i{X: origin.X + dx, Y: origin.Y + dy}
+
+	for {
+		dx := rand.Intn(r*2+1) - r
+		dy := rand.Intn(r*2+1) - r
+		if dx == 0 && dy == 0 {
+			continue
+		}
+		target := domain.Vector2i{X: origin.X + dx, Y: origin.Y + dy}
+		if origin.DistanceTo(target) <= float64(r) {
+			return target
+		}
+	}
 }
