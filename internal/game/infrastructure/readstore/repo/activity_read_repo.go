@@ -117,21 +117,11 @@ func (r *ActivityReadRepo) enrichActivity(ctx context.Context, v *readmodels.Act
 			return err
 		}
 		if err == nil {
-			v.Defense.Offender = &readmodels.OffenderInfo{
-				Type:              op.Type,
-				SourceCoordinates: op.SourceCoordinates,
-				TargetCoordinates: op.TargetCoordinates,
-				ContactDate:       op.OutboundArriveAt,
-				Result:            op.Result,
-				Units:             op.Units,
-				StorageSnaps:      op.StorageSnaps,
-				TotalModifiers:    op.TotalModifiers,
-				SpyResult:         op.SpyResult,
-				AttackResult:      op.AttackResult,
-			}
+			v.Defense.Offender = readmodels.NewOffenderInfoFromOperation(op)
+
 			// Enrich with prior opponent scan for the defender (scan of the offender's source coordinates)
-			if op.SourceCoordinates != (readmodels.Vector2i{}) && op.OutboundArriveAt > 0 {
-				report, err := r.sectors.GetLatestScanBefore(ctx, v.BaseID, op.SourceCoordinates.X, op.SourceCoordinates.Y, op.OutboundArriveAt)
+			if v.Defense.Offender.SourceCoordinates != nil && op.OutboundArriveAt > 0 {
+				report, err := r.sectors.GetLatestScanBefore(ctx, v.BaseID, v.Defense.Offender.SourceCoordinates.X, v.Defense.Offender.SourceCoordinates.Y, op.OutboundArriveAt)
 				if err != nil && !errors.Is(err, ports.ErrNotFound) {
 					return err
 				}

@@ -56,7 +56,7 @@ type OffenseActivityDTO struct {
 // OffenderInfoDTO provides a restricted view of an attacking operation for the defender.
 type OffenderInfoDTO struct {
 	Type              OperationType        `json:"type"`
-	SourceCoordinates Vector2iDTO          `json:"sourceCoordinates"`
+	SourceCoordinates *Vector2iDTO         `json:"sourceCoordinates,omitempty"`
 	TargetCoordinates Vector2iDTO          `json:"targetCoordinates"`
 	ContactDate       int64                `json:"contactDate"`
 	Result            OperationResult      `json:"result"`
@@ -124,9 +124,8 @@ func offenderInfoFromReadModel(o *readmodels.OffenderInfo, tr ports.Translator, 
 	if o == nil {
 		return nil
 	}
-	return &OffenderInfoDTO{
+	dto := &OffenderInfoDTO{
 		Type:              OperationType(o.Type),
-		SourceCoordinates: Vector2iDTO{X: o.SourceCoordinates.X, Y: o.SourceCoordinates.Y},
 		TargetCoordinates: Vector2iDTO{X: o.TargetCoordinates.X, Y: o.TargetCoordinates.Y},
 		ContactDate:       o.ContactDate,
 		Result:            OperationResult(o.Result),
@@ -136,6 +135,10 @@ func offenderInfoFromReadModel(o *readmodels.OffenderInfo, tr ports.Translator, 
 		SpyResult:         SpyResultFromReadModel(o.SpyResult, tr, locale),
 		AttackResult:      AttackResultFromReadModel(o.AttackResult, tr, locale),
 	}
+	if o.SourceCoordinates != nil {
+		dto.SourceCoordinates = &Vector2iDTO{X: o.SourceCoordinates.X, Y: o.SourceCoordinates.Y}
+	}
+	return dto
 }
 
 func defenseActivityFromReadModel(defense *readmodels.DefenseActivity, tr ports.Translator, locale string) *DefenseActivityDTO {

@@ -45,7 +45,7 @@ type OffenseActivity struct {
 // OffenderInfo provides a restricted view of an attacking operation for the defender.
 type OffenderInfo struct {
 	Type              MilitaryOperationType
-	SourceCoordinates Vector2i
+	SourceCoordinates *Vector2i
 	TargetCoordinates Vector2i
 	ContactDate       int64
 	Result            MilitaryOperationResult
@@ -54,6 +54,37 @@ type OffenderInfo struct {
 	TotalModifiers    MilitaryModifiers
 	SpyResult         *SpyResult
 	AttackResult      *AttackResult
+}
+
+// NewOffenderInfoFromOperation creates a restricted view of an operation for the defender,
+// applying business rules for information masking (e.g. hiding source coordinates for successful stealthy spies).
+func NewOffenderInfoFromOperation(op *MilitaryOperation) *OffenderInfo {
+	if op == nil {
+		return nil
+	}
+
+	var sourceCoords *Vector2i
+	// Hide source coordinates for successful SPY operations where the defender didn't detect them via spies
+	if op.Type == MilitaryOperationTypeSpy && op.SpyResult != nil && op.SpyResult.Outcome == SpyOutcomeReportProduced {
+		sourceCoords = nil
+	} else {
+		// Create a copy of coordinates to point to
+		coords := op.SourceCoordinates
+		sourceCoords = &coords
+	}
+
+	return &OffenderInfo{
+		Type:              op.Type,
+		SourceCoordinates: sourceCoords,
+		TargetCoordinates: op.TargetCoordinates,
+		ContactDate:       op.OutboundArriveAt,
+		Result:            op.Result,
+		Units:             op.Units,
+		StorageSnaps:      op.StorageSnaps,
+		TotalModifiers:    op.TotalModifiers,
+		SpyResult:         op.SpyResult,
+		AttackResult:      op.AttackResult,
+	}
 }
 
 // DefenseActivitySubtype specifies the subtype of a defensive activity.

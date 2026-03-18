@@ -99,7 +99,7 @@ func (r *OperationReadRepo) enrichOperation(ctx context.Context, v *readmodels.M
 	}
 
 	// 4. Fetch prior scan report if coordinates and timeline are available.
-	if v.TargetCoordinates != (readmodels.Vector2i{}) && v.OutboundDepartAt > 0 {
+	if v.OutboundDepartAt > 0 {
 		report, err := r.sectors.GetLatestScanBefore(ctx, v.SourceBaseID, v.TargetCoordinates.X, v.TargetCoordinates.Y, v.OutboundDepartAt)
 		if err == nil {
 			v.PriorScanReport = report
