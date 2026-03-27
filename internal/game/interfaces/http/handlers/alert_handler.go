@@ -62,5 +62,5 @@ func (h *AlertHandler) MarkAllAsRead(c *gin.Context) {
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
-	c.Status(http.StatusNoContent)
+	c.Status(http.StatusOK)
 }
