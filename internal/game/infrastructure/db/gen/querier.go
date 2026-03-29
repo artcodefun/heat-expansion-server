@@ -91,7 +91,7 @@ type Querier interface {
 	InsertUser(ctx context.Context, arg InsertUserParams) error
 	// Activities queries
 	ListActivitiesByBase(ctx context.Context, arg ListActivitiesByBaseParams) ([]Activity, error)
-	ListAlertsByBase(ctx context.Context, arg ListAlertsByBaseParams) ([]Alert, error)
+	ListAlertsByUser(ctx context.Context, arg ListAlertsByUserParams) ([]Alert, error)
 	ListAllBases(ctx context.Context) ([]UserBase, error)
 	ListArmyPrototypes(ctx context.Context) ([]ArmyItemPrototype, error)
 	// Base army items queries
@@ -113,7 +113,7 @@ type Querier interface {
 	ListStoragePrototypes(ctx context.Context) ([]StorageItemPrototype, error)
 	ListTechPrototypes(ctx context.Context) ([]TechItemPrototype, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
-	MarkAllAlertsAsRead(ctx context.Context, baseID int64) error
+	MarkAllAlertsAsReadByUser(ctx context.Context, userID uuid.UUID) error
 	MarkOutboxEventPublished(ctx context.Context, arg MarkOutboxEventPublishedParams) error
 	MarkScheduledJobDispatched(ctx context.Context, arg MarkScheduledJobDispatchedParams) error
 	NotifyOutboxEvent(ctx context.Context) error

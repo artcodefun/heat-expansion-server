@@ -1,3 +1,3 @@
 package dtos
 
-type AlertListRequest = Request[BaseURI, None, None]
+type AlertListRequest = Request[None, None, None]

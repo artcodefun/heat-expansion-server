@@ -35,12 +35,13 @@ func (q *Queries) ExistsForActivity(ctx context.Context, activityID uuid.NullUUI
 }
 
 const insertAlert = `-- name: InsertAlert :exec
-INSERT INTO game.alerts (id, base_id, activity_id, kind, title, content, is_read, created_at, expires_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+INSERT INTO game.alerts (id, user_id, base_id, activity_id, kind, title, content, is_read, created_at, expires_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 `
 
 type InsertAlertParams struct {
 	ID         uuid.UUID     `json:"id"`
+	UserID     uuid.UUID     `json:"user_id"`
 	BaseID     int64         `json:"base_id"`
 	ActivityID uuid.NullUUID `json:"activity_id"`
 	Kind       string        `json:"kind"`
@@ -54,6 +55,7 @@ type InsertAlertParams struct {
 func (q *Queries) InsertAlert(ctx context.Context, arg InsertAlertParams) error {
 	_, err := q.exec(ctx, q.insertAlertStmt, insertAlert,
 		arg.ID,
+		arg.UserID,
 		arg.BaseID,
 		arg.ActivityID,
 		arg.Kind,
@@ -66,19 +68,19 @@ func (q *Queries) InsertAlert(ctx context.Context, arg InsertAlertParams) error 
 	return err
 }
 
-const listAlertsByBase = `-- name: ListAlertsByBase :many
-SELECT id, base_id, activity_id, kind, title, content, is_read, created_at, expires_at FROM game.alerts
-WHERE base_id = $1 AND expires_at > $2
+const listAlertsByUser = `-- name: ListAlertsByUser :many
+SELECT id, base_id, activity_id, kind, title, content, is_read, created_at, expires_at, user_id FROM game.alerts
+WHERE user_id = $1 AND expires_at > $2
 ORDER BY created_at DESC
 `
 
-type ListAlertsByBaseParams struct {
-	BaseID    int64 `json:"base_id"`
-	ExpiresAt int64 `json:"expires_at"`
+type ListAlertsByUserParams struct {
+	UserID    uuid.UUID `json:"user_id"`
+	ExpiresAt int64     `json:"expires_at"`
 }
 
-func (q *Queries) ListAlertsByBase(ctx context.Context, arg ListAlertsByBaseParams) ([]Alert, error) {
-	rows, err := q.query(ctx, q.listAlertsByBaseStmt, listAlertsByBase, arg.BaseID, arg.ExpiresAt)
+func (q *Queries) ListAlertsByUser(ctx context.Context, arg ListAlertsByUserParams) ([]Alert, error) {
+	rows, err := q.query(ctx, q.listAlertsByUserStmt, listAlertsByUser, arg.UserID, arg.ExpiresAt)
 	if err != nil {
 		return nil, err
 	}
@@ -96,6 +98,7 @@ func (q *Queries) ListAlertsByBase(ctx context.Context, arg ListAlertsByBasePara
 			&i.IsRead,
 			&i.CreatedAt,
 			&i.ExpiresAt,
+			&i.UserID,
 		); err != nil {
 			return nil, err
 		}
@@ -110,12 +113,12 @@ func (q *Queries) ListAlertsByBase(ctx context.Context, arg ListAlertsByBasePara
 	return items, nil
 }
 
-const markAllAlertsAsRead = `-- name: MarkAllAlertsAsRead :exec
+const markAllAlertsAsReadByUser = `-- name: MarkAllAlertsAsReadByUser :exec
 UPDATE game.alerts SET is_read = TRUE
-WHERE base_id = $1
+WHERE user_id = $1
 `
 
-func (q *Queries) MarkAllAlertsAsRead(ctx context.Context, baseID int64) error {
-	_, err := q.exec(ctx, q.markAllAlertsAsReadStmt, markAllAlertsAsRead, baseID)
+func (q *Queries) MarkAllAlertsAsReadByUser(ctx context.Context, userID uuid.UUID) error {
+	_, err := q.exec(ctx, q.markAllAlertsAsReadByUserStmt, markAllAlertsAsReadByUser, userID)
 	return err
 }

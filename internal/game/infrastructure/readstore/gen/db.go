@@ -24,8 +24,8 @@ func New(db DBTX) *Queries {
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
-	if q.countUnreadAlertsByBaseStmt, err = db.PrepareContext(ctx, countUnreadAlertsByBase); err != nil {
-		return nil, fmt.Errorf("error preparing query CountUnreadAlertsByBase: %w", err)
+	if q.countUnreadAlertsByUserStmt, err = db.PrepareContext(ctx, countUnreadAlertsByUser); err != nil {
+		return nil, fmt.Errorf("error preparing query CountUnreadAlertsByUser: %w", err)
 	}
 	if q.getBaseStatsStmt, err = db.PrepareContext(ctx, getBaseStats); err != nil {
 		return nil, fmt.Errorf("error preparing query GetBaseStats: %w", err)
@@ -54,8 +54,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listActiveOperationsStmt, err = db.PrepareContext(ctx, listActiveOperations); err != nil {
 		return nil, fmt.Errorf("error preparing query ListActiveOperations: %w", err)
 	}
-	if q.listAlertsByBaseStmt, err = db.PrepareContext(ctx, listAlertsByBase); err != nil {
-		return nil, fmt.Errorf("error preparing query ListAlertsByBase: %w", err)
+	if q.listAlertsByUserStmt, err = db.PrepareContext(ctx, listAlertsByUser); err != nil {
+		return nil, fmt.Errorf("error preparing query ListAlertsByUser: %w", err)
 	}
 	if q.listArmyPrototypesStmt, err = db.PrepareContext(ctx, listArmyPrototypes); err != nil {
 		return nil, fmt.Errorf("error preparing query ListArmyPrototypes: %w", err)
@@ -155,9 +155,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 
 func (q *Queries) Close() error {
 	var err error
-	if q.countUnreadAlertsByBaseStmt != nil {
-		if cerr := q.countUnreadAlertsByBaseStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing countUnreadAlertsByBaseStmt: %w", cerr)
+	if q.countUnreadAlertsByUserStmt != nil {
+		if cerr := q.countUnreadAlertsByUserStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countUnreadAlertsByUserStmt: %w", cerr)
 		}
 	}
 	if q.getBaseStatsStmt != nil {
@@ -205,9 +205,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listActiveOperationsStmt: %w", cerr)
 		}
 	}
-	if q.listAlertsByBaseStmt != nil {
-		if cerr := q.listAlertsByBaseStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listAlertsByBaseStmt: %w", cerr)
+	if q.listAlertsByUserStmt != nil {
+		if cerr := q.listAlertsByUserStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listAlertsByUserStmt: %w", cerr)
 		}
 	}
 	if q.listArmyPrototypesStmt != nil {
@@ -404,7 +404,7 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 type Queries struct {
 	db                                DBTX
 	tx                                *sql.Tx
-	countUnreadAlertsByBaseStmt       *sql.Stmt
+	countUnreadAlertsByUserStmt       *sql.Stmt
 	getBaseStatsStmt                  *sql.Stmt
 	getLatestScanBeforeStmt           *sql.Stmt
 	getOperationStmt                  *sql.Stmt
@@ -414,7 +414,7 @@ type Queries struct {
 	getScansNearStmt                  *sql.Stmt
 	getUserProfileStmt                *sql.Stmt
 	listActiveOperationsStmt          *sql.Stmt
-	listAlertsByBaseStmt              *sql.Stmt
+	listAlertsByUserStmt              *sql.Stmt
 	listArmyPrototypesStmt            *sql.Stmt
 	listArmyPrototypesByIDsStmt       *sql.Stmt
 	listBuildPrototypesStmt           *sql.Stmt
@@ -452,7 +452,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
 		db:                                tx,
 		tx:                                tx,
-		countUnreadAlertsByBaseStmt:       q.countUnreadAlertsByBaseStmt,
+		countUnreadAlertsByUserStmt:       q.countUnreadAlertsByUserStmt,
 		getBaseStatsStmt:                  q.getBaseStatsStmt,
 		getLatestScanBeforeStmt:           q.getLatestScanBeforeStmt,
 		getOperationStmt:                  q.getOperationStmt,
@@ -462,7 +462,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getScansNearStmt:                  q.getScansNearStmt,
 		getUserProfileStmt:                q.getUserProfileStmt,
 		listActiveOperationsStmt:          q.listActiveOperationsStmt,
-		listAlertsByBaseStmt:              q.listAlertsByBaseStmt,
+		listAlertsByUserStmt:              q.listAlertsByUserStmt,
 		listArmyPrototypesStmt:            q.listArmyPrototypesStmt,
 		listArmyPrototypesByIDsStmt:       q.listArmyPrototypesByIDsStmt,
 		listBuildPrototypesStmt:           q.listBuildPrototypesStmt,

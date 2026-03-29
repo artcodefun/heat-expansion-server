@@ -9,6 +9,7 @@ import (
 func AlertItemFromModel(row gen.Alert) *readmodels.AlertItem {
 	alert := &readmodels.AlertItem{
 		ID:        row.ID,
+		UserID:    row.UserID,
 		BaseID:    int(row.BaseID),
 		Kind:      readmodels.AlertKind(row.Kind),
 		Title:     row.Title,

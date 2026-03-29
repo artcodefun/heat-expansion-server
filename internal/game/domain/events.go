@@ -539,15 +539,17 @@ func NewRadarThreatDetectedEvent(threatID uuid.UUID, baseID int, opID int) Radar
 type ActivityCreatedEvent struct {
 	BasicEvent
 	ActivityID uuid.UUID
+	UserID     uuid.UUID
 	BaseID     int
 	Kind       ActivityKind
 	Subtype    string
 }
 
-func NewActivityCreatedEvent(activityID uuid.UUID, baseID int, kind ActivityKind, subtype string) ActivityCreatedEvent {
+func NewActivityCreatedEvent(activityID uuid.UUID, userID uuid.UUID, baseID int, kind ActivityKind, subtype string) ActivityCreatedEvent {
 	return ActivityCreatedEvent{
 		BasicEvent: NewBasicEvent(),
 		ActivityID: activityID,
+		UserID:     userID,
 		BaseID:     baseID,
 		Kind:       kind,
 		Subtype:    subtype,

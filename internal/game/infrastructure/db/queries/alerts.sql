@@ -1,18 +1,18 @@
 -- name: InsertAlert :exec
-INSERT INTO game.alerts (id, base_id, activity_id, kind, title, content, is_read, created_at, expires_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+INSERT INTO game.alerts (id, user_id, base_id, activity_id, kind, title, content, is_read, created_at, expires_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
 
--- name: ListAlertsByBase :many
+-- name: ListAlertsByUser :many
 SELECT * FROM game.alerts
-WHERE base_id = $1 AND expires_at > $2
+WHERE user_id = $1 AND expires_at > $2
 ORDER BY created_at DESC;
 
 -- name: DeleteExpiredAlerts :exec
 DELETE FROM game.alerts WHERE expires_at < $1;
 
--- name: MarkAllAlertsAsRead :exec
+-- name: MarkAllAlertsAsReadByUser :exec
 UPDATE game.alerts SET is_read = TRUE
-WHERE base_id = $1;
+WHERE user_id = $1;
 
 -- name: ExistsForActivity :one
 SELECT EXISTS (

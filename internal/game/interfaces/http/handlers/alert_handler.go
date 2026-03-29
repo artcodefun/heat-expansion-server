@@ -23,42 +23,30 @@ func NewAlertHandler(queries cqrs.AlertQueries, commands cqrs.AlertCommands, tra
 	}
 }
 
-// ListActive handles GET /bases/:baseId/alerts.
+// ListActive handles GET /alerts.
 func (h *AlertHandler) ListActive(c *gin.Context) {
-	var req dtos.AlertListRequest
-	if !bindRequest(c, &req) {
-		return
-	}
 	actor := actor(c)
-	alerts, err := h.queries.ListActiveAlerts(c.Request.Context(), actor, req.Uri.BaseID)
+	alerts, err := h.queries.ListActiveAlerts(c.Request.Context(), actor)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
 	c.JSON(http.StatusOK, dtos.AlertItemsFromReadModels(alerts, h.translator, getLocale(c)))
 }
 
-// GetUnreadCount handles GET /bases/:baseId/alerts/unread-count.
+// GetUnreadCount handles GET /alerts/unread-count.
 func (h *AlertHandler) GetUnreadCount(c *gin.Context) {
-	var req dtos.AlertListRequest
-	if !bindRequest(c, &req) {
-		return
-	}
 	actor := actor(c)
-	count, err := h.queries.GetUnreadAlertsCount(c.Request.Context(), actor, req.Uri.BaseID)
+	count, err := h.queries.GetUnreadAlertsCount(c.Request.Context(), actor)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"count": count})
 }
 
-// MarkAllAsRead handles POST /bases/:baseId/alerts/read-all.
+// MarkAllAsRead handles POST /alerts/read-all.
 func (h *AlertHandler) MarkAllAsRead(c *gin.Context) {
-	var req dtos.AlertListRequest
-	if !bindRequest(c, &req) {
-		return
-	}
 	actor := actor(c)
-	err := h.commands.MarkAllAsRead(c.Request.Context(), req.Uri.BaseID, actor.UserID)
+	err := h.commands.MarkAllAsRead(c.Request.Context(), actor.UserID)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}

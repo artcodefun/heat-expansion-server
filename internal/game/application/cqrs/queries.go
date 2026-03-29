@@ -77,6 +77,6 @@ type RadarQueries interface {
 
 // AlertQueries: high-priority notification feed.
 type AlertQueries interface {
-	ListActiveAlerts(ctx context.Context, actor Actor, baseID int) ([]*readmodels.AlertItem, error)
-	GetUnreadAlertsCount(ctx context.Context, actor Actor, baseID int) (int, error)
+	ListActiveAlerts(ctx context.Context, actor Actor) ([]*readmodels.AlertItem, error)
+	GetUnreadAlertsCount(ctx context.Context, actor Actor) (int, error)
 }

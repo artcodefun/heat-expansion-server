@@ -74,7 +74,7 @@ func (c *ActivityCommands) HandleMilitaryOperationResolvedEvent(ctx context.Cont
 	if err != nil {
 		return err
 	}
-	item := domain.NewActivityFromDefenseOperation(base.ID, op)
+	item := domain.NewActivityFromDefenseOperation(base.UserID, base.ID, op)
 	if ts := event.OccurredAt(); ts != 0 {
 		item.CreatedAt = ts
 	}
@@ -96,19 +96,22 @@ func (c *ActivityCommands) HandleScanReportCreatedEvent(ctx context.Context, eve
 		return err
 	}
 
-	attackerActivity := domain.NewActivityFromScan(event.BaseID, report)
+	attackerBase, err := c.UserBaseRepo.FindByID(ctx, event.BaseID)
+	if err != nil {
+		return err
+	}
+	attackerActivity := domain.NewActivityFromScan(attackerBase.UserID, event.BaseID, report)
 
 	// Defender side detection
 	var defenderActivity *domain.ActivityItem
 	occType, _ := c.SectorRepo.GetLocationTypeByCoordinates(ctx, report.Coordinates.X, report.Coordinates.Y)
 	if occType == domain.LocationTypeUserBase {
 		defenderBase, err := c.UserBaseRepo.FindByCoordinates(ctx, report.Coordinates.X, report.Coordinates.Y)
-		attackerBase, _ := c.UserBaseRepo.FindByID(ctx, event.BaseID)
 
 		if err == nil && defenderBase != nil && attackerBase != nil {
 			interceptInfo := c.intelService.TriangulateScanSource(attackerBase.Coordinates, defenderBase, !report.IsCloaked)
 
-			da := domain.NewActivityFromScanIntercept(defenderBase.ID, interceptInfo)
+			da := domain.NewActivityFromScanIntercept(defenderBase.UserID, defenderBase.ID, interceptInfo)
 			defenderActivity = &da
 		}
 	}
@@ -146,7 +149,11 @@ func (c *ActivityCommands) HandleRadarThreatDetectedEvent(ctx context.Context, e
 		return err
 	}
 
-	activity := domain.NewActivityFromRadarThreat(threat)
+	ownerID, err := c.UserBaseRepo.GetOwnerID(ctx, threat.OwnerBaseID)
+	if err != nil {
+		return err
+	}
+	activity := domain.NewActivityFromRadarThreat(ownerID, threat)
 	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		repo := c.ActivityRepo.Tx(tx)
 		if ok, _ := repo.ExistsForOperation(ctx, event.OwnerBaseID, string(domain.ActivityKindRadar), event.OperationID); ok {

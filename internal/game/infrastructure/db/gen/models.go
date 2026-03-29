@@ -34,6 +34,7 @@ type Alert struct {
 	IsRead     bool          `json:"is_read"`
 	CreatedAt  int64         `json:"created_at"`
 	ExpiresAt  int64         `json:"expires_at"`
+	UserID     uuid.UUID     `json:"user_id"`
 }
 
 type ArmyItemPrototype struct {

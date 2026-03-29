@@ -628,6 +628,7 @@ func RadarThreatDetectedEventFromDTO(d RadarThreatDetectedEventDTO) domain.Radar
 type ActivityCreatedEventDTO struct {
 	OccurredAt int64               `json:"occurred_at"`
 	ActivityID uuid.UUID           `json:"activity_id"`
+	UserID     uuid.UUID           `json:"user_id"`
 	BaseID     int                 `json:"base_id"`
 	Kind       domain.ActivityKind `json:"kind"`
 	Subtype    string              `json:"subtype"`
@@ -637,6 +638,7 @@ func ActivityCreatedEventDTOFromDomain(e domain.ActivityCreatedEvent) ActivityCr
 	return ActivityCreatedEventDTO{
 		OccurredAt: e.OccurredAt(),
 		ActivityID: e.ActivityID,
+		UserID:     e.UserID,
 		BaseID:     e.BaseID,
 		Kind:       e.Kind,
 		Subtype:    e.Subtype,
@@ -644,5 +646,5 @@ func ActivityCreatedEventDTOFromDomain(e domain.ActivityCreatedEvent) ActivityCr
 }
 
 func ActivityCreatedEventFromDTO(d ActivityCreatedEventDTO) domain.ActivityCreatedEvent {
-	return domain.NewActivityCreatedEvent(d.ActivityID, d.BaseID, d.Kind, d.Subtype)
+	return domain.NewActivityCreatedEvent(d.ActivityID, d.UserID, d.BaseID, d.Kind, d.Subtype)
 }

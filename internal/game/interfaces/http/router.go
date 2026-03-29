@@ -158,7 +158,7 @@ func NewRouter(cmd Commands, qry Queries, tokenValidator ports.TokenValidator, t
 		}
 
 		// Alerts
-		alerts := api.Group("/bases/:baseId/alerts")
+		alerts := api.Group("/alerts")
 		{
 			alerts.GET("", alertHandler.ListActive)
 			alerts.GET("/unread-count", alertHandler.GetUnreadCount)

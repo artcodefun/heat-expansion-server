@@ -10,6 +10,7 @@ import (
 func InsertAlertParamsFromDomain(alert *domain.Alert) gen.InsertAlertParams {
 	params := gen.InsertAlertParams{
 		ID:        alert.ID,
+		UserID:    alert.UserID,
 		BaseID:    int64(alert.BaseID),
 		Kind:      string(alert.Kind),
 		Title:     alert.Title,

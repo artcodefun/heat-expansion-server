@@ -7,38 +7,40 @@ package gen
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
-const countUnreadAlertsByBase = `-- name: CountUnreadAlertsByBase :one
+const countUnreadAlertsByUser = `-- name: CountUnreadAlertsByUser :one
 SELECT count(*) FROM game.alerts
-WHERE base_id = $1 AND is_read = false AND expires_at > $2
+WHERE user_id = $1 AND is_read = false AND expires_at > $2
 `
 
-type CountUnreadAlertsByBaseParams struct {
-	BaseID    int64 `json:"base_id"`
-	ExpiresAt int64 `json:"expires_at"`
+type CountUnreadAlertsByUserParams struct {
+	UserID    uuid.UUID `json:"user_id"`
+	ExpiresAt int64     `json:"expires_at"`
 }
 
-func (q *Queries) CountUnreadAlertsByBase(ctx context.Context, arg CountUnreadAlertsByBaseParams) (int64, error) {
-	row := q.queryRow(ctx, q.countUnreadAlertsByBaseStmt, countUnreadAlertsByBase, arg.BaseID, arg.ExpiresAt)
+func (q *Queries) CountUnreadAlertsByUser(ctx context.Context, arg CountUnreadAlertsByUserParams) (int64, error) {
+	row := q.queryRow(ctx, q.countUnreadAlertsByUserStmt, countUnreadAlertsByUser, arg.UserID, arg.ExpiresAt)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
 }
 
-const listAlertsByBase = `-- name: ListAlertsByBase :many
-SELECT id, base_id, activity_id, kind, title, content, is_read, created_at, expires_at FROM game.alerts
-WHERE base_id = $1 AND expires_at > $2
+const listAlertsByUser = `-- name: ListAlertsByUser :many
+SELECT id, base_id, activity_id, kind, title, content, is_read, created_at, expires_at, user_id FROM game.alerts
+WHERE user_id = $1 AND expires_at > $2
 ORDER BY created_at DESC
 `
 
-type ListAlertsByBaseParams struct {
-	BaseID    int64 `json:"base_id"`
-	ExpiresAt int64 `json:"expires_at"`
+type ListAlertsByUserParams struct {
+	UserID    uuid.UUID `json:"user_id"`
+	ExpiresAt int64     `json:"expires_at"`
 }
 
-func (q *Queries) ListAlertsByBase(ctx context.Context, arg ListAlertsByBaseParams) ([]Alert, error) {
-	rows, err := q.query(ctx, q.listAlertsByBaseStmt, listAlertsByBase, arg.BaseID, arg.ExpiresAt)
+func (q *Queries) ListAlertsByUser(ctx context.Context, arg ListAlertsByUserParams) ([]Alert, error) {
+	rows, err := q.query(ctx, q.listAlertsByUserStmt, listAlertsByUser, arg.UserID, arg.ExpiresAt)
 	if err != nil {
 		return nil, err
 	}
@@ -56,6 +58,7 @@ func (q *Queries) ListAlertsByBase(ctx context.Context, arg ListAlertsByBasePara
 			&i.IsRead,
 			&i.CreatedAt,
 			&i.ExpiresAt,
+			&i.UserID,
 		); err != nil {
 			return nil, err
 		}

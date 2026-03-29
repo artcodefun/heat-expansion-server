@@ -57,5 +57,5 @@ type OperationCommands interface {
 
 // AlertCommands encapsulates alert notifications management.
 type AlertCommands interface {
-	MarkAllAsRead(ctx context.Context, baseID int, userID uuid.UUID) error
+	MarkAllAsRead(ctx context.Context, userID uuid.UUID) error
 }

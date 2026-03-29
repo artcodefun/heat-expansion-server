@@ -210,7 +210,7 @@ type ActivityRepository interface {
 type AlertRepository interface {
 	Create(ctx context.Context, alert *domain.Alert) error
 	ExistsForActivity(ctx context.Context, activityID uuid.UUID) (bool, error)
-	MarkAllAsRead(ctx context.Context, baseID int) error
+	MarkAllAsRead(ctx context.Context, userID uuid.UUID) error
 	DeleteExpired(ctx context.Context, now int64) error
 	// Tx returns a repository instance bound to the provided transaction.
 	Tx(tx Transaction) AlertRepository

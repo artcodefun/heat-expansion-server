@@ -39,8 +39,8 @@ func (r *AlertRepo) ExistsForActivity(ctx context.Context, activityID uuid.UUID)
 	return r.q.ExistsForActivity(ctx, uuid.NullUUID{UUID: activityID, Valid: true})
 }
 
-func (r *AlertRepo) MarkAllAsRead(ctx context.Context, baseID int) error {
-	return r.q.MarkAllAlertsAsRead(ctx, int64(baseID))
+func (r *AlertRepo) MarkAllAsRead(ctx context.Context, userID uuid.UUID) error {
+	return r.q.MarkAllAlertsAsReadByUser(ctx, userID)
 }
 
 func (r *AlertRepo) DeleteExpired(ctx context.Context, now int64) error {

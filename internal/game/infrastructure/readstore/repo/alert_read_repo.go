@@ -7,6 +7,7 @@ import (
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/gen"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/mappers"
+	"github.com/google/uuid"
 )
 
 type AlertReadRepository struct {
@@ -19,10 +20,10 @@ func NewAlertReadRepository(q *gen.Queries) *AlertReadRepository {
 	}
 }
 
-func (r *AlertReadRepository) ListActiveAlerts(ctx context.Context, baseID int) ([]*readmodels.AlertItem, error) {
+func (r *AlertReadRepository) ListActiveAlerts(ctx context.Context, userID uuid.UUID) ([]*readmodels.AlertItem, error) {
 	now := time.Now().Unix()
-	rows, err := r.q.ListAlertsByBase(ctx, gen.ListAlertsByBaseParams{
-		BaseID:    int64(baseID),
+	rows, err := r.q.ListAlertsByUser(ctx, gen.ListAlertsByUserParams{
+		UserID:    userID,
 		ExpiresAt: now,
 	})
 	if err != nil {
@@ -32,10 +33,10 @@ func (r *AlertReadRepository) ListActiveAlerts(ctx context.Context, baseID int) 
 	return mappers.AlertItemsFromModels(rows), nil
 }
 
-func (r *AlertReadRepository) GetUnreadAlertsCount(ctx context.Context, baseID int) (int, error) {
+func (r *AlertReadRepository) GetUnreadAlertsCount(ctx context.Context, userID uuid.UUID) (int, error) {
 	now := time.Now().Unix()
-	count, err := r.q.CountUnreadAlertsByBase(ctx, gen.CountUnreadAlertsByBaseParams{
-		BaseID:    int64(baseID),
+	count, err := r.q.CountUnreadAlertsByUser(ctx, gen.CountUnreadAlertsByUserParams{
+		UserID:    userID,
 		ExpiresAt: now,
 	})
 	if err != nil {

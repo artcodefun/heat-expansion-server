@@ -16,6 +16,7 @@ const (
 
 type Alert struct {
 	ID         uuid.UUID
+	UserID     uuid.UUID
 	BaseID     int
 	ActivityID *uuid.UUID
 	Kind       AlertKind
@@ -26,10 +27,11 @@ type Alert struct {
 	ExpiresAt  int64
 }
 
-func NewAlert(baseID int, activityID *uuid.UUID, kind AlertKind, title, content TranslationKey, ttl time.Duration) *Alert {
+func NewAlert(userID uuid.UUID, baseID int, activityID *uuid.UUID, kind AlertKind, title, content TranslationKey, ttl time.Duration) *Alert {
 	now := NowUnix()
 	return &Alert{
 		ID:         uuid.Must(uuid.NewV7()),
+		UserID:     userID,
 		BaseID:     baseID,
 		ActivityID: activityID,
 		Kind:       kind,

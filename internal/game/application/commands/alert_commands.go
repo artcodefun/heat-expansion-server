@@ -5,31 +5,29 @@ import (
 	"log"
 	"time"
 
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 	"github.com/google/uuid"
 )
 
 type AlertCommands struct {
 	AlertRepo ports.AlertRepository
-	Access    *services.AccessControlService
 	TxMgr     ports.TransactionManager
 }
 
-func NewAlertCommands(repo ports.AlertRepository, access *services.AccessControlService, txMgr ports.TransactionManager) *AlertCommands {
+func NewAlertCommands(repo ports.AlertRepository, txMgr ports.TransactionManager) *AlertCommands {
 	return &AlertCommands{
 		AlertRepo: repo,
-		Access:    access,
 		TxMgr:     txMgr,
 	}
 }
 
-func (c *AlertCommands) MarkAllAsRead(ctx context.Context, baseID int, userID uuid.UUID) error {
-	if err := c.Access.EnsureBaseOwnership(ctx, userID, baseID); err != nil {
-		return err
+func (c *AlertCommands) MarkAllAsRead(ctx context.Context, userID uuid.UUID) error {
+	if userID == uuid.Nil {
+		return cqrs.ErrForbidden
 	}
-	return c.AlertRepo.MarkAllAsRead(ctx, baseID)
+	return c.AlertRepo.MarkAllAsRead(ctx, userID)
 }
 
 func (c *AlertCommands) HandleActivityCreatedEvent(ctx context.Context, e domain.ActivityCreatedEvent) error {
@@ -66,7 +64,7 @@ func (c *AlertCommands) HandleActivityCreatedEvent(ctx context.Context, e domain
 		if exists, _ := repo.ExistsForActivity(ctx, e.ActivityID); exists {
 			return nil
 		}
-		alert := domain.NewAlert(e.BaseID, &e.ActivityID, kind, title, content, ttl)
+		alert := domain.NewAlert(e.UserID, e.BaseID, &e.ActivityID, kind, title, content, ttl)
 		err := repo.Create(ctx, alert)
 		if err != nil {
 			log.Printf("Failed to create alert for activity %s: %v", e.ActivityID, err)

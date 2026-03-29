@@ -16,6 +16,7 @@ const (
 
 type AlertItemDTO struct {
 	ID         uuid.UUID  `json:"id"`
+	UserID     uuid.UUID  `json:"userId"`
 	BaseID     int        `json:"baseId"`
 	ActivityID *uuid.UUID `json:"activityId,omitempty"`
 	Kind       AlertKind  `json:"kind"`
@@ -29,6 +30,7 @@ type AlertItemDTO struct {
 func AlertItemDTOFromReadModel(a *readmodels.AlertItem, tr ports.Translator, locale string) AlertItemDTO {
 	return AlertItemDTO{
 		ID:         a.ID,
+		UserID:     a.UserID,
 		BaseID:     a.BaseID,
 		ActivityID: a.ActivityID,
 		Kind:       AlertKind(a.Kind),

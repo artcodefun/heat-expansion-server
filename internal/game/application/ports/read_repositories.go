@@ -52,8 +52,8 @@ type SectorReadRepository interface {
 
 // AlertReadRepository provides high-priority notification projections.
 type AlertReadRepository interface {
-	ListActiveAlerts(ctx context.Context, baseID int) ([]*readmodels.AlertItem, error)
-	GetUnreadAlertsCount(ctx context.Context, baseID int) (int, error)
+	ListActiveAlerts(ctx context.Context, userID uuid.UUID) ([]*readmodels.AlertItem, error)
+	GetUnreadAlertsCount(ctx context.Context, userID uuid.UUID) (int, error)
 }
 
 // StorageReadRepository exposes storage item / buff projections.

@@ -15,6 +15,7 @@ const (
 
 type AlertItem struct {
 	ID         uuid.UUID
+	UserID     uuid.UUID
 	BaseID     int
 	ActivityID *uuid.UUID
 	Kind       AlertKind

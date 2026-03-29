@@ -219,8 +219,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listActivitiesByBaseStmt, err = db.PrepareContext(ctx, listActivitiesByBase); err != nil {
 		return nil, fmt.Errorf("error preparing query ListActivitiesByBase: %w", err)
 	}
-	if q.listAlertsByBaseStmt, err = db.PrepareContext(ctx, listAlertsByBase); err != nil {
-		return nil, fmt.Errorf("error preparing query ListAlertsByBase: %w", err)
+	if q.listAlertsByUserStmt, err = db.PrepareContext(ctx, listAlertsByUser); err != nil {
+		return nil, fmt.Errorf("error preparing query ListAlertsByUser: %w", err)
 	}
 	if q.listAllBasesStmt, err = db.PrepareContext(ctx, listAllBases); err != nil {
 		return nil, fmt.Errorf("error preparing query ListAllBases: %w", err)
@@ -273,8 +273,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listUsersStmt, err = db.PrepareContext(ctx, listUsers); err != nil {
 		return nil, fmt.Errorf("error preparing query ListUsers: %w", err)
 	}
-	if q.markAllAlertsAsReadStmt, err = db.PrepareContext(ctx, markAllAlertsAsRead); err != nil {
-		return nil, fmt.Errorf("error preparing query MarkAllAlertsAsRead: %w", err)
+	if q.markAllAlertsAsReadByUserStmt, err = db.PrepareContext(ctx, markAllAlertsAsReadByUser); err != nil {
+		return nil, fmt.Errorf("error preparing query MarkAllAlertsAsReadByUser: %w", err)
 	}
 	if q.markOutboxEventPublishedStmt, err = db.PrepareContext(ctx, markOutboxEventPublished); err != nil {
 		return nil, fmt.Errorf("error preparing query MarkOutboxEventPublished: %w", err)
@@ -642,9 +642,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listActivitiesByBaseStmt: %w", cerr)
 		}
 	}
-	if q.listAlertsByBaseStmt != nil {
-		if cerr := q.listAlertsByBaseStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listAlertsByBaseStmt: %w", cerr)
+	if q.listAlertsByUserStmt != nil {
+		if cerr := q.listAlertsByUserStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listAlertsByUserStmt: %w", cerr)
 		}
 	}
 	if q.listAllBasesStmt != nil {
@@ -732,9 +732,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listUsersStmt: %w", cerr)
 		}
 	}
-	if q.markAllAlertsAsReadStmt != nil {
-		if cerr := q.markAllAlertsAsReadStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing markAllAlertsAsReadStmt: %w", cerr)
+	if q.markAllAlertsAsReadByUserStmt != nil {
+		if cerr := q.markAllAlertsAsReadByUserStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing markAllAlertsAsReadByUserStmt: %w", cerr)
 		}
 	}
 	if q.markOutboxEventPublishedStmt != nil {
@@ -901,7 +901,7 @@ type Queries struct {
 	insertScheduledJobStmt                    *sql.Stmt
 	insertUserStmt                            *sql.Stmt
 	listActivitiesByBaseStmt                  *sql.Stmt
-	listAlertsByBaseStmt                      *sql.Stmt
+	listAlertsByUserStmt                      *sql.Stmt
 	listAllBasesStmt                          *sql.Stmt
 	listArmyPrototypesStmt                    *sql.Stmt
 	listBaseArmyItemsStmt                     *sql.Stmt
@@ -919,7 +919,7 @@ type Queries struct {
 	listStoragePrototypesStmt                 *sql.Stmt
 	listTechPrototypesStmt                    *sql.Stmt
 	listUsersStmt                             *sql.Stmt
-	markAllAlertsAsReadStmt                   *sql.Stmt
+	markAllAlertsAsReadByUserStmt             *sql.Stmt
 	markOutboxEventPublishedStmt              *sql.Stmt
 	markScheduledJobDispatchedStmt            *sql.Stmt
 	notifyOutboxEventStmt                     *sql.Stmt
@@ -1003,7 +1003,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		insertScheduledJobStmt:                    q.insertScheduledJobStmt,
 		insertUserStmt:                            q.insertUserStmt,
 		listActivitiesByBaseStmt:                  q.listActivitiesByBaseStmt,
-		listAlertsByBaseStmt:                      q.listAlertsByBaseStmt,
+		listAlertsByUserStmt:                      q.listAlertsByUserStmt,
 		listAllBasesStmt:                          q.listAllBasesStmt,
 		listArmyPrototypesStmt:                    q.listArmyPrototypesStmt,
 		listBaseArmyItemsStmt:                     q.listBaseArmyItemsStmt,
@@ -1021,7 +1021,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listStoragePrototypesStmt:                 q.listStoragePrototypesStmt,
 		listTechPrototypesStmt:                    q.listTechPrototypesStmt,
 		listUsersStmt:                             q.listUsersStmt,
-		markAllAlertsAsReadStmt:                   q.markAllAlertsAsReadStmt,
+		markAllAlertsAsReadByUserStmt:             q.markAllAlertsAsReadByUserStmt,
 		markOutboxEventPublishedStmt:              q.markOutboxEventPublishedStmt,
 		markScheduledJobDispatchedStmt:            q.markScheduledJobDispatchedStmt,
 		notifyOutboxEventStmt:                     q.notifyOutboxEventStmt,
