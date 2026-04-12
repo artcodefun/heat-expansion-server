@@ -27,8 +27,23 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.countUnreadAlertsByUserStmt, err = db.PrepareContext(ctx, countUnreadAlertsByUser); err != nil {
 		return nil, fmt.Errorf("error preparing query CountUnreadAlertsByUser: %w", err)
 	}
+	if q.countUnreadDiplomaticMessagesByUserStmt, err = db.PrepareContext(ctx, countUnreadDiplomaticMessagesByUser); err != nil {
+		return nil, fmt.Errorf("error preparing query CountUnreadDiplomaticMessagesByUser: %w", err)
+	}
+	if q.getBaseStmt, err = db.PrepareContext(ctx, getBase); err != nil {
+		return nil, fmt.Errorf("error preparing query GetBase: %w", err)
+	}
+	if q.getBaseOwnerByCoordinatesStmt, err = db.PrepareContext(ctx, getBaseOwnerByCoordinates); err != nil {
+		return nil, fmt.Errorf("error preparing query GetBaseOwnerByCoordinates: %w", err)
+	}
 	if q.getBaseStatsStmt, err = db.PrepareContext(ctx, getBaseStats); err != nil {
 		return nil, fmt.Errorf("error preparing query GetBaseStats: %w", err)
+	}
+	if q.getDiplomaticRelationshipStmt, err = db.PrepareContext(ctx, getDiplomaticRelationship); err != nil {
+		return nil, fmt.Errorf("error preparing query GetDiplomaticRelationship: %w", err)
+	}
+	if q.getDiplomaticRequestStmt, err = db.PrepareContext(ctx, getDiplomaticRequest); err != nil {
+		return nil, fmt.Errorf("error preparing query GetDiplomaticRequest: %w", err)
 	}
 	if q.getLatestScanBeforeStmt, err = db.PrepareContext(ctx, getLatestScanBefore); err != nil {
 		return nil, fmt.Errorf("error preparing query GetLatestScanBefore: %w", err)
@@ -72,6 +87,15 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listDefenseActivitiesStmt, err = db.PrepareContext(ctx, listDefenseActivities); err != nil {
 		return nil, fmt.Errorf("error preparing query ListDefenseActivities: %w", err)
 	}
+	if q.listDiplomaticChatsStmt, err = db.PrepareContext(ctx, listDiplomaticChats); err != nil {
+		return nil, fmt.Errorf("error preparing query ListDiplomaticChats: %w", err)
+	}
+	if q.listDiplomaticMessagesByChatStmt, err = db.PrepareContext(ctx, listDiplomaticMessagesByChat); err != nil {
+		return nil, fmt.Errorf("error preparing query ListDiplomaticMessagesByChat: %w", err)
+	}
+	if q.listDiplomaticRelationshipsStmt, err = db.PrepareContext(ctx, listDiplomaticRelationships); err != nil {
+		return nil, fmt.Errorf("error preparing query ListDiplomaticRelationships: %w", err)
+	}
 	if q.listDoneTechItemsStmt, err = db.PrepareContext(ctx, listDoneTechItems); err != nil {
 		return nil, fmt.Errorf("error preparing query ListDoneTechItems: %w", err)
 	}
@@ -113,6 +137,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.listPendingBuildItemsAllStmt, err = db.PrepareContext(ctx, listPendingBuildItemsAll); err != nil {
 		return nil, fmt.Errorf("error preparing query ListPendingBuildItemsAll: %w", err)
+	}
+	if q.listPendingDiplomaticRequestsStmt, err = db.PrepareContext(ctx, listPendingDiplomaticRequests); err != nil {
+		return nil, fmt.Errorf("error preparing query ListPendingDiplomaticRequests: %w", err)
 	}
 	if q.listPresentArmyItemsStmt, err = db.PrepareContext(ctx, listPresentArmyItems); err != nil {
 		return nil, fmt.Errorf("error preparing query ListPresentArmyItems: %w", err)
@@ -160,9 +187,34 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing countUnreadAlertsByUserStmt: %w", cerr)
 		}
 	}
+	if q.countUnreadDiplomaticMessagesByUserStmt != nil {
+		if cerr := q.countUnreadDiplomaticMessagesByUserStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countUnreadDiplomaticMessagesByUserStmt: %w", cerr)
+		}
+	}
+	if q.getBaseStmt != nil {
+		if cerr := q.getBaseStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getBaseStmt: %w", cerr)
+		}
+	}
+	if q.getBaseOwnerByCoordinatesStmt != nil {
+		if cerr := q.getBaseOwnerByCoordinatesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getBaseOwnerByCoordinatesStmt: %w", cerr)
+		}
+	}
 	if q.getBaseStatsStmt != nil {
 		if cerr := q.getBaseStatsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getBaseStatsStmt: %w", cerr)
+		}
+	}
+	if q.getDiplomaticRelationshipStmt != nil {
+		if cerr := q.getDiplomaticRelationshipStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getDiplomaticRelationshipStmt: %w", cerr)
+		}
+	}
+	if q.getDiplomaticRequestStmt != nil {
+		if cerr := q.getDiplomaticRequestStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getDiplomaticRequestStmt: %w", cerr)
 		}
 	}
 	if q.getLatestScanBeforeStmt != nil {
@@ -235,6 +287,21 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listDefenseActivitiesStmt: %w", cerr)
 		}
 	}
+	if q.listDiplomaticChatsStmt != nil {
+		if cerr := q.listDiplomaticChatsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listDiplomaticChatsStmt: %w", cerr)
+		}
+	}
+	if q.listDiplomaticMessagesByChatStmt != nil {
+		if cerr := q.listDiplomaticMessagesByChatStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listDiplomaticMessagesByChatStmt: %w", cerr)
+		}
+	}
+	if q.listDiplomaticRelationshipsStmt != nil {
+		if cerr := q.listDiplomaticRelationshipsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listDiplomaticRelationshipsStmt: %w", cerr)
+		}
+	}
 	if q.listDoneTechItemsStmt != nil {
 		if cerr := q.listDoneTechItemsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listDoneTechItemsStmt: %w", cerr)
@@ -303,6 +370,11 @@ func (q *Queries) Close() error {
 	if q.listPendingBuildItemsAllStmt != nil {
 		if cerr := q.listPendingBuildItemsAllStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listPendingBuildItemsAllStmt: %w", cerr)
+		}
+	}
+	if q.listPendingDiplomaticRequestsStmt != nil {
+		if cerr := q.listPendingDiplomaticRequestsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listPendingDiplomaticRequestsStmt: %w", cerr)
 		}
 	}
 	if q.listPresentArmyItemsStmt != nil {
@@ -402,97 +474,115 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db                                DBTX
-	tx                                *sql.Tx
-	countUnreadAlertsByUserStmt       *sql.Stmt
-	getBaseStatsStmt                  *sql.Stmt
-	getLatestScanBeforeStmt           *sql.Stmt
-	getOperationStmt                  *sql.Stmt
-	getRadarThreatStmt                *sql.Stmt
-	getScanReportByIDStmt             *sql.Stmt
-	getScanReportByOperationIDStmt    *sql.Stmt
-	getScansNearStmt                  *sql.Stmt
-	getUserProfileStmt                *sql.Stmt
-	listActiveOperationsStmt          *sql.Stmt
-	listAlertsByUserStmt              *sql.Stmt
-	listArmyPrototypesStmt            *sql.Stmt
-	listArmyPrototypesByIDsStmt       *sql.Stmt
-	listBuildPrototypesStmt           *sql.Stmt
-	listBuildPrototypesByIDsStmt      *sql.Stmt
-	listDefenseActivitiesStmt         *sql.Stmt
-	listDoneTechItemsStmt             *sql.Stmt
-	listDoneTechItemsAllStmt          *sql.Stmt
-	listInProductionArmyItemsStmt     *sql.Stmt
-	listInProductionArmyItemsAllStmt  *sql.Stmt
-	listInProductionBuildItemsStmt    *sql.Stmt
-	listInProductionBuildItemsAllStmt *sql.Stmt
-	listInResearchTechItemsStmt       *sql.Stmt
-	listIncomingThreatsStmt           *sql.Stmt
-	listOffenseActivitiesStmt         *sql.Stmt
-	listOperationsByBaseStmt          *sql.Stmt
-	listPendingArmyItemsStmt          *sql.Stmt
-	listPendingArmyItemsAllStmt       *sql.Stmt
-	listPendingBuildItemsStmt         *sql.Stmt
-	listPendingBuildItemsAllStmt      *sql.Stmt
-	listPresentArmyItemsStmt          *sql.Stmt
-	listPresentArmyItemsAllStmt       *sql.Stmt
-	listPresentBuildItemsStmt         *sql.Stmt
-	listPresentBuildItemsAllStmt      *sql.Stmt
-	listPresentStorageItemsStmt       *sql.Stmt
-	listRadarActivitiesStmt           *sql.Stmt
-	listScanActivitiesStmt            *sql.Stmt
-	listStoragePrototypesStmt         *sql.Stmt
-	listTechPrototypesStmt            *sql.Stmt
-	listTechPrototypesByIDsStmt       *sql.Stmt
-	listTradeActivitiesStmt           *sql.Stmt
-	listUserBasesStmt                 *sql.Stmt
+	db                                      DBTX
+	tx                                      *sql.Tx
+	countUnreadAlertsByUserStmt             *sql.Stmt
+	countUnreadDiplomaticMessagesByUserStmt *sql.Stmt
+	getBaseStmt                             *sql.Stmt
+	getBaseOwnerByCoordinatesStmt           *sql.Stmt
+	getBaseStatsStmt                        *sql.Stmt
+	getDiplomaticRelationshipStmt           *sql.Stmt
+	getDiplomaticRequestStmt                *sql.Stmt
+	getLatestScanBeforeStmt                 *sql.Stmt
+	getOperationStmt                        *sql.Stmt
+	getRadarThreatStmt                      *sql.Stmt
+	getScanReportByIDStmt                   *sql.Stmt
+	getScanReportByOperationIDStmt          *sql.Stmt
+	getScansNearStmt                        *sql.Stmt
+	getUserProfileStmt                      *sql.Stmt
+	listActiveOperationsStmt                *sql.Stmt
+	listAlertsByUserStmt                    *sql.Stmt
+	listArmyPrototypesStmt                  *sql.Stmt
+	listArmyPrototypesByIDsStmt             *sql.Stmt
+	listBuildPrototypesStmt                 *sql.Stmt
+	listBuildPrototypesByIDsStmt            *sql.Stmt
+	listDefenseActivitiesStmt               *sql.Stmt
+	listDiplomaticChatsStmt                 *sql.Stmt
+	listDiplomaticMessagesByChatStmt        *sql.Stmt
+	listDiplomaticRelationshipsStmt         *sql.Stmt
+	listDoneTechItemsStmt                   *sql.Stmt
+	listDoneTechItemsAllStmt                *sql.Stmt
+	listInProductionArmyItemsStmt           *sql.Stmt
+	listInProductionArmyItemsAllStmt        *sql.Stmt
+	listInProductionBuildItemsStmt          *sql.Stmt
+	listInProductionBuildItemsAllStmt       *sql.Stmt
+	listInResearchTechItemsStmt             *sql.Stmt
+	listIncomingThreatsStmt                 *sql.Stmt
+	listOffenseActivitiesStmt               *sql.Stmt
+	listOperationsByBaseStmt                *sql.Stmt
+	listPendingArmyItemsStmt                *sql.Stmt
+	listPendingArmyItemsAllStmt             *sql.Stmt
+	listPendingBuildItemsStmt               *sql.Stmt
+	listPendingBuildItemsAllStmt            *sql.Stmt
+	listPendingDiplomaticRequestsStmt       *sql.Stmt
+	listPresentArmyItemsStmt                *sql.Stmt
+	listPresentArmyItemsAllStmt             *sql.Stmt
+	listPresentBuildItemsStmt               *sql.Stmt
+	listPresentBuildItemsAllStmt            *sql.Stmt
+	listPresentStorageItemsStmt             *sql.Stmt
+	listRadarActivitiesStmt                 *sql.Stmt
+	listScanActivitiesStmt                  *sql.Stmt
+	listStoragePrototypesStmt               *sql.Stmt
+	listTechPrototypesStmt                  *sql.Stmt
+	listTechPrototypesByIDsStmt             *sql.Stmt
+	listTradeActivitiesStmt                 *sql.Stmt
+	listUserBasesStmt                       *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:                                tx,
-		tx:                                tx,
-		countUnreadAlertsByUserStmt:       q.countUnreadAlertsByUserStmt,
-		getBaseStatsStmt:                  q.getBaseStatsStmt,
-		getLatestScanBeforeStmt:           q.getLatestScanBeforeStmt,
-		getOperationStmt:                  q.getOperationStmt,
-		getRadarThreatStmt:                q.getRadarThreatStmt,
-		getScanReportByIDStmt:             q.getScanReportByIDStmt,
-		getScanReportByOperationIDStmt:    q.getScanReportByOperationIDStmt,
-		getScansNearStmt:                  q.getScansNearStmt,
-		getUserProfileStmt:                q.getUserProfileStmt,
-		listActiveOperationsStmt:          q.listActiveOperationsStmt,
-		listAlertsByUserStmt:              q.listAlertsByUserStmt,
-		listArmyPrototypesStmt:            q.listArmyPrototypesStmt,
-		listArmyPrototypesByIDsStmt:       q.listArmyPrototypesByIDsStmt,
-		listBuildPrototypesStmt:           q.listBuildPrototypesStmt,
-		listBuildPrototypesByIDsStmt:      q.listBuildPrototypesByIDsStmt,
-		listDefenseActivitiesStmt:         q.listDefenseActivitiesStmt,
-		listDoneTechItemsStmt:             q.listDoneTechItemsStmt,
-		listDoneTechItemsAllStmt:          q.listDoneTechItemsAllStmt,
-		listInProductionArmyItemsStmt:     q.listInProductionArmyItemsStmt,
-		listInProductionArmyItemsAllStmt:  q.listInProductionArmyItemsAllStmt,
-		listInProductionBuildItemsStmt:    q.listInProductionBuildItemsStmt,
-		listInProductionBuildItemsAllStmt: q.listInProductionBuildItemsAllStmt,
-		listInResearchTechItemsStmt:       q.listInResearchTechItemsStmt,
-		listIncomingThreatsStmt:           q.listIncomingThreatsStmt,
-		listOffenseActivitiesStmt:         q.listOffenseActivitiesStmt,
-		listOperationsByBaseStmt:          q.listOperationsByBaseStmt,
-		listPendingArmyItemsStmt:          q.listPendingArmyItemsStmt,
-		listPendingArmyItemsAllStmt:       q.listPendingArmyItemsAllStmt,
-		listPendingBuildItemsStmt:         q.listPendingBuildItemsStmt,
-		listPendingBuildItemsAllStmt:      q.listPendingBuildItemsAllStmt,
-		listPresentArmyItemsStmt:          q.listPresentArmyItemsStmt,
-		listPresentArmyItemsAllStmt:       q.listPresentArmyItemsAllStmt,
-		listPresentBuildItemsStmt:         q.listPresentBuildItemsStmt,
-		listPresentBuildItemsAllStmt:      q.listPresentBuildItemsAllStmt,
-		listPresentStorageItemsStmt:       q.listPresentStorageItemsStmt,
-		listRadarActivitiesStmt:           q.listRadarActivitiesStmt,
-		listScanActivitiesStmt:            q.listScanActivitiesStmt,
-		listStoragePrototypesStmt:         q.listStoragePrototypesStmt,
-		listTechPrototypesStmt:            q.listTechPrototypesStmt,
-		listTechPrototypesByIDsStmt:       q.listTechPrototypesByIDsStmt,
-		listTradeActivitiesStmt:           q.listTradeActivitiesStmt,
-		listUserBasesStmt:                 q.listUserBasesStmt,
+		db:                                      tx,
+		tx:                                      tx,
+		countUnreadAlertsByUserStmt:             q.countUnreadAlertsByUserStmt,
+		countUnreadDiplomaticMessagesByUserStmt: q.countUnreadDiplomaticMessagesByUserStmt,
+		getBaseStmt:                             q.getBaseStmt,
+		getBaseOwnerByCoordinatesStmt:           q.getBaseOwnerByCoordinatesStmt,
+		getBaseStatsStmt:                        q.getBaseStatsStmt,
+		getDiplomaticRelationshipStmt:           q.getDiplomaticRelationshipStmt,
+		getDiplomaticRequestStmt:                q.getDiplomaticRequestStmt,
+		getLatestScanBeforeStmt:                 q.getLatestScanBeforeStmt,
+		getOperationStmt:                        q.getOperationStmt,
+		getRadarThreatStmt:                      q.getRadarThreatStmt,
+		getScanReportByIDStmt:                   q.getScanReportByIDStmt,
+		getScanReportByOperationIDStmt:          q.getScanReportByOperationIDStmt,
+		getScansNearStmt:                        q.getScansNearStmt,
+		getUserProfileStmt:                      q.getUserProfileStmt,
+		listActiveOperationsStmt:                q.listActiveOperationsStmt,
+		listAlertsByUserStmt:                    q.listAlertsByUserStmt,
+		listArmyPrototypesStmt:                  q.listArmyPrototypesStmt,
+		listArmyPrototypesByIDsStmt:             q.listArmyPrototypesByIDsStmt,
+		listBuildPrototypesStmt:                 q.listBuildPrototypesStmt,
+		listBuildPrototypesByIDsStmt:            q.listBuildPrototypesByIDsStmt,
+		listDefenseActivitiesStmt:               q.listDefenseActivitiesStmt,
+		listDiplomaticChatsStmt:                 q.listDiplomaticChatsStmt,
+		listDiplomaticMessagesByChatStmt:        q.listDiplomaticMessagesByChatStmt,
+		listDiplomaticRelationshipsStmt:         q.listDiplomaticRelationshipsStmt,
+		listDoneTechItemsStmt:                   q.listDoneTechItemsStmt,
+		listDoneTechItemsAllStmt:                q.listDoneTechItemsAllStmt,
+		listInProductionArmyItemsStmt:           q.listInProductionArmyItemsStmt,
+		listInProductionArmyItemsAllStmt:        q.listInProductionArmyItemsAllStmt,
+		listInProductionBuildItemsStmt:          q.listInProductionBuildItemsStmt,
+		listInProductionBuildItemsAllStmt:       q.listInProductionBuildItemsAllStmt,
+		listInResearchTechItemsStmt:             q.listInResearchTechItemsStmt,
+		listIncomingThreatsStmt:                 q.listIncomingThreatsStmt,
+		listOffenseActivitiesStmt:               q.listOffenseActivitiesStmt,
+		listOperationsByBaseStmt:                q.listOperationsByBaseStmt,
+		listPendingArmyItemsStmt:                q.listPendingArmyItemsStmt,
+		listPendingArmyItemsAllStmt:             q.listPendingArmyItemsAllStmt,
+		listPendingBuildItemsStmt:               q.listPendingBuildItemsStmt,
+		listPendingBuildItemsAllStmt:            q.listPendingBuildItemsAllStmt,
+		listPendingDiplomaticRequestsStmt:       q.listPendingDiplomaticRequestsStmt,
+		listPresentArmyItemsStmt:                q.listPresentArmyItemsStmt,
+		listPresentArmyItemsAllStmt:             q.listPresentArmyItemsAllStmt,
+		listPresentBuildItemsStmt:               q.listPresentBuildItemsStmt,
+		listPresentBuildItemsAllStmt:            q.listPresentBuildItemsAllStmt,
+		listPresentStorageItemsStmt:             q.listPresentStorageItemsStmt,
+		listRadarActivitiesStmt:                 q.listRadarActivitiesStmt,
+		listScanActivitiesStmt:                  q.listScanActivitiesStmt,
+		listStoragePrototypesStmt:               q.listStoragePrototypesStmt,
+		listTechPrototypesStmt:                  q.listTechPrototypesStmt,
+		listTechPrototypesByIDsStmt:             q.listTechPrototypesByIDsStmt,
+		listTradeActivitiesStmt:                 q.listTradeActivitiesStmt,
+		listUserBasesStmt:                       q.listUserBasesStmt,
 	}
 }

@@ -555,3 +555,45 @@ func NewActivityCreatedEvent(activityID uuid.UUID, userID uuid.UUID, baseID int,
 		Subtype:    subtype,
 	}
 }
+
+// Diplomacy-related domain events
+
+type DiplomaticMessageSentEvent struct {
+	BasicEvent
+	MessageID      uuid.UUID
+	SenderUserID   uuid.UUID
+	ReceiverUserID uuid.UUID
+	ReceiverBaseID *int
+	Content        TranslationKey
+}
+
+func NewDiplomaticMessageSentEvent(messageID uuid.UUID, senderUserID, receiverUserID uuid.UUID, receiverBaseID *int, content TranslationKey) DiplomaticMessageSentEvent {
+	return DiplomaticMessageSentEvent{
+		BasicEvent:     NewBasicEvent(),
+		MessageID:      messageID,
+		SenderUserID:   senderUserID,
+		ReceiverUserID: receiverUserID,
+		ReceiverBaseID: receiverBaseID,
+		Content:        content,
+	}
+}
+
+type DiplomaticRequestCreatedEvent struct {
+	BasicEvent
+	RequestID      uuid.UUID
+	SenderUserID   uuid.UUID
+	ReceiverUserID uuid.UUID
+	ReceiverBaseID *int
+	Kind           DiplomaticRequestKind
+}
+
+func NewDiplomaticRequestCreatedEvent(requestID uuid.UUID, senderUserID, receiverUserID uuid.UUID, receiverBaseID *int, kind DiplomaticRequestKind) DiplomaticRequestCreatedEvent {
+	return DiplomaticRequestCreatedEvent{
+		BasicEvent:     NewBasicEvent(),
+		RequestID:      requestID,
+		SenderUserID:   senderUserID,
+		ReceiverUserID: receiverUserID,
+		ReceiverBaseID: receiverBaseID,
+		Kind:           kind,
+	}
+}

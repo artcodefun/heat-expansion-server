@@ -63,7 +63,8 @@ The patterns and conventions below apply to the **Game** service (`internal/game
 - **Run locally**: `make run` (loads `.env`, then `go run ./cmd/server`). Ensure DB is running and `GAME_DB_URL`/`AUTH_DB_URL` are set.
 - **Tests**: `make test` or `go test ./...` from repo root.
 - **Migrations**: use `make migrate-up` / `make migrate-down` (requires `migrate` CLI). Game SQL files live in `internal/game/infrastructure/db/migrations`.
-- **sqlc**: when changing DB queries, edit `internal/game/infrastructure/db/queries/*.sql` or `internal/game/infrastructure/readstore/queries/*.sql`, then run `make sqlc`.
+- **Generated files**: never edit generated files directly. This includes `internal/game/infrastructure/readstore/gen/**` and any other generator output.
+- **SQLC queries**: never write ad hoc SQL strings inside Go files for database access. If a change needs a new or updated query, edit only `internal/game/infrastructure/db/queries/*.sql` or `internal/game/infrastructure/readstore/queries/*.sql`, then run `make sqlc`.
 
 ## How to Extend Safely
 - When introducing new domain behavior, prefer adding methods to aggregates in `internal/game/domain` and invoking them from command handlers, rather than mutating models directly in handlers.

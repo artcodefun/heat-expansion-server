@@ -1,0 +1,16 @@
+{
+  "diplomacy.message.coalition_proposal.content": "I think an alliance would benefit both of us.",
+  "diplomacy.message.ceasefire_proposal.content": "I am ready to stop this war if you are.",
+  "diplomacy.message.coalition_acceptance.content": "I accept your alliance proposal.",
+  "diplomacy.message.coalition_rejection.content": "I am not ready to form an alliance with you.",
+  "diplomacy.message.coalition_break_notice.content": "I am ending our alliance effective immediately.",
+  "diplomacy.message.war_declaration.content": "I am declaring war on you.",
+  "diplomacy.message.ceasefire_acceptance.content": "I accept your ceasefire proposal.",
+  "diplomacy.message.ceasefire_rejection.content": "I will not agree to a ceasefire right now.",
+  "diplomacy.message.greeting_friendly_hello.content": "I come in peace and greet you warmly.",
+  "diplomacy.message.greeting_formal_introduction.content": "I am reaching out to introduce myself properly.",
+  "diplomacy.message.greeting_sign_of_admiration.content": "I respect what you have built and wanted to say so directly.",
+  "diplomacy.message.warning_keep_out_of_our_sector.content": "I want you to stay out of our sector.",
+  "diplomacy.message.warning_do_not_interfere.content": "I advise you not to interfere in our affairs.",
+  "diplomacy.message.warning_general_threat.content": "I will answer further provocation with force."
+}

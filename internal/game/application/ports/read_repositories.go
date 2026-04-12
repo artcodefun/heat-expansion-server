@@ -56,6 +56,15 @@ type AlertReadRepository interface {
 	GetUnreadAlertsCount(ctx context.Context, userID uuid.UUID) (int, error)
 }
 
+type DiplomacyReadRepository interface {
+	ListRelationships(ctx context.Context, userID uuid.UUID, status *readmodels.DiplomaticStatus) ([]*readmodels.DiplomaticRelationship, error)
+	GetRelationship(ctx context.Context, userID, otherUserID uuid.UUID) (*readmodels.DiplomaticRelationship, error)
+	ListChats(ctx context.Context, userID uuid.UUID) ([]*readmodels.DiplomaticChat, error)
+	GetUnreadMessagesCount(ctx context.Context, userID uuid.UUID) (int, error)
+	ListChatMessages(ctx context.Context, userID, otherUserID uuid.UUID) ([]*readmodels.DiplomaticMessage, error)
+	ListPendingRequests(ctx context.Context, userID uuid.UUID) ([]*readmodels.DiplomaticRequest, error)
+}
+
 // StorageReadRepository exposes storage item / buff projections.
 type StorageReadRepository interface {
 	ListPresentStorageItems(ctx context.Context, baseID int, category readmodels.StorageCategory) ([]*readmodels.StorageItemPresent, error)
@@ -63,6 +72,8 @@ type StorageReadRepository interface {
 
 // BaseReadRepository provides read-only access to base state.
 type BaseReadRepository interface {
+	GetBase(ctx context.Context, baseID int) (*readmodels.UserBaseModel, error)
+	GetBaseOwnerByCoordinates(ctx context.Context, x, y int) (*readmodels.SectorOwner, error)
 	GetBaseStats(ctx context.Context, baseID int) (*readmodels.UserBaseStats, error)
 	ListUserBases(ctx context.Context, userID uuid.UUID) ([]*readmodels.UserBaseModel, error)
 }

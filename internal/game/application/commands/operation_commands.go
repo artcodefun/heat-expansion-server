@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
@@ -13,6 +14,7 @@ import (
 type OperationCommands struct {
 	UserBaseRepo   ports.UserBaseRepository
 	UserRepo       ports.UserRepository
+	DiplomacyRepo  ports.DiplomaticRelationshipRepository
 	SectorRepo     ports.SectorRepository
 	OperationRepo  ports.MilitaryOperationRepository
 	ResourceRepo   ports.ResourceLocationRepository
@@ -27,10 +29,11 @@ type OperationCommands struct {
 	crystalService *domain.CrystalSpendingService
 }
 
-func NewOperationCommands(userBaseRepo ports.UserBaseRepository, userRepo ports.UserRepository, sectorRepo ports.SectorRepository, opRepo ports.MilitaryOperationRepository, resRepo ports.ResourceLocationRepository, dangerRepo ports.DangerousLocationRepository, scanRepo ports.ScanReportRepository, storageProtos ports.StoragePrototypeRepository, provisioner *services.SectorProvisioningService, scheduler ports.Scheduler, outbox ports.OutboxEventRepository, txMgr ports.TransactionManager, access *services.AccessControlService) *OperationCommands {
+func NewOperationCommands(userBaseRepo ports.UserBaseRepository, userRepo ports.UserRepository, diplomacyRepo ports.DiplomaticRelationshipRepository, sectorRepo ports.SectorRepository, opRepo ports.MilitaryOperationRepository, resRepo ports.ResourceLocationRepository, dangerRepo ports.DangerousLocationRepository, scanRepo ports.ScanReportRepository, storageProtos ports.StoragePrototypeRepository, provisioner *services.SectorProvisioningService, scheduler ports.Scheduler, outbox ports.OutboxEventRepository, txMgr ports.TransactionManager, access *services.AccessControlService) *OperationCommands {
 	return &OperationCommands{
 		UserBaseRepo:   userBaseRepo,
 		UserRepo:       userRepo,
+		DiplomacyRepo:  diplomacyRepo,
 		SectorRepo:     sectorRepo,
 		OperationRepo:  opRepo,
 		ResourceRepo:   resRepo,
@@ -55,6 +58,8 @@ func (c *OperationCommands) CreateMilitaryOperation(ctx context.Context, actor c
 		bRepo := c.UserBaseRepo.Tx(tx)
 		sRepo := c.SectorRepo.Tx(tx)
 		oRepo := c.OperationRepo.Tx(tx)
+		diplomacyRepo := c.DiplomacyRepo.Tx(tx)
+		scanRepo := c.ScanReportRepo.Tx(tx)
 		base, err := bRepo.FindByIDForUpdate(ctx, sourceBaseID)
 		if err != nil {
 			return repoErr(err)
@@ -73,6 +78,33 @@ func (c *OperationCommands) CreateMilitaryOperation(ctx context.Context, actor c
 		targetSector, err := c.Provisioner.EnsureSectorExists(ctx, sRepo, targetX, targetY)
 		if err != nil {
 			return err
+		}
+		if opType == domain.MilitaryOperationTypeAttack {
+			knownTargetBase, err := c.isKnownPlayerBaseTarget(ctx, sRepo, scanRepo, sourceBaseID, targetSector.Coordinates.X, targetSector.Coordinates.Y)
+			if err != nil {
+				return err
+			}
+			if knownTargetBase {
+				defenderBase, err := bRepo.FindByCoordinates(ctx, targetSector.Coordinates.X, targetSector.Coordinates.Y)
+				if err != nil {
+					return repoErr(err)
+				}
+				if defenderBase.UserID != base.UserID {
+					rel, err := diplomacyRepo.FindBetweenUsers(ctx, base.UserID, defenderBase.UserID)
+					if err != nil {
+						if !errors.Is(err, ports.ErrNotFound) {
+							return repoErr(err)
+						}
+						rel, err = domain.NewUnknownRelationship(base.UserID, defenderBase.UserID)
+						if err != nil {
+							return err
+						}
+					}
+					if err := rel.CanPerformAttackOperation(); err != nil {
+						return err
+					}
+				}
+			}
 		}
 		var opCreationErr error
 		switch opType {
@@ -177,6 +209,21 @@ func (c *OperationCommands) SpeedUpOperationWithCrystals(ctx context.Context, ac
 		return nil
 	})
 	return err
+}
+
+func (_ *OperationCommands) isKnownPlayerBaseTarget(ctx context.Context, sectorRepo ports.SectorRepository, scanRepo ports.ScanReportRepository, sourceBaseID, targetX, targetY int) (bool, error) {
+	occType, err := sectorRepo.GetLocationTypeByCoordinates(ctx, targetX, targetY)
+	if err != nil {
+		return false, err
+	}
+	if occType != domain.LocationTypeUserBase {
+		return false, nil
+	}
+	reports, err := scanRepo.FindByBaseAndCoordinates(ctx, sourceBaseID, targetX, targetY)
+	if err != nil {
+		return false, err
+	}
+	return len(reports) > 0, nil
 }
 
 func (c *OperationCommands) HandleUpdateMilitaryOperationJob(ctx context.Context, cmd ports.UpdateMilitaryOperationJob) error {

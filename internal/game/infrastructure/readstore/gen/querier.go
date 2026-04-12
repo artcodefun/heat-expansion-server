@@ -13,8 +13,15 @@ import (
 
 type Querier interface {
 	CountUnreadAlertsByUser(ctx context.Context, arg CountUnreadAlertsByUserParams) (int64, error)
+	CountUnreadDiplomaticMessagesByUser(ctx context.Context, receiverUserID uuid.UUID) (int64, error)
+	// Base stats only (read repository no longer hydrates full overview)
+	GetBase(ctx context.Context, id int64) (GetBaseRow, error)
+	// Base owner lookup by sector coordinates
+	GetBaseOwnerByCoordinates(ctx context.Context, arg GetBaseOwnerByCoordinatesParams) (GetBaseOwnerByCoordinatesRow, error)
 	// Base stats only (read repository no longer hydrates full overview)
 	GetBaseStats(ctx context.Context, id int64) (GetBaseStatsRow, error)
+	GetDiplomaticRelationship(ctx context.Context, arg GetDiplomaticRelationshipParams) (GetDiplomaticRelationshipRow, error)
+	GetDiplomaticRequest(ctx context.Context, id uuid.UUID) (GetDiplomaticRequestRow, error)
 	GetLatestScanBefore(ctx context.Context, arg GetLatestScanBeforeParams) (ScanReport, error)
 	// Military operations queries
 	GetOperation(ctx context.Context, id int64) (MilitaryOperation, error)
@@ -35,6 +42,9 @@ type Querier interface {
 	// Building items lifecycle queries
 	ListBuildPrototypesByIDs(ctx context.Context, dollar_1 []int64) ([]BuildItemPrototype, error)
 	ListDefenseActivities(ctx context.Context, arg ListDefenseActivitiesParams) ([]Activity, error)
+	ListDiplomaticChats(ctx context.Context, currentUserID uuid.UUID) ([]ListDiplomaticChatsRow, error)
+	ListDiplomaticMessagesByChat(ctx context.Context, arg ListDiplomaticMessagesByChatParams) ([]ListDiplomaticMessagesByChatRow, error)
+	ListDiplomaticRelationships(ctx context.Context, arg ListDiplomaticRelationshipsParams) ([]ListDiplomaticRelationshipsRow, error)
 	ListDoneTechItems(ctx context.Context, arg ListDoneTechItemsParams) ([]ListDoneTechItemsRow, error)
 	ListDoneTechItemsAll(ctx context.Context, baseID int64) ([]ListDoneTechItemsAllRow, error)
 	ListInProductionArmyItems(ctx context.Context, arg ListInProductionArmyItemsParams) ([]ListInProductionArmyItemsRow, error)
@@ -49,6 +59,7 @@ type Querier interface {
 	ListPendingArmyItemsAll(ctx context.Context, baseID int64) ([]ListPendingArmyItemsAllRow, error)
 	ListPendingBuildItems(ctx context.Context, arg ListPendingBuildItemsParams) ([]ListPendingBuildItemsRow, error)
 	ListPendingBuildItemsAll(ctx context.Context, baseID int64) ([]ListPendingBuildItemsAllRow, error)
+	ListPendingDiplomaticRequests(ctx context.Context, receiverUserID uuid.UUID) ([]ListPendingDiplomaticRequestsRow, error)
 	ListPresentArmyItems(ctx context.Context, arg ListPresentArmyItemsParams) ([]ListPresentArmyItemsRow, error)
 	ListPresentArmyItemsAll(ctx context.Context, baseID int64) ([]ListPresentArmyItemsAllRow, error)
 	ListPresentBuildItems(ctx context.Context, arg ListPresentBuildItemsParams) ([]ListPresentBuildItemsRow, error)

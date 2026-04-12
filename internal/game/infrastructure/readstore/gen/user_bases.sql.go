@@ -13,6 +13,63 @@ import (
 	"github.com/google/uuid"
 )
 
+const getBase = `-- name: GetBase :one
+SELECT id, user_id, sector_x, sector_y, name, description, image_url
+FROM game.user_bases
+WHERE id = $1
+`
+
+type GetBaseRow struct {
+	ID          int64          `json:"id"`
+	UserID      uuid.UUID      `json:"user_id"`
+	SectorX     int32          `json:"sector_x"`
+	SectorY     int32          `json:"sector_y"`
+	Name        sql.NullString `json:"name"`
+	Description sql.NullString `json:"description"`
+	ImageUrl    sql.NullString `json:"image_url"`
+}
+
+// Base stats only (read repository no longer hydrates full overview)
+func (q *Queries) GetBase(ctx context.Context, id int64) (GetBaseRow, error) {
+	row := q.queryRow(ctx, q.getBaseStmt, getBase, id)
+	var i GetBaseRow
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.SectorX,
+		&i.SectorY,
+		&i.Name,
+		&i.Description,
+		&i.ImageUrl,
+	)
+	return i, err
+}
+
+const getBaseOwnerByCoordinates = `-- name: GetBaseOwnerByCoordinates :one
+SELECT u.id, u.name
+FROM game.user_bases b
+JOIN game.users u ON u.id = b.user_id
+WHERE b.sector_x = $1 AND b.sector_y = $2
+`
+
+type GetBaseOwnerByCoordinatesParams struct {
+	SectorX int32 `json:"sector_x"`
+	SectorY int32 `json:"sector_y"`
+}
+
+type GetBaseOwnerByCoordinatesRow struct {
+	ID   uuid.UUID `json:"id"`
+	Name string    `json:"name"`
+}
+
+// Base owner lookup by sector coordinates
+func (q *Queries) GetBaseOwnerByCoordinates(ctx context.Context, arg GetBaseOwnerByCoordinatesParams) (GetBaseOwnerByCoordinatesRow, error) {
+	row := q.queryRow(ctx, q.getBaseOwnerByCoordinatesStmt, getBaseOwnerByCoordinates, arg.SectorX, arg.SectorY)
+	var i GetBaseOwnerByCoordinatesRow
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
+}
+
 const getBaseStats = `-- name: GetBaseStats :one
 SELECT stats, stats_calc_timestamp
 FROM game.user_bases

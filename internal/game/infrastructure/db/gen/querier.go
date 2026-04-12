@@ -33,9 +33,11 @@ type Querier interface {
 	DeleteResourceLocation(ctx context.Context, id int64) error
 	DeleteResourceLocationBySector(ctx context.Context, arg DeleteResourceLocationBySectorParams) error
 	DeleteScanReport(ctx context.Context, id int64) error
+	ExistsDiplomaticMessageByRequestAndContent(ctx context.Context, arg ExistsDiplomaticMessageByRequestAndContentParams) (bool, error)
 	ExistsForActivity(ctx context.Context, activityID uuid.NullUUID) (bool, error)
 	ExistsForOperation(ctx context.Context, arg ExistsForOperationParams) (bool, error)
 	ExistsForScanReport(ctx context.Context, reportID int64) (bool, error)
+	ExistsPendingDiplomaticRequestByKind(ctx context.Context, arg ExistsPendingDiplomaticRequestByKindParams) (bool, error)
 	FindClosestBase(ctx context.Context, arg FindClosestBaseParams) (UserBase, error)
 	FindClosestDangerousLocation(ctx context.Context, arg FindClosestDangerousLocationParams) (DangerousLocation, error)
 	FindClosestResourceLocation(ctx context.Context, arg FindClosestResourceLocationParams) (ResourceLocation, error)
@@ -51,6 +53,12 @@ type Querier interface {
 	GetDangerousLocationByID(ctx context.Context, id int64) (DangerousLocation, error)
 	GetDangerousLocationBySector(ctx context.Context, arg GetDangerousLocationBySectorParams) (DangerousLocation, error)
 	GetDangerousLocationBySectorForUpdate(ctx context.Context, arg GetDangerousLocationBySectorForUpdateParams) (DangerousLocation, error)
+	GetDiplomaticMessage(ctx context.Context, id uuid.UUID) (GameDiplomaticMessage, error)
+	GetDiplomaticMessageByRequestAndContent(ctx context.Context, arg GetDiplomaticMessageByRequestAndContentParams) (GameDiplomaticMessage, error)
+	GetDiplomaticRelationship(ctx context.Context, arg GetDiplomaticRelationshipParams) (GameDiplomaticRelationship, error)
+	GetDiplomaticRelationshipForUpdate(ctx context.Context, arg GetDiplomaticRelationshipForUpdateParams) (GameDiplomaticRelationship, error)
+	GetDiplomaticRequest(ctx context.Context, id uuid.UUID) (GameDiplomaticRequest, error)
+	GetDiplomaticRequestForUpdate(ctx context.Context, id uuid.UUID) (GameDiplomaticRequest, error)
 	GetLatestScanReportsByBase(ctx context.Context, baseID int64) ([]ScanReport, error)
 	GetLocationTypeByCoordinates(ctx context.Context, arg GetLocationTypeByCoordinatesParams) (string, error)
 	// Military operations queries
@@ -79,6 +87,9 @@ type Querier interface {
 	InsertBaseStorageItem(ctx context.Context, arg InsertBaseStorageItemParams) (uuid.UUID, error)
 	InsertBaseTechItem(ctx context.Context, arg InsertBaseTechItemParams) (uuid.UUID, error)
 	InsertDangerousLocation(ctx context.Context, arg InsertDangerousLocationParams) (int64, error)
+	InsertDiplomaticMessage(ctx context.Context, arg InsertDiplomaticMessageParams) error
+	InsertDiplomaticRelationship(ctx context.Context, arg InsertDiplomaticRelationshipParams) error
+	InsertDiplomaticRequest(ctx context.Context, arg InsertDiplomaticRequestParams) error
 	InsertMilitaryOperation(ctx context.Context, arg InsertMilitaryOperationParams) (int64, error)
 	// Outbox domain events queries
 	InsertOutboxEvent(ctx context.Context, arg InsertOutboxEventParams) (int64, error)
@@ -114,6 +125,7 @@ type Querier interface {
 	ListTechPrototypes(ctx context.Context) ([]TechItemPrototype, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
 	MarkAllAlertsAsReadByUser(ctx context.Context, userID uuid.UUID) error
+	MarkDiplomaticChatAsRead(ctx context.Context, arg MarkDiplomaticChatAsReadParams) error
 	MarkOutboxEventPublished(ctx context.Context, arg MarkOutboxEventPublishedParams) error
 	MarkScheduledJobDispatched(ctx context.Context, arg MarkScheduledJobDispatchedParams) error
 	NotifyOutboxEvent(ctx context.Context) error
@@ -121,6 +133,8 @@ type Querier interface {
 	RecentReportExistsByScanner(ctx context.Context, arg RecentReportExistsByScannerParams) (bool, error)
 	UpdateBase(ctx context.Context, arg UpdateBaseParams) (UserBase, error)
 	UpdateDangerousLocation(ctx context.Context, arg UpdateDangerousLocationParams) error
+	UpdateDiplomaticRelationship(ctx context.Context, arg UpdateDiplomaticRelationshipParams) error
+	UpdateDiplomaticRequest(ctx context.Context, arg UpdateDiplomaticRequestParams) error
 	UpdateMilitaryOperation(ctx context.Context, arg UpdateMilitaryOperationParams) error
 	UpdateRadarThreat(ctx context.Context, arg UpdateRadarThreatParams) (RadarThreat, error)
 	UpdateResourceLocation(ctx context.Context, arg UpdateResourceLocationParams) error

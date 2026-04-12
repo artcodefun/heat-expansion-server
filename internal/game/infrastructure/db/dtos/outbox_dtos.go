@@ -97,6 +97,18 @@ func UpdateMilitaryOperationJobFromDTO(d UpdateMilitaryOperationJobDTO) ports.Up
 	return ports.UpdateMilitaryOperationJob{OperationID: d.OperationID}
 }
 
+type ExpireDiplomaticRequestJobDTO struct {
+	RequestID uuid.UUID `json:"request_id"`
+}
+
+func ExpireDiplomaticRequestJobDTOFromDomain(j ports.ExpireDiplomaticRequestJob) ExpireDiplomaticRequestJobDTO {
+	return ExpireDiplomaticRequestJobDTO{RequestID: j.RequestID}
+}
+
+func ExpireDiplomaticRequestJobFromDTO(d ExpireDiplomaticRequestJobDTO) ports.ExpireDiplomaticRequestJob {
+	return ports.ExpireDiplomaticRequestJob{RequestID: d.RequestID}
+}
+
 type SpawnNearbyLocationsJobDTO struct {
 	BaseID int `json:"base_id"`
 }
@@ -647,4 +659,52 @@ func ActivityCreatedEventDTOFromDomain(e domain.ActivityCreatedEvent) ActivityCr
 
 func ActivityCreatedEventFromDTO(d ActivityCreatedEventDTO) domain.ActivityCreatedEvent {
 	return domain.NewActivityCreatedEvent(d.ActivityID, d.UserID, d.BaseID, d.Kind, d.Subtype)
+}
+
+type DiplomaticMessageSentEventDTO struct {
+	OccurredAt     int64                 `json:"occurred_at"`
+	MessageID      uuid.UUID             `json:"message_id"`
+	SenderUserID   uuid.UUID             `json:"sender_user_id"`
+	ReceiverUserID uuid.UUID             `json:"receiver_user_id"`
+	ReceiverBaseID *int                  `json:"receiver_base_id,omitempty"`
+	Content        domain.TranslationKey `json:"content"`
+}
+
+func DiplomaticMessageSentEventDTOFromDomain(e domain.DiplomaticMessageSentEvent) DiplomaticMessageSentEventDTO {
+	return DiplomaticMessageSentEventDTO{
+		OccurredAt:     e.OccurredAt(),
+		MessageID:      e.MessageID,
+		SenderUserID:   e.SenderUserID,
+		ReceiverUserID: e.ReceiverUserID,
+		ReceiverBaseID: e.ReceiverBaseID,
+		Content:        e.Content,
+	}
+}
+
+func DiplomaticMessageSentEventFromDTO(d DiplomaticMessageSentEventDTO) domain.DiplomaticMessageSentEvent {
+	return domain.NewDiplomaticMessageSentEvent(d.MessageID, d.SenderUserID, d.ReceiverUserID, d.ReceiverBaseID, d.Content)
+}
+
+type DiplomaticRequestCreatedEventDTO struct {
+	OccurredAt     int64                        `json:"occurred_at"`
+	RequestID      uuid.UUID                    `json:"request_id"`
+	SenderUserID   uuid.UUID                    `json:"sender_user_id"`
+	ReceiverUserID uuid.UUID                    `json:"receiver_user_id"`
+	ReceiverBaseID *int                         `json:"receiver_base_id,omitempty"`
+	Kind           domain.DiplomaticRequestKind `json:"kind"`
+}
+
+func DiplomaticRequestCreatedEventDTOFromDomain(e domain.DiplomaticRequestCreatedEvent) DiplomaticRequestCreatedEventDTO {
+	return DiplomaticRequestCreatedEventDTO{
+		OccurredAt:     e.OccurredAt(),
+		RequestID:      e.RequestID,
+		SenderUserID:   e.SenderUserID,
+		ReceiverUserID: e.ReceiverUserID,
+		ReceiverBaseID: e.ReceiverBaseID,
+		Kind:           e.Kind,
+	}
+}
+
+func DiplomaticRequestCreatedEventFromDTO(d DiplomaticRequestCreatedEventDTO) domain.DiplomaticRequestCreatedEvent {
+	return domain.NewDiplomaticRequestCreatedEvent(d.RequestID, d.SenderUserID, d.ReceiverUserID, d.ReceiverBaseID, d.Kind)
 }

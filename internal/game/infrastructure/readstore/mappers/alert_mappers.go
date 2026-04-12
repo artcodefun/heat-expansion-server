@@ -8,18 +8,16 @@ import (
 // AlertItemFromModel maps an infrastructure alert record to a read model.
 func AlertItemFromModel(row gen.Alert) *readmodels.AlertItem {
 	alert := &readmodels.AlertItem{
-		ID:        row.ID,
-		UserID:    row.UserID,
-		BaseID:    int(row.BaseID),
-		Kind:      readmodels.AlertKind(row.Kind),
-		Title:     row.Title,
-		Content:   row.Content,
-		IsRead:    row.IsRead,
-		CreatedAt: row.CreatedAt,
-		ExpiresAt: row.ExpiresAt,
-	}
-	if row.ActivityID.Valid {
-		alert.ActivityID = &row.ActivityID.UUID
+		ID:         row.ID,
+		UserID:     row.UserID,
+		Kind:       readmodels.AlertKind(row.Kind),
+		Title:      row.Title,
+		Content:    row.Content,
+		IsRead:     row.IsRead,
+		CreatedAt:  row.CreatedAt,
+		ExpiresAt:  row.ExpiresAt,
+		BaseID:     nullBaseIDPtr(row.BaseID),
+		ActivityID: nullUUIDPtr(row.ActivityID),
 	}
 	return alert
 }

@@ -2,6 +2,9 @@
     "error.application.forbidden": "Доступ запрещен",
     "error.application.not_found": "Не найдено",
     "error.application.invalid_operation_type": "Недопустимый тип операции",
+    "error.application.invalid_diplomatic_message_kind": "Недопустимый тип дипломатического сообщения",
+    "error.application.invalid_diplomatic_request_kind": "Недопустимый тип дипломатического запроса",
+    "error.application.invalid_diplomatic_receiver_target": "База получателя не принадлежит указанному пользователю получателя",
     "error.application.internal_server_error": "Внутренняя ошибка сервера",
     "error.domain.user.invalid_crystal_spend_amount": "Недопустимое количество кристаллов для траты: {amount}",
     "error.domain.user.not_enough_crystals": "Недостаточно кристаллов",
@@ -64,5 +67,14 @@
     "error.domain.storage.not_intel": "Данные разведки с ID {item_id} не найдены или не являются разведданными",
     "error.domain.storage.not_damaged": "Поврежденный предмет с ID {item_id} не найден или не является поврежденным предметом",
     "error.domain.storage.not_artifact": "Артефакт с ID {item_id} не найден или не является артефактом",
-    "error.domain.tech.not_available_for_research": "Эта технология недоступна для изучения"
+    "error.domain.tech.not_available_for_research": "Эта технология недоступна для изучения",
+    "error.domain.diplomacy.invalid_pair": "Недопустимая дипломатическая пара",
+    "error.domain.diplomacy.invalid_participants": "Недопустимые участники дипломатического взаимодействия",
+    "error.domain.diplomacy.invalid_message_kind": "Недопустимый тип дипломатического сообщения",
+    "error.domain.diplomacy.invalid_request_kind": "Недопустимый тип дипломатического запроса",
+    "error.domain.diplomacy.invalid_transition": "Это дипломатическое действие недоступно в текущем состоянии отношений",
+    "error.domain.diplomacy.proposal_already_pending": "Дипломатическое предложение этого типа уже ожидает ответа",
+    "error.domain.diplomacy.attack_requires_war": "Для атаки на этого игрока требуется состояние войны",
+    "error.domain.diplomacy.attack_warmup_active": "Война объявлена, но атаки пока заблокированы в течение периода подготовки",
+    "error.domain.diplomacy.self_targeting_forbidden": "Нельзя отправить дипломатическое сообщение самому себе"
 }

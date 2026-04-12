@@ -21,6 +21,7 @@ type Commands struct {
 	Storage   cqrs.StorageCommands
 	Operation cqrs.OperationCommands
 	Alert     cqrs.AlertCommands
+	Diplomacy cqrs.DiplomacyCommands
 }
 
 // Queries groups CQRS query interfaces needed by HTTP handlers.
@@ -36,6 +37,7 @@ type Queries struct {
 	Operation cqrs.OperationQueries
 	Activity  cqrs.ActivityQueries
 	Alert     cqrs.AlertQueries
+	Diplomacy cqrs.DiplomacyQueries
 }
 
 // NewRouter constructs the Gin engine, registers middleware and routes.
@@ -55,6 +57,7 @@ func NewRouter(cmd Commands, qry Queries, tokenValidator ports.TokenValidator, t
 	operationHandler := handlers.NewOperationHandler(qry.Operation, cmd.Operation, tr)
 	activityHandler := handlers.NewActivityHandler(qry.Activity, tr)
 	alertHandler := handlers.NewAlertHandler(qry.Alert, cmd.Alert, tr)
+	diplomacyHandler := handlers.NewDiplomacyHandler(qry.Diplomacy, cmd.Diplomacy, tr)
 
 	// Global routes
 	r.GET("/health", HealthHandler)
@@ -164,6 +167,35 @@ func NewRouter(cmd Commands, qry Queries, tokenValidator ports.TokenValidator, t
 			alerts.GET("/unread-count", alertHandler.GetUnreadCount)
 			alerts.POST("/read-all", alertHandler.MarkAllAsRead)
 		}
+
+		diplomacy := api.Group("/diplomacy")
+		{
+			relationships := diplomacy.Group("/relationships")
+			{
+				relationships.GET("", diplomacyHandler.ListRelationships)
+				relationships.GET("/:userId", diplomacyHandler.GetRelationship)
+				relationships.POST("/:userId/declare-war", diplomacyHandler.DeclareWar)
+				relationships.POST("/:userId/break-alliance", diplomacyHandler.BreakAlliance)
+			}
+
+			messages := diplomacy.Group("/messages")
+			{
+				messages.GET("/available", diplomacyHandler.ListAvailableInformationalMessages)
+				messages.GET("/chats", diplomacyHandler.ListChats)
+				messages.GET("/unread-count", diplomacyHandler.GetUnreadCount)
+				messages.GET("/chats/:userId", diplomacyHandler.ListChatMessages)
+				messages.POST("/chats/:userId/read", diplomacyHandler.MarkChatAsRead)
+				messages.POST("", diplomacyHandler.SendInformationalMessage)
+			}
+
+			requests := diplomacy.Group("/requests")
+			{
+				requests.GET("/pending", diplomacyHandler.ListPendingRequests)
+				requests.POST("", diplomacyHandler.SendRequest)
+				requests.POST("/:requestId/accept", diplomacyHandler.AcceptRequest)
+				requests.POST("/:requestId/reject", diplomacyHandler.RejectRequest)
+			}
+		}
 	}
 
 	return r
@@ -179,6 +211,15 @@ func registerCustomValidators() {
 		})
 		_ = validatorEngine.RegisterValidation("operation_type", func(fl validator.FieldLevel) bool {
 			return dtos.IsValidOperationType(fl.Field().String())
+		})
+		_ = validatorEngine.RegisterValidation("diplomatic_message_content", func(fl validator.FieldLevel) bool {
+			return dtos.IsValidUserSendableDiplomaticMessageContent(fl.Field().String())
+		})
+		_ = validatorEngine.RegisterValidation("diplomatic_request_kind", func(fl validator.FieldLevel) bool {
+			return dtos.IsValidDiplomaticRequestKind(fl.Field().String())
+		})
+		_ = validatorEngine.RegisterValidation("diplomatic_relationship_status", func(fl validator.FieldLevel) bool {
+			return dtos.IsValidDiplomaticStatus(fl.Field().String())
 		})
 		_ = validatorEngine.RegisterValidation("tech_category", func(fl validator.FieldLevel) bool {
 			return dtos.IsValidTechCategory(fl.Field().String())

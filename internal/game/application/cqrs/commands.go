@@ -59,3 +59,13 @@ type OperationCommands interface {
 type AlertCommands interface {
 	MarkAllAsRead(ctx context.Context, userID uuid.UUID) error
 }
+
+type DiplomacyCommands interface {
+	SendInformationalMessage(ctx context.Context, actor Actor, senderBaseID int, receiverUserID uuid.UUID, receiverBaseID *int, content domain.TranslationKey) (*uuid.UUID, error)
+	SendRequest(ctx context.Context, actor Actor, senderBaseID int, receiverUserID uuid.UUID, receiverBaseID *int, kind domain.DiplomaticRequestKind) (*uuid.UUID, error)
+	DeclareWar(ctx context.Context, actor Actor, senderBaseID int, receiverUserID uuid.UUID, receiverBaseID *int) (*uuid.UUID, error)
+	BreakAlliance(ctx context.Context, actor Actor, senderBaseID int, receiverUserID uuid.UUID, receiverBaseID *int) (*uuid.UUID, error)
+	MarkChatAsRead(ctx context.Context, actor Actor, otherUserID uuid.UUID) error
+	AcceptRequest(ctx context.Context, actor Actor, senderBaseID int, requestID uuid.UUID) error
+	RejectRequest(ctx context.Context, actor Actor, senderBaseID int, requestID uuid.UUID) error
+}

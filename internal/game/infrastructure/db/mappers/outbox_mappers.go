@@ -19,6 +19,7 @@ const (
 	jobKindRestoreDamagedItem   = "RESTORE_DAMAGED_ITEM"
 	jobKindDecryptIntelItem     = "DECRYPT_INTEL_ITEM"
 	jobKindUpdateMilitaryOp     = "UPDATE_MILITARY_OPERATION"
+	jobKindExpireDiplomaticReq  = "EXPIRE_DIPLOMATIC_REQUEST"
 	jobKindSpawnNearbyLocations = "SPAWN_NEARBY_LOCATIONS"
 	jobKindIntelligenceScan     = "INTELLIGENCE_SCAN"
 	jobKindIntelligenceRadar    = "INTELLIGENCE_RADAR"
@@ -49,6 +50,9 @@ func EncodeJob(job ports.SchadulableJob) (kind string, payload []byte, err error
 	case ports.UpdateMilitaryOperationJob:
 		payload, err = json.Marshal(dtos.UpdateMilitaryOperationJobDTOFromDomain(j))
 		return jobKindUpdateMilitaryOp, payload, err
+	case ports.ExpireDiplomaticRequestJob:
+		payload, err = json.Marshal(dtos.ExpireDiplomaticRequestJobDTOFromDomain(j))
+		return jobKindExpireDiplomaticReq, payload, err
 	case ports.SpawnNearbyLocationsJob:
 		payload, err = json.Marshal(dtos.SpawnNearbyLocationsJobDTOFromDomain(j))
 		return jobKindSpawnNearbyLocations, payload, err
@@ -109,6 +113,12 @@ func DecodeJob(kind string, payload []byte) (ports.SchadulableJob, error) {
 			return nil, err
 		}
 		return dtos.UpdateMilitaryOperationJobFromDTO(dto), nil
+	case jobKindExpireDiplomaticReq:
+		var dto dtos.ExpireDiplomaticRequestJobDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.ExpireDiplomaticRequestJobFromDTO(dto), nil
 	case jobKindSpawnNearbyLocations:
 		var dto dtos.SpawnNearbyLocationsJobDTO
 		if err := json.Unmarshal(payload, &dto); err != nil {
@@ -168,6 +178,8 @@ const (
 	evKindScanReportCreated              = "SCAN_REPORT_CREATED"
 	evKindRadarThreatDetected            = "RADAR_THREAT_DETECTED"
 	evKindActivityCreated                = "ACTIVITY_CREATED"
+	evKindDiplomaticMessageSent          = "DIPLOMATIC_MESSAGE_SENT"
+	evKindDiplomaticRequestCreated       = "DIPLOMATIC_REQUEST_CREATED"
 	evKindLocationDrained                = "LOCATION_DRAINED"
 )
 
@@ -286,6 +298,12 @@ func EncodeEvent(ev domain.DomainEvent) (kind string, payload []byte, err error)
 	case domain.ActivityCreatedEvent:
 		payload, err = json.Marshal(dtos.ActivityCreatedEventDTOFromDomain(e))
 		return evKindActivityCreated, payload, err
+	case domain.DiplomaticMessageSentEvent:
+		payload, err = json.Marshal(dtos.DiplomaticMessageSentEventDTOFromDomain(e))
+		return evKindDiplomaticMessageSent, payload, err
+	case domain.DiplomaticRequestCreatedEvent:
+		payload, err = json.Marshal(dtos.DiplomaticRequestCreatedEventDTOFromDomain(e))
+		return evKindDiplomaticRequestCreated, payload, err
 
 	default:
 		return "", nil, errors.New("unsupported domain event type")
@@ -308,6 +326,12 @@ func DecodeEvent(kind string, payload []byte) (domain.DomainEvent, error) {
 			return nil, err
 		}
 		return dtos.UserBaseCreatedEventFromDTO(dto), nil
+	case evKindDiplomaticRequestCreated:
+		var dto dtos.DiplomaticRequestCreatedEventDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.DiplomaticRequestCreatedEventFromDTO(dto), nil
 
 	case evKindLocationDrained:
 		var dto dtos.LocationDrainedEventDTO
@@ -515,6 +539,13 @@ func DecodeEvent(kind string, payload []byte) (domain.DomainEvent, error) {
 			return nil, err
 		}
 		return dtos.ActivityCreatedEventFromDTO(dto), nil
+
+	case evKindDiplomaticMessageSent:
+		var dto dtos.DiplomaticMessageSentEventDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.DiplomaticMessageSentEventFromDTO(dto), nil
 
 	default:
 		return nil, errors.New("unknown domain event kind")

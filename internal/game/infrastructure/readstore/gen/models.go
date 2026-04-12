@@ -26,7 +26,7 @@ type Activity struct {
 
 type Alert struct {
 	ID         uuid.UUID     `json:"id"`
-	BaseID     int64         `json:"base_id"`
+	BaseID     sql.NullInt64 `json:"base_id"`
 	ActivityID uuid.NullUUID `json:"activity_id"`
 	Kind       string        `json:"kind"`
 	Title      string        `json:"title"`
@@ -141,6 +141,44 @@ type DomainEvent struct {
 	CreatedAt   int64           `json:"created_at"`
 	Published   bool            `json:"published"`
 	PublishedAt sql.NullInt64   `json:"published_at"`
+}
+
+type GameDiplomaticMessage struct {
+	ID               uuid.UUID     `json:"id"`
+	SenderUserID     uuid.UUID     `json:"sender_user_id"`
+	ReceiverUserID   uuid.UUID     `json:"receiver_user_id"`
+	SenderBaseID     sql.NullInt64 `json:"sender_base_id"`
+	ReceiverBaseID   sql.NullInt64 `json:"receiver_base_id"`
+	RequestID        uuid.NullUUID `json:"request_id"`
+	ReplyToMessageID uuid.NullUUID `json:"reply_to_message_id"`
+	IsRead           bool          `json:"is_read"`
+	Content          string        `json:"content"`
+	CreatedAt        int64         `json:"created_at"`
+}
+
+type GameDiplomaticRelationship struct {
+	ID                       uuid.UUID     `json:"id"`
+	UserAID                  uuid.UUID     `json:"user_a_id"`
+	UserBID                  uuid.UUID     `json:"user_b_id"`
+	Status                   string        `json:"status"`
+	ChangedByUserID          uuid.UUID     `json:"changed_by_user_id"`
+	ChangedAt                int64         `json:"changed_at"`
+	WarDeclaredAt            sql.NullInt64 `json:"war_declared_at"`
+	WarAttacksAllowedAt      sql.NullInt64 `json:"war_attacks_allowed_at"`
+	NeutralityProtectedUntil sql.NullInt64 `json:"neutrality_protected_until"`
+}
+
+type GameDiplomaticRequest struct {
+	ID             uuid.UUID     `json:"id"`
+	SenderUserID   uuid.UUID     `json:"sender_user_id"`
+	ReceiverUserID uuid.UUID     `json:"receiver_user_id"`
+	SenderBaseID   sql.NullInt64 `json:"sender_base_id"`
+	ReceiverBaseID sql.NullInt64 `json:"receiver_base_id"`
+	Kind           string        `json:"kind"`
+	Status         string        `json:"status"`
+	CreatedAt      int64         `json:"created_at"`
+	ResolvedAt     sql.NullInt64 `json:"resolved_at"`
+	ExpiresAt      int64         `json:"expires_at"`
 }
 
 type MilitaryOperation struct {

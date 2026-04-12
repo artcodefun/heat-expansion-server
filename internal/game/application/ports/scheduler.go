@@ -45,6 +45,11 @@ type UpdateMilitaryOperationJob struct {
 	OperationID int
 }
 
+// ExpireDiplomaticRequestJob asks the system to mark a pending diplomatic request as expired.
+type ExpireDiplomaticRequestJob struct {
+	RequestID uuid.UUID
+}
+
 // SpawnNearbyLocationsJob triggers spawning of resourceful/dangerous locations near a specific user base.
 // The job handler is responsible for rescheduling itself for that specific base.
 type SpawnNearbyLocationsJob struct {

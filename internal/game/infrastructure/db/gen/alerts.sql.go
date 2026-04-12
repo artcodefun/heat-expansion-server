@@ -7,6 +7,7 @@ package gen
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/google/uuid"
 )
@@ -42,7 +43,7 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 type InsertAlertParams struct {
 	ID         uuid.UUID     `json:"id"`
 	UserID     uuid.UUID     `json:"user_id"`
-	BaseID     int64         `json:"base_id"`
+	BaseID     sql.NullInt64 `json:"base_id"`
 	ActivityID uuid.NullUUID `json:"activity_id"`
 	Kind       string        `json:"kind"`
 	Title      string        `json:"title"`

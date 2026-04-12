@@ -42,6 +42,16 @@ func WireCommandEvents(c *Commands, pub ports.EventPublisher) {
 		switch ev := e.(type) {
 		case domain.ActivityCreatedEvent:
 			return c.Alert.HandleActivityCreatedEvent(ctx, ev)
+		case domain.DiplomaticMessageSentEvent:
+			if err := c.Diplomacy.HandleDiplomaticMessageSentEvent(ctx, ev); err != nil {
+				return err
+			}
+			return c.Alert.HandleDiplomaticMessageSentEvent(ctx, ev)
+		case domain.DiplomaticRequestCreatedEvent:
+			if err := c.Diplomacy.HandleDiplomaticRequestCreatedEvent(ctx, ev); err != nil {
+				return err
+			}
+			return c.Alert.HandleDiplomaticRequestCreatedEvent(ctx, ev)
 		case domain.UserAccountCreatedEvent:
 			return c.Base.HandleUserAccountCreatedEvent(ctx, ev)
 		case domain.UserBaseCreatedEvent:
@@ -78,6 +88,9 @@ func WireCommandEvents(c *Commands, pub ports.EventPublisher) {
 		case domain.RadarThreatDetectedEvent:
 			return c.Activity.HandleRadarThreatDetectedEvent(ctx, ev)
 		case domain.MilitaryOperationResolvedEvent:
+			if err := c.Diplomacy.HandleMilitaryOperationResolvedEvent(ctx, ev); err != nil {
+				return err
+			}
 			return c.Activity.HandleMilitaryOperationResolvedEvent(ctx, ev)
 		case domain.MilitaryOperationReturnStartedEvent:
 			return c.Operation.HandleMilitaryOperationReturnStartedEvent(ctx, ev)
@@ -109,6 +122,8 @@ func WireCommandSchedulerHandler(c *Commands, sch ports.Scheduler) {
 			return c.Tech.HandleMoveTechQueueJob(ctx, job)
 		case ports.UpdateMilitaryOperationJob:
 			return c.Operation.HandleUpdateMilitaryOperationJob(ctx, job)
+		case ports.ExpireDiplomaticRequestJob:
+			return c.Diplomacy.HandleExpireDiplomaticRequestJob(ctx, job)
 		case ports.IntelligenceScanJob:
 			return c.Scanner.HandleIntelligenceScanJob(ctx, job)
 		case ports.IntelligenceRadarJob:

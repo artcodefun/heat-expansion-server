@@ -3,9 +3,11 @@ package mappers
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/dtos"
+	"github.com/google/uuid"
 )
 
 func priceFromJSON(b []byte) readmodels.PriceModel {
@@ -46,4 +48,41 @@ func nullInt64ToInt64Ptr(n sql.NullInt64) *int64 {
 	}
 	v := n.Int64
 	return &v
+}
+
+func nullBaseIDPtr(v sql.NullInt64) *int {
+	if !v.Valid {
+		return nil
+	}
+	value := int(v.Int64)
+	return &value
+}
+
+func nullUUIDPtr(v uuid.NullUUID) *uuid.UUID {
+	if !v.Valid {
+		return nil
+	}
+	value := v.UUID
+	return &value
+}
+
+func interfaceUUID(v interface{}) uuid.UUID {
+	switch value := v.(type) {
+	case uuid.UUID:
+		return value
+	case []byte:
+		parsed, err := uuid.ParseBytes(value)
+		if err != nil {
+			panic(fmt.Sprintf("invalid uuid bytes from readstore: %v", err))
+		}
+		return parsed
+	case string:
+		parsed, err := uuid.Parse(value)
+		if err != nil {
+			panic(fmt.Sprintf("invalid uuid string from readstore: %v", err))
+		}
+		return parsed
+	default:
+		panic(fmt.Sprintf("unsupported uuid source type %T", v))
+	}
 }

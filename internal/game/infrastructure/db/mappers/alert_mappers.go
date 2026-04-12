@@ -3,24 +3,21 @@ package mappers
 import (
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/gen"
-	"github.com/google/uuid"
 )
 
 // InsertAlertParamsFromDomain maps a domain.Alert into sqlc params for insert.
 func InsertAlertParamsFromDomain(alert *domain.Alert) gen.InsertAlertParams {
 	params := gen.InsertAlertParams{
-		ID:        alert.ID,
-		UserID:    alert.UserID,
-		BaseID:    int64(alert.BaseID),
-		Kind:      string(alert.Kind),
-		Title:     alert.Title,
-		Content:   alert.Content,
-		IsRead:    alert.IsRead,
-		CreatedAt: alert.CreatedAt,
-		ExpiresAt: alert.ExpiresAt,
-	}
-	if alert.ActivityID != nil {
-		params.ActivityID = uuid.NullUUID{UUID: *alert.ActivityID, Valid: true}
+		ID:         alert.ID,
+		UserID:     alert.UserID,
+		Kind:       string(alert.Kind),
+		Title:      alert.Title,
+		Content:    alert.Content,
+		IsRead:     alert.IsRead,
+		CreatedAt:  alert.CreatedAt,
+		ExpiresAt:  alert.ExpiresAt,
+		BaseID:     nullableBaseID(alert.BaseID),
+		ActivityID: nullableUUID(alert.ActivityID),
 	}
 	return params
 }

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 
+	"github.com/google/uuid"
 	"github.com/sqlc-dev/pqtype"
 )
 
@@ -60,4 +61,34 @@ func nullInt64ToInt64Ptr(n sql.NullInt64) *int64 {
 	}
 	v := n.Int64
 	return &v
+}
+
+func nullableBaseID(v *int) sql.NullInt64 {
+	if v == nil {
+		return sql.NullInt64{Valid: false}
+	}
+	return sql.NullInt64{Int64: int64(*v), Valid: true}
+}
+
+func nullInt64ToBaseIDPtr(v sql.NullInt64) *int {
+	if !v.Valid {
+		return nil
+	}
+	value := int(v.Int64)
+	return &value
+}
+
+func nullableUUID(v *uuid.UUID) uuid.NullUUID {
+	if v == nil {
+		return uuid.NullUUID{Valid: false}
+	}
+	return uuid.NullUUID{UUID: *v, Valid: true}
+}
+
+func nullUUIDToUUIDPtr(v uuid.NullUUID) *uuid.UUID {
+	if !v.Valid {
+		return nil
+	}
+	value := v.UUID
+	return &value
 }

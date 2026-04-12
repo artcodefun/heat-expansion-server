@@ -79,6 +79,7 @@ func NewModule() *Module {
 		Storage:   commands.Storage,
 		Operation: commands.Operation,
 		Alert:     commands.Alert,
+		Diplomacy: commands.Diplomacy,
 	}
 	httpQueries := httpapi.Queries{
 		User:      queries.User,
@@ -92,6 +93,7 @@ func NewModule() *Module {
 		Operation: queries.Operation,
 		Activity:  queries.Activity,
 		Alert:     queries.Alert,
+		Diplomacy: queries.Diplomacy,
 	}
 	router := httpapi.NewRouter(httpCommands, httpQueries, adapters.Tokens, adapters.Translator)
 	httpServer := httpapi.NewServer(router)

@@ -1,0 +1,16 @@
+{
+  "diplomacy.message.coalition_proposal.content": "Я считаю, что союз будет выгоден нам обоим.",
+  "diplomacy.message.ceasefire_proposal.content": "Я готов остановить эту войну, если и вы готовы.",
+  "diplomacy.message.coalition_acceptance.content": "Я принимаю ваше предложение союза.",
+  "diplomacy.message.coalition_rejection.content": "Я не готов заключать с вами союз.",
+  "diplomacy.message.coalition_break_notice.content": "Я прекращаю наш союз с этого момента.",
+  "diplomacy.message.war_declaration.content": "Я объявляю вам войну.",
+  "diplomacy.message.ceasefire_acceptance.content": "Я принимаю ваше предложение перемирия.",
+  "diplomacy.message.ceasefire_rejection.content": "Я не соглашусь на перемирие прямо сейчас.",
+  "diplomacy.message.greeting_friendly_hello.content": "Я пришёл с миром и приветствую вас.",
+  "diplomacy.message.greeting_formal_introduction.content": "Я выхожу на связь, чтобы официально представиться.",
+  "diplomacy.message.greeting_sign_of_admiration.content": "Я уважаю то, что вы построили, и хочу сказать это прямо.",
+  "diplomacy.message.warning_keep_out_of_our_sector.content": "Я хочу, чтобы вы держались подальше от нашего сектора.",
+  "diplomacy.message.warning_do_not_interfere.content": "Я советую вам не вмешиваться в наши дела.",
+  "diplomacy.message.warning_general_threat.content": "Я отвечу силой на дальнейшие провокации."
+}

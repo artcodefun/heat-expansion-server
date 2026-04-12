@@ -9,15 +9,16 @@ import (
 type AlertKind string
 
 const (
-	AlertKindCombat AlertKind = "COMBAT"
-	AlertKindIntel  AlertKind = "INTEL"
-	AlertKindSystem AlertKind = "SYSTEM"
+	AlertKindCombat     AlertKind = "COMBAT"
+	AlertKindIntel      AlertKind = "INTEL"
+	AlertKindSystem     AlertKind = "SYSTEM"
+	AlertKindDiplomatic AlertKind = "DIPLOMATIC"
 )
 
 type AlertItemDTO struct {
 	ID         uuid.UUID  `json:"id"`
 	UserID     uuid.UUID  `json:"userId"`
-	BaseID     int        `json:"baseId"`
+	BaseID     *int       `json:"baseId,omitempty"`
 	ActivityID *uuid.UUID `json:"activityId,omitempty"`
 	Kind       AlertKind  `json:"kind"`
 	Title      string     `json:"title"`

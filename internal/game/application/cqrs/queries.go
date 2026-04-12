@@ -80,3 +80,12 @@ type AlertQueries interface {
 	ListActiveAlerts(ctx context.Context, actor Actor) ([]*readmodels.AlertItem, error)
 	GetUnreadAlertsCount(ctx context.Context, actor Actor) (int, error)
 }
+
+type DiplomacyQueries interface {
+	ListRelationships(ctx context.Context, actor Actor, status *readmodels.DiplomaticStatus) ([]*readmodels.DiplomaticRelationship, error)
+	GetRelationship(ctx context.Context, actor Actor, otherUserID uuid.UUID) (*readmodels.DiplomaticRelationship, error)
+	ListChats(ctx context.Context, actor Actor) ([]*readmodels.DiplomaticChat, error)
+	GetUnreadMessagesCount(ctx context.Context, actor Actor) (int, error)
+	ListChatMessages(ctx context.Context, actor Actor, otherUserID uuid.UUID) ([]*readmodels.DiplomaticMessage, error)
+	ListPendingRequests(ctx context.Context, actor Actor) ([]*readmodels.DiplomaticRequest, error)
+}

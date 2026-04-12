@@ -19,21 +19,24 @@ import (
 // Adapters wires secondary adapters (repositories, tx manager) implementing core ports.
 type Adapters struct {
 	// Repositories
-	Users              ports.UserRepository
-	UserBases          ports.UserBaseRepository
-	Sectors            ports.SectorRepository
-	ResourceLocations  ports.ResourceLocationRepository
-	DangerousLocations ports.DangerousLocationRepository
-	ArmyPrototypes     ports.ArmyPrototypeRepository
-	BuildPrototypes    ports.BuildPrototypeRepository
-	StoragePrototypes  ports.StoragePrototypeRepository
-	TechPrototypes     ports.TechPrototypeRepository
-	MilitaryOps        ports.MilitaryOperationRepository
-	ScanReports        ports.ScanReportRepository
-	Activities         ports.ActivityRepository
-	RadarThreats       ports.RadarThreatRepository
-	OutboxEvents       ports.OutboxEventRepository
-	Alerts             ports.AlertRepository
+	Users                   ports.UserRepository
+	UserBases               ports.UserBaseRepository
+	Sectors                 ports.SectorRepository
+	ResourceLocations       ports.ResourceLocationRepository
+	DangerousLocations      ports.DangerousLocationRepository
+	ArmyPrototypes          ports.ArmyPrototypeRepository
+	BuildPrototypes         ports.BuildPrototypeRepository
+	StoragePrototypes       ports.StoragePrototypeRepository
+	TechPrototypes          ports.TechPrototypeRepository
+	MilitaryOps             ports.MilitaryOperationRepository
+	ScanReports             ports.ScanReportRepository
+	Activities              ports.ActivityRepository
+	RadarThreats            ports.RadarThreatRepository
+	OutboxEvents            ports.OutboxEventRepository
+	Alerts                  ports.AlertRepository
+	DiplomaticRelationships ports.DiplomaticRelationshipRepository
+	DiplomaticMessages      ports.DiplomaticMessageRepository
+	DiplomaticRequests      ports.DiplomaticRequestRepository
 
 	// Read Repositories (read-store / projections)
 	BaseRead      ports.BaseReadRepository
@@ -47,6 +50,7 @@ type Adapters struct {
 	RadarRead     ports.RadarReadRepository
 	UserRead      ports.UserReadRepository
 	AlertRead     ports.AlertReadRepository
+	DiplomacyRead ports.DiplomacyReadRepository
 
 	// Infra
 	TxMgr      ports.TransactionManager
@@ -82,7 +86,8 @@ func NewAdapters(db *sql.DB, staticBaseURL string, jwtSecret string, i18nPath st
 		}
 	}
 
-	sectorRead := readrepo.NewSectorReadRepo(rq)
+	baseRead := readrepo.NewBaseReadRepo(rq)
+	sectorRead := readrepo.NewSectorReadRepo(rq, baseRead)
 	opRead := readrepo.NewOperationReadRepo(rq, sectorRead)
 	radarRead := readrepo.NewRadarThreatReadRepo(rq)
 	activityRead := readrepo.NewActivityReadRepo(rq, opRead, sectorRead, radarRead)
@@ -91,23 +96,26 @@ func NewAdapters(db *sql.DB, staticBaseURL string, jwtSecret string, i18nPath st
 	buildProtoRepo := repo.NewBuildPrototypeRepo(q)
 
 	return &Adapters{
-		Users:              repo.NewUserRepo(q),
-		UserBases:          repo.NewUserBaseRepo(q),
-		Sectors:            repo.NewSectorRepo(q),
-		ResourceLocations:  repo.NewResourceLocationRepo(q, armyProtoRepo, buildProtoRepo),
-		DangerousLocations: repo.NewDangerousLocationRepo(q, armyProtoRepo, buildProtoRepo),
-		ArmyPrototypes:     armyProtoRepo,
-		BuildPrototypes:    buildProtoRepo,
-		StoragePrototypes:  repo.NewStoragePrototypeRepo(q),
-		TechPrototypes:     repo.NewTechPrototypeRepo(q),
-		MilitaryOps:        repo.NewMilitaryOperationRepo(q),
-		ScanReports:        repo.NewScanReportRepo(q),
-		Activities:         repo.NewActivityRepo(q),
-		RadarThreats:       repo.NewRadarThreatRepo(q),
-		OutboxEvents:       repo.NewOutboxEventRepo(q),
-		Alerts:             repo.NewAlertRepo(q),
+		Users:                   repo.NewUserRepo(q),
+		UserBases:               repo.NewUserBaseRepo(q),
+		Sectors:                 repo.NewSectorRepo(q),
+		ResourceLocations:       repo.NewResourceLocationRepo(q, armyProtoRepo, buildProtoRepo),
+		DangerousLocations:      repo.NewDangerousLocationRepo(q, armyProtoRepo, buildProtoRepo),
+		ArmyPrototypes:          armyProtoRepo,
+		BuildPrototypes:         buildProtoRepo,
+		StoragePrototypes:       repo.NewStoragePrototypeRepo(q),
+		TechPrototypes:          repo.NewTechPrototypeRepo(q),
+		MilitaryOps:             repo.NewMilitaryOperationRepo(q),
+		ScanReports:             repo.NewScanReportRepo(q),
+		Activities:              repo.NewActivityRepo(q),
+		RadarThreats:            repo.NewRadarThreatRepo(q),
+		OutboxEvents:            repo.NewOutboxEventRepo(q),
+		Alerts:                  repo.NewAlertRepo(q),
+		DiplomaticRelationships: repo.NewDiplomaticRelationshipRepo(q),
+		DiplomaticMessages:      repo.NewDiplomaticMessageRepo(q),
+		DiplomaticRequests:      repo.NewDiplomaticRequestRepo(q),
 		// Read side
-		BaseRead:      readrepo.NewBaseReadRepo(rq),
+		BaseRead:      baseRead,
 		BuildingRead:  readrepo.NewBuildReadRepo(rq),
 		ArmyRead:      readrepo.NewArmyReadRepo(rq),
 		StorageRead:   readrepo.NewStorageReadRepo(rq),
@@ -118,6 +126,7 @@ func NewAdapters(db *sql.DB, staticBaseURL string, jwtSecret string, i18nPath st
 		RadarRead:     radarRead,
 		UserRead:      readrepo.NewUserReadRepo(rq),
 		AlertRead:     readrepo.NewAlertReadRepository(rq),
+		DiplomacyRead: readrepo.NewDiplomacyReadRepo(rq, baseRead),
 		TxMgr:         txMgr,
 		Tokens:        tokens,
 		Events:        publisher,

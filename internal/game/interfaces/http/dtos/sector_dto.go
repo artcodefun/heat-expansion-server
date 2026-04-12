@@ -3,6 +3,7 @@ package dtos
 import (
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+	"github.com/google/uuid"
 )
 
 type SectorType string
@@ -27,15 +28,21 @@ const (
 )
 
 type SectorDTO struct {
-	Coordinates  Vector2iDTO  `json:"coordinates"`
-	Type         SectorType   `json:"type"`
-	Name         string       `json:"name"`
-	Description  string       `json:"description"`
-	ImageURL     string       `json:"image_url"`
-	ScanDate     int          `json:"scan_date"`
-	ScanReportID int          `json:"scan_report_id"`
-	ScanInfo     *ScanInfoDTO `json:"scan_info"`
-	Source       ScanSource   `json:"source"`
+	Coordinates  Vector2iDTO     `json:"coordinates"`
+	Type         SectorType      `json:"type"`
+	Owner        *SectorOwnerDTO `json:"owner,omitempty"`
+	Name         string          `json:"name"`
+	Description  string          `json:"description"`
+	ImageURL     string          `json:"image_url"`
+	ScanDate     int             `json:"scan_date"`
+	ScanReportID int             `json:"scan_report_id"`
+	ScanInfo     *ScanInfoDTO    `json:"scan_info"`
+	Source       ScanSource      `json:"source"`
+}
+
+type SectorOwnerDTO struct {
+	ID   uuid.UUID `json:"id"`
+	Name string    `json:"name"`
 }
 
 type ScanInfoDTO struct {
@@ -46,6 +53,13 @@ type ScanInfoDTO struct {
 	Defence    int `json:"defence"`
 	Attack     int `json:"attack"`
 	Space      int `json:"space"`
+}
+
+func sectorOwnerDTOFromReadModel(owner *readmodels.SectorOwner) *SectorOwnerDTO {
+	if owner == nil {
+		return nil
+	}
+	return &SectorOwnerDTO{ID: owner.ID, Name: owner.Name}
 }
 
 func scanInfoFromReadModel(info readmodels.ScanInfo) *ScanInfoDTO {
@@ -88,6 +102,7 @@ func SectorScanReportFromReadModel(r *readmodels.SectorScanReport, tr ports.Tran
 	return SectorDTO{
 		Coordinates:  Vector2iFromReadModel(r.Coordinates),
 		Type:         sectorTypeFromLocation(r.Type),
+		Owner:        sectorOwnerDTOFromReadModel(r.Owner),
 		Name:         tr.T(locale, r.Details.Name, nil),
 		Description:  tr.T(locale, r.Details.Description, nil),
 		ImageURL:     r.Details.ImageURL,

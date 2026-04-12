@@ -8,15 +8,16 @@ import (
 type AlertKind string
 
 const (
-	AlertKindCombat AlertKind = "COMBAT"
-	AlertKindIntel  AlertKind = "INTEL"
-	AlertKindSystem AlertKind = "SYSTEM"
+	AlertKindCombat     AlertKind = "COMBAT"
+	AlertKindIntel      AlertKind = "INTEL"
+	AlertKindSystem     AlertKind = "SYSTEM"
+	AlertKindDiplomatic AlertKind = "DIPLOMATIC"
 )
 
 type AlertItem struct {
 	ID         uuid.UUID
 	UserID     uuid.UUID
-	BaseID     int
+	BaseID     *int
 	ActivityID *uuid.UUID
 	Kind       AlertKind
 	Title      domain.TranslationKey

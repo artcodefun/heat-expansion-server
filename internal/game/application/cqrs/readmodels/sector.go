@@ -46,6 +46,12 @@ type ScanInfo struct {
 	Space      int
 }
 
+// SectorOwner represents the public owner data attached to a scanned base location.
+type SectorOwner struct {
+	ID   uuid.UUID
+	Name string
+}
+
 // SectorScanReport captures a user's scan snapshot of a sector at a moment in time.
 // Produced after successful military operations (attack/spy) or other scan actions.
 type SectorScanReport struct {
@@ -56,6 +62,7 @@ type SectorScanReport struct {
 
 	Details LocationDetails
 	Type    LocationType
+	Owner   *SectorOwner
 
 	Info ScanInfo
 	// If true, occupant intel was cloaked; only fallback empty sector details provided.

@@ -81,6 +81,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteScanReportStmt, err = db.PrepareContext(ctx, deleteScanReport); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteScanReport: %w", err)
 	}
+	if q.existsDiplomaticMessageByRequestAndContentStmt, err = db.PrepareContext(ctx, existsDiplomaticMessageByRequestAndContent); err != nil {
+		return nil, fmt.Errorf("error preparing query ExistsDiplomaticMessageByRequestAndContent: %w", err)
+	}
 	if q.existsForActivityStmt, err = db.PrepareContext(ctx, existsForActivity); err != nil {
 		return nil, fmt.Errorf("error preparing query ExistsForActivity: %w", err)
 	}
@@ -89,6 +92,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.existsForScanReportStmt, err = db.PrepareContext(ctx, existsForScanReport); err != nil {
 		return nil, fmt.Errorf("error preparing query ExistsForScanReport: %w", err)
+	}
+	if q.existsPendingDiplomaticRequestByKindStmt, err = db.PrepareContext(ctx, existsPendingDiplomaticRequestByKind); err != nil {
+		return nil, fmt.Errorf("error preparing query ExistsPendingDiplomaticRequestByKind: %w", err)
 	}
 	if q.findClosestBaseStmt, err = db.PrepareContext(ctx, findClosestBase); err != nil {
 		return nil, fmt.Errorf("error preparing query FindClosestBase: %w", err)
@@ -125,6 +131,24 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.getDangerousLocationBySectorForUpdateStmt, err = db.PrepareContext(ctx, getDangerousLocationBySectorForUpdate); err != nil {
 		return nil, fmt.Errorf("error preparing query GetDangerousLocationBySectorForUpdate: %w", err)
+	}
+	if q.getDiplomaticMessageStmt, err = db.PrepareContext(ctx, getDiplomaticMessage); err != nil {
+		return nil, fmt.Errorf("error preparing query GetDiplomaticMessage: %w", err)
+	}
+	if q.getDiplomaticMessageByRequestAndContentStmt, err = db.PrepareContext(ctx, getDiplomaticMessageByRequestAndContent); err != nil {
+		return nil, fmt.Errorf("error preparing query GetDiplomaticMessageByRequestAndContent: %w", err)
+	}
+	if q.getDiplomaticRelationshipStmt, err = db.PrepareContext(ctx, getDiplomaticRelationship); err != nil {
+		return nil, fmt.Errorf("error preparing query GetDiplomaticRelationship: %w", err)
+	}
+	if q.getDiplomaticRelationshipForUpdateStmt, err = db.PrepareContext(ctx, getDiplomaticRelationshipForUpdate); err != nil {
+		return nil, fmt.Errorf("error preparing query GetDiplomaticRelationshipForUpdate: %w", err)
+	}
+	if q.getDiplomaticRequestStmt, err = db.PrepareContext(ctx, getDiplomaticRequest); err != nil {
+		return nil, fmt.Errorf("error preparing query GetDiplomaticRequest: %w", err)
+	}
+	if q.getDiplomaticRequestForUpdateStmt, err = db.PrepareContext(ctx, getDiplomaticRequestForUpdate); err != nil {
+		return nil, fmt.Errorf("error preparing query GetDiplomaticRequestForUpdate: %w", err)
 	}
 	if q.getLatestScanReportsByBaseStmt, err = db.PrepareContext(ctx, getLatestScanReportsByBase); err != nil {
 		return nil, fmt.Errorf("error preparing query GetLatestScanReportsByBase: %w", err)
@@ -194,6 +218,15 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.insertDangerousLocationStmt, err = db.PrepareContext(ctx, insertDangerousLocation); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertDangerousLocation: %w", err)
+	}
+	if q.insertDiplomaticMessageStmt, err = db.PrepareContext(ctx, insertDiplomaticMessage); err != nil {
+		return nil, fmt.Errorf("error preparing query InsertDiplomaticMessage: %w", err)
+	}
+	if q.insertDiplomaticRelationshipStmt, err = db.PrepareContext(ctx, insertDiplomaticRelationship); err != nil {
+		return nil, fmt.Errorf("error preparing query InsertDiplomaticRelationship: %w", err)
+	}
+	if q.insertDiplomaticRequestStmt, err = db.PrepareContext(ctx, insertDiplomaticRequest); err != nil {
+		return nil, fmt.Errorf("error preparing query InsertDiplomaticRequest: %w", err)
 	}
 	if q.insertMilitaryOperationStmt, err = db.PrepareContext(ctx, insertMilitaryOperation); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertMilitaryOperation: %w", err)
@@ -276,6 +309,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.markAllAlertsAsReadByUserStmt, err = db.PrepareContext(ctx, markAllAlertsAsReadByUser); err != nil {
 		return nil, fmt.Errorf("error preparing query MarkAllAlertsAsReadByUser: %w", err)
 	}
+	if q.markDiplomaticChatAsReadStmt, err = db.PrepareContext(ctx, markDiplomaticChatAsRead); err != nil {
+		return nil, fmt.Errorf("error preparing query MarkDiplomaticChatAsRead: %w", err)
+	}
 	if q.markOutboxEventPublishedStmt, err = db.PrepareContext(ctx, markOutboxEventPublished); err != nil {
 		return nil, fmt.Errorf("error preparing query MarkOutboxEventPublished: %w", err)
 	}
@@ -296,6 +332,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.updateDangerousLocationStmt, err = db.PrepareContext(ctx, updateDangerousLocation); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateDangerousLocation: %w", err)
+	}
+	if q.updateDiplomaticRelationshipStmt, err = db.PrepareContext(ctx, updateDiplomaticRelationship); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateDiplomaticRelationship: %w", err)
+	}
+	if q.updateDiplomaticRequestStmt, err = db.PrepareContext(ctx, updateDiplomaticRequest); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateDiplomaticRequest: %w", err)
 	}
 	if q.updateMilitaryOperationStmt, err = db.PrepareContext(ctx, updateMilitaryOperation); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateMilitaryOperation: %w", err)
@@ -412,6 +454,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteScanReportStmt: %w", cerr)
 		}
 	}
+	if q.existsDiplomaticMessageByRequestAndContentStmt != nil {
+		if cerr := q.existsDiplomaticMessageByRequestAndContentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing existsDiplomaticMessageByRequestAndContentStmt: %w", cerr)
+		}
+	}
 	if q.existsForActivityStmt != nil {
 		if cerr := q.existsForActivityStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing existsForActivityStmt: %w", cerr)
@@ -425,6 +472,11 @@ func (q *Queries) Close() error {
 	if q.existsForScanReportStmt != nil {
 		if cerr := q.existsForScanReportStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing existsForScanReportStmt: %w", cerr)
+		}
+	}
+	if q.existsPendingDiplomaticRequestByKindStmt != nil {
+		if cerr := q.existsPendingDiplomaticRequestByKindStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing existsPendingDiplomaticRequestByKindStmt: %w", cerr)
 		}
 	}
 	if q.findClosestBaseStmt != nil {
@@ -485,6 +537,36 @@ func (q *Queries) Close() error {
 	if q.getDangerousLocationBySectorForUpdateStmt != nil {
 		if cerr := q.getDangerousLocationBySectorForUpdateStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getDangerousLocationBySectorForUpdateStmt: %w", cerr)
+		}
+	}
+	if q.getDiplomaticMessageStmt != nil {
+		if cerr := q.getDiplomaticMessageStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getDiplomaticMessageStmt: %w", cerr)
+		}
+	}
+	if q.getDiplomaticMessageByRequestAndContentStmt != nil {
+		if cerr := q.getDiplomaticMessageByRequestAndContentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getDiplomaticMessageByRequestAndContentStmt: %w", cerr)
+		}
+	}
+	if q.getDiplomaticRelationshipStmt != nil {
+		if cerr := q.getDiplomaticRelationshipStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getDiplomaticRelationshipStmt: %w", cerr)
+		}
+	}
+	if q.getDiplomaticRelationshipForUpdateStmt != nil {
+		if cerr := q.getDiplomaticRelationshipForUpdateStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getDiplomaticRelationshipForUpdateStmt: %w", cerr)
+		}
+	}
+	if q.getDiplomaticRequestStmt != nil {
+		if cerr := q.getDiplomaticRequestStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getDiplomaticRequestStmt: %w", cerr)
+		}
+	}
+	if q.getDiplomaticRequestForUpdateStmt != nil {
+		if cerr := q.getDiplomaticRequestForUpdateStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getDiplomaticRequestForUpdateStmt: %w", cerr)
 		}
 	}
 	if q.getLatestScanReportsByBaseStmt != nil {
@@ -600,6 +682,21 @@ func (q *Queries) Close() error {
 	if q.insertDangerousLocationStmt != nil {
 		if cerr := q.insertDangerousLocationStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing insertDangerousLocationStmt: %w", cerr)
+		}
+	}
+	if q.insertDiplomaticMessageStmt != nil {
+		if cerr := q.insertDiplomaticMessageStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing insertDiplomaticMessageStmt: %w", cerr)
+		}
+	}
+	if q.insertDiplomaticRelationshipStmt != nil {
+		if cerr := q.insertDiplomaticRelationshipStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing insertDiplomaticRelationshipStmt: %w", cerr)
+		}
+	}
+	if q.insertDiplomaticRequestStmt != nil {
+		if cerr := q.insertDiplomaticRequestStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing insertDiplomaticRequestStmt: %w", cerr)
 		}
 	}
 	if q.insertMilitaryOperationStmt != nil {
@@ -737,6 +834,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing markAllAlertsAsReadByUserStmt: %w", cerr)
 		}
 	}
+	if q.markDiplomaticChatAsReadStmt != nil {
+		if cerr := q.markDiplomaticChatAsReadStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing markDiplomaticChatAsReadStmt: %w", cerr)
+		}
+	}
 	if q.markOutboxEventPublishedStmt != nil {
 		if cerr := q.markOutboxEventPublishedStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing markOutboxEventPublishedStmt: %w", cerr)
@@ -770,6 +872,16 @@ func (q *Queries) Close() error {
 	if q.updateDangerousLocationStmt != nil {
 		if cerr := q.updateDangerousLocationStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateDangerousLocationStmt: %w", cerr)
+		}
+	}
+	if q.updateDiplomaticRelationshipStmt != nil {
+		if cerr := q.updateDiplomaticRelationshipStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateDiplomaticRelationshipStmt: %w", cerr)
+		}
+	}
+	if q.updateDiplomaticRequestStmt != nil {
+		if cerr := q.updateDiplomaticRequestStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateDiplomaticRequestStmt: %w", cerr)
 		}
 	}
 	if q.updateMilitaryOperationStmt != nil {
@@ -834,205 +946,233 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db                                        DBTX
-	tx                                        *sql.Tx
-	claimDueScheduledJobsStmt                 *sql.Stmt
-	claimUnpublishedOutboxEventsStmt          *sql.Stmt
-	countDangerousLocationsInRangeStmt        *sql.Stmt
-	countResourcefulLocationsInRangeStmt      *sql.Stmt
-	createBaseStmt                            *sql.Stmt
-	createSectorStmt                          *sql.Stmt
-	deleteActivitiesByBaseStmt                *sql.Stmt
-	deleteBaseStmt                            *sql.Stmt
-	deleteBaseArmyItemsByBaseStmt             *sql.Stmt
-	deleteBaseBuildItemsByBaseStmt            *sql.Stmt
-	deleteBaseStorageItemsByBaseStmt          *sql.Stmt
-	deleteBaseTechItemsByBaseStmt             *sql.Stmt
-	deleteDangerousLocationStmt               *sql.Stmt
-	deleteDangerousLocationBySectorStmt       *sql.Stmt
-	deleteExpiredAlertsStmt                   *sql.Stmt
-	deleteMilitaryOperationStmt               *sql.Stmt
-	deleteResourceLocationStmt                *sql.Stmt
-	deleteResourceLocationBySectorStmt        *sql.Stmt
-	deleteScanReportStmt                      *sql.Stmt
-	existsForActivityStmt                     *sql.Stmt
-	existsForOperationStmt                    *sql.Stmt
-	existsForScanReportStmt                   *sql.Stmt
-	findClosestBaseStmt                       *sql.Stmt
-	findClosestDangerousLocationStmt          *sql.Stmt
-	findClosestResourceLocationStmt           *sql.Stmt
-	getArmyPrototypeByIDStmt                  *sql.Stmt
-	getBaseByCoordinatesStmt                  *sql.Stmt
-	getBaseByCoordinatesForUpdateStmt         *sql.Stmt
-	getBaseByIDStmt                           *sql.Stmt
-	getBaseByIDForUpdateStmt                  *sql.Stmt
-	getBuildPrototypeByIDStmt                 *sql.Stmt
-	getDangerousLocationByIDStmt              *sql.Stmt
-	getDangerousLocationBySectorStmt          *sql.Stmt
-	getDangerousLocationBySectorForUpdateStmt *sql.Stmt
-	getLatestScanReportsByBaseStmt            *sql.Stmt
-	getLocationTypeByCoordinatesStmt          *sql.Stmt
-	getMilitaryOperationByIDStmt              *sql.Stmt
-	getMilitaryOperationByIDForUpdateStmt     *sql.Stmt
-	getNextScheduledJobStmt                   *sql.Stmt
-	getRadarThreatStmt                        *sql.Stmt
-	getRadarThreatByOperationIDStmt           *sql.Stmt
-	getResourceLocationByIDStmt               *sql.Stmt
-	getResourceLocationBySectorStmt           *sql.Stmt
-	getResourceLocationBySectorForUpdateStmt  *sql.Stmt
-	getScanReportByIDStmt                     *sql.Stmt
-	getSectorByCoordinatesStmt                *sql.Stmt
-	getSectorByCoordinatesForUpdateStmt       *sql.Stmt
-	getStoragePrototypeByIDStmt               *sql.Stmt
-	getTechPrototypeByIDStmt                  *sql.Stmt
-	getUserByIDStmt                           *sql.Stmt
-	insertActivityStmt                        *sql.Stmt
-	insertAlertStmt                           *sql.Stmt
-	insertBaseArmyItemStmt                    *sql.Stmt
-	insertBaseBuildItemStmt                   *sql.Stmt
-	insertBaseStorageItemStmt                 *sql.Stmt
-	insertBaseTechItemStmt                    *sql.Stmt
-	insertDangerousLocationStmt               *sql.Stmt
-	insertMilitaryOperationStmt               *sql.Stmt
-	insertOutboxEventStmt                     *sql.Stmt
-	insertRadarThreatStmt                     *sql.Stmt
-	insertResourceLocationStmt                *sql.Stmt
-	insertScanReportStmt                      *sql.Stmt
-	insertScheduledJobStmt                    *sql.Stmt
-	insertUserStmt                            *sql.Stmt
-	listActivitiesByBaseStmt                  *sql.Stmt
-	listAlertsByUserStmt                      *sql.Stmt
-	listAllBasesStmt                          *sql.Stmt
-	listArmyPrototypesStmt                    *sql.Stmt
-	listBaseArmyItemsStmt                     *sql.Stmt
-	listBaseBuildItemsStmt                    *sql.Stmt
-	listBaseStorageItemsStmt                  *sql.Stmt
-	listBaseTechItemsStmt                     *sql.Stmt
-	listBasesByUserIDStmt                     *sql.Stmt
-	listBuildPrototypesStmt                   *sql.Stmt
-	listOccupiedSectorCoordinatesStmt         *sql.Stmt
-	listOpsBySourceBaseStmt                   *sql.Stmt
-	listOpsByTargetCoordinatesStmt            *sql.Stmt
-	listScanReportsByBaseAndCoordinatesStmt   *sql.Stmt
-	listScanReportsByBaseWithinAreaStmt       *sql.Stmt
-	listSectorsStmt                           *sql.Stmt
-	listStoragePrototypesStmt                 *sql.Stmt
-	listTechPrototypesStmt                    *sql.Stmt
-	listUsersStmt                             *sql.Stmt
-	markAllAlertsAsReadByUserStmt             *sql.Stmt
-	markOutboxEventPublishedStmt              *sql.Stmt
-	markScheduledJobDispatchedStmt            *sql.Stmt
-	notifyOutboxEventStmt                     *sql.Stmt
-	radarThreatExistsStmt                     *sql.Stmt
-	recentReportExistsByScannerStmt           *sql.Stmt
-	updateBaseStmt                            *sql.Stmt
-	updateDangerousLocationStmt               *sql.Stmt
-	updateMilitaryOperationStmt               *sql.Stmt
-	updateRadarThreatStmt                     *sql.Stmt
-	updateResourceLocationStmt                *sql.Stmt
-	updateSectorStmt                          *sql.Stmt
-	updateUserStmt                            *sql.Stmt
+	db                                             DBTX
+	tx                                             *sql.Tx
+	claimDueScheduledJobsStmt                      *sql.Stmt
+	claimUnpublishedOutboxEventsStmt               *sql.Stmt
+	countDangerousLocationsInRangeStmt             *sql.Stmt
+	countResourcefulLocationsInRangeStmt           *sql.Stmt
+	createBaseStmt                                 *sql.Stmt
+	createSectorStmt                               *sql.Stmt
+	deleteActivitiesByBaseStmt                     *sql.Stmt
+	deleteBaseStmt                                 *sql.Stmt
+	deleteBaseArmyItemsByBaseStmt                  *sql.Stmt
+	deleteBaseBuildItemsByBaseStmt                 *sql.Stmt
+	deleteBaseStorageItemsByBaseStmt               *sql.Stmt
+	deleteBaseTechItemsByBaseStmt                  *sql.Stmt
+	deleteDangerousLocationStmt                    *sql.Stmt
+	deleteDangerousLocationBySectorStmt            *sql.Stmt
+	deleteExpiredAlertsStmt                        *sql.Stmt
+	deleteMilitaryOperationStmt                    *sql.Stmt
+	deleteResourceLocationStmt                     *sql.Stmt
+	deleteResourceLocationBySectorStmt             *sql.Stmt
+	deleteScanReportStmt                           *sql.Stmt
+	existsDiplomaticMessageByRequestAndContentStmt *sql.Stmt
+	existsForActivityStmt                          *sql.Stmt
+	existsForOperationStmt                         *sql.Stmt
+	existsForScanReportStmt                        *sql.Stmt
+	existsPendingDiplomaticRequestByKindStmt       *sql.Stmt
+	findClosestBaseStmt                            *sql.Stmt
+	findClosestDangerousLocationStmt               *sql.Stmt
+	findClosestResourceLocationStmt                *sql.Stmt
+	getArmyPrototypeByIDStmt                       *sql.Stmt
+	getBaseByCoordinatesStmt                       *sql.Stmt
+	getBaseByCoordinatesForUpdateStmt              *sql.Stmt
+	getBaseByIDStmt                                *sql.Stmt
+	getBaseByIDForUpdateStmt                       *sql.Stmt
+	getBuildPrototypeByIDStmt                      *sql.Stmt
+	getDangerousLocationByIDStmt                   *sql.Stmt
+	getDangerousLocationBySectorStmt               *sql.Stmt
+	getDangerousLocationBySectorForUpdateStmt      *sql.Stmt
+	getDiplomaticMessageStmt                       *sql.Stmt
+	getDiplomaticMessageByRequestAndContentStmt    *sql.Stmt
+	getDiplomaticRelationshipStmt                  *sql.Stmt
+	getDiplomaticRelationshipForUpdateStmt         *sql.Stmt
+	getDiplomaticRequestStmt                       *sql.Stmt
+	getDiplomaticRequestForUpdateStmt              *sql.Stmt
+	getLatestScanReportsByBaseStmt                 *sql.Stmt
+	getLocationTypeByCoordinatesStmt               *sql.Stmt
+	getMilitaryOperationByIDStmt                   *sql.Stmt
+	getMilitaryOperationByIDForUpdateStmt          *sql.Stmt
+	getNextScheduledJobStmt                        *sql.Stmt
+	getRadarThreatStmt                             *sql.Stmt
+	getRadarThreatByOperationIDStmt                *sql.Stmt
+	getResourceLocationByIDStmt                    *sql.Stmt
+	getResourceLocationBySectorStmt                *sql.Stmt
+	getResourceLocationBySectorForUpdateStmt       *sql.Stmt
+	getScanReportByIDStmt                          *sql.Stmt
+	getSectorByCoordinatesStmt                     *sql.Stmt
+	getSectorByCoordinatesForUpdateStmt            *sql.Stmt
+	getStoragePrototypeByIDStmt                    *sql.Stmt
+	getTechPrototypeByIDStmt                       *sql.Stmt
+	getUserByIDStmt                                *sql.Stmt
+	insertActivityStmt                             *sql.Stmt
+	insertAlertStmt                                *sql.Stmt
+	insertBaseArmyItemStmt                         *sql.Stmt
+	insertBaseBuildItemStmt                        *sql.Stmt
+	insertBaseStorageItemStmt                      *sql.Stmt
+	insertBaseTechItemStmt                         *sql.Stmt
+	insertDangerousLocationStmt                    *sql.Stmt
+	insertDiplomaticMessageStmt                    *sql.Stmt
+	insertDiplomaticRelationshipStmt               *sql.Stmt
+	insertDiplomaticRequestStmt                    *sql.Stmt
+	insertMilitaryOperationStmt                    *sql.Stmt
+	insertOutboxEventStmt                          *sql.Stmt
+	insertRadarThreatStmt                          *sql.Stmt
+	insertResourceLocationStmt                     *sql.Stmt
+	insertScanReportStmt                           *sql.Stmt
+	insertScheduledJobStmt                         *sql.Stmt
+	insertUserStmt                                 *sql.Stmt
+	listActivitiesByBaseStmt                       *sql.Stmt
+	listAlertsByUserStmt                           *sql.Stmt
+	listAllBasesStmt                               *sql.Stmt
+	listArmyPrototypesStmt                         *sql.Stmt
+	listBaseArmyItemsStmt                          *sql.Stmt
+	listBaseBuildItemsStmt                         *sql.Stmt
+	listBaseStorageItemsStmt                       *sql.Stmt
+	listBaseTechItemsStmt                          *sql.Stmt
+	listBasesByUserIDStmt                          *sql.Stmt
+	listBuildPrototypesStmt                        *sql.Stmt
+	listOccupiedSectorCoordinatesStmt              *sql.Stmt
+	listOpsBySourceBaseStmt                        *sql.Stmt
+	listOpsByTargetCoordinatesStmt                 *sql.Stmt
+	listScanReportsByBaseAndCoordinatesStmt        *sql.Stmt
+	listScanReportsByBaseWithinAreaStmt            *sql.Stmt
+	listSectorsStmt                                *sql.Stmt
+	listStoragePrototypesStmt                      *sql.Stmt
+	listTechPrototypesStmt                         *sql.Stmt
+	listUsersStmt                                  *sql.Stmt
+	markAllAlertsAsReadByUserStmt                  *sql.Stmt
+	markDiplomaticChatAsReadStmt                   *sql.Stmt
+	markOutboxEventPublishedStmt                   *sql.Stmt
+	markScheduledJobDispatchedStmt                 *sql.Stmt
+	notifyOutboxEventStmt                          *sql.Stmt
+	radarThreatExistsStmt                          *sql.Stmt
+	recentReportExistsByScannerStmt                *sql.Stmt
+	updateBaseStmt                                 *sql.Stmt
+	updateDangerousLocationStmt                    *sql.Stmt
+	updateDiplomaticRelationshipStmt               *sql.Stmt
+	updateDiplomaticRequestStmt                    *sql.Stmt
+	updateMilitaryOperationStmt                    *sql.Stmt
+	updateRadarThreatStmt                          *sql.Stmt
+	updateResourceLocationStmt                     *sql.Stmt
+	updateSectorStmt                               *sql.Stmt
+	updateUserStmt                                 *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:                                        tx,
-		tx:                                        tx,
-		claimDueScheduledJobsStmt:                 q.claimDueScheduledJobsStmt,
-		claimUnpublishedOutboxEventsStmt:          q.claimUnpublishedOutboxEventsStmt,
-		countDangerousLocationsInRangeStmt:        q.countDangerousLocationsInRangeStmt,
-		countResourcefulLocationsInRangeStmt:      q.countResourcefulLocationsInRangeStmt,
-		createBaseStmt:                            q.createBaseStmt,
-		createSectorStmt:                          q.createSectorStmt,
-		deleteActivitiesByBaseStmt:                q.deleteActivitiesByBaseStmt,
-		deleteBaseStmt:                            q.deleteBaseStmt,
-		deleteBaseArmyItemsByBaseStmt:             q.deleteBaseArmyItemsByBaseStmt,
-		deleteBaseBuildItemsByBaseStmt:            q.deleteBaseBuildItemsByBaseStmt,
-		deleteBaseStorageItemsByBaseStmt:          q.deleteBaseStorageItemsByBaseStmt,
-		deleteBaseTechItemsByBaseStmt:             q.deleteBaseTechItemsByBaseStmt,
-		deleteDangerousLocationStmt:               q.deleteDangerousLocationStmt,
-		deleteDangerousLocationBySectorStmt:       q.deleteDangerousLocationBySectorStmt,
-		deleteExpiredAlertsStmt:                   q.deleteExpiredAlertsStmt,
-		deleteMilitaryOperationStmt:               q.deleteMilitaryOperationStmt,
-		deleteResourceLocationStmt:                q.deleteResourceLocationStmt,
-		deleteResourceLocationBySectorStmt:        q.deleteResourceLocationBySectorStmt,
-		deleteScanReportStmt:                      q.deleteScanReportStmt,
-		existsForActivityStmt:                     q.existsForActivityStmt,
-		existsForOperationStmt:                    q.existsForOperationStmt,
-		existsForScanReportStmt:                   q.existsForScanReportStmt,
-		findClosestBaseStmt:                       q.findClosestBaseStmt,
-		findClosestDangerousLocationStmt:          q.findClosestDangerousLocationStmt,
-		findClosestResourceLocationStmt:           q.findClosestResourceLocationStmt,
-		getArmyPrototypeByIDStmt:                  q.getArmyPrototypeByIDStmt,
-		getBaseByCoordinatesStmt:                  q.getBaseByCoordinatesStmt,
-		getBaseByCoordinatesForUpdateStmt:         q.getBaseByCoordinatesForUpdateStmt,
-		getBaseByIDStmt:                           q.getBaseByIDStmt,
-		getBaseByIDForUpdateStmt:                  q.getBaseByIDForUpdateStmt,
-		getBuildPrototypeByIDStmt:                 q.getBuildPrototypeByIDStmt,
-		getDangerousLocationByIDStmt:              q.getDangerousLocationByIDStmt,
-		getDangerousLocationBySectorStmt:          q.getDangerousLocationBySectorStmt,
-		getDangerousLocationBySectorForUpdateStmt: q.getDangerousLocationBySectorForUpdateStmt,
-		getLatestScanReportsByBaseStmt:            q.getLatestScanReportsByBaseStmt,
-		getLocationTypeByCoordinatesStmt:          q.getLocationTypeByCoordinatesStmt,
-		getMilitaryOperationByIDStmt:              q.getMilitaryOperationByIDStmt,
-		getMilitaryOperationByIDForUpdateStmt:     q.getMilitaryOperationByIDForUpdateStmt,
-		getNextScheduledJobStmt:                   q.getNextScheduledJobStmt,
-		getRadarThreatStmt:                        q.getRadarThreatStmt,
-		getRadarThreatByOperationIDStmt:           q.getRadarThreatByOperationIDStmt,
-		getResourceLocationByIDStmt:               q.getResourceLocationByIDStmt,
-		getResourceLocationBySectorStmt:           q.getResourceLocationBySectorStmt,
-		getResourceLocationBySectorForUpdateStmt:  q.getResourceLocationBySectorForUpdateStmt,
-		getScanReportByIDStmt:                     q.getScanReportByIDStmt,
-		getSectorByCoordinatesStmt:                q.getSectorByCoordinatesStmt,
-		getSectorByCoordinatesForUpdateStmt:       q.getSectorByCoordinatesForUpdateStmt,
-		getStoragePrototypeByIDStmt:               q.getStoragePrototypeByIDStmt,
-		getTechPrototypeByIDStmt:                  q.getTechPrototypeByIDStmt,
-		getUserByIDStmt:                           q.getUserByIDStmt,
-		insertActivityStmt:                        q.insertActivityStmt,
-		insertAlertStmt:                           q.insertAlertStmt,
-		insertBaseArmyItemStmt:                    q.insertBaseArmyItemStmt,
-		insertBaseBuildItemStmt:                   q.insertBaseBuildItemStmt,
-		insertBaseStorageItemStmt:                 q.insertBaseStorageItemStmt,
-		insertBaseTechItemStmt:                    q.insertBaseTechItemStmt,
-		insertDangerousLocationStmt:               q.insertDangerousLocationStmt,
-		insertMilitaryOperationStmt:               q.insertMilitaryOperationStmt,
-		insertOutboxEventStmt:                     q.insertOutboxEventStmt,
-		insertRadarThreatStmt:                     q.insertRadarThreatStmt,
-		insertResourceLocationStmt:                q.insertResourceLocationStmt,
-		insertScanReportStmt:                      q.insertScanReportStmt,
-		insertScheduledJobStmt:                    q.insertScheduledJobStmt,
-		insertUserStmt:                            q.insertUserStmt,
-		listActivitiesByBaseStmt:                  q.listActivitiesByBaseStmt,
-		listAlertsByUserStmt:                      q.listAlertsByUserStmt,
-		listAllBasesStmt:                          q.listAllBasesStmt,
-		listArmyPrototypesStmt:                    q.listArmyPrototypesStmt,
-		listBaseArmyItemsStmt:                     q.listBaseArmyItemsStmt,
-		listBaseBuildItemsStmt:                    q.listBaseBuildItemsStmt,
-		listBaseStorageItemsStmt:                  q.listBaseStorageItemsStmt,
-		listBaseTechItemsStmt:                     q.listBaseTechItemsStmt,
-		listBasesByUserIDStmt:                     q.listBasesByUserIDStmt,
-		listBuildPrototypesStmt:                   q.listBuildPrototypesStmt,
-		listOccupiedSectorCoordinatesStmt:         q.listOccupiedSectorCoordinatesStmt,
-		listOpsBySourceBaseStmt:                   q.listOpsBySourceBaseStmt,
-		listOpsByTargetCoordinatesStmt:            q.listOpsByTargetCoordinatesStmt,
-		listScanReportsByBaseAndCoordinatesStmt:   q.listScanReportsByBaseAndCoordinatesStmt,
-		listScanReportsByBaseWithinAreaStmt:       q.listScanReportsByBaseWithinAreaStmt,
-		listSectorsStmt:                           q.listSectorsStmt,
-		listStoragePrototypesStmt:                 q.listStoragePrototypesStmt,
-		listTechPrototypesStmt:                    q.listTechPrototypesStmt,
-		listUsersStmt:                             q.listUsersStmt,
-		markAllAlertsAsReadByUserStmt:             q.markAllAlertsAsReadByUserStmt,
-		markOutboxEventPublishedStmt:              q.markOutboxEventPublishedStmt,
-		markScheduledJobDispatchedStmt:            q.markScheduledJobDispatchedStmt,
-		notifyOutboxEventStmt:                     q.notifyOutboxEventStmt,
-		radarThreatExistsStmt:                     q.radarThreatExistsStmt,
-		recentReportExistsByScannerStmt:           q.recentReportExistsByScannerStmt,
-		updateBaseStmt:                            q.updateBaseStmt,
-		updateDangerousLocationStmt:               q.updateDangerousLocationStmt,
-		updateMilitaryOperationStmt:               q.updateMilitaryOperationStmt,
-		updateRadarThreatStmt:                     q.updateRadarThreatStmt,
-		updateResourceLocationStmt:                q.updateResourceLocationStmt,
-		updateSectorStmt:                          q.updateSectorStmt,
-		updateUserStmt:                            q.updateUserStmt,
+		db:                                             tx,
+		tx:                                             tx,
+		claimDueScheduledJobsStmt:                      q.claimDueScheduledJobsStmt,
+		claimUnpublishedOutboxEventsStmt:               q.claimUnpublishedOutboxEventsStmt,
+		countDangerousLocationsInRangeStmt:             q.countDangerousLocationsInRangeStmt,
+		countResourcefulLocationsInRangeStmt:           q.countResourcefulLocationsInRangeStmt,
+		createBaseStmt:                                 q.createBaseStmt,
+		createSectorStmt:                               q.createSectorStmt,
+		deleteActivitiesByBaseStmt:                     q.deleteActivitiesByBaseStmt,
+		deleteBaseStmt:                                 q.deleteBaseStmt,
+		deleteBaseArmyItemsByBaseStmt:                  q.deleteBaseArmyItemsByBaseStmt,
+		deleteBaseBuildItemsByBaseStmt:                 q.deleteBaseBuildItemsByBaseStmt,
+		deleteBaseStorageItemsByBaseStmt:               q.deleteBaseStorageItemsByBaseStmt,
+		deleteBaseTechItemsByBaseStmt:                  q.deleteBaseTechItemsByBaseStmt,
+		deleteDangerousLocationStmt:                    q.deleteDangerousLocationStmt,
+		deleteDangerousLocationBySectorStmt:            q.deleteDangerousLocationBySectorStmt,
+		deleteExpiredAlertsStmt:                        q.deleteExpiredAlertsStmt,
+		deleteMilitaryOperationStmt:                    q.deleteMilitaryOperationStmt,
+		deleteResourceLocationStmt:                     q.deleteResourceLocationStmt,
+		deleteResourceLocationBySectorStmt:             q.deleteResourceLocationBySectorStmt,
+		deleteScanReportStmt:                           q.deleteScanReportStmt,
+		existsDiplomaticMessageByRequestAndContentStmt: q.existsDiplomaticMessageByRequestAndContentStmt,
+		existsForActivityStmt:                          q.existsForActivityStmt,
+		existsForOperationStmt:                         q.existsForOperationStmt,
+		existsForScanReportStmt:                        q.existsForScanReportStmt,
+		existsPendingDiplomaticRequestByKindStmt:       q.existsPendingDiplomaticRequestByKindStmt,
+		findClosestBaseStmt:                            q.findClosestBaseStmt,
+		findClosestDangerousLocationStmt:               q.findClosestDangerousLocationStmt,
+		findClosestResourceLocationStmt:                q.findClosestResourceLocationStmt,
+		getArmyPrototypeByIDStmt:                       q.getArmyPrototypeByIDStmt,
+		getBaseByCoordinatesStmt:                       q.getBaseByCoordinatesStmt,
+		getBaseByCoordinatesForUpdateStmt:              q.getBaseByCoordinatesForUpdateStmt,
+		getBaseByIDStmt:                                q.getBaseByIDStmt,
+		getBaseByIDForUpdateStmt:                       q.getBaseByIDForUpdateStmt,
+		getBuildPrototypeByIDStmt:                      q.getBuildPrototypeByIDStmt,
+		getDangerousLocationByIDStmt:                   q.getDangerousLocationByIDStmt,
+		getDangerousLocationBySectorStmt:               q.getDangerousLocationBySectorStmt,
+		getDangerousLocationBySectorForUpdateStmt:      q.getDangerousLocationBySectorForUpdateStmt,
+		getDiplomaticMessageStmt:                       q.getDiplomaticMessageStmt,
+		getDiplomaticMessageByRequestAndContentStmt:    q.getDiplomaticMessageByRequestAndContentStmt,
+		getDiplomaticRelationshipStmt:                  q.getDiplomaticRelationshipStmt,
+		getDiplomaticRelationshipForUpdateStmt:         q.getDiplomaticRelationshipForUpdateStmt,
+		getDiplomaticRequestStmt:                       q.getDiplomaticRequestStmt,
+		getDiplomaticRequestForUpdateStmt:              q.getDiplomaticRequestForUpdateStmt,
+		getLatestScanReportsByBaseStmt:                 q.getLatestScanReportsByBaseStmt,
+		getLocationTypeByCoordinatesStmt:               q.getLocationTypeByCoordinatesStmt,
+		getMilitaryOperationByIDStmt:                   q.getMilitaryOperationByIDStmt,
+		getMilitaryOperationByIDForUpdateStmt:          q.getMilitaryOperationByIDForUpdateStmt,
+		getNextScheduledJobStmt:                        q.getNextScheduledJobStmt,
+		getRadarThreatStmt:                             q.getRadarThreatStmt,
+		getRadarThreatByOperationIDStmt:                q.getRadarThreatByOperationIDStmt,
+		getResourceLocationByIDStmt:                    q.getResourceLocationByIDStmt,
+		getResourceLocationBySectorStmt:                q.getResourceLocationBySectorStmt,
+		getResourceLocationBySectorForUpdateStmt:       q.getResourceLocationBySectorForUpdateStmt,
+		getScanReportByIDStmt:                          q.getScanReportByIDStmt,
+		getSectorByCoordinatesStmt:                     q.getSectorByCoordinatesStmt,
+		getSectorByCoordinatesForUpdateStmt:            q.getSectorByCoordinatesForUpdateStmt,
+		getStoragePrototypeByIDStmt:                    q.getStoragePrototypeByIDStmt,
+		getTechPrototypeByIDStmt:                       q.getTechPrototypeByIDStmt,
+		getUserByIDStmt:                                q.getUserByIDStmt,
+		insertActivityStmt:                             q.insertActivityStmt,
+		insertAlertStmt:                                q.insertAlertStmt,
+		insertBaseArmyItemStmt:                         q.insertBaseArmyItemStmt,
+		insertBaseBuildItemStmt:                        q.insertBaseBuildItemStmt,
+		insertBaseStorageItemStmt:                      q.insertBaseStorageItemStmt,
+		insertBaseTechItemStmt:                         q.insertBaseTechItemStmt,
+		insertDangerousLocationStmt:                    q.insertDangerousLocationStmt,
+		insertDiplomaticMessageStmt:                    q.insertDiplomaticMessageStmt,
+		insertDiplomaticRelationshipStmt:               q.insertDiplomaticRelationshipStmt,
+		insertDiplomaticRequestStmt:                    q.insertDiplomaticRequestStmt,
+		insertMilitaryOperationStmt:                    q.insertMilitaryOperationStmt,
+		insertOutboxEventStmt:                          q.insertOutboxEventStmt,
+		insertRadarThreatStmt:                          q.insertRadarThreatStmt,
+		insertResourceLocationStmt:                     q.insertResourceLocationStmt,
+		insertScanReportStmt:                           q.insertScanReportStmt,
+		insertScheduledJobStmt:                         q.insertScheduledJobStmt,
+		insertUserStmt:                                 q.insertUserStmt,
+		listActivitiesByBaseStmt:                       q.listActivitiesByBaseStmt,
+		listAlertsByUserStmt:                           q.listAlertsByUserStmt,
+		listAllBasesStmt:                               q.listAllBasesStmt,
+		listArmyPrototypesStmt:                         q.listArmyPrototypesStmt,
+		listBaseArmyItemsStmt:                          q.listBaseArmyItemsStmt,
+		listBaseBuildItemsStmt:                         q.listBaseBuildItemsStmt,
+		listBaseStorageItemsStmt:                       q.listBaseStorageItemsStmt,
+		listBaseTechItemsStmt:                          q.listBaseTechItemsStmt,
+		listBasesByUserIDStmt:                          q.listBasesByUserIDStmt,
+		listBuildPrototypesStmt:                        q.listBuildPrototypesStmt,
+		listOccupiedSectorCoordinatesStmt:              q.listOccupiedSectorCoordinatesStmt,
+		listOpsBySourceBaseStmt:                        q.listOpsBySourceBaseStmt,
+		listOpsByTargetCoordinatesStmt:                 q.listOpsByTargetCoordinatesStmt,
+		listScanReportsByBaseAndCoordinatesStmt:        q.listScanReportsByBaseAndCoordinatesStmt,
+		listScanReportsByBaseWithinAreaStmt:            q.listScanReportsByBaseWithinAreaStmt,
+		listSectorsStmt:                                q.listSectorsStmt,
+		listStoragePrototypesStmt:                      q.listStoragePrototypesStmt,
+		listTechPrototypesStmt:                         q.listTechPrototypesStmt,
+		listUsersStmt:                                  q.listUsersStmt,
+		markAllAlertsAsReadByUserStmt:                  q.markAllAlertsAsReadByUserStmt,
+		markDiplomaticChatAsReadStmt:                   q.markDiplomaticChatAsReadStmt,
+		markOutboxEventPublishedStmt:                   q.markOutboxEventPublishedStmt,
+		markScheduledJobDispatchedStmt:                 q.markScheduledJobDispatchedStmt,
+		notifyOutboxEventStmt:                          q.notifyOutboxEventStmt,
+		radarThreatExistsStmt:                          q.radarThreatExistsStmt,
+		recentReportExistsByScannerStmt:                q.recentReportExistsByScannerStmt,
+		updateBaseStmt:                                 q.updateBaseStmt,
+		updateDangerousLocationStmt:                    q.updateDangerousLocationStmt,
+		updateDiplomaticRelationshipStmt:               q.updateDiplomaticRelationshipStmt,
+		updateDiplomaticRequestStmt:                    q.updateDiplomaticRequestStmt,
+		updateMilitaryOperationStmt:                    q.updateMilitaryOperationStmt,
+		updateRadarThreatStmt:                          q.updateRadarThreatStmt,
+		updateResourceLocationStmt:                     q.updateResourceLocationStmt,
+		updateSectorStmt:                               q.updateSectorStmt,
+		updateUserStmt:                                 q.updateUserStmt,
 	}
 }

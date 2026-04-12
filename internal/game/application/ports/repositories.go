@@ -206,6 +206,32 @@ type ActivityRepository interface {
 	Tx(tx Transaction) ActivityRepository
 }
 
+type DiplomaticRelationshipRepository interface {
+	Create(ctx context.Context, relationship *domain.DiplomaticRelationship) error
+	Update(ctx context.Context, relationship *domain.DiplomaticRelationship) error
+	FindBetweenUsers(ctx context.Context, userAID, userBID uuid.UUID) (*domain.DiplomaticRelationship, error)
+	FindBetweenUsersForUpdate(ctx context.Context, userAID, userBID uuid.UUID) (*domain.DiplomaticRelationship, error)
+	Tx(tx Transaction) DiplomaticRelationshipRepository
+}
+
+type DiplomaticMessageRepository interface {
+	Create(ctx context.Context, message *domain.DiplomaticMessage) error
+	ExistsByRequestAndContent(ctx context.Context, requestID uuid.UUID, content domain.TranslationKey) (bool, error)
+	FindByRequestAndContent(ctx context.Context, requestID uuid.UUID, content domain.TranslationKey) (*domain.DiplomaticMessage, error)
+	FindByID(ctx context.Context, id uuid.UUID) (*domain.DiplomaticMessage, error)
+	MarkChatAsRead(ctx context.Context, receiverUserID, senderUserID uuid.UUID) error
+	Tx(tx Transaction) DiplomaticMessageRepository
+}
+
+type DiplomaticRequestRepository interface {
+	Create(ctx context.Context, request *domain.DiplomaticRequest) error
+	Update(ctx context.Context, request *domain.DiplomaticRequest) error
+	FindByID(ctx context.Context, id uuid.UUID) (*domain.DiplomaticRequest, error)
+	FindByIDForUpdate(ctx context.Context, id uuid.UUID) (*domain.DiplomaticRequest, error)
+	ExistsPendingByKind(ctx context.Context, userAID, userBID uuid.UUID, kind domain.DiplomaticRequestKind) (bool, error)
+	Tx(tx Transaction) DiplomaticRequestRepository
+}
+
 // AlertRepository defines persistence for high-priority notifications.
 type AlertRepository interface {
 	Create(ctx context.Context, alert *domain.Alert) error
