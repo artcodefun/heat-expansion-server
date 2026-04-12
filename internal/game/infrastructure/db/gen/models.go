@@ -203,6 +203,7 @@ type MilitaryOperation struct {
 	TotalModifiers    json.RawMessage       `json:"total_modifiers"`
 	SpyResult         pqtype.NullRawMessage `json:"spy_result"`
 	AttackResult      pqtype.NullRawMessage `json:"attack_result"`
+	OperationUuid     uuid.UUID             `json:"operation_uuid"`
 }
 
 type RadarThreat struct {

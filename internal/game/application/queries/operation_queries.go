@@ -7,6 +7,7 @@ import (
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
+	"github.com/google/uuid"
 )
 
 type OperationQueries struct {
@@ -22,6 +23,12 @@ func (q *OperationQueries) GetOperation(ctx context.Context, _ cqrs.Actor, opera
 	op, err := q.Repo.GetOperation(ctx, operationID)
 	return op, repoErr(err)
 }
+
+func (q *OperationQueries) GetOperationByUUID(ctx context.Context, _ cqrs.Actor, operationUUID uuid.UUID) (*readmodels.MilitaryOperation, error) {
+	op, err := q.Repo.GetOperationByUUID(ctx, operationUUID)
+	return op, repoErr(err)
+}
+
 func (q *OperationQueries) ListOperationsByBase(ctx context.Context, actor cqrs.Actor, baseID int) ([]*readmodels.MilitaryOperation, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err

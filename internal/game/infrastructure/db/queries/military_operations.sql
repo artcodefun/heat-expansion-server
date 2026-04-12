@@ -1,35 +1,25 @@
 -- Military operations queries
 
 -- name: GetMilitaryOperationByID :one
-SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, phase, result, crystals_skip_price, units, storage_snaps, total_modifiers, spy_result, attack_result
+SELECT *
 FROM game.military_operations
 WHERE id = @id;
 
 -- name: GetMilitaryOperationByIDForUpdate :one
-SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, phase, result, crystals_skip_price, units, storage_snaps, total_modifiers, spy_result, attack_result
+SELECT *
 FROM game.military_operations
 WHERE id = @id
 FOR UPDATE;
 
 -- name: ListOpsBySourceBase :many
-SELECT id, type, owner_user_id, source_base_id,
-       source_x, source_y, target_x, target_y,
-        outbound_depart_at, outbound_arrive_at,
-        return_depart_at, return_arrive_at,
-        completed_at, phase, result, crystals_skip_price,
-        units, storage_snaps, total_modifiers, spy_result, attack_result
+SELECT *
 FROM game.military_operations
 WHERE source_base_id = @base_id
 ORDER BY id DESC
 LIMIT $1 OFFSET $2;
 
 -- name: ListOpsByTargetCoordinates :many
-SELECT id, type, owner_user_id, source_base_id,
-       source_x, source_y, target_x, target_y,
-        outbound_depart_at, outbound_arrive_at,
-        return_depart_at, return_arrive_at,
-        completed_at, phase, result, crystals_skip_price,
-        units, storage_snaps, total_modifiers, spy_result, attack_result
+SELECT *
 FROM game.military_operations
 WHERE target_x = @target_x AND target_y = @target_y
 ORDER BY id DESC
@@ -37,7 +27,7 @@ LIMIT $1 OFFSET $2;
 
 -- name: InsertMilitaryOperation :one
 INSERT INTO game.military_operations (
-        type, owner_user_id, source_base_id,
+        operation_uuid, type, owner_user_id, source_base_id,
     source_x, source_y, target_x, target_y,
     outbound_depart_at, outbound_arrive_at,
     return_depart_at, return_arrive_at,
@@ -46,7 +36,7 @@ INSERT INTO game.military_operations (
         spy_result, attack_result,
         crystals_skip_price
 ) VALUES (
-        @type, @owner_user_id, @source_base_id,
+        @operation_uuid, @type, @owner_user_id, @source_base_id,
     @source_x, @source_y, @target_x, @target_y,
     @outbound_depart_at, @outbound_arrive_at,
     @return_depart_at, @return_arrive_at,

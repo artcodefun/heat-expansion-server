@@ -51,6 +51,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getOperationStmt, err = db.PrepareContext(ctx, getOperation); err != nil {
 		return nil, fmt.Errorf("error preparing query GetOperation: %w", err)
 	}
+	if q.getOperationByUUIDStmt, err = db.PrepareContext(ctx, getOperationByUUID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetOperationByUUID: %w", err)
+	}
 	if q.getRadarThreatStmt, err = db.PrepareContext(ctx, getRadarThreat); err != nil {
 		return nil, fmt.Errorf("error preparing query GetRadarThreat: %w", err)
 	}
@@ -225,6 +228,11 @@ func (q *Queries) Close() error {
 	if q.getOperationStmt != nil {
 		if cerr := q.getOperationStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getOperationStmt: %w", cerr)
+		}
+	}
+	if q.getOperationByUUIDStmt != nil {
+		if cerr := q.getOperationByUUIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getOperationByUUIDStmt: %w", cerr)
 		}
 	}
 	if q.getRadarThreatStmt != nil {
@@ -485,6 +493,7 @@ type Queries struct {
 	getDiplomaticRequestStmt                *sql.Stmt
 	getLatestScanBeforeStmt                 *sql.Stmt
 	getOperationStmt                        *sql.Stmt
+	getOperationByUUIDStmt                  *sql.Stmt
 	getRadarThreatStmt                      *sql.Stmt
 	getScanReportByIDStmt                   *sql.Stmt
 	getScanReportByOperationIDStmt          *sql.Stmt
@@ -542,6 +551,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getDiplomaticRequestStmt:                q.getDiplomaticRequestStmt,
 		getLatestScanBeforeStmt:                 q.getLatestScanBeforeStmt,
 		getOperationStmt:                        q.getOperationStmt,
+		getOperationByUUIDStmt:                  q.getOperationByUUIDStmt,
 		getRadarThreatStmt:                      q.getRadarThreatStmt,
 		getScanReportByIDStmt:                   q.getScanReportByIDStmt,
 		getScanReportByOperationIDStmt:          q.getScanReportByOperationIDStmt,

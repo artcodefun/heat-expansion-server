@@ -66,6 +66,7 @@ type ActivityQueries interface {
 // OperationQueries: operation state listings.
 type OperationQueries interface {
 	GetOperation(ctx context.Context, actor Actor, operationID int) (*readmodels.MilitaryOperation, error)
+	GetOperationByUUID(ctx context.Context, actor Actor, operationUUID uuid.UUID) (*readmodels.MilitaryOperation, error)
 	ListOperationsByBase(ctx context.Context, actor Actor, baseID int) ([]*readmodels.MilitaryOperation, error)
 	ListActiveOperations(ctx context.Context, actor Actor, baseID int) ([]*readmodels.MilitaryOperation, error)
 }

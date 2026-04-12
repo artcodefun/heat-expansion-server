@@ -3,6 +3,7 @@ package dtos
 import (
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+	"github.com/google/uuid"
 )
 
 // OperationType represents the type of a military operation at the DTO level.
@@ -133,6 +134,7 @@ type AttackResultDTO struct {
 // MilitaryOperationDTO serializes military operations for HTTP responses.
 type MilitaryOperationDTO struct {
 	ID                 int                  `json:"id"`
+	UUID               uuid.UUID            `json:"uuid"`
 	Type               OperationType        `json:"type"`
 	Phase              OperationPhase       `json:"phase"`
 	Result             OperationResult      `json:"result"`
@@ -236,6 +238,7 @@ func AttackResultFromReadModel(res *readmodels.AttackResult, tr ports.Translator
 func OperationFromReadModel(m *readmodels.MilitaryOperation, tr ports.Translator, locale string) MilitaryOperationDTO {
 	dto := MilitaryOperationDTO{
 		ID:                m.ID,
+		UUID:              m.UUID,
 		Type:              OperationType(m.Type),
 		Phase:             OperationPhase(m.Phase),
 		Result:            OperationResult(m.Result),

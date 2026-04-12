@@ -24,7 +24,7 @@ func (q *Queries) DeleteMilitaryOperation(ctx context.Context, id int64) error {
 
 const getMilitaryOperationByID = `-- name: GetMilitaryOperationByID :one
 
-SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, phase, result, crystals_skip_price, units, storage_snaps, total_modifiers, spy_result, attack_result
+SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, phase, result, crystals_skip_price, units, storage_snaps, total_modifiers, spy_result, attack_result, operation_uuid
 FROM game.military_operations
 WHERE id = $1
 `
@@ -55,12 +55,13 @@ func (q *Queries) GetMilitaryOperationByID(ctx context.Context, id int64) (Milit
 		&i.TotalModifiers,
 		&i.SpyResult,
 		&i.AttackResult,
+		&i.OperationUuid,
 	)
 	return i, err
 }
 
 const getMilitaryOperationByIDForUpdate = `-- name: GetMilitaryOperationByIDForUpdate :one
-SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, phase, result, crystals_skip_price, units, storage_snaps, total_modifiers, spy_result, attack_result
+SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, phase, result, crystals_skip_price, units, storage_snaps, total_modifiers, spy_result, attack_result, operation_uuid
 FROM game.military_operations
 WHERE id = $1
 FOR UPDATE
@@ -91,13 +92,14 @@ func (q *Queries) GetMilitaryOperationByIDForUpdate(ctx context.Context, id int6
 		&i.TotalModifiers,
 		&i.SpyResult,
 		&i.AttackResult,
+		&i.OperationUuid,
 	)
 	return i, err
 }
 
 const insertMilitaryOperation = `-- name: InsertMilitaryOperation :one
 INSERT INTO game.military_operations (
-        type, owner_user_id, source_base_id,
+        operation_uuid, type, owner_user_id, source_base_id,
     source_x, source_y, target_x, target_y,
     outbound_depart_at, outbound_arrive_at,
     return_depart_at, return_arrive_at,
@@ -106,19 +108,20 @@ INSERT INTO game.military_operations (
         spy_result, attack_result,
         crystals_skip_price
 ) VALUES (
-        $1, $2, $3,
-    $4, $5, $6, $7,
-    $8, $9,
-    $10, $11,
-        $12, $13, $14,
-        $15, $16, $17,
-        $18, $19,
-        $20
+        $1, $2, $3, $4,
+    $5, $6, $7, $8,
+    $9, $10,
+    $11, $12,
+        $13, $14, $15,
+        $16, $17, $18,
+        $19, $20,
+        $21
 )
 RETURNING id
 `
 
 type InsertMilitaryOperationParams struct {
+	OperationUuid     uuid.UUID             `json:"operation_uuid"`
 	Type              string                `json:"type"`
 	OwnerUserID       uuid.UUID             `json:"owner_user_id"`
 	SourceBaseID      int64                 `json:"source_base_id"`
@@ -143,6 +146,7 @@ type InsertMilitaryOperationParams struct {
 
 func (q *Queries) InsertMilitaryOperation(ctx context.Context, arg InsertMilitaryOperationParams) (int64, error) {
 	row := q.queryRow(ctx, q.insertMilitaryOperationStmt, insertMilitaryOperation,
+		arg.OperationUuid,
 		arg.Type,
 		arg.OwnerUserID,
 		arg.SourceBaseID,
@@ -170,12 +174,7 @@ func (q *Queries) InsertMilitaryOperation(ctx context.Context, arg InsertMilitar
 }
 
 const listOpsBySourceBase = `-- name: ListOpsBySourceBase :many
-SELECT id, type, owner_user_id, source_base_id,
-       source_x, source_y, target_x, target_y,
-        outbound_depart_at, outbound_arrive_at,
-        return_depart_at, return_arrive_at,
-        completed_at, phase, result, crystals_skip_price,
-        units, storage_snaps, total_modifiers, spy_result, attack_result
+SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, phase, result, crystals_skip_price, units, storage_snaps, total_modifiers, spy_result, attack_result, operation_uuid
 FROM game.military_operations
 WHERE source_base_id = $3
 ORDER BY id DESC
@@ -219,6 +218,7 @@ func (q *Queries) ListOpsBySourceBase(ctx context.Context, arg ListOpsBySourceBa
 			&i.TotalModifiers,
 			&i.SpyResult,
 			&i.AttackResult,
+			&i.OperationUuid,
 		); err != nil {
 			return nil, err
 		}
@@ -234,12 +234,7 @@ func (q *Queries) ListOpsBySourceBase(ctx context.Context, arg ListOpsBySourceBa
 }
 
 const listOpsByTargetCoordinates = `-- name: ListOpsByTargetCoordinates :many
-SELECT id, type, owner_user_id, source_base_id,
-       source_x, source_y, target_x, target_y,
-        outbound_depart_at, outbound_arrive_at,
-        return_depart_at, return_arrive_at,
-        completed_at, phase, result, crystals_skip_price,
-        units, storage_snaps, total_modifiers, spy_result, attack_result
+SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, phase, result, crystals_skip_price, units, storage_snaps, total_modifiers, spy_result, attack_result, operation_uuid
 FROM game.military_operations
 WHERE target_x = $3 AND target_y = $4
 ORDER BY id DESC
@@ -289,6 +284,7 @@ func (q *Queries) ListOpsByTargetCoordinates(ctx context.Context, arg ListOpsByT
 			&i.TotalModifiers,
 			&i.SpyResult,
 			&i.AttackResult,
+			&i.OperationUuid,
 		); err != nil {
 			return nil, err
 		}

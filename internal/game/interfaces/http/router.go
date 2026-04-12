@@ -212,6 +212,9 @@ func registerCustomValidators() {
 		_ = validatorEngine.RegisterValidation("operation_type", func(fl validator.FieldLevel) bool {
 			return dtos.IsValidOperationType(fl.Field().String())
 		})
+		_ = validatorEngine.RegisterValidation("operation_id", func(fl validator.FieldLevel) bool {
+			return dtos.IsValidOperationID(fl.Field().String())
+		})
 		_ = validatorEngine.RegisterValidation("diplomatic_message_content", func(fl validator.FieldLevel) bool {
 			return dtos.IsValidUserSendableDiplomaticMessageContent(fl.Field().String())
 		})

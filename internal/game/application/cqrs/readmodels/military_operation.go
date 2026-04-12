@@ -85,6 +85,7 @@ type AttackResult struct {
 // MilitaryOperation models an attack or spy op traveling between sectors and resolving on arrival.
 type MilitaryOperation struct {
 	ID           int
+	UUID         uuid.UUID
 	Type         MilitaryOperationType
 	OwnerUserID  uuid.UUID
 	SourceBaseID int

@@ -45,7 +45,15 @@ func (h *OperationHandler) GetOperation(c *gin.Context) {
 		return
 	}
 	actor := actor(c)
-	op, err := h.queries.GetOperation(c.Request.Context(), actor, req.Uri.OperationID)
+	if req.Uri.OperationID.IsUUID() {
+		op, err := h.queries.GetOperationByUUID(c.Request.Context(), actor, req.Uri.OperationID.UUID())
+		if handleCoreErr(c, h.translator, err) {
+			return
+		}
+		c.JSON(http.StatusOK, dtos.OperationFromReadModel(op, h.translator, getLocale(c)))
+		return
+	}
+	op, err := h.queries.GetOperation(c.Request.Context(), actor, req.Uri.OperationID.Int())
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}

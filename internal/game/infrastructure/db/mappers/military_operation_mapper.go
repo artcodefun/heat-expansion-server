@@ -33,6 +33,7 @@ func MilitaryOperationFromDB(r gen.MilitaryOperation) *domain.MilitaryOperation 
 
 	op := &domain.MilitaryOperation{
 		ID:                int(r.ID),
+		UUID:              r.OperationUuid,
 		Type:              domain.MilitaryOperationType(r.Type),
 		OwnerUserID:       r.OwnerUserID,
 		SourceBaseID:      int(r.SourceBaseID),
@@ -75,6 +76,7 @@ func InsertMilitaryOperationParamsFromDomain(op *domain.MilitaryOperation) gen.I
 	attackDTO := dtos.AttackResultDTOFromDomain(op.AttackResult)
 
 	return gen.InsertMilitaryOperationParams{
+		OperationUuid:     op.UUID,
 		Type:              string(op.Type),
 		OwnerUserID:       op.OwnerUserID,
 		SourceBaseID:      int64(op.SourceBaseID),

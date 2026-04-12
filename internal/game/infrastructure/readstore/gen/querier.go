@@ -25,6 +25,7 @@ type Querier interface {
 	GetLatestScanBefore(ctx context.Context, arg GetLatestScanBeforeParams) (ScanReport, error)
 	// Military operations queries
 	GetOperation(ctx context.Context, id int64) (MilitaryOperation, error)
+	GetOperationByUUID(ctx context.Context, operationUuid uuid.UUID) (MilitaryOperation, error)
 	GetRadarThreat(ctx context.Context, id uuid.UUID) (RadarThreat, error)
 	GetScanReportByID(ctx context.Context, arg GetScanReportByIDParams) (ScanReport, error)
 	GetScanReportByOperationID(ctx context.Context, sourceOperationID sql.NullInt64) (ScanReport, error)

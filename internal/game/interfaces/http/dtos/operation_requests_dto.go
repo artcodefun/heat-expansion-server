@@ -1,14 +1,24 @@
 package dtos
 
-import "strings"
+import (
+	"strconv"
+	"strings"
+
+	"github.com/google/uuid"
+)
 
 type operationURI struct {
 	BaseURI
 	OperationID int `uri:"operationId" binding:"required,min=1"`
 }
 
+type operationLookupURI struct {
+	BaseURI
+	OperationID OperationID `uri:"operationId" binding:"required,operation_id"`
+}
+
 // OperationGetRequest binds the operation ID path parameter.
-type OperationGetRequest = Request[operationURI, None, None]
+type OperationGetRequest = Request[operationLookupURI, None, None]
 
 // OperationSpeedUpRequest binds the operation ID path parameter for speed-up.
 type OperationSpeedUpRequest = Request[operationURI, None, None]
@@ -53,4 +63,41 @@ func IsValidOperationType(value string) bool {
 	default:
 		return false
 	}
+}
+
+type OperationID string
+
+func parseOperationIDValue(value string) (int, bool) {
+	parsed, err := strconv.Atoi(value)
+	if err != nil || parsed < 1 {
+		return 0, false
+	}
+	return parsed, true
+}
+
+func IsValidOperationID(value string) bool {
+	if _, ok := parseOperationIDValue(value); ok {
+		return true
+	}
+	_, err := uuid.Parse(value)
+	return err == nil
+}
+
+func (id OperationID) IsInt() bool {
+	_, ok := parseOperationIDValue(string(id))
+	return ok
+}
+
+func (id OperationID) Int() int {
+	value, _ := parseOperationIDValue(string(id))
+	return value
+}
+
+func (id OperationID) IsUUID() bool {
+	_, err := uuid.Parse(string(id))
+	return err == nil
+}
+
+func (id OperationID) UUID() uuid.UUID {
+	return uuid.MustParse(string(id))
 }

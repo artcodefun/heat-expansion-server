@@ -39,6 +39,7 @@ type TechReadRepository interface {
 // OperationReadRepository exposes military operation projections.
 type OperationReadRepository interface {
 	GetOperation(ctx context.Context, operationID int) (*readmodels.MilitaryOperation, error)
+	GetOperationByUUID(ctx context.Context, operationUUID uuid.UUID) (*readmodels.MilitaryOperation, error)
 	ListOperationsByBase(ctx context.Context, baseID int) ([]*readmodels.MilitaryOperation, error)
 	ListActiveOperations(ctx context.Context, baseID int) ([]*readmodels.MilitaryOperation, error)
 }

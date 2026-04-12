@@ -17,6 +17,9 @@ func TestOperation_Attack_EmptyLocation_PhaseAndEvents(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error from NewAttackOperation: %v", err)
 	}
+	if op.UUID == uuid.Nil {
+		t.Fatalf("expected operation UUID to be generated")
+	}
 	if op.Phase != OperationPhasePending {
 		t.Fatalf("expected pending phase")
 	}

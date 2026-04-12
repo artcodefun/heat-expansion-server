@@ -13,6 +13,7 @@ import (
 func OperationFromModel(m gen.MilitaryOperation) readmodels.MilitaryOperation {
 	return readmodels.MilitaryOperation{
 		ID:                 int(m.ID),
+		UUID:               m.OperationUuid,
 		Type:               readmodels.MilitaryOperationType(m.Type),
 		OwnerUserID:        m.OwnerUserID,
 		SourceBaseID:       int(m.SourceBaseID),

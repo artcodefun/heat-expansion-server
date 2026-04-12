@@ -7,11 +7,13 @@ package gen
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 const getOperation = `-- name: GetOperation :one
 
-SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, phase, result, crystals_skip_price, units, storage_snaps, total_modifiers, spy_result, attack_result
+SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, phase, result, crystals_skip_price, units, storage_snaps, total_modifiers, spy_result, attack_result, operation_uuid
 FROM game.military_operations
 WHERE id = $1
 `
@@ -42,12 +44,49 @@ func (q *Queries) GetOperation(ctx context.Context, id int64) (MilitaryOperation
 		&i.TotalModifiers,
 		&i.SpyResult,
 		&i.AttackResult,
+		&i.OperationUuid,
+	)
+	return i, err
+}
+
+const getOperationByUUID = `-- name: GetOperationByUUID :one
+SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, phase, result, crystals_skip_price, units, storage_snaps, total_modifiers, spy_result, attack_result, operation_uuid
+FROM game.military_operations
+WHERE operation_uuid = $1
+`
+
+func (q *Queries) GetOperationByUUID(ctx context.Context, operationUuid uuid.UUID) (MilitaryOperation, error) {
+	row := q.queryRow(ctx, q.getOperationByUUIDStmt, getOperationByUUID, operationUuid)
+	var i MilitaryOperation
+	err := row.Scan(
+		&i.ID,
+		&i.Type,
+		&i.OwnerUserID,
+		&i.SourceBaseID,
+		&i.SourceX,
+		&i.SourceY,
+		&i.TargetX,
+		&i.TargetY,
+		&i.OutboundDepartAt,
+		&i.OutboundArriveAt,
+		&i.ReturnDepartAt,
+		&i.ReturnArriveAt,
+		&i.CompletedAt,
+		&i.Phase,
+		&i.Result,
+		&i.CrystalsSkipPrice,
+		&i.Units,
+		&i.StorageSnaps,
+		&i.TotalModifiers,
+		&i.SpyResult,
+		&i.AttackResult,
+		&i.OperationUuid,
 	)
 	return i, err
 }
 
 const listActiveOperations = `-- name: ListActiveOperations :many
-SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, phase, result, crystals_skip_price, units, storage_snaps, total_modifiers, spy_result, attack_result
+SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, phase, result, crystals_skip_price, units, storage_snaps, total_modifiers, spy_result, attack_result, operation_uuid
 FROM game.military_operations
 WHERE source_base_id = $1 AND phase <> 'COMPLETED'
 ORDER BY outbound_depart_at DESC
@@ -84,6 +123,7 @@ func (q *Queries) ListActiveOperations(ctx context.Context, sourceBaseID int64) 
 			&i.TotalModifiers,
 			&i.SpyResult,
 			&i.AttackResult,
+			&i.OperationUuid,
 		); err != nil {
 			return nil, err
 		}
@@ -99,7 +139,7 @@ func (q *Queries) ListActiveOperations(ctx context.Context, sourceBaseID int64) 
 }
 
 const listOperationsByBase = `-- name: ListOperationsByBase :many
-SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, phase, result, crystals_skip_price, units, storage_snaps, total_modifiers, spy_result, attack_result
+SELECT id, type, owner_user_id, source_base_id, source_x, source_y, target_x, target_y, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, phase, result, crystals_skip_price, units, storage_snaps, total_modifiers, spy_result, attack_result, operation_uuid
 FROM game.military_operations
 WHERE source_base_id = $1
 ORDER BY outbound_depart_at DESC
@@ -136,6 +176,7 @@ func (q *Queries) ListOperationsByBase(ctx context.Context, sourceBaseID int64) 
 			&i.TotalModifiers,
 			&i.SpyResult,
 			&i.AttackResult,
+			&i.OperationUuid,
 		); err != nil {
 			return nil, err
 		}

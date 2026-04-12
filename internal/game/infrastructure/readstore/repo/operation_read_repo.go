@@ -9,6 +9,7 @@ import (
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/gen"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/mappers"
+	"github.com/google/uuid"
 )
 
 type OperationReadRepo struct {
@@ -22,6 +23,21 @@ func NewOperationReadRepo(rq *gen.Queries, sectors ports.SectorReadRepository) *
 
 func (r *OperationReadRepo) GetOperation(ctx context.Context, opID int) (*readmodels.MilitaryOperation, error) {
 	row, err := r.q.GetOperation(ctx, int64(opID))
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ports.ErrNotFound
+		}
+		return nil, err
+	}
+	v := mappers.OperationFromModel(row)
+	if err := r.enrichOperation(ctx, &v, nil, nil, nil); err != nil {
+		return nil, err
+	}
+	return &v, nil
+}
+
+func (r *OperationReadRepo) GetOperationByUUID(ctx context.Context, operationUUID uuid.UUID) (*readmodels.MilitaryOperation, error) {
+	row, err := r.q.GetOperationByUUID(ctx, operationUUID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ports.ErrNotFound

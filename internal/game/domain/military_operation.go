@@ -88,6 +88,7 @@ type AttackResult struct {
 type MilitaryOperation struct {
 	EventProducer
 	ID           int
+	UUID         uuid.UUID
 	Type         MilitaryOperationType
 	OwnerUserID  uuid.UUID
 	SourceBaseID int
@@ -134,6 +135,7 @@ func NewAttackOperation(ownerUserID uuid.UUID, sourceBaseID int, source, target 
 		return nil, NewError("error.domain.operation.no_units_provided", nil)
 	}
 	op := &MilitaryOperation{
+		UUID:              uuid.Must(uuid.NewV7()),
 		Type:              MilitaryOperationTypeAttack,
 		OwnerUserID:       ownerUserID,
 		SourceBaseID:      sourceBaseID,
@@ -165,6 +167,7 @@ func NewSpyOperation(ownerUserID uuid.UUID, sourceBaseID int, source, target Vec
 		}
 	}
 	op := &MilitaryOperation{
+		UUID:              uuid.Must(uuid.NewV7()),
 		Type:              MilitaryOperationTypeSpy,
 		OwnerUserID:       ownerUserID,
 		SourceBaseID:      sourceBaseID,
