@@ -12,21 +12,18 @@ import (
 func SectorScanReportFromModel(r gen.ScanReport) readmodels.SectorScanReport {
 	info := parseScanInfo(r.Info)
 	sr := readmodels.SectorScanReport{
-		ID:                int(r.ID),
-		BaseID:            int(r.BaseID),
-		Coordinates:       readmodels.Vector2i{X: int(r.SectorX), Y: int(r.SectorY)},
-		CreatedAt:         r.CreatedAt,
-		Details:           readmodels.LocationDetails{Name: nullString(r.Name), Description: nullString(r.Description), ImageURL: nullString(r.ImageUrl)},
-		Type:              readmodels.LocationType(r.Type),
-		Info:              info,
-		IsCloaked:         r.IsCloaked,
-		SourceOperationID: int(nullInt64(r.SourceOperationID)),
+		ID:          int(r.ID),
+		BaseID:      int(r.BaseID),
+		Coordinates: readmodels.Vector2i{X: int(r.SectorX), Y: int(r.SectorY)},
+		CreatedAt:   r.CreatedAt,
+		Details:     readmodels.LocationDetails{Name: nullString(r.Name), Description: nullString(r.Description), ImageURL: nullString(r.ImageUrl)},
+		Type:        readmodels.LocationType(r.Type),
+		Info:        info,
+		IsCloaked:   r.IsCloaked,
+		SourceType:  readmodels.ScanReportSourceType(r.SourceType),
 	}
-	if r.SourceScannerID.Valid {
-		sr.SourceScannerID = &r.SourceScannerID.UUID
-	}
-	if r.SourceIntelItemID.Valid {
-		sr.SourceIntelItemID = &r.SourceIntelItemID.UUID
+	if r.SourceID.Valid {
+		sr.SourceID = &r.SourceID.UUID
 	}
 	return sr
 }

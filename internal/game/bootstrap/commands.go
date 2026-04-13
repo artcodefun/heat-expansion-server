@@ -37,6 +37,6 @@ func NewCommands(a *Adapters, as *AppServices) *Commands {
 		Activity:    commands.NewActivityCommands(a.Activities, a.MilitaryOps, a.RadarThreats, a.Sectors, a.UserBases, a.ScanReports, a.OutboxEvents, a.TxMgr),
 		World:       commands.NewWorldGenerationCommands(a.UserBases, a.Sectors, a.ResourceLocations, a.DangerousLocations, a.StoragePrototypes, a.ArmyPrototypes, a.BuildPrototypes, a.Content, as.Provisioner, a.Scheduler, a.TxMgr),
 		Alert:       commands.NewAlertCommands(a.Alerts, a.TxMgr),
-		Diplomacy:   commands.NewDiplomacyCommands(a.DiplomaticRelationships, a.DiplomaticMessages, a.DiplomaticRequests, a.MilitaryOps, a.Users, a.UserBases, a.Sectors, a.OutboxEvents, a.Scheduler, a.TxMgr, as.Access),
+		Diplomacy:   commands.NewDiplomacyCommands(a.DiplomaticRelationships, a.DiplomaticMessages, a.DiplomaticRequests, a.MilitaryOps, a.ScanReports, a.Users, a.UserBases, a.Sectors, a.OutboxEvents, a.Scheduler, a.TxMgr, as.Access),
 	}
 }

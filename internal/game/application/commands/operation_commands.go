@@ -278,7 +278,8 @@ func (c *OperationCommands) HandleMilitaryOperationArrivedEvent(ctx context.Cont
 			return err
 		}
 		if report != nil {
-			report.SourceOperationID = op.ID
+			report.SourceType = domain.ScanReportSourceOperation
+			report.SourceID = &op.UUID
 			if err := srRepo.Create(ctx, report); err == nil {
 				report.EmitCreated()
 			}

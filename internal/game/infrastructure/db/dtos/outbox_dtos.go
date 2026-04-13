@@ -603,18 +603,19 @@ func MilitaryOperationCancelledEventFromDTO(d MilitaryOperationCancelledEventDTO
 }
 
 type ScanReportCreatedEventDTO struct {
-	OccurredAt        int64 `json:"occurred_at"`
-	ReportID          int   `json:"report_id"`
-	BaseID            int   `json:"base_id"`
-	SourceOperationID int   `json:"source_operation_id"`
+	OccurredAt int64      `json:"occurred_at"`
+	ReportID   int        `json:"report_id"`
+	BaseID     int        `json:"base_id"`
+	SourceType string     `json:"source_type"`
+	SourceID   *uuid.UUID `json:"source_id,omitempty"`
 }
 
 func ScanReportCreatedEventDTOFromDomain(e domain.ScanReportCreatedEvent) ScanReportCreatedEventDTO {
-	return ScanReportCreatedEventDTO{OccurredAt: e.OccurredAt(), ReportID: e.ReportID, BaseID: e.BaseID, SourceOperationID: e.SourceOperationID}
+	return ScanReportCreatedEventDTO{OccurredAt: e.OccurredAt(), ReportID: e.ReportID, BaseID: e.BaseID, SourceType: string(e.SourceType), SourceID: e.SourceID}
 }
 
 func ScanReportCreatedEventFromDTO(d ScanReportCreatedEventDTO) domain.ScanReportCreatedEvent {
-	return domain.NewScanReportCreatedEvent(d.ReportID, d.BaseID, d.SourceOperationID)
+	return domain.NewScanReportCreatedEvent(d.ReportID, d.BaseID, domain.ScanReportSourceType(d.SourceType), d.SourceID)
 }
 
 type RadarThreatDetectedEventDTO struct {
@@ -707,4 +708,28 @@ func DiplomaticRequestCreatedEventDTOFromDomain(e domain.DiplomaticRequestCreate
 
 func DiplomaticRequestCreatedEventFromDTO(d DiplomaticRequestCreatedEventDTO) domain.DiplomaticRequestCreatedEvent {
 	return domain.NewDiplomaticRequestCreatedEvent(d.RequestID, d.SenderUserID, d.ReceiverUserID, d.ReceiverBaseID, d.Kind)
+}
+
+type DiplomaticRelationshipCreatedEventDTO struct {
+	OccurredAt      int64     `json:"occurred_at"`
+	RelationshipID  uuid.UUID `json:"relationship_id"`
+	UserAID         uuid.UUID `json:"user_a_id"`
+	UserBID         uuid.UUID `json:"user_b_id"`
+	Status          string    `json:"status"`
+	ChangedByUserID uuid.UUID `json:"changed_by_user_id"`
+}
+
+func DiplomaticRelationshipCreatedEventDTOFromDomain(e domain.DiplomaticRelationshipCreatedEvent) DiplomaticRelationshipCreatedEventDTO {
+	return DiplomaticRelationshipCreatedEventDTO{
+		OccurredAt:      e.OccurredAt(),
+		RelationshipID:  e.RelationshipID,
+		UserAID:         e.UserAID,
+		UserBID:         e.UserBID,
+		Status:          string(e.Status),
+		ChangedByUserID: e.ChangedByUserID,
+	}
+}
+
+func DiplomaticRelationshipCreatedEventFromDTO(d DiplomaticRelationshipCreatedEventDTO) domain.DiplomaticRelationshipCreatedEvent {
+	return domain.NewDiplomaticRelationshipCreatedEvent(d.RelationshipID, d.UserAID, d.UserBID, domain.DiplomaticStatus(d.Status), d.ChangedByUserID)
 }

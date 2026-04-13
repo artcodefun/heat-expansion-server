@@ -132,7 +132,8 @@ func (c *IntelligenceScannerCommands) HandleIntelligenceScanJob(ctx context.Cont
 		return nil
 	}
 
-	report.SourceScannerID = &job.BuildingID
+	report.SourceType = domain.ScanReportSourceScanner
+	report.SourceID = &job.BuildingID
 	err = c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		srRepo := c.ScanReportRepo.Tx(tx)
 		if err := srRepo.Create(ctx, report); err != nil {

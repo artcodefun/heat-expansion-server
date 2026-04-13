@@ -1,9 +1,7 @@
 -- Sector scan report queries
 
 -- name: GetScansNear :many
-SELECT DISTINCT ON (sector_x, sector_y)
-       id, base_id, sector_x, sector_y, created_at, type, is_cloaked,
-       source_operation_id, source_scanner_id, source_intel_item_id, name, description, image_url, info
+SELECT DISTINCT ON (sector_x, sector_y) *
 FROM game.scan_reports
 WHERE base_id = $1
   AND ((sector_x - $2) * (sector_x - $2)
@@ -12,14 +10,12 @@ WHERE base_id = $1
 ORDER BY sector_x, sector_y, created_at DESC;
 
 -- name: GetScanReportByID :one
-SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked,
-       source_operation_id, source_scanner_id, source_intel_item_id, name, description, image_url, info
+SELECT *
 FROM game.scan_reports
 WHERE id = $1 AND base_id = $2;
 
 -- name: GetLatestScanBefore :one
-SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked,
-       source_operation_id, source_scanner_id, source_intel_item_id, name, description, image_url, info
+SELECT *
 FROM game.scan_reports
 WHERE base_id = $1
   AND sector_x = $2
@@ -28,8 +24,7 @@ WHERE base_id = $1
 ORDER BY created_at DESC
 LIMIT 1;
 
--- name: GetScanReportByOperationID :one
-SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked,
-       source_operation_id, source_scanner_id, source_intel_item_id, name, description, image_url, info
+-- name: GetScanReportByOperationUUID :one
+SELECT *
 FROM game.scan_reports
-WHERE source_operation_id = $1;
+WHERE source_type = 'OPERATION' AND source_id = $1;

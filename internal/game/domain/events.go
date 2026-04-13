@@ -502,17 +502,19 @@ func NewMilitaryOperationCancelledEvent(operationID int) MilitaryOperationCancel
 // This signals read models (e.g., Activities) to project a SCAN entry.
 type ScanReportCreatedEvent struct {
 	BasicEvent
-	ReportID          int
-	BaseID            int // source base that initiated the scan-producing operation
-	SourceOperationID int // optional link back to the operation
+	ReportID   int
+	BaseID     int // source base that initiated the scan-producing operation
+	SourceType ScanReportSourceType
+	SourceID   *uuid.UUID
 }
 
-func NewScanReportCreatedEvent(reportID int, baseID int, sourceOperationID int) ScanReportCreatedEvent {
+func NewScanReportCreatedEvent(reportID int, baseID int, sourceType ScanReportSourceType, sourceID *uuid.UUID) ScanReportCreatedEvent {
 	return ScanReportCreatedEvent{
-		BasicEvent:        NewBasicEvent(),
-		ReportID:          reportID,
-		BaseID:            baseID,
-		SourceOperationID: sourceOperationID,
+		BasicEvent: NewBasicEvent(),
+		ReportID:   reportID,
+		BaseID:     baseID,
+		SourceType: sourceType,
+		SourceID:   sourceID,
 	}
 }
 
@@ -595,5 +597,27 @@ func NewDiplomaticRequestCreatedEvent(requestID uuid.UUID, senderUserID, receive
 		ReceiverUserID: receiverUserID,
 		ReceiverBaseID: receiverBaseID,
 		Kind:           kind,
+	}
+}
+
+// DiplomaticRelationshipCreatedEvent is emitted when a previously unknown diplomatic relationship becomes known.
+// This lets projections create first-contact scan reports for bases that were not yet revealed.
+type DiplomaticRelationshipCreatedEvent struct {
+	BasicEvent
+	RelationshipID  uuid.UUID
+	UserAID         uuid.UUID
+	UserBID         uuid.UUID
+	Status          DiplomaticStatus
+	ChangedByUserID uuid.UUID
+}
+
+func NewDiplomaticRelationshipCreatedEvent(relationshipID, userAID, userBID uuid.UUID, status DiplomaticStatus, changedByUserID uuid.UUID) DiplomaticRelationshipCreatedEvent {
+	return DiplomaticRelationshipCreatedEvent{
+		BasicEvent:      NewBasicEvent(),
+		RelationshipID:  relationshipID,
+		UserAID:         userAID,
+		UserBID:         userBID,
+		Status:          status,
+		ChangedByUserID: changedByUserID,
 	}
 }

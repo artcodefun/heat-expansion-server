@@ -380,7 +380,8 @@ func (c *StorageCommands) HandleDecryptIntelItemJob(ctx context.Context, cmd por
 		}
 
 		if report != nil {
-			report.SourceIntelItemID = &cmd.ItemID
+			report.SourceType = domain.ScanReportSourceIntel
+			report.SourceID = &cmd.ItemID
 			if err := c.ScanReports.Tx(tx).Create(ctx, report); err != nil {
 				return err
 			}

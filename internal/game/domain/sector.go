@@ -53,6 +53,16 @@ type ScanInfo struct {
 	Space      int
 }
 
+type ScanReportSourceType string
+
+const (
+	ScanReportSourceUnknown          ScanReportSourceType = "UNKNOWN"
+	ScanReportSourceOperation        ScanReportSourceType = "OPERATION"
+	ScanReportSourceScanner          ScanReportSourceType = "SCANNER"
+	ScanReportSourceIntel            ScanReportSourceType = "INTEL"
+	ScanReportSourceDiplomaticReveal ScanReportSourceType = "DIPLOMATIC_REVEAL"
+)
+
 // SectorScanReport captures a user's scan snapshot of a sector at a moment in time.
 // Produced after successful military operations (attack/spy) or other scan actions.
 type SectorScanReport struct {
@@ -67,13 +77,9 @@ type SectorScanReport struct {
 
 	Info ScanInfo
 	// If true, occupant intel was cloaked; only fallback empty sector details provided.
-	IsCloaked bool
-	// Optional link to the operation that produced this report (for traceability/idempotency)
-	SourceOperationID int
-	// Optional link to the scanner that produced this report (for traceability/idempotency)
-	SourceScannerID *uuid.UUID
-	// Optional link to the intel item that was decrypted to produce this report (for traceability/activity logging)
-	SourceIntelItemID *uuid.UUID
+	IsCloaked  bool
+	SourceType ScanReportSourceType
+	SourceID   *uuid.UUID
 }
 
 // EmitCreated records a domain event indicating this report has been created/persisted for its owning base.
@@ -83,14 +89,14 @@ func (r *SectorScanReport) EmitCreated() {
 	if r == nil || r.ID <= 0 {
 		return
 	}
-	r.AddEvent(NewScanReportCreatedEvent(r.ID, r.BaseID, r.SourceOperationID))
+	r.AddEvent(NewScanReportCreatedEvent(r.ID, r.BaseID, r.SourceType, r.SourceID))
 }
 
 // NewSectorScanReportFromUserBase builds a scan report from a defender user base stats.
 func NewSectorScanReportFromUserBase(baseID int, targetSector *SectorModel, base *UserBaseModel) *SectorScanReport {
 	if base == nil {
 		// Cloaked: provide fallback empty sector flavor
-		return &SectorScanReport{BaseID: baseID, Coordinates: targetSector.Coordinates, CreatedAt: NowUnix(), IsCloaked: true, Type: LocationTypeUserBase, Details: targetSector.Details}
+		return &SectorScanReport{BaseID: baseID, Coordinates: targetSector.Coordinates, CreatedAt: NowUnix(), IsCloaked: true, Type: LocationTypeUserBase, Details: targetSector.Details, SourceType: ScanReportSourceUnknown}
 	}
 	info := ScanInfo{
 		Credits:    int(base.Stats.Credits),
@@ -101,13 +107,13 @@ func NewSectorScanReportFromUserBase(baseID int, targetSector *SectorModel, base
 		Attack:     base.Stats.Attack,
 		Space:      base.Stats.Space,
 	}
-	return &SectorScanReport{BaseID: baseID, Coordinates: targetSector.Coordinates, CreatedAt: NowUnix(), Info: info, IsCloaked: false, Type: LocationTypeUserBase, Details: base.LocationDetails}
+	return &SectorScanReport{BaseID: baseID, Coordinates: targetSector.Coordinates, CreatedAt: NowUnix(), Info: info, IsCloaked: false, Type: LocationTypeUserBase, Details: base.LocationDetails, SourceType: ScanReportSourceUnknown}
 }
 
 // NewSectorScanReportFromResourceLocation builds a scan report from a resource location snapshot.
 func NewSectorScanReportFromResourceLocation(baseID int, targetSector *SectorModel, loc *ResourceLocationModel) *SectorScanReport {
 	if loc == nil {
-		return &SectorScanReport{BaseID: baseID, Coordinates: targetSector.Coordinates, CreatedAt: NowUnix(), IsCloaked: true, Type: LocationTypeResourceful, Details: targetSector.Details}
+		return &SectorScanReport{BaseID: baseID, Coordinates: targetSector.Coordinates, CreatedAt: NowUnix(), IsCloaked: true, Type: LocationTypeResourceful, Details: targetSector.Details, SourceType: ScanReportSourceUnknown}
 	}
 	armySnaps := loc.MaterializeDefenderArmySnapshot()
 	structSnaps := loc.MaterializeDefenderStructureSnapshot()
@@ -122,13 +128,13 @@ func NewSectorScanReportFromResourceLocation(baseID int, targetSector *SectorMod
 		Attack:     attack,
 		Space:      0,
 	}
-	return &SectorScanReport{BaseID: baseID, Coordinates: targetSector.Coordinates, CreatedAt: NowUnix(), Info: info, IsCloaked: false, Type: LocationTypeResourceful, Details: loc.LocationDetails}
+	return &SectorScanReport{BaseID: baseID, Coordinates: targetSector.Coordinates, CreatedAt: NowUnix(), Info: info, IsCloaked: false, Type: LocationTypeResourceful, Details: loc.LocationDetails, SourceType: ScanReportSourceUnknown}
 }
 
 // NewSectorScanReportFromDangerousLocation builds a scan report from a dangerous location snapshot.
 func NewSectorScanReportFromDangerousLocation(baseID int, targetSector *SectorModel, loc *DangerousLocationModel) *SectorScanReport {
 	if loc == nil {
-		return &SectorScanReport{BaseID: baseID, Coordinates: targetSector.Coordinates, CreatedAt: NowUnix(), IsCloaked: true, Type: LocationTypeDangerous, Details: targetSector.Details}
+		return &SectorScanReport{BaseID: baseID, Coordinates: targetSector.Coordinates, CreatedAt: NowUnix(), IsCloaked: true, Type: LocationTypeDangerous, Details: targetSector.Details, SourceType: ScanReportSourceUnknown}
 	}
 	armySnaps := loc.MaterializeDefenderArmySnapshot()
 	structSnaps := loc.MaterializeDefenderStructureSnapshot()
@@ -143,7 +149,7 @@ func NewSectorScanReportFromDangerousLocation(baseID int, targetSector *SectorMo
 		Attack:     attack,
 		Space:      0,
 	}
-	return &SectorScanReport{BaseID: baseID, Coordinates: targetSector.Coordinates, CreatedAt: NowUnix(), Info: info, IsCloaked: false, Type: LocationTypeDangerous, Details: loc.LocationDetails}
+	return &SectorScanReport{BaseID: baseID, Coordinates: targetSector.Coordinates, CreatedAt: NowUnix(), Info: info, IsCloaked: false, Type: LocationTypeDangerous, Details: loc.LocationDetails, SourceType: ScanReportSourceUnknown}
 }
 
 // NewSectorScanReportFromEmptySector builds a scan report for an empty sector.
@@ -153,5 +159,5 @@ func NewSectorScanReportFromEmptySector(baseID int, targetSector *SectorModel) *
 		return nil
 	}
 	info := ScanInfo{}
-	return &SectorScanReport{BaseID: baseID, Coordinates: targetSector.Coordinates, CreatedAt: NowUnix(), Info: info, IsCloaked: false, Type: LocationTypeEmpty, Details: targetSector.Details}
+	return &SectorScanReport{BaseID: baseID, Coordinates: targetSector.Coordinates, CreatedAt: NowUnix(), Info: info, IsCloaked: false, Type: LocationTypeEmpty, Details: targetSector.Details, SourceType: ScanReportSourceUnknown}
 }

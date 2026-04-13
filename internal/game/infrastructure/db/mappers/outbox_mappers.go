@@ -180,6 +180,7 @@ const (
 	evKindActivityCreated                = "ACTIVITY_CREATED"
 	evKindDiplomaticMessageSent          = "DIPLOMATIC_MESSAGE_SENT"
 	evKindDiplomaticRequestCreated       = "DIPLOMATIC_REQUEST_CREATED"
+	evKindDiplomaticRelationshipCreated  = "DIPLOMATIC_RELATIONSHIP_CREATED"
 	evKindLocationDrained                = "LOCATION_DRAINED"
 )
 
@@ -304,6 +305,9 @@ func EncodeEvent(ev domain.DomainEvent) (kind string, payload []byte, err error)
 	case domain.DiplomaticRequestCreatedEvent:
 		payload, err = json.Marshal(dtos.DiplomaticRequestCreatedEventDTOFromDomain(e))
 		return evKindDiplomaticRequestCreated, payload, err
+	case domain.DiplomaticRelationshipCreatedEvent:
+		payload, err = json.Marshal(dtos.DiplomaticRelationshipCreatedEventDTOFromDomain(e))
+		return evKindDiplomaticRelationshipCreated, payload, err
 
 	default:
 		return "", nil, errors.New("unsupported domain event type")
@@ -546,6 +550,13 @@ func DecodeEvent(kind string, payload []byte) (domain.DomainEvent, error) {
 			return nil, err
 		}
 		return dtos.DiplomaticMessageSentEventFromDTO(dto), nil
+
+	case evKindDiplomaticRelationshipCreated:
+		var dto dtos.DiplomaticRelationshipCreatedEventDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.DiplomaticRelationshipCreatedEventFromDTO(dto), nil
 
 	default:
 		return nil, errors.New("unknown domain event kind")

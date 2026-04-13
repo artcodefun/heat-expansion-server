@@ -45,7 +45,6 @@ migrate-down:
 	migrate -path $(AUTH_MIGRATION_DIR) -database "$(AUTH_MIGRATE_DB_URL)" down
 	migrate -path $(GAME_MIGRATION_DIR) -database "$(GAME_MIGRATE_DB_URL)" down
 
-
 migrate-drop:
 	migrate -path $(AUTH_MIGRATION_DIR) -database "$(AUTH_MIGRATE_DB_URL)" drop
 	migrate -path $(GAME_MIGRATION_DIR) -database "$(GAME_MIGRATE_DB_URL)" drop

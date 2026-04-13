@@ -7,12 +7,12 @@ package gen
 
 import (
 	"context"
-	"database/sql"
+
+	"github.com/google/uuid"
 )
 
 const getLatestScanBefore = `-- name: GetLatestScanBefore :one
-SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked,
-       source_operation_id, source_scanner_id, source_intel_item_id, name, description, image_url, info
+SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked, name, description, image_url, info, source_type, source_id
 FROM game.scan_reports
 WHERE base_id = $1
   AND sector_x = $2
@@ -45,20 +45,18 @@ func (q *Queries) GetLatestScanBefore(ctx context.Context, arg GetLatestScanBefo
 		&i.CreatedAt,
 		&i.Type,
 		&i.IsCloaked,
-		&i.SourceOperationID,
-		&i.SourceScannerID,
-		&i.SourceIntelItemID,
 		&i.Name,
 		&i.Description,
 		&i.ImageUrl,
 		&i.Info,
+		&i.SourceType,
+		&i.SourceID,
 	)
 	return i, err
 }
 
 const getScanReportByID = `-- name: GetScanReportByID :one
-SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked,
-       source_operation_id, source_scanner_id, source_intel_item_id, name, description, image_url, info
+SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked, name, description, image_url, info, source_type, source_id
 FROM game.scan_reports
 WHERE id = $1 AND base_id = $2
 `
@@ -79,26 +77,24 @@ func (q *Queries) GetScanReportByID(ctx context.Context, arg GetScanReportByIDPa
 		&i.CreatedAt,
 		&i.Type,
 		&i.IsCloaked,
-		&i.SourceOperationID,
-		&i.SourceScannerID,
-		&i.SourceIntelItemID,
 		&i.Name,
 		&i.Description,
 		&i.ImageUrl,
 		&i.Info,
+		&i.SourceType,
+		&i.SourceID,
 	)
 	return i, err
 }
 
-const getScanReportByOperationID = `-- name: GetScanReportByOperationID :one
-SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked,
-       source_operation_id, source_scanner_id, source_intel_item_id, name, description, image_url, info
+const getScanReportByOperationUUID = `-- name: GetScanReportByOperationUUID :one
+SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked, name, description, image_url, info, source_type, source_id
 FROM game.scan_reports
-WHERE source_operation_id = $1
+WHERE source_type = 'OPERATION' AND source_id = $1
 `
 
-func (q *Queries) GetScanReportByOperationID(ctx context.Context, sourceOperationID sql.NullInt64) (ScanReport, error) {
-	row := q.queryRow(ctx, q.getScanReportByOperationIDStmt, getScanReportByOperationID, sourceOperationID)
+func (q *Queries) GetScanReportByOperationUUID(ctx context.Context, sourceID uuid.NullUUID) (ScanReport, error) {
+	row := q.queryRow(ctx, q.getScanReportByOperationUUIDStmt, getScanReportByOperationUUID, sourceID)
 	var i ScanReport
 	err := row.Scan(
 		&i.ID,
@@ -108,22 +104,19 @@ func (q *Queries) GetScanReportByOperationID(ctx context.Context, sourceOperatio
 		&i.CreatedAt,
 		&i.Type,
 		&i.IsCloaked,
-		&i.SourceOperationID,
-		&i.SourceScannerID,
-		&i.SourceIntelItemID,
 		&i.Name,
 		&i.Description,
 		&i.ImageUrl,
 		&i.Info,
+		&i.SourceType,
+		&i.SourceID,
 	)
 	return i, err
 }
 
 const getScansNear = `-- name: GetScansNear :many
 
-SELECT DISTINCT ON (sector_x, sector_y)
-       id, base_id, sector_x, sector_y, created_at, type, is_cloaked,
-       source_operation_id, source_scanner_id, source_intel_item_id, name, description, image_url, info
+SELECT DISTINCT ON (sector_x, sector_y) id, base_id, sector_x, sector_y, created_at, type, is_cloaked, name, description, image_url, info, source_type, source_id
 FROM game.scan_reports
 WHERE base_id = $1
   AND ((sector_x - $2) * (sector_x - $2)
@@ -162,13 +155,12 @@ func (q *Queries) GetScansNear(ctx context.Context, arg GetScansNearParams) ([]S
 			&i.CreatedAt,
 			&i.Type,
 			&i.IsCloaked,
-			&i.SourceOperationID,
-			&i.SourceScannerID,
-			&i.SourceIntelItemID,
 			&i.Name,
 			&i.Description,
 			&i.ImageUrl,
 			&i.Info,
+			&i.SourceType,
+			&i.SourceID,
 		); err != nil {
 			return nil, err
 		}

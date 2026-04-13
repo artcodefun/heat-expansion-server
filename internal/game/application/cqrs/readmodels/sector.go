@@ -46,6 +46,16 @@ type ScanInfo struct {
 	Space      int
 }
 
+type ScanReportSourceType string
+
+const (
+	ScanReportSourceUnknown          ScanReportSourceType = "UNKNOWN"
+	ScanReportSourceOperation        ScanReportSourceType = "OPERATION"
+	ScanReportSourceScanner          ScanReportSourceType = "SCANNER"
+	ScanReportSourceIntel            ScanReportSourceType = "INTEL"
+	ScanReportSourceDiplomaticReveal ScanReportSourceType = "DIPLOMATIC_REVEAL"
+)
+
 // SectorOwner represents the public owner data attached to a scanned base location.
 type SectorOwner struct {
 	ID   uuid.UUID
@@ -66,11 +76,7 @@ type SectorScanReport struct {
 
 	Info ScanInfo
 	// If true, occupant intel was cloaked; only fallback empty sector details provided.
-	IsCloaked bool
-	// Optional link to the operation that produced this report (for traceability/idempotency)
-	SourceOperationID int
-	// Optional link to the scanner that produced this report
-	SourceScannerID *uuid.UUID
-	// Optional link to the intel item that was decrypted to produce this report
-	SourceIntelItemID *uuid.UUID
+	IsCloaked  bool
+	SourceType ScanReportSourceType
+	SourceID   *uuid.UUID
 }

@@ -6,7 +6,6 @@ package gen
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/google/uuid"
 )
@@ -28,7 +27,7 @@ type Querier interface {
 	GetOperationByUUID(ctx context.Context, operationUuid uuid.UUID) (MilitaryOperation, error)
 	GetRadarThreat(ctx context.Context, id uuid.UUID) (RadarThreat, error)
 	GetScanReportByID(ctx context.Context, arg GetScanReportByIDParams) (ScanReport, error)
-	GetScanReportByOperationID(ctx context.Context, sourceOperationID sql.NullInt64) (ScanReport, error)
+	GetScanReportByOperationUUID(ctx context.Context, sourceID uuid.NullUUID) (ScanReport, error)
 	// Sector scan report queries
 	GetScansNear(ctx context.Context, arg GetScansNearParams) ([]ScanReport, error)
 	// Readstore user profile queries

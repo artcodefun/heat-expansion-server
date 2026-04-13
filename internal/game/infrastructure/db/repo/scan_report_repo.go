@@ -48,8 +48,8 @@ func (r *ScanReportRepo) FindByID(ctx context.Context, id int) (*domain.SectorSc
 
 func (r *ScanReportRepo) RecentReportExistsByScanner(ctx context.Context, scannerID uuid.UUID, since int64) (bool, error) {
 	exists, err := r.q.RecentReportExistsByScanner(ctx, gen.RecentReportExistsByScannerParams{
-		SourceScannerID: uuid.NullUUID{UUID: scannerID, Valid: true},
-		Since:           since,
+		SourceID: uuid.NullUUID{UUID: scannerID, Valid: true},
+		Since:    since,
 	})
 	return exists, err
 }

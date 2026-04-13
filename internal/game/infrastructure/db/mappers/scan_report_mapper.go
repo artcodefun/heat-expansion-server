@@ -23,48 +23,35 @@ func ScanReportFromDB(r gen.ScanReport) *domain.SectorScanReport {
 			Description: nullStringToString(&r.Description.String, r.Description.Valid),
 			ImageURL:    nullStringToString(&r.ImageUrl.String, r.ImageUrl.Valid),
 		},
-		Type:      domain.LocationType(r.Type),
-		Info:      dtos.ScanInfoFromDTO(infoDTO),
-		IsCloaked: r.IsCloaked,
+		Type:       domain.LocationType(r.Type),
+		Info:       dtos.ScanInfoFromDTO(infoDTO),
+		IsCloaked:  r.IsCloaked,
+		SourceType: domain.ScanReportSourceType(r.SourceType),
 	}
-	if r.SourceOperationID.Valid {
-		sr.SourceOperationID = int(r.SourceOperationID.Int64)
-	} else {
-		sr.SourceOperationID = 0
-	}
-	if r.SourceScannerID.Valid {
-		sr.SourceScannerID = &r.SourceScannerID.UUID
-	}
-	if r.SourceIntelItemID.Valid {
-		sr.SourceIntelItemID = &r.SourceIntelItemID.UUID
+	if r.SourceID.Valid {
+		sr.SourceID = &r.SourceID.UUID
 	}
 	return sr
 }
 
 func InsertScanReportParamsFromDomain(r *domain.SectorScanReport) gen.InsertScanReportParams {
 	infoJSON, _ := json.Marshal(dtos.ScanInfoDTOFromDomain(r.Info))
-	var srcOpID = toNullInt64ZeroAsNull(r.SourceOperationID)
-	var srcScannerID uuid.NullUUID
-	if r.SourceScannerID != nil {
-		srcScannerID = uuid.NullUUID{UUID: *r.SourceScannerID, Valid: true}
-	}
-	var srcIntelID uuid.NullUUID
-	if r.SourceIntelItemID != nil {
-		srcIntelID = uuid.NullUUID{UUID: *r.SourceIntelItemID, Valid: true}
+	var srcID uuid.NullUUID
+	if r.SourceID != nil {
+		srcID = uuid.NullUUID{UUID: *r.SourceID, Valid: true}
 	}
 	return gen.InsertScanReportParams{
-		BaseID:            int64(r.BaseID),
-		SectorX:           int32(r.Coordinates.X),
-		SectorY:           int32(r.Coordinates.Y),
-		CreatedAt:         r.CreatedAt,
-		Type:              string(r.Type),
-		IsCloaked:         r.IsCloaked,
-		SourceOperationID: srcOpID,
-		SourceScannerID:   srcScannerID,
-		SourceIntelItemID: srcIntelID,
-		Name:              toNullString(r.Details.Name),
-		Description:       toNullString(r.Details.Description),
-		ImageUrl:          toNullString(r.Details.ImageURL),
-		Info:              infoJSON,
+		BaseID:      int64(r.BaseID),
+		SectorX:     int32(r.Coordinates.X),
+		SectorY:     int32(r.Coordinates.Y),
+		CreatedAt:   r.CreatedAt,
+		Type:        string(r.Type),
+		IsCloaked:   r.IsCloaked,
+		SourceType:  string(r.SourceType),
+		SourceID:    srcID,
+		Name:        toNullString(r.Details.Name),
+		Description: toNullString(r.Details.Description),
+		ImageUrl:    toNullString(r.Details.ImageURL),
+		Info:        infoJSON,
 	}
 }

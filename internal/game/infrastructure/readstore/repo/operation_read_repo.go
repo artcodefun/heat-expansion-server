@@ -106,7 +106,7 @@ func (r *OperationReadRepo) enrichOperation(ctx context.Context, v *readmodels.M
 	mappers.EnrichOperationUnitsAndStructures(v, army, build, storage)
 
 	// 3. Fetch produced scan report if any
-	reportRow, err := r.q.GetScanReportByOperationID(ctx, sql.NullInt64{Int64: int64(v.ID), Valid: true})
+	reportRow, err := r.q.GetScanReportByOperationUUID(ctx, uuid.NullUUID{UUID: v.UUID, Valid: true})
 	if err == nil {
 		report := mappers.SectorScanReportFromModel(reportRow)
 		v.ProducedScanReport = &report

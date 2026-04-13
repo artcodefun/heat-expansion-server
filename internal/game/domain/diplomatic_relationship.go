@@ -21,6 +21,7 @@ const (
 )
 
 type DiplomaticRelationship struct {
+	EventProducer
 	ID                       uuid.UUID
 	UserAID                  uuid.UUID
 	UserBID                  uuid.UUID
@@ -111,6 +112,7 @@ func (r *DiplomaticRelationship) EscalateToWar(changedBy uuid.UUID) error {
 	r.WarDeclaredAt = &now
 	r.WarAttacksAllowedAt = &now
 	r.NeutralityProtectedUntil = nil
+	r.AddEvent(NewDiplomaticRelationshipCreatedEvent(r.ID, r.UserAID, r.UserBID, r.Status, changedBy))
 	return nil
 }
 
@@ -125,6 +127,7 @@ func (r *DiplomaticRelationship) EstablishContact(changedBy uuid.UUID) error {
 	r.WarDeclaredAt = nil
 	r.WarAttacksAllowedAt = nil
 	r.NeutralityProtectedUntil = nil
+	r.AddEvent(NewDiplomaticRelationshipCreatedEvent(r.ID, r.UserAID, r.UserBID, r.Status, changedBy))
 	return nil
 }
 

@@ -16,6 +16,7 @@ type DiplomacyCommands struct {
 	Messages      ports.DiplomaticMessageRepository
 	Requests      ports.DiplomaticRequestRepository
 	Operations    ports.MilitaryOperationRepository
+	ScanReports   ports.ScanReportRepository
 	Users         ports.UserRepository
 	UserBases     ports.UserBaseRepository
 	Sectors       ports.SectorRepository
@@ -30,6 +31,7 @@ func NewDiplomacyCommands(
 	messages ports.DiplomaticMessageRepository,
 	requests ports.DiplomaticRequestRepository,
 	operations ports.MilitaryOperationRepository,
+	scanReports ports.ScanReportRepository,
 	users ports.UserRepository,
 	userBases ports.UserBaseRepository,
 	sectors ports.SectorRepository,
@@ -43,6 +45,7 @@ func NewDiplomacyCommands(
 		Messages:      messages,
 		Requests:      requests,
 		Operations:    operations,
+		ScanReports:   scanReports,
 		Users:         users,
 		UserBases:     userBases,
 		Sectors:       sectors,
@@ -92,6 +95,7 @@ func (c *DiplomacyCommands) HandleDiplomaticMessageSentEvent(ctx context.Context
 
 	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		relRepo := c.Relationships.Tx(tx)
+		outbox := c.Outbox.Tx(tx)
 		rel, err := c.loadRelationship(ctx, relRepo, ev.SenderUserID, ev.ReceiverUserID)
 		if err != nil {
 			return err
@@ -104,6 +108,9 @@ func (c *DiplomacyCommands) HandleDiplomaticMessageSentEvent(ctx context.Context
 		}
 
 		if err := relRepo.Create(ctx, rel); err != nil {
+			return err
+		}
+		if err := outbox.Save(ctx, rel.PullEvents()); err != nil {
 			return err
 		}
 		return nil
@@ -147,6 +154,9 @@ func (c *DiplomacyCommands) SendRequest(ctx context.Context, actor cqrs.Actor, s
 			if err := relRepo.Create(ctx, rel); err != nil {
 				return err
 			}
+			if err := outbox.Save(ctx, rel.PullEvents()); err != nil {
+				return err
+			}
 		}
 		if err := requestRepo.Create(ctx, request); err != nil {
 			return err
@@ -182,6 +192,9 @@ func (c *DiplomacyCommands) DeclareWar(ctx context.Context, actor cqrs.Actor, se
 			return err
 		}
 		if err := relRepo.Update(ctx, rel); err != nil {
+			return err
+		}
+		if err := outbox.Save(ctx, rel.PullEvents()); err != nil {
 			return err
 		}
 
@@ -228,6 +241,9 @@ func (c *DiplomacyCommands) BreakAlliance(ctx context.Context, actor cqrs.Actor,
 			return err
 		}
 		if err := relRepo.Update(ctx, rel); err != nil {
+			return err
+		}
+		if err := outbox.Save(ctx, rel.PullEvents()); err != nil {
 			return err
 		}
 
@@ -385,6 +401,7 @@ func (c *DiplomacyCommands) HandleMilitaryOperationResolvedEvent(ctx context.Con
 		relRepo := c.Relationships.Tx(tx)
 		baseRepo := c.UserBases.Tx(tx)
 		sectorRepo := c.Sectors.Tx(tx)
+		outbox := c.Outbox.Tx(tx)
 
 		op, err := opRepo.FindByID(ctx, ev.OperationID)
 		if err != nil {
@@ -418,7 +435,10 @@ func (c *DiplomacyCommands) HandleMilitaryOperationResolvedEvent(ctx context.Con
 		if err := rel.EscalateToWar(op.OwnerUserID); err != nil {
 			return err
 		}
-		return relRepo.Create(ctx, rel)
+		if err := relRepo.Create(ctx, rel); err != nil {
+			return err
+		}
+		return outbox.Save(ctx, rel.PullEvents())
 	})
 }
 
@@ -485,6 +505,66 @@ func (c *DiplomacyCommands) validateReceiverTarget(ctx context.Context, receiver
 	}
 	if ownerID != receiverUserID {
 		return cqrs.NewAppError(cqrs.KindInvalidInput, "error.application.invalid_diplomatic_receiver_target")
+	}
+	return nil
+}
+
+func (c *DiplomacyCommands) HandleDiplomaticRelationshipCreatedEvent(ctx context.Context, ev domain.DiplomaticRelationshipCreatedEvent) error {
+	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
+		baseRepo := c.UserBases.Tx(tx)
+		scanRepo := c.ScanReports.Tx(tx)
+		sectorRepo := c.Sectors.Tx(tx)
+		outbox := c.Outbox.Tx(tx)
+
+		if err := c.createMissingRevealReports(ctx, scanRepo, baseRepo, sectorRepo, outbox, ev.RelationshipID, ev.UserAID, ev.UserBID); err != nil {
+			return err
+		}
+		if err := c.createMissingRevealReports(ctx, scanRepo, baseRepo, sectorRepo, outbox, ev.RelationshipID, ev.UserBID, ev.UserAID); err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
+func (c *DiplomacyCommands) createMissingRevealReports(ctx context.Context, scanRepo ports.ScanReportRepository, baseRepo ports.UserBaseRepository, sectorRepo ports.SectorRepository, outbox ports.OutboxEventRepository, relationshipID, viewerUserID, targetUserID uuid.UUID) error {
+	viewerBases, err := baseRepo.FindByUserID(ctx, viewerUserID)
+	if err != nil {
+		if errors.Is(err, ports.ErrNotFound) {
+			return nil
+		}
+		return err
+	}
+	targetBases, err := baseRepo.FindByUserID(ctx, targetUserID)
+	if err != nil {
+		if errors.Is(err, ports.ErrNotFound) {
+			return nil
+		}
+		return err
+	}
+	for _, viewerBase := range viewerBases {
+		for _, targetBase := range targetBases {
+			existing, err := scanRepo.FindByBaseAndCoordinates(ctx, viewerBase.ID, targetBase.Coordinates.X, targetBase.Coordinates.Y)
+			if err != nil {
+				return err
+			}
+			if len(existing) > 0 {
+				continue
+			}
+			sector, err := sectorRepo.FindByCoordinates(ctx, targetBase.Coordinates.X, targetBase.Coordinates.Y)
+			if err != nil {
+				return err
+			}
+			report := domain.NewSectorScanReportFromUserBase(viewerBase.ID, sector, targetBase)
+			report.SourceType = domain.ScanReportSourceDiplomaticReveal
+			report.SourceID = &relationshipID
+			if err := scanRepo.Create(ctx, report); err != nil {
+				return err
+			}
+			report.EmitCreated()
+			if err := outbox.Save(ctx, report.PullEvents()); err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }

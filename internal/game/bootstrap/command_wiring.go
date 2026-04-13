@@ -52,6 +52,8 @@ func WireCommandEvents(c *Commands, pub ports.EventPublisher) {
 				return err
 			}
 			return c.Alert.HandleDiplomaticRequestCreatedEvent(ctx, ev)
+		case domain.DiplomaticRelationshipCreatedEvent:
+			return c.Diplomacy.HandleDiplomaticRelationshipCreatedEvent(ctx, ev)
 		case domain.UserAccountCreatedEvent:
 			return c.Base.HandleUserAccountCreatedEvent(ctx, ev)
 		case domain.UserBaseCreatedEvent:

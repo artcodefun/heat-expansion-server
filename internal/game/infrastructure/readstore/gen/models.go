@@ -244,20 +244,19 @@ type ResourceLocation struct {
 }
 
 type ScanReport struct {
-	ID                int64           `json:"id"`
-	BaseID            int64           `json:"base_id"`
-	SectorX           int32           `json:"sector_x"`
-	SectorY           int32           `json:"sector_y"`
-	CreatedAt         int64           `json:"created_at"`
-	Type              string          `json:"type"`
-	IsCloaked         bool            `json:"is_cloaked"`
-	SourceOperationID sql.NullInt64   `json:"source_operation_id"`
-	SourceScannerID   uuid.NullUUID   `json:"source_scanner_id"`
-	SourceIntelItemID uuid.NullUUID   `json:"source_intel_item_id"`
-	Name              sql.NullString  `json:"name"`
-	Description       sql.NullString  `json:"description"`
-	ImageUrl          sql.NullString  `json:"image_url"`
-	Info              json.RawMessage `json:"info"`
+	ID          int64           `json:"id"`
+	BaseID      int64           `json:"base_id"`
+	SectorX     int32           `json:"sector_x"`
+	SectorY     int32           `json:"sector_y"`
+	CreatedAt   int64           `json:"created_at"`
+	Type        string          `json:"type"`
+	IsCloaked   bool            `json:"is_cloaked"`
+	Name        sql.NullString  `json:"name"`
+	Description sql.NullString  `json:"description"`
+	ImageUrl    sql.NullString  `json:"image_url"`
+	Info        json.RawMessage `json:"info"`
+	SourceType  string          `json:"source_type"`
+	SourceID    uuid.NullUUID   `json:"source_id"`
 }
 
 type ScheduledJob struct {

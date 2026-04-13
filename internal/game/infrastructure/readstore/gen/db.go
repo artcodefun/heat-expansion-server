@@ -60,8 +60,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getScanReportByIDStmt, err = db.PrepareContext(ctx, getScanReportByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetScanReportByID: %w", err)
 	}
-	if q.getScanReportByOperationIDStmt, err = db.PrepareContext(ctx, getScanReportByOperationID); err != nil {
-		return nil, fmt.Errorf("error preparing query GetScanReportByOperationID: %w", err)
+	if q.getScanReportByOperationUUIDStmt, err = db.PrepareContext(ctx, getScanReportByOperationUUID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetScanReportByOperationUUID: %w", err)
 	}
 	if q.getScansNearStmt, err = db.PrepareContext(ctx, getScansNear); err != nil {
 		return nil, fmt.Errorf("error preparing query GetScansNear: %w", err)
@@ -245,9 +245,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getScanReportByIDStmt: %w", cerr)
 		}
 	}
-	if q.getScanReportByOperationIDStmt != nil {
-		if cerr := q.getScanReportByOperationIDStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getScanReportByOperationIDStmt: %w", cerr)
+	if q.getScanReportByOperationUUIDStmt != nil {
+		if cerr := q.getScanReportByOperationUUIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getScanReportByOperationUUIDStmt: %w", cerr)
 		}
 	}
 	if q.getScansNearStmt != nil {
@@ -496,7 +496,7 @@ type Queries struct {
 	getOperationByUUIDStmt                  *sql.Stmt
 	getRadarThreatStmt                      *sql.Stmt
 	getScanReportByIDStmt                   *sql.Stmt
-	getScanReportByOperationIDStmt          *sql.Stmt
+	getScanReportByOperationUUIDStmt        *sql.Stmt
 	getScansNearStmt                        *sql.Stmt
 	getUserProfileStmt                      *sql.Stmt
 	listActiveOperationsStmt                *sql.Stmt
@@ -554,7 +554,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getOperationByUUIDStmt:                  q.getOperationByUUIDStmt,
 		getRadarThreatStmt:                      q.getRadarThreatStmt,
 		getScanReportByIDStmt:                   q.getScanReportByIDStmt,
-		getScanReportByOperationIDStmt:          q.getScanReportByOperationIDStmt,
+		getScanReportByOperationUUIDStmt:        q.getScanReportByOperationUUIDStmt,
 		getScansNearStmt:                        q.getScansNearStmt,
 		getUserProfileStmt:                      q.getUserProfileStmt,
 		listActiveOperationsStmt:                q.listActiveOperationsStmt,

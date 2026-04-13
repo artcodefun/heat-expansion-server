@@ -105,7 +105,7 @@ func (c *ActivityCommands) HandleScanReportCreatedEvent(ctx context.Context, eve
 	// Defender side detection
 	var defenderActivity *domain.ActivityItem
 	occType, _ := c.SectorRepo.GetLocationTypeByCoordinates(ctx, report.Coordinates.X, report.Coordinates.Y)
-	if occType == domain.LocationTypeUserBase {
+	if report.SourceType != domain.ScanReportSourceDiplomaticReveal && occType == domain.LocationTypeUserBase {
 		defenderBase, err := c.UserBaseRepo.FindByCoordinates(ctx, report.Coordinates.X, report.Coordinates.Y)
 
 		if err == nil && defenderBase != nil && attackerBase != nil {
