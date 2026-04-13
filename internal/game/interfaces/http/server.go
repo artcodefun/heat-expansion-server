@@ -22,5 +22,5 @@ func HealthHandler(c *gin.Context) {
 
 // MinClientVersionHandler returns the minimum supported client version.
 func MinClientVersionHandler(c *gin.Context) {
-	c.JSON(200, gin.H{"version": "0.0.1"})
+	c.JSON(200, gin.H{"version": "0.1.0"})
 }
