@@ -62,9 +62,9 @@ SELECT id, sender_user_id, receiver_user_id, sender_base_id, receiver_base_id, r
 WHERE id = $1
 `
 
-func (q *Queries) GetDiplomaticMessage(ctx context.Context, id uuid.UUID) (GameDiplomaticMessage, error) {
+func (q *Queries) GetDiplomaticMessage(ctx context.Context, id uuid.UUID) (DiplomaticMessage, error) {
 	row := q.queryRow(ctx, q.getDiplomaticMessageStmt, getDiplomaticMessage, id)
-	var i GameDiplomaticMessage
+	var i DiplomaticMessage
 	err := row.Scan(
 		&i.ID,
 		&i.SenderUserID,
@@ -93,9 +93,9 @@ type GetDiplomaticMessageByRequestAndContentParams struct {
 	Content   string        `json:"content"`
 }
 
-func (q *Queries) GetDiplomaticMessageByRequestAndContent(ctx context.Context, arg GetDiplomaticMessageByRequestAndContentParams) (GameDiplomaticMessage, error) {
+func (q *Queries) GetDiplomaticMessageByRequestAndContent(ctx context.Context, arg GetDiplomaticMessageByRequestAndContentParams) (DiplomaticMessage, error) {
 	row := q.queryRow(ctx, q.getDiplomaticMessageByRequestAndContentStmt, getDiplomaticMessageByRequestAndContent, arg.RequestID, arg.Content)
-	var i GameDiplomaticMessage
+	var i DiplomaticMessage
 	err := row.Scan(
 		&i.ID,
 		&i.SenderUserID,
@@ -121,9 +121,9 @@ type GetDiplomaticRelationshipParams struct {
 	UserBID uuid.UUID `json:"user_b_id"`
 }
 
-func (q *Queries) GetDiplomaticRelationship(ctx context.Context, arg GetDiplomaticRelationshipParams) (GameDiplomaticRelationship, error) {
+func (q *Queries) GetDiplomaticRelationship(ctx context.Context, arg GetDiplomaticRelationshipParams) (DiplomaticRelationship, error) {
 	row := q.queryRow(ctx, q.getDiplomaticRelationshipStmt, getDiplomaticRelationship, arg.UserAID, arg.UserBID)
-	var i GameDiplomaticRelationship
+	var i DiplomaticRelationship
 	err := row.Scan(
 		&i.ID,
 		&i.UserAID,
@@ -149,9 +149,9 @@ type GetDiplomaticRelationshipForUpdateParams struct {
 	UserBID uuid.UUID `json:"user_b_id"`
 }
 
-func (q *Queries) GetDiplomaticRelationshipForUpdate(ctx context.Context, arg GetDiplomaticRelationshipForUpdateParams) (GameDiplomaticRelationship, error) {
+func (q *Queries) GetDiplomaticRelationshipForUpdate(ctx context.Context, arg GetDiplomaticRelationshipForUpdateParams) (DiplomaticRelationship, error) {
 	row := q.queryRow(ctx, q.getDiplomaticRelationshipForUpdateStmt, getDiplomaticRelationshipForUpdate, arg.UserAID, arg.UserBID)
-	var i GameDiplomaticRelationship
+	var i DiplomaticRelationship
 	err := row.Scan(
 		&i.ID,
 		&i.UserAID,
@@ -171,9 +171,9 @@ SELECT id, sender_user_id, receiver_user_id, sender_base_id, receiver_base_id, k
 WHERE id = $1
 `
 
-func (q *Queries) GetDiplomaticRequest(ctx context.Context, id uuid.UUID) (GameDiplomaticRequest, error) {
+func (q *Queries) GetDiplomaticRequest(ctx context.Context, id uuid.UUID) (DiplomaticRequest, error) {
 	row := q.queryRow(ctx, q.getDiplomaticRequestStmt, getDiplomaticRequest, id)
-	var i GameDiplomaticRequest
+	var i DiplomaticRequest
 	err := row.Scan(
 		&i.ID,
 		&i.SenderUserID,
@@ -195,9 +195,9 @@ WHERE id = $1
 FOR UPDATE
 `
 
-func (q *Queries) GetDiplomaticRequestForUpdate(ctx context.Context, id uuid.UUID) (GameDiplomaticRequest, error) {
+func (q *Queries) GetDiplomaticRequestForUpdate(ctx context.Context, id uuid.UUID) (DiplomaticRequest, error) {
 	row := q.queryRow(ctx, q.getDiplomaticRequestForUpdateStmt, getDiplomaticRequestForUpdate, id)
-	var i GameDiplomaticRequest
+	var i DiplomaticRequest
 	err := row.Scan(
 		&i.ID,
 		&i.SenderUserID,

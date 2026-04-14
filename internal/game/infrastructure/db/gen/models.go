@@ -134,16 +134,7 @@ type DangerousLocation struct {
 	Trophies               json.RawMessage `json:"trophies"`
 }
 
-type DomainEvent struct {
-	ID          int64           `json:"id"`
-	Kind        string          `json:"kind"`
-	Payload     json.RawMessage `json:"payload"`
-	CreatedAt   int64           `json:"created_at"`
-	Published   bool            `json:"published"`
-	PublishedAt sql.NullInt64   `json:"published_at"`
-}
-
-type GameDiplomaticMessage struct {
+type DiplomaticMessage struct {
 	ID               uuid.UUID     `json:"id"`
 	SenderUserID     uuid.UUID     `json:"sender_user_id"`
 	ReceiverUserID   uuid.UUID     `json:"receiver_user_id"`
@@ -156,7 +147,7 @@ type GameDiplomaticMessage struct {
 	CreatedAt        int64         `json:"created_at"`
 }
 
-type GameDiplomaticRelationship struct {
+type DiplomaticRelationship struct {
 	ID                       uuid.UUID     `json:"id"`
 	UserAID                  uuid.UUID     `json:"user_a_id"`
 	UserBID                  uuid.UUID     `json:"user_b_id"`
@@ -168,7 +159,7 @@ type GameDiplomaticRelationship struct {
 	NeutralityProtectedUntil sql.NullInt64 `json:"neutrality_protected_until"`
 }
 
-type GameDiplomaticRequest struct {
+type DiplomaticRequest struct {
 	ID             uuid.UUID     `json:"id"`
 	SenderUserID   uuid.UUID     `json:"sender_user_id"`
 	ReceiverUserID uuid.UUID     `json:"receiver_user_id"`
@@ -179,6 +170,15 @@ type GameDiplomaticRequest struct {
 	CreatedAt      int64         `json:"created_at"`
 	ResolvedAt     sql.NullInt64 `json:"resolved_at"`
 	ExpiresAt      int64         `json:"expires_at"`
+}
+
+type DomainEvent struct {
+	ID          int64           `json:"id"`
+	Kind        string          `json:"kind"`
+	Payload     json.RawMessage `json:"payload"`
+	CreatedAt   int64           `json:"created_at"`
+	Published   bool            `json:"published"`
+	PublishedAt sql.NullInt64   `json:"published_at"`
 }
 
 type MilitaryOperation struct {

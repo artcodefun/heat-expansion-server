@@ -32,7 +32,7 @@ func UpdateDiplomaticRelationshipParamsFromDomain(relationship *domain.Diplomati
 	}
 }
 
-func DiplomaticRelationshipFromDB(row gen.GameDiplomaticRelationship) *domain.DiplomaticRelationship {
+func DiplomaticRelationshipFromDB(row gen.DiplomaticRelationship) *domain.DiplomaticRelationship {
 	return &domain.DiplomaticRelationship{
 		ID:                       row.ID,
 		UserAID:                  row.UserAID,
@@ -69,7 +69,7 @@ func UpdateDiplomaticRequestParamsFromDomain(request *domain.DiplomaticRequest) 
 	}
 }
 
-func DiplomaticRequestFromDB(row gen.GameDiplomaticRequest) *domain.DiplomaticRequest {
+func DiplomaticRequestFromDB(row gen.DiplomaticRequest) *domain.DiplomaticRequest {
 	return &domain.DiplomaticRequest{
 		ID:             row.ID,
 		SenderUserID:   row.SenderUserID,
@@ -99,7 +99,7 @@ func InsertDiplomaticMessageParamsFromDomain(message *domain.DiplomaticMessage) 
 	}
 }
 
-func DiplomaticMessageFromDB(row gen.GameDiplomaticMessage) *domain.DiplomaticMessage {
+func DiplomaticMessageFromDB(row gen.DiplomaticMessage) *domain.DiplomaticMessage {
 	return &domain.DiplomaticMessage{
 		ID:               row.ID,
 		SenderUserID:     row.SenderUserID,

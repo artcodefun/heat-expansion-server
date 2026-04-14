@@ -23,6 +23,9 @@ sql:
           game_build_item_prototype: BuildItemPrototype
           game_dangerous_location: DangerousLocation
           game_domain_event: DomainEvent
+          game_diplomatic_message: DiplomaticMessage
+          game_diplomatic_relationship: DiplomaticRelationship
+          game_diplomatic_request: DiplomaticRequest
           game_military_operation: MilitaryOperation
           game_radar_threat: RadarThreat
           game_resource_location: ResourceLocation
@@ -56,6 +59,9 @@ sql:
           game_build_item_prototype: BuildItemPrototype
           game_dangerous_location: DangerousLocation
           game_domain_event: DomainEvent
+          game_diplomatic_message: DiplomaticMessage
+          game_diplomatic_relationship: DiplomaticRelationship
+          game_diplomatic_request: DiplomaticRequest
           game_military_operation: MilitaryOperation
           game_radar_threat: RadarThreat
           game_resource_location: ResourceLocation
