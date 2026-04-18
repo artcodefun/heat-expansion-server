@@ -153,11 +153,13 @@ func (r *DiplomaticRelationship) BreakAlliance(changedBy uuid.UUID) error {
 		return err
 	}
 	now := NowUnix()
+	protectedUntil := now + int64(DiplomaticCeasefireProtectionDuration.Seconds())
 	r.Status = DiplomaticStatusNeutral
 	r.ChangedByUserID = changedBy
 	r.ChangedAt = now
 	r.WarDeclaredAt = nil
 	r.WarAttacksAllowedAt = nil
+	r.NeutralityProtectedUntil = &protectedUntil
 	return nil
 }
 

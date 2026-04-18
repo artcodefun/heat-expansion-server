@@ -117,3 +117,30 @@ func TestBreakAlliance_RequiresAlliance(t *testing.T) {
 		t.Fatalf("expected non-allied relationship to reject alliance break")
 	}
 }
+
+func TestBreakAlliance_ProtectsNeutrality(t *testing.T) {
+	SetTestNow(t, 9_100)
+	userA := uuid.New()
+	userB := uuid.New()
+	rel := newNeutralRelationshipForTest(t, userA, userB, userA)
+	rel.FormAlliance(userA)
+
+	if err := rel.BreakAlliance(userA); err != nil {
+		t.Fatalf("expected allied relationship break to succeed, got %v", err)
+	}
+	if rel.Status != DiplomaticStatusNeutral {
+		t.Fatalf("expected relationship to become neutral, got %s", rel.Status)
+	}
+	if rel.NeutralityProtectedUntil == nil || *rel.NeutralityProtectedUntil != 9_100+int64(DiplomaticCeasefireProtectionDuration.Seconds()) {
+		t.Fatalf("expected neutrality protection to be set, got %+v", rel.NeutralityProtectedUntil)
+	}
+
+	if err := rel.CanDeclareWar(); err == nil {
+		t.Fatalf("expected neutrality protection to block war declaration")
+	}
+
+	SetTestNow(t, *rel.NeutralityProtectedUntil)
+	if err := rel.CanDeclareWar(); err != nil {
+		t.Fatalf("expected war declaration after protection expiry, got %v", err)
+	}
+}
