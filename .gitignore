@@ -9,6 +9,7 @@
 *.dylib
 *.test
 *.out
+__debug_bin*
 
 # Dependency directories
 /vendor/

@@ -22,6 +22,14 @@ const (
 	ArmyStatusDeployed     ArmyStatus = "DEPLOYED"
 )
 
+// OperationKind identifies the aggregate kind that owns deployed units.
+type OperationKind string
+
+const (
+	OperationKindMilitary OperationKind = "MILITARY"
+	OperationKindTrade    OperationKind = "TRADE"
+)
+
 // ArmyItemPrototype is the base struct for army item prototypes.
 type ArmyItemPrototype struct {
 	ID                 int
@@ -69,9 +77,10 @@ type ArmyItemPresent struct {
 // ArmyItemDeployed represents units allocated to a military operation and currently away from the base.
 type ArmyItemDeployed struct {
 	BaseOwnedItem
-	Prototype   ArmyItemPrototype
-	OperationID int // owning military operation id
-	Count       int
+	Prototype     ArmyItemPrototype
+	OperationKind OperationKind
+	OperationID   int // owning military operation id
+	Count         int
 }
 
 // ArmyStack represents a quantity of a given army prototype defending a location.

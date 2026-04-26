@@ -10,6 +10,7 @@ type Commands struct {
 	Tech        *commands.TechCommands
 	Storage     *commands.StorageCommands
 	Operation   *commands.OperationCommands
+	Trade       *commands.TradeCommands
 	Scanner     *commands.IntelligenceScannerCommands
 	Radar       *commands.IntelligenceRadarCommands
 	RadarThreat *commands.RadarThreatCommands
@@ -30,13 +31,14 @@ func NewCommands(a *Adapters, as *AppServices) *Commands {
 		Tech:        commands.NewTechCommands(a.UserBases, a.TechPrototypes, a.Users, a.OutboxEvents, a.Scheduler, a.TxMgr, as.Access),
 		Storage:     commands.NewStorageCommands(a.UserBases, a.Users, a.Sectors, a.StoragePrototypes, a.ArmyPrototypes, a.ResourceLocations, a.DangerousLocations, a.ScanReports, a.OutboxEvents, a.Scheduler, a.TxMgr, as.Access),
 		Operation:   commands.NewOperationCommands(a.UserBases, a.Users, a.DiplomaticRelationships, a.Sectors, a.MilitaryOps, a.ResourceLocations, a.DangerousLocations, a.ScanReports, a.StoragePrototypes, as.Provisioner, a.Scheduler, a.OutboxEvents, a.TxMgr, as.Access),
+		Trade:       commands.NewTradeCommands(a.UserBases, a.Users, a.DiplomaticRelationships, a.TradeOps, a.Scheduler, a.OutboxEvents, a.TxMgr, as.Access),
 		Scanner:     commands.NewIntelligenceScannerCommands(a.UserBases, a.Sectors, a.ResourceLocations, a.DangerousLocations, a.ScanReports, as.Provisioner, a.Scheduler, a.OutboxEvents, a.TxMgr),
 		Radar:       commands.NewIntelligenceRadarCommands(a.UserBases, a.MilitaryOps, a.RadarThreats, a.Scheduler, a.OutboxEvents, a.TxMgr),
 		RadarThreat: commands.NewRadarThreatCommands(a.RadarThreats, a.OutboxEvents, a.TxMgr),
 		User:        commands.NewUserCommands(a.Users, a.OutboxEvents, a.TxMgr),
 		Activity:    commands.NewActivityCommands(a.Activities, a.MilitaryOps, a.RadarThreats, a.Sectors, a.UserBases, a.ScanReports, a.OutboxEvents, a.TxMgr),
 		World:       commands.NewWorldGenerationCommands(a.UserBases, a.Sectors, a.ResourceLocations, a.DangerousLocations, a.StoragePrototypes, a.ArmyPrototypes, a.BuildPrototypes, a.Content, as.Provisioner, a.Scheduler, a.TxMgr),
-		Alert:       commands.NewAlertCommands(a.Alerts, a.TxMgr),
+		Alert:       commands.NewAlertCommands(a.Alerts, a.TradeOps, a.TxMgr),
 		Diplomacy:   commands.NewDiplomacyCommands(a.DiplomaticRelationships, a.DiplomaticMessages, a.DiplomaticRequests, a.MilitaryOps, a.ScanReports, a.Users, a.UserBases, a.Sectors, a.OutboxEvents, a.Scheduler, a.TxMgr, as.Access),
 	}
 }

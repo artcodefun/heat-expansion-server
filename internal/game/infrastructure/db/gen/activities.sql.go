@@ -28,7 +28,8 @@ SELECT EXISTS (
       AND (
           (kind = 'OFFENSE' AND (offense_data->>'op_id')::bigint = $3::bigint) OR
           (kind = 'DEFENSE' AND (defense_data->>'op_id')::bigint = $3::bigint) OR
-          (kind = 'RADAR' AND (radar_data->>'op_id')::bigint = $3::bigint)
+          (kind = 'RADAR' AND (radar_data->>'op_id')::bigint = $3::bigint) OR
+          (kind = 'TRADE' AND (trade_data->>'op_id')::bigint = $3::bigint)
       )
 )
 `

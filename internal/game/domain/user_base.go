@@ -24,7 +24,8 @@ type UserBaseModel struct {
 	TechnologiesInProgress []TechItemInProgress
 	TechnologiesDone       []TechItemDone
 
-	StorageItemsPresent []StorageItemPresent
+	StorageItemsPresent  []StorageItemPresent
+	StorageItemsDeployed []StorageItemDeployed
 
 	Stats UserBaseStats
 }
@@ -46,6 +47,7 @@ func NewUserBaseModel(baseID int, userID uuid.UUID, coords Vector2i) *UserBaseMo
 		TechnologiesInProgress: []TechItemInProgress{},
 		TechnologiesDone:       []TechItemDone{},
 		StorageItemsPresent:    []StorageItemPresent{},
+		StorageItemsDeployed:   []StorageItemDeployed{},
 	}
 	ub.recalculateStats()
 	return ub

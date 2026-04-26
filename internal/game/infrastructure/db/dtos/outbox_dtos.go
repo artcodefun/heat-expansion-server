@@ -97,6 +97,18 @@ func UpdateMilitaryOperationJobFromDTO(d UpdateMilitaryOperationJobDTO) ports.Up
 	return ports.UpdateMilitaryOperationJob{OperationID: d.OperationID}
 }
 
+type UpdateTradeOperationJobDTO struct {
+	OperationID int `json:"operation_id"`
+}
+
+func UpdateTradeOperationJobDTOFromDomain(j ports.UpdateTradeOperationJob) UpdateTradeOperationJobDTO {
+	return UpdateTradeOperationJobDTO{OperationID: j.OperationID}
+}
+
+func UpdateTradeOperationJobFromDTO(d UpdateTradeOperationJobDTO) ports.UpdateTradeOperationJob {
+	return ports.UpdateTradeOperationJob{OperationID: d.OperationID}
+}
+
 type ExpireDiplomaticRequestJobDTO struct {
 	RequestID uuid.UUID `json:"request_id"`
 }
@@ -107,6 +119,18 @@ func ExpireDiplomaticRequestJobDTOFromDomain(j ports.ExpireDiplomaticRequestJob)
 
 func ExpireDiplomaticRequestJobFromDTO(d ExpireDiplomaticRequestJobDTO) ports.ExpireDiplomaticRequestJob {
 	return ports.ExpireDiplomaticRequestJob{RequestID: d.RequestID}
+}
+
+type ExpireTradeOperationJobDTO struct {
+	OperationID int `json:"operation_id"`
+}
+
+func ExpireTradeOperationJobDTOFromDomain(j ports.ExpireTradeOperationJob) ExpireTradeOperationJobDTO {
+	return ExpireTradeOperationJobDTO{OperationID: j.OperationID}
+}
+
+func ExpireTradeOperationJobFromDTO(d ExpireTradeOperationJobDTO) ports.ExpireTradeOperationJob {
+	return ports.ExpireTradeOperationJob{OperationID: d.OperationID}
 }
 
 type SpawnNearbyLocationsJobDTO struct {
@@ -600,6 +624,137 @@ func MilitaryOperationCancelledEventDTOFromDomain(e domain.MilitaryOperationCanc
 
 func MilitaryOperationCancelledEventFromDTO(d MilitaryOperationCancelledEventDTO) domain.MilitaryOperationCancelledEvent {
 	return domain.NewMilitaryOperationCancelledEvent(d.OperationID)
+}
+
+type TradeOperationCreatedEventDTO struct {
+	OccurredAt      int64     `json:"occurred_at"`
+	OperationID     int       `json:"operation_id"`
+	OperationUUID   uuid.UUID `json:"operation_uuid"`
+	SenderBaseID    int       `json:"sender_base_id"`
+	ReceiverBaseID  int       `json:"receiver_base_id"`
+	ExpirationAtSec int64     `json:"expiration_at_sec"`
+}
+
+func TradeOperationCreatedEventDTOFromDomain(e domain.TradeOperationCreatedEvent) TradeOperationCreatedEventDTO {
+	return TradeOperationCreatedEventDTO{
+		OccurredAt:      e.OccurredAt(),
+		OperationID:     e.OperationID,
+		OperationUUID:   e.OperationUUID,
+		SenderBaseID:    e.SenderBaseID,
+		ReceiverBaseID:  e.ReceiverBaseID,
+		ExpirationAtSec: e.ExpirationAtSec,
+	}
+}
+
+func TradeOperationCreatedEventFromDTO(d TradeOperationCreatedEventDTO) domain.TradeOperationCreatedEvent {
+	return domain.NewTradeOperationCreatedEvent(d.OperationID, d.OperationUUID, d.SenderBaseID, d.ReceiverBaseID, d.ExpirationAtSec)
+}
+
+type TradeOperationAcceptedEventDTO struct {
+	OccurredAt       int64 `json:"occurred_at"`
+	OperationID      int   `json:"operation_id"`
+	OutboundArriveAt int64 `json:"outbound_arrive_at"`
+}
+
+func TradeOperationAcceptedEventDTOFromDomain(e domain.TradeOperationAcceptedEvent) TradeOperationAcceptedEventDTO {
+	return TradeOperationAcceptedEventDTO{OccurredAt: e.OccurredAt(), OperationID: e.OperationID, OutboundArriveAt: e.OutboundArriveAt}
+}
+
+func TradeOperationAcceptedEventFromDTO(d TradeOperationAcceptedEventDTO) domain.TradeOperationAcceptedEvent {
+	return domain.NewTradeOperationAcceptedEvent(d.OperationID, d.OutboundArriveAt)
+}
+
+type TradeOperationDeclinedEventDTO struct {
+	OccurredAt  int64 `json:"occurred_at"`
+	OperationID int   `json:"operation_id"`
+}
+
+func TradeOperationDeclinedEventDTOFromDomain(e domain.TradeOperationDeclinedEvent) TradeOperationDeclinedEventDTO {
+	return TradeOperationDeclinedEventDTO{OccurredAt: e.OccurredAt(), OperationID: e.OperationID}
+}
+
+func TradeOperationDeclinedEventFromDTO(d TradeOperationDeclinedEventDTO) domain.TradeOperationDeclinedEvent {
+	return domain.NewTradeOperationDeclinedEvent(d.OperationID)
+}
+
+type TradeOperationExpiredEventDTO struct {
+	OccurredAt  int64 `json:"occurred_at"`
+	OperationID int   `json:"operation_id"`
+}
+
+func TradeOperationExpiredEventDTOFromDomain(e domain.TradeOperationExpiredEvent) TradeOperationExpiredEventDTO {
+	return TradeOperationExpiredEventDTO{OccurredAt: e.OccurredAt(), OperationID: e.OperationID}
+}
+
+func TradeOperationExpiredEventFromDTO(d TradeOperationExpiredEventDTO) domain.TradeOperationExpiredEvent {
+	return domain.NewTradeOperationExpiredEvent(d.OperationID)
+}
+
+type TradeOperationCancelledByInitiatorEventDTO struct {
+	OccurredAt  int64 `json:"occurred_at"`
+	OperationID int   `json:"operation_id"`
+}
+
+func TradeOperationCancelledByInitiatorEventDTOFromDomain(e domain.TradeOperationCancelledByInitiatorEvent) TradeOperationCancelledByInitiatorEventDTO {
+	return TradeOperationCancelledByInitiatorEventDTO{OccurredAt: e.OccurredAt(), OperationID: e.OperationID}
+}
+
+func TradeOperationCancelledByInitiatorEventFromDTO(d TradeOperationCancelledByInitiatorEventDTO) domain.TradeOperationCancelledByInitiatorEvent {
+	return domain.NewTradeOperationCancelledByInitiatorEvent(d.OperationID)
+}
+
+type TradeOperationOutboundEventDTO struct {
+	OccurredAt       int64 `json:"occurred_at"`
+	OperationID      int   `json:"operation_id"`
+	OutboundArriveAt int64 `json:"outbound_arrive_at"`
+}
+
+func TradeOperationOutboundEventDTOFromDomain(e domain.TradeOperationOutboundEvent) TradeOperationOutboundEventDTO {
+	return TradeOperationOutboundEventDTO{OccurredAt: e.OccurredAt(), OperationID: e.OperationID, OutboundArriveAt: e.OutboundArriveAt}
+}
+
+func TradeOperationOutboundEventFromDTO(d TradeOperationOutboundEventDTO) domain.TradeOperationOutboundEvent {
+	return domain.NewTradeOperationOutboundEvent(d.OperationID, d.OutboundArriveAt)
+}
+
+type TradeOperationArrivedEventDTO struct {
+	OccurredAt  int64 `json:"occurred_at"`
+	OperationID int   `json:"operation_id"`
+}
+
+func TradeOperationArrivedEventDTOFromDomain(e domain.TradeOperationArrivedEvent) TradeOperationArrivedEventDTO {
+	return TradeOperationArrivedEventDTO{OccurredAt: e.OccurredAt(), OperationID: e.OperationID}
+}
+
+func TradeOperationArrivedEventFromDTO(d TradeOperationArrivedEventDTO) domain.TradeOperationArrivedEvent {
+	return domain.NewTradeOperationArrivedEvent(d.OperationID)
+}
+
+type TradeOperationReturningEventDTO struct {
+	OccurredAt     int64 `json:"occurred_at"`
+	OperationID    int   `json:"operation_id"`
+	ReturnArriveAt int64 `json:"return_arrive_at"`
+}
+
+func TradeOperationReturningEventDTOFromDomain(e domain.TradeOperationReturningEvent) TradeOperationReturningEventDTO {
+	return TradeOperationReturningEventDTO{OccurredAt: e.OccurredAt(), OperationID: e.OperationID, ReturnArriveAt: e.ReturnArriveAt}
+}
+
+func TradeOperationReturningEventFromDTO(d TradeOperationReturningEventDTO) domain.TradeOperationReturningEvent {
+	return domain.NewTradeOperationReturningEvent(d.OperationID, d.ReturnArriveAt)
+}
+
+type TradeOperationReturnArrivedEventDTO struct {
+	OccurredAt  int64 `json:"occurred_at"`
+	OperationID int   `json:"operation_id"`
+}
+
+func TradeOperationReturnArrivedEventDTOFromDomain(e domain.TradeOperationReturnArrivedEvent) TradeOperationReturnArrivedEventDTO {
+	return TradeOperationReturnArrivedEventDTO{OccurredAt: e.OccurredAt(), OperationID: e.OperationID}
+}
+
+func TradeOperationReturnArrivedEventFromDTO(d TradeOperationReturnArrivedEventDTO) domain.TradeOperationReturnArrivedEvent {
+	return domain.NewTradeOperationReturnArrivedEvent(d.OperationID)
 }
 
 type ScanReportCreatedEventDTO struct {

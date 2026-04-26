@@ -87,8 +87,33 @@ func WireCommandEvents(c *Commands, pub ports.EventPublisher) {
 			return c.RadarThreat.HandleMilitaryOperationArrivedEvent(ctx, ev)
 		case domain.MilitaryOperationCancelledEvent:
 			return c.RadarThreat.HandleMilitaryOperationCancelledEvent(ctx, ev)
-		case domain.RadarThreatDetectedEvent:
-			return c.Activity.HandleRadarThreatDetectedEvent(ctx, ev)
+		case domain.TradeOperationCreatedEvent:
+			if err := c.Trade.HandleTradeOperationCreatedEvent(ctx, ev); err != nil {
+				return err
+			}
+			if err := c.Activity.HandleTradeOperationCreatedEvent(ctx, ev); err != nil {
+				return err
+			}
+			return c.Alert.HandleTradeOperationCreatedEvent(ctx, ev)
+		case domain.TradeOperationOutboundEvent:
+			return c.Trade.HandleTradeOperationOutboundEvent(ctx, ev)
+		case domain.TradeOperationAcceptedEvent:
+			return c.Alert.HandleTradeOperationAcceptedEvent(ctx, ev)
+		case domain.TradeOperationArrivedEvent:
+			return c.Trade.HandleTradeOperationArrivedEvent(ctx, ev)
+		case domain.TradeOperationDeclinedEvent:
+			return c.Alert.HandleTradeOperationDeclinedEvent(ctx, ev)
+		case domain.TradeOperationCancelledByInitiatorEvent:
+			return c.Alert.HandleTradeOperationCancelledByInitiatorEvent(ctx, ev)
+		case domain.TradeOperationExpiredEvent:
+			return c.Alert.HandleTradeOperationExpiredEvent(ctx, ev)
+		case domain.TradeOperationReturningEvent:
+			return c.Trade.HandleTradeOperationReturningEvent(ctx, ev)
+		case domain.TradeOperationReturnArrivedEvent:
+			if err := c.Trade.HandleTradeOperationReturnArrivedEvent(ctx, ev); err != nil {
+				return err
+			}
+			return c.Alert.HandleTradeOperationReturnArrivedEvent(ctx, ev)
 		case domain.MilitaryOperationResolvedEvent:
 			if err := c.Diplomacy.HandleMilitaryOperationResolvedEvent(ctx, ev); err != nil {
 				return err
@@ -124,8 +149,12 @@ func WireCommandSchedulerHandler(c *Commands, sch ports.Scheduler) {
 			return c.Tech.HandleMoveTechQueueJob(ctx, job)
 		case ports.UpdateMilitaryOperationJob:
 			return c.Operation.HandleUpdateMilitaryOperationJob(ctx, job)
+		case ports.UpdateTradeOperationJob:
+			return c.Trade.HandleUpdateTradeOperationJob(ctx, job)
 		case ports.ExpireDiplomaticRequestJob:
 			return c.Diplomacy.HandleExpireDiplomaticRequestJob(ctx, job)
+		case ports.ExpireTradeOperationJob:
+			return c.Trade.HandleExpireTradeOperationJob(ctx, job)
 		case ports.IntelligenceScanJob:
 			return c.Scanner.HandleIntelligenceScanJob(ctx, job)
 		case ports.IntelligenceRadarJob:

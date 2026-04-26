@@ -5,6 +5,7 @@ import (
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
+	"github.com/google/uuid"
 )
 
 type ActivityCommands struct {
@@ -42,6 +43,41 @@ func NewActivityCommands(
 	}
 }
 
+func (c *ActivityCommands) HandleTradeOperationCreatedEvent(ctx context.Context, event domain.TradeOperationCreatedEvent) error {
+	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
+		baseRepo := c.UserBaseRepo.Tx(tx)
+		activityRepo := c.ActivityRepo.Tx(tx)
+
+		senderBase, err := baseRepo.FindByID(ctx, event.SenderBaseID)
+		if err != nil {
+			return repoErr(err)
+		}
+		receiverBase, err := baseRepo.FindByID(ctx, event.ReceiverBaseID)
+		if err != nil {
+			return repoErr(err)
+		}
+
+		if err := c.createTradeActivityIfMissing(ctx, tx, activityRepo, senderBase.UserID, senderBase.ID, event.OperationID); err != nil {
+			return err
+		}
+		if err := c.createTradeActivityIfMissing(ctx, tx, activityRepo, receiverBase.UserID, receiverBase.ID, event.OperationID); err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
+func (c *ActivityCommands) createTradeActivityIfMissing(ctx context.Context, tx ports.Transaction, repo ports.ActivityRepository, userID uuid.UUID, baseID int, operationID int) error {
+	if ok, _ := repo.ExistsForOperation(ctx, baseID, domain.ActivityKindTrade, operationID); ok {
+		return nil
+	}
+	item := domain.NewActivityFromTradeOperation(userID, baseID, operationID)
+	if err := repo.Create(ctx, &item); err != nil {
+		return repoErr(err)
+	}
+	return c.OutboxEvents.Tx(tx).Save(ctx, item.PullEvents())
+}
+
 func (c *ActivityCommands) HandleMilitaryOperationStartedEvent(ctx context.Context, event domain.MilitaryOperationStartedEvent) error {
 	op, err := c.OperationRepo.FindByID(ctx, event.OperationID)
 	if err != nil {
@@ -51,7 +87,7 @@ func (c *ActivityCommands) HandleMilitaryOperationStartedEvent(ctx context.Conte
 	item := domain.NewActivityFromOffenseOperation(op.SourceBaseID, op)
 	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		repo := c.ActivityRepo.Tx(tx)
-		if ok, _ := repo.ExistsForOperation(ctx, op.SourceBaseID, string(domain.ActivityKindOffense), event.OperationID); ok {
+		if ok, _ := repo.ExistsForOperation(ctx, op.SourceBaseID, domain.ActivityKindOffense, event.OperationID); ok {
 			return nil
 		}
 		if err := repo.Create(ctx, &item); err != nil {
@@ -80,7 +116,7 @@ func (c *ActivityCommands) HandleMilitaryOperationResolvedEvent(ctx context.Cont
 	}
 	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		repo := c.ActivityRepo.Tx(tx)
-		if ok, _ := repo.ExistsForOperation(ctx, base.ID, string(domain.ActivityKindDefense), event.OperationID); ok {
+		if ok, _ := repo.ExistsForOperation(ctx, base.ID, domain.ActivityKindDefense, event.OperationID); ok {
 			return nil
 		}
 		if err := repo.Create(ctx, &item); err != nil {
@@ -156,7 +192,7 @@ func (c *ActivityCommands) HandleRadarThreatDetectedEvent(ctx context.Context, e
 	activity := domain.NewActivityFromRadarThreat(ownerID, threat)
 	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		repo := c.ActivityRepo.Tx(tx)
-		if ok, _ := repo.ExistsForOperation(ctx, event.OwnerBaseID, string(domain.ActivityKindRadar), event.OperationID); ok {
+		if ok, _ := repo.ExistsForOperation(ctx, event.OwnerBaseID, domain.ActivityKindRadar, event.OperationID); ok {
 			return nil
 		}
 		if err := repo.Create(ctx, &activity); err != nil {

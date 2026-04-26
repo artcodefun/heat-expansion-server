@@ -320,6 +320,30 @@ func TestArmy_GetReadyToDeployArmy_SuccessDoesNotMutate(t *testing.T) {
 	}
 }
 
+func TestArmy_GetReadyToDeployArmy_AggregatesDuplicatePresentItemIDs(t *testing.T) {
+	base := newBaseWithDefaults(36)
+	base.ArmiesPresent = []ArmyItemPresent{{
+		BaseOwnedItem: NewBaseOwnedItem(base.ID),
+		Prototype:     ArmyItemPrototype{ID: 260, Category: ArmyCategoryInfantry, Faction: FactionExoCoalition, Space: 1},
+		Count:         5,
+	}}
+
+	presentID := base.ArmiesPresent[0].ID
+	ready, err := base.GetReadyToDeployArmy([]ArmyDeploymentRequest{
+		{PresentItemID: presentID, Count: 2},
+		{PresentItemID: presentID, Count: 3},
+	})
+	if err != nil {
+		t.Fatalf("GetReadyToDeployArmy error: %v", err)
+	}
+	if len(ready) != 1 {
+		t.Fatalf("expected 1 aggregated ready item, got %d", len(ready))
+	}
+	if ready[0].PresentItemID != presentID || ready[0].Count != 5 {
+		t.Fatalf("expected aggregated count=5 for same present item id, got %+v", ready[0])
+	}
+}
+
 func TestArmy_GetReadyToDeployArmy_InvalidCountErrorsAndDoesNotMutate(t *testing.T) {
 	base := newBaseWithDefaults(31)
 	base.ArmiesPresent = []ArmyItemPresent{{
@@ -375,7 +399,7 @@ func TestArmy_AllocateArmyToOperation_RemovesFromPresentAndMergesDeployed(t *tes
 	opID := 99
 
 	// First allocation of 2 units
-	chunk, err := base.AllocateArmyToOperation(ArmyDeploymentRequest{PresentItemID: presentID, Count: 2}, opID)
+	chunk, err := base.AllocateArmyToOperation(ArmyDeploymentRequest{PresentItemID: presentID, Count: 2}, OperationKindMilitary, opID)
 	if err != nil {
 		t.Fatalf("AllocateArmyToOperation (1) error: %v", err)
 	}
@@ -390,7 +414,7 @@ func TestArmy_AllocateArmyToOperation_RemovesFromPresentAndMergesDeployed(t *tes
 	}
 
 	// Second allocation of 1 unit should merge into same deployed entry
-	chunk, err = base.AllocateArmyToOperation(ArmyDeploymentRequest{PresentItemID: presentID, Count: 1}, opID)
+	chunk, err = base.AllocateArmyToOperation(ArmyDeploymentRequest{PresentItemID: presentID, Count: 1}, OperationKindMilitary, opID)
 	if err != nil {
 		t.Fatalf("AllocateArmyToOperation (2) error: %v", err)
 	}
@@ -413,21 +437,42 @@ func TestArmy_AllocateArmyToOperation_RespectsMaxOperations(t *testing.T) {
 
 	// Use up 2 operation slots
 	for i := 1; i <= 2; i++ {
-		if _, err := base.AllocateArmyToOperation(ArmyDeploymentRequest{PresentItemID: presentID, Count: 1}, i); err != nil {
+		if _, err := base.AllocateArmyToOperation(ArmyDeploymentRequest{PresentItemID: presentID, Count: 1}, OperationKindMilitary, i); err != nil {
 			t.Fatalf("allocation for op %d failed: %v", i, err)
 		}
 	}
 
 	// 3rd operation should fail
-	if _, err := base.AllocateArmyToOperation(ArmyDeploymentRequest{PresentItemID: presentID, Count: 1}, 3); err == nil {
+	if _, err := base.AllocateArmyToOperation(ArmyDeploymentRequest{PresentItemID: presentID, Count: 1}, OperationKindMilitary, 3); err == nil {
 		t.Errorf("expected error for exceeding MaxOperations (2), got nil")
 	} else if !strings.HasPrefix(err.Error(), "error.domain.operation.max_reached") {
 		t.Errorf("unexpected error message: %v", err)
 	}
 
 	// Adding more units to an existing operation (say op 2) should still succeed
-	if _, err := base.AllocateArmyToOperation(ArmyDeploymentRequest{PresentItemID: presentID, Count: 1}, 2); err != nil {
+	if _, err := base.AllocateArmyToOperation(ArmyDeploymentRequest{PresentItemID: presentID, Count: 1}, OperationKindMilitary, 2); err != nil {
 		t.Errorf("failed to add units to existing operation 2: %v", err)
+	}
+}
+
+func TestArmy_AllocateArmyToOperation_MaxOperationsUsesCompositeIdentity(t *testing.T) {
+	base := newBaseWithDefaults(35)
+	proto := ArmyItemPrototype{ID: 250, Category: ArmyCategoryInfantry, Faction: FactionExoCoalition, Space: 1}
+
+	base.ArmiesPresent = []ArmyItemPresent{
+		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: proto, Count: 10},
+	}
+	presentID := base.ArmiesPresent[0].ID
+
+	if _, err := base.AllocateArmyToOperation(ArmyDeploymentRequest{PresentItemID: presentID, Count: 1}, OperationKindMilitary, 77); err != nil {
+		t.Fatalf("allocation for military op failed: %v", err)
+	}
+	if _, err := base.AllocateArmyToOperation(ArmyDeploymentRequest{PresentItemID: presentID, Count: 1}, OperationKindTrade, 77); err != nil {
+		t.Fatalf("allocation for trade op with same id failed: %v", err)
+	}
+
+	if _, err := base.AllocateArmyToOperation(ArmyDeploymentRequest{PresentItemID: presentID, Count: 1}, OperationKindMilitary, 88); err == nil {
+		t.Fatalf("expected max operations error for third unique operation identity")
 	}
 }
 
@@ -444,12 +489,12 @@ func TestArmy_ReturnAllDeployedFromOperation_MergesBackAndCleans(t *testing.T) {
 
 	// Deployed for two operations
 	base.ArmiesDeployed = []ArmyItemDeployed{
-		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: proto1, OperationID: 10, Count: 2},
-		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: proto2, OperationID: 10, Count: 3},
-		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: proto1, OperationID: 11, Count: 4},
+		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: proto1, OperationKind: OperationKindMilitary, OperationID: 10, Count: 2},
+		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: proto2, OperationKind: OperationKindMilitary, OperationID: 10, Count: 3},
+		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: proto1, OperationKind: OperationKindMilitary, OperationID: 11, Count: 4},
 	}
 
-	base.ReturnAllDeployedFromOperation(10)
+	base.ReturnAllDeployedFromOperation(OperationKindMilitary, 10)
 
 	// ArmiesDeployed should retain only opID 11
 	if len(base.ArmiesDeployed) != 1 || base.ArmiesDeployed[0].OperationID != 11 || base.ArmiesDeployed[0].Prototype.ID != proto1.ID {
@@ -473,19 +518,111 @@ func TestArmy_ReturnAllDeployedFromOperation_MergesBackAndCleans(t *testing.T) {
 	}
 }
 
+func TestArmy_RemoveTradeDeployedArmyByPayload_DecrementsAndRemovesStacks(t *testing.T) {
+	base := newBaseWithDefaults(37)
+	proto1 := ArmyItemPrototype{ID: 270, Category: ArmyCategoryInfantry, Faction: FactionExoCoalition}
+	proto2 := ArmyItemPrototype{ID: 271, Category: ArmyCategoryInfantry, Faction: FactionExoCoalition}
+	operationID := 91
+
+	base.ArmiesDeployed = []ArmyItemDeployed{
+		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: proto1, OperationKind: OperationKindTrade, OperationID: operationID, Count: 5},
+		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: proto2, OperationKind: OperationKindTrade, OperationID: operationID, Count: 3},
+		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: ArmyItemPrototype{ID: 272, Category: ArmyCategoryInfantry, Faction: FactionExoCoalition}, OperationKind: OperationKindMilitary, OperationID: 77, Count: 9},
+	}
+
+	removed, err := base.RemoveTradeDeployedArmyByPayload([]TradeArmyItemSnap{
+		{PrototypeID: proto1.ID, Count: 2},
+		{PrototypeID: proto2.ID, Count: 3},
+	}, operationID)
+	if err != nil {
+		t.Fatalf("RemoveTradeDeployedArmyByPayload error: %v", err)
+	}
+	if len(removed) != 2 {
+		t.Fatalf("expected 2 removed stacks, got %+v", removed)
+	}
+	if removed[0].Prototype.ID != proto1.ID || removed[0].Count != 2 {
+		t.Fatalf("unexpected first removed stack: %+v", removed[0])
+	}
+	if removed[1].Prototype.ID != proto2.ID || removed[1].Count != 3 {
+		t.Fatalf("unexpected second removed stack: %+v", removed[1])
+	}
+	if len(base.ArmiesDeployed) != 2 {
+		t.Fatalf("expected 2 deployed stacks after removal, got %+v", base.ArmiesDeployed)
+	}
+	for _, d := range base.ArmiesDeployed {
+		switch d.Prototype.ID {
+		case proto1.ID:
+			if d.Count != 3 {
+				t.Fatalf("expected proto1 count=3 after partial removal, got %+v", d)
+			}
+		case proto2.ID:
+			t.Fatalf("expected proto2 to be removed entirely, got %+v", d)
+		case 272:
+			if d.OperationKind != OperationKindMilitary || d.OperationID != 77 || d.Count != 9 {
+				t.Fatalf("unexpected unrelated deployed stack mutation: %+v", d)
+			}
+		}
+	}
+}
+
+func TestArmy_AddTradeDeployedArmyStacks_NormalizesBaseOwnership(t *testing.T) {
+	base := newBaseWithDefaults(38)
+	proto1 := ArmyItemPrototype{ID: 280, Category: ArmyCategoryInfantry, Faction: FactionExoCoalition}
+	proto2 := ArmyItemPrototype{ID: 281, Category: ArmyCategoryInfantry, Faction: FactionExoCoalition}
+	operationID := 92
+
+	base.ArmiesDeployed = []ArmyItemDeployed{
+		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: proto1, OperationKind: OperationKindTrade, OperationID: operationID, Count: 4},
+		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: ArmyItemPrototype{ID: 282, Category: ArmyCategoryInfantry, Faction: FactionExoCoalition}, OperationKind: OperationKindMilitary, OperationID: 11, Count: 6},
+	}
+
+	base.AddTradeDeployedArmyStacks([]ArmyItemDeployed{
+		{BaseOwnedItem: NewBaseOwnedItem(base.ID + 1000), Prototype: proto1, Count: 3},
+		{BaseOwnedItem: NewBaseOwnedItem(base.ID + 2000), Prototype: proto2, Count: 2},
+	}, operationID)
+
+	if len(base.ArmiesDeployed) != 3 {
+		t.Fatalf("expected 3 deployed stacks after add, got %+v", base.ArmiesDeployed)
+	}
+	for _, d := range base.ArmiesDeployed {
+		switch d.Prototype.ID {
+		case proto1.ID:
+			if d.Count != 7 {
+				t.Fatalf("expected proto1 count=7 after merge, got %+v", d)
+			}
+			if d.BaseOwnedItem.UserBaseID != base.ID {
+				t.Fatalf("expected proto1 to keep current base ownership, got %+v", d.BaseOwnedItem)
+			}
+		case proto2.ID:
+			if d.OperationKind != OperationKindTrade || d.OperationID != operationID || d.Count != 2 {
+				t.Fatalf("unexpected restored proto2 stack: %+v", d)
+			}
+			if d.BaseOwnedItem.UserBaseID != base.ID {
+				t.Fatalf("expected proto2 to be normalized to current base ownership, got %+v", d.BaseOwnedItem)
+			}
+		case 282:
+			if d.OperationKind != OperationKindMilitary || d.OperationID != 11 || d.Count != 6 {
+				t.Fatalf("unexpected unrelated deployed stack mutation: %+v", d)
+			}
+		default:
+			t.Fatalf("unexpected deployed stack present: %+v", d)
+		}
+	}
+}
+
 func TestArmy_TrimDeployedToSurvivors_AdjustsCountsAndKeepsZeroEntries(t *testing.T) {
 	base := newBaseWithDefaults(34)
 	proto1 := ArmyItemPrototype{ID: 240, Faction: FactionExoCoalition}
 	proto2 := ArmyItemPrototype{ID: 241, Faction: FactionExoCoalition}
 
 	base.ArmiesDeployed = []ArmyItemDeployed{
-		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: proto1, OperationID: 50, Count: 5},
-		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: proto2, OperationID: 50, Count: 4},
-		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: proto1, OperationID: 51, Count: 7}, // different op
+		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: proto1, OperationKind: OperationKindMilitary, OperationID: 50, Count: 5},
+		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: proto2, OperationKind: OperationKindMilitary, OperationID: 50, Count: 4},
+		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: proto1, OperationKind: OperationKindMilitary, OperationID: 51, Count: 7}, // different op
 	}
 
 	survivors := []MilitaryUnitSnap{{PrototypeID: proto1.ID, Count: 3}}
-	base.TrimDeployedToSurvivors(50, survivors)
+	base.TrimDeployedToSurvivors(OperationKindMilitary, 50, survivors)
 
 	var op50p1, op50p2, op51p1 int
 	for _, d := range base.ArmiesDeployed {

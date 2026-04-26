@@ -47,6 +47,13 @@ type StorageQueries interface {
 	// Buffs may be represented via storage prototypes with BuffData activated; adjust as needed.
 }
 
+// TradeQueries: ally/base-owner inventory reads for trade preparation.
+type TradeQueries interface {
+	GetTradeInfo(ctx context.Context, actor Actor, targetX, targetY int) (*readmodels.TradeInfo, error)
+	GetTradeOperation(ctx context.Context, actor Actor, baseID int, operationID int) (*readmodels.TradeOperation, error)
+	ListActiveTradeOperations(ctx context.Context, actor Actor, baseID int) ([]*readmodels.TradeOperation, error)
+}
+
 // SectorQueries: sector scan reports only.
 type SectorQueries interface {
 	GetScansNear(ctx context.Context, actor Actor, baseID int, centerX, centerY, radius int) ([]*readmodels.SectorScanReport, error)

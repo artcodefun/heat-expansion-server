@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"slices"
+
 	"github.com/google/uuid"
 )
 
@@ -276,14 +278,26 @@ func (ub *UserBaseModel) GetReadyToDeployArmy(requests []ArmyDeploymentRequest) 
 	if len(requests) == 0 {
 		return nil, NewError("error.domain.army.no_units_for_deployment", nil)
 	}
-	readyToDeploy := []DeploymentReadyItem{}
-	for _, request := range requests {
 
-		presentItemID, count := request.PresentItemID, request.Count
+	aggregatedCounts := make(map[uuid.UUID]int, len(requests))
+	orderedIDs := make([]uuid.UUID, 0, len(requests))
+	for _, request := range requests {
+		if request.Count < 1 {
+			return []DeploymentReadyItem{}, NewError("error.domain.army.invalid_deployment_count", H{"count": request.Count, "available": 0})
+		}
+		if _, seen := aggregatedCounts[request.PresentItemID]; !seen {
+			orderedIDs = append(orderedIDs, request.PresentItemID)
+		}
+		aggregatedCounts[request.PresentItemID] += request.Count
+	}
+
+	readyToDeploy := []DeploymentReadyItem{}
+	for _, presentItemID := range orderedIDs {
+		count := aggregatedCounts[presentItemID]
 
 		idx := -1
 		for i, p := range ub.ArmiesPresent {
-			if p.ID == request.PresentItemID {
+			if p.ID == presentItemID {
 				idx = i
 				break
 			}
@@ -309,7 +323,7 @@ func (ub *UserBaseModel) GetReadyToDeployArmy(requests []ArmyDeploymentRequest) 
 // AllocateArmyToOperation removes 'count' from a present stack, records them as deployed,
 // and returns a deployed chunk describing what was allocated. Use conversion helpers
 // to build OperationUnits for the military operation aggregate if needed.
-func (ub *UserBaseModel) AllocateArmyToOperation(request ArmyDeploymentRequest, operationID int) (ArmyItemDeployed, error) {
+func (ub *UserBaseModel) AllocateArmyToOperation(request ArmyDeploymentRequest, operationKind OperationKind, operationID int) (ArmyItemDeployed, error) {
 	defer ub.recalculateStats()
 
 	presentItemID, count := request.PresentItemID, request.Count
@@ -330,11 +344,16 @@ func (ub *UserBaseModel) AllocateArmyToOperation(request ArmyDeploymentRequest, 
 	}
 
 	// Check MaxOperations limit
-	activeOps := make(map[int]bool)
-	for _, d := range ub.ArmiesDeployed {
-		activeOps[d.OperationID] = true
+	type operationIdentity struct {
+		operationKind OperationKind
+		operationID   int
 	}
-	if !activeOps[operationID] && len(activeOps) >= ub.Stats.MaxOperations {
+	activeOps := make(map[operationIdentity]bool)
+	for _, d := range ub.ArmiesDeployed {
+		activeOps[operationIdentity{operationKind: d.OperationKind, operationID: d.OperationID}] = true
+	}
+	current := operationIdentity{operationKind: operationKind, operationID: operationID}
+	if !activeOps[current] && len(activeOps) >= ub.Stats.MaxOperations {
 		return ArmyItemDeployed{}, NewError("error.domain.operation.max_reached", H{"max": ub.Stats.MaxOperations})
 	}
 
@@ -348,7 +367,7 @@ func (ub *UserBaseModel) AllocateArmyToOperation(request ArmyDeploymentRequest, 
 	// Merge into deployed list by (operationID, prototypeID)
 	merged := false
 	for i, d := range ub.ArmiesDeployed {
-		if d.OperationID == operationID && d.Prototype.ID == p.Prototype.ID {
+		if d.OperationKind == operationKind && d.OperationID == operationID && d.Prototype.ID == p.Prototype.ID {
 			ub.ArmiesDeployed[i].Count += count
 			merged = true
 			break
@@ -358,6 +377,7 @@ func (ub *UserBaseModel) AllocateArmyToOperation(request ArmyDeploymentRequest, 
 		ub.ArmiesDeployed = append(ub.ArmiesDeployed, ArmyItemDeployed{
 			BaseOwnedItem: NewBaseOwnedItem(ub.ID),
 			Prototype:     p.Prototype,
+			OperationKind: operationKind,
 			OperationID:   operationID,
 			Count:         count,
 		})
@@ -366,6 +386,7 @@ func (ub *UserBaseModel) AllocateArmyToOperation(request ArmyDeploymentRequest, 
 	deployedChunk := ArmyItemDeployed{
 		BaseOwnedItem: NewBaseOwnedItem(ub.ID),
 		Prototype:     p.Prototype,
+		OperationKind: operationKind,
 		OperationID:   operationID,
 		Count:         count,
 	}
@@ -375,103 +396,18 @@ func (ub *UserBaseModel) AllocateArmyToOperation(request ArmyDeploymentRequest, 
 }
 
 // CleanupDeployedForOperation removes any remaining deployed entries for an operation (e.g., on cancel/fail).
-func (ub *UserBaseModel) CleanupDeployedForOperation(operationID int) {
+func (ub *UserBaseModel) CleanupDeployedForOperation(operationKind OperationKind, operationID int) {
 	if len(ub.ArmiesDeployed) == 0 {
 		return
 	}
 	out := ub.ArmiesDeployed[:0]
 	for _, d := range ub.ArmiesDeployed {
-		if d.OperationID != operationID {
+		if d.OperationKind != operationKind || d.OperationID != operationID {
 			out = append(out, d)
 		}
 	}
 	ub.ArmiesDeployed = out
 	ub.recalculateStats()
-}
-
-// --- Aggregate methods used by military operations ---
-
-// ReturnAllDeployedFromOperation merges all deployed units for the given operation
-// back into ArmiesPresent and removes the deployed entries.
-func (ub *UserBaseModel) ReturnAllDeployedFromOperation(operationID int) {
-	// Merge deployed counts into present by prototype
-	for _, d := range ub.ArmiesDeployed {
-		if d.OperationID != operationID || d.Count <= 0 {
-			continue
-		}
-		merged := false
-		for i := range ub.ArmiesPresent {
-			if ub.ArmiesPresent[i].Prototype.ID == d.Prototype.ID {
-				ub.ArmiesPresent[i].Count += d.Count
-				merged = true
-				break
-			}
-		}
-		if !merged {
-			ub.ArmiesPresent = append(ub.ArmiesPresent, ArmyItemPresent{
-				BaseOwnedItem: NewBaseOwnedItem(ub.ID),
-				Prototype:     d.Prototype,
-				Count:         d.Count,
-				Refund:        d.Prototype.Price.Divide(10),
-			})
-		}
-	}
-	// Remove deployed entries for this operation and recalc stats
-	ub.CleanupDeployedForOperation(operationID)
-}
-
-// TrimDeployedToSurvivors reduces deployed counts for this operation down to the
-// survivors by prototype, removing any stacks that were completely destroyed.
-func (ub *UserBaseModel) TrimDeployedToSurvivors(operationID int, survivors []MilitaryUnitSnap) {
-	defer ub.recalculateStats()
-	if len(ub.ArmiesDeployed) == 0 {
-		return
-	}
-	remainByProto := map[int]int{}
-	for _, u := range survivors {
-		if u.Count > 0 {
-			remainByProto[u.PrototypeID] += u.Count
-		}
-	}
-
-	newDeployed := make([]ArmyItemDeployed, 0, len(ub.ArmiesDeployed))
-	for _, d := range ub.ArmiesDeployed {
-		if d.OperationID != operationID {
-			newDeployed = append(newDeployed, d)
-			continue
-		}
-
-		remain := remainByProto[d.Prototype.ID]
-		if remain > 0 {
-			if d.Count > remain {
-				d.Count = remain
-			}
-			remainByProto[d.Prototype.ID] -= d.Count
-			newDeployed = append(newDeployed, d)
-		}
-	}
-	ub.ArmiesDeployed = newDeployed
-}
-
-// ApplyDefenderArmyRemaining sets ArmiesPresent counts to the provided remaining defenders
-// by prototype ID, removing any stacks that were completely destroyed.
-func (ub *UserBaseModel) ApplyDefenderArmyRemaining(remaining []MilitaryUnitSnap) {
-	defer ub.recalculateStats()
-	remainByProto := map[int]int{}
-	for _, u := range remaining {
-		if u.Count > 0 {
-			remainByProto[u.PrototypeID] += u.Count
-		}
-	}
-
-	newArmies := make([]ArmyItemPresent, 0, len(ub.ArmiesPresent))
-	for _, p := range ub.ArmiesPresent {
-		if newCount, ok := remainByProto[p.Prototype.ID]; ok && newCount > 0 {
-			p.Count = newCount
-			newArmies = append(newArmies, p)
-		}
-	}
-	ub.ArmiesPresent = newArmies
 }
 
 // EnsureStartingArmyPresent adds basic infantry units if they are missing.
@@ -510,4 +446,179 @@ func (ub *UserBaseModel) EnsureStartingArmyPresent(allPrototypes []*ArmyItemProt
 			Refund:        basicInfantry.Price.Divide(2),
 		})
 	}
+}
+
+// --- Aggregate methods used by military operations ---
+
+// ReturnAllDeployedFromOperation merges all deployed units for the given operation
+// back into ArmiesPresent and removes the deployed entries.
+func (ub *UserBaseModel) ReturnAllDeployedFromOperation(operationKind OperationKind, operationID int) {
+	// Merge deployed counts into present by prototype
+	for _, d := range ub.ArmiesDeployed {
+		if d.OperationKind != operationKind || d.OperationID != operationID || d.Count <= 0 {
+			continue
+		}
+		merged := false
+		for i := range ub.ArmiesPresent {
+			if ub.ArmiesPresent[i].Prototype.ID == d.Prototype.ID {
+				ub.ArmiesPresent[i].Count += d.Count
+				merged = true
+				break
+			}
+		}
+		if !merged {
+			ub.ArmiesPresent = append(ub.ArmiesPresent, ArmyItemPresent{
+				BaseOwnedItem: NewBaseOwnedItem(ub.ID),
+				Prototype:     d.Prototype,
+				Count:         d.Count,
+				Refund:        d.Prototype.Price.Divide(10),
+			})
+		}
+	}
+	// Remove deployed entries for this operation and recalc stats
+	ub.CleanupDeployedForOperation(operationKind, operationID)
+}
+
+// TrimDeployedToSurvivors reduces deployed counts for this operation down to the
+// survivors by prototype, removing any stacks that were completely destroyed.
+func (ub *UserBaseModel) TrimDeployedToSurvivors(operationKind OperationKind, operationID int, survivors []MilitaryUnitSnap) {
+	defer ub.recalculateStats()
+	if len(ub.ArmiesDeployed) == 0 {
+		return
+	}
+	remainByProto := map[int]int{}
+	for _, u := range survivors {
+		if u.Count > 0 {
+			remainByProto[u.PrototypeID] += u.Count
+		}
+	}
+
+	newDeployed := make([]ArmyItemDeployed, 0, len(ub.ArmiesDeployed))
+	for _, d := range ub.ArmiesDeployed {
+		if d.OperationKind != operationKind || d.OperationID != operationID {
+			newDeployed = append(newDeployed, d)
+			continue
+		}
+
+		remain := remainByProto[d.Prototype.ID]
+		if remain > 0 {
+			if d.Count > remain {
+				d.Count = remain
+			}
+			remainByProto[d.Prototype.ID] -= d.Count
+			newDeployed = append(newDeployed, d)
+		}
+	}
+	ub.ArmiesDeployed = newDeployed
+}
+
+// ApplyDefenderArmyRemaining sets ArmiesPresent counts to the provided remaining defenders
+// by prototype ID, removing any stacks that were completely destroyed.
+func (ub *UserBaseModel) ApplyDefenderArmyRemaining(remaining []MilitaryUnitSnap) {
+	defer ub.recalculateStats()
+	remainByProto := map[int]int{}
+	for _, u := range remaining {
+		if u.Count > 0 {
+			remainByProto[u.PrototypeID] += u.Count
+		}
+	}
+
+	newArmies := make([]ArmyItemPresent, 0, len(ub.ArmiesPresent))
+	for _, p := range ub.ArmiesPresent {
+		if newCount, ok := remainByProto[p.Prototype.ID]; ok && newCount > 0 {
+			p.Count = newCount
+			newArmies = append(newArmies, p)
+		}
+	}
+	ub.ArmiesPresent = newArmies
+}
+
+// --- Aggregate methods used by trade operations ---
+
+// RemoveTradeDeployedArmyByPayload removes the deployed trade army stacks matching
+// the payload and returns the exact deployed stacks that were removed.
+func (ub *UserBaseModel) RemoveTradeDeployedArmyByPayload(payload []TradeArmyItemSnap, operationID int) ([]ArmyItemDeployed, error) {
+	if len(payload) == 0 {
+		return nil, nil
+	}
+
+	requiredByProto := make(map[int]int, len(payload))
+	orderedProtoIDs := make([]int, 0, len(payload))
+	seenProtoIDs := make(map[int]struct{}, len(payload))
+	for _, snap := range payload {
+		if snap.Count <= 0 {
+			return nil, NewError("error.domain.trade.invalid_army_item", H{"prototype_id": snap.PrototypeID})
+		}
+		if _, seen := seenProtoIDs[snap.PrototypeID]; !seen {
+			orderedProtoIDs = append(orderedProtoIDs, snap.PrototypeID)
+			seenProtoIDs[snap.PrototypeID] = struct{}{}
+		}
+		requiredByProto[snap.PrototypeID] += snap.Count
+	}
+
+	removed := make([]ArmyItemDeployed, 0, len(orderedProtoIDs))
+	for _, protoID := range orderedProtoIDs {
+		required := requiredByProto[protoID]
+		idx := slices.IndexFunc(ub.ArmiesDeployed, func(d ArmyItemDeployed) bool {
+			return d.OperationKind == OperationKindTrade && d.OperationID == operationID && d.Prototype.ID == protoID
+		})
+		if idx == -1 {
+			return nil, NewError("error.domain.trade.offered_army_mismatch", H{"prototype_id": protoID, "required": required, "available": 0})
+		}
+
+		deployed := ub.ArmiesDeployed[idx]
+		if deployed.Count < required {
+			return nil, NewError("error.domain.trade.offered_army_mismatch", H{"prototype_id": protoID, "required": required, "available": deployed.Count})
+		}
+
+		removed = append(removed, ArmyItemDeployed{
+			BaseOwnedItem: NewBaseOwnedItem(ub.ID),
+			Prototype:     deployed.Prototype,
+			OperationKind: OperationKindTrade,
+			OperationID:   operationID,
+			Count:         required,
+		})
+
+		if deployed.Count == required {
+			ub.ArmiesDeployed = append(ub.ArmiesDeployed[:idx], ub.ArmiesDeployed[idx+1:]...)
+			continue
+		}
+
+		ub.ArmiesDeployed[idx].Count -= required
+	}
+
+	ub.recalculateStats()
+	return removed, nil
+}
+
+// AddTradeDeployedArmyStacks restores concrete deployed stacks for a trade operation.
+func (ub *UserBaseModel) AddTradeDeployedArmyStacks(stacks []ArmyItemDeployed, operationID int) {
+	if len(stacks) == 0 {
+		return
+	}
+
+	for _, stack := range stacks {
+		if stack.Count <= 0 {
+			continue
+		}
+		merged := false
+		for i := range ub.ArmiesDeployed {
+			d := &ub.ArmiesDeployed[i]
+			if d.OperationKind == OperationKindTrade && d.OperationID == operationID && d.Prototype.ID == stack.Prototype.ID {
+				d.Count += stack.Count
+				merged = true
+				break
+			}
+		}
+		if !merged {
+			ub.ArmiesDeployed = append(ub.ArmiesDeployed, ArmyItemDeployed{
+				BaseOwnedItem: NewBaseOwnedItem(ub.ID),
+				Prototype:     stack.Prototype,
+				OperationKind: OperationKindTrade,
+				OperationID:   operationID,
+				Count:         stack.Count,
+			})
+		}
+	}
+	ub.recalculateStats()
 }

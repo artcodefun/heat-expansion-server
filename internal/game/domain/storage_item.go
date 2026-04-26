@@ -5,6 +5,13 @@ import "math"
 // StorageCategory represents the category of a storage item.
 type StorageCategory string
 
+type StorageStatus string
+
+const (
+	StorageStatusPresent  StorageStatus = "PRESENT"
+	StorageStatusDeployed StorageStatus = "DEPLOYED"
+)
+
 const (
 	StorageCategoryBuff       StorageCategory = "BUFF"
 	StorageCategoryIntel      StorageCategory = "INTEL"
@@ -132,6 +139,16 @@ type StorageItemPresent struct {
 	Prototype StorageItemPrototype
 	ExpiresAt *int64 // Unix timestamp for when the item (not necessarily the buff) disappears
 	IsActive  bool   // Whether the item is currently active (e.g., toggled artifact or active buff)
+}
+
+// StorageItemDeployed represents a storage item reserved/deployed into an operation.
+type StorageItemDeployed struct {
+	BaseOwnedItem
+	Prototype     StorageItemPrototype
+	OperationKind OperationKind
+	OperationID   int
+	ExpiresAt     *int64
+	IsActive      bool
 }
 
 // StorageItemSnap captures a snapshot of an active storage item (buff or artifact)

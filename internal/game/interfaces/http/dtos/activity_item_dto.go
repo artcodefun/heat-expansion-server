@@ -44,6 +44,7 @@ type ActivityItemDTO struct {
 	Defense *DefenseActivityDTO `json:"defense,omitempty"`
 	Scan    *ScanActivityDTO    `json:"scan,omitempty"`
 	Radar   *RadarActivityDTO   `json:"radar,omitempty"`
+	Trade   *TradeActivityDTO   `json:"trade,omitempty"`
 }
 
 // OffenseActivityDTO mirrors readmodels.OffenseActivity.
@@ -55,16 +56,16 @@ type OffenseActivityDTO struct {
 
 // OffenderInfoDTO provides a restricted view of an attacking operation for the defender.
 type OffenderInfoDTO struct {
-	Type              OperationType        `json:"type"`
-	SourceCoordinates *Vector2iDTO         `json:"sourceCoordinates,omitempty"`
-	TargetCoordinates Vector2iDTO          `json:"targetCoordinates"`
-	ContactDate       int64                `json:"contactDate"`
-	Result            OperationResult      `json:"result"`
-	Units             []MilitaryUnitDTO    `json:"units"`
-	StorageSnaps      []StorageItemSnapDTO `json:"storageSnaps"`
-	TotalModifiers    MilitaryModifiersDTO `json:"totalModifiers"`
-	SpyResult         *SpyResultDTO        `json:"spyResult,omitempty"`
-	AttackResult      *AttackResultDTO     `json:"attackResult,omitempty"`
+	Type              MilitaryOperationType   `json:"type"`
+	SourceCoordinates *Vector2iDTO            `json:"sourceCoordinates,omitempty"`
+	TargetCoordinates Vector2iDTO             `json:"targetCoordinates"`
+	ContactDate       int64                   `json:"contactDate"`
+	Result            MilitaryOperationResult `json:"result"`
+	Units             []MilitaryUnitDTO       `json:"units"`
+	StorageSnaps      []StorageItemSnapDTO    `json:"storageSnaps"`
+	TotalModifiers    MilitaryModifiersDTO    `json:"totalModifiers"`
+	SpyResult         *SpyResultDTO           `json:"spyResult,omitempty"`
+	AttackResult      *AttackResultDTO        `json:"attackResult,omitempty"`
 }
 
 // DefenseActivityDTO mirrors readmodels.DefenseActivity.
@@ -105,6 +106,12 @@ type RadarActivityDTO struct {
 	Threat   *RadarThreatDTO `json:"threat,omitempty"`
 }
 
+// TradeActivityDTO mirrors readmodels.TradeActivity.
+type TradeActivityDTO struct {
+	OpID      int                `json:"opId"`
+	Operation *TradeOperationDTO `json:"operation,omitempty"`
+}
+
 func offenseActivityFromReadModel(offense *readmodels.OffenseActivity, tr ports.Translator, locale string) *OffenseActivityDTO {
 	if offense == nil {
 		return nil
@@ -125,10 +132,10 @@ func offenderInfoFromReadModel(o *readmodels.OffenderInfo, tr ports.Translator, 
 		return nil
 	}
 	dto := &OffenderInfoDTO{
-		Type:              OperationType(o.Type),
+		Type:              MilitaryOperationType(o.Type),
 		TargetCoordinates: Vector2iDTO{X: o.TargetCoordinates.X, Y: o.TargetCoordinates.Y},
 		ContactDate:       o.ContactDate,
-		Result:            OperationResult(o.Result),
+		Result:            MilitaryOperationResult(o.Result),
 		Units:             MilitaryUnitsFromReadModel(o.Units, tr, locale),
 		StorageSnaps:      storageItemSnapsFromReadModel(o.StorageSnaps, tr, locale),
 		TotalModifiers:    MilitaryModifiersFromReadModel(o.TotalModifiers),
@@ -200,6 +207,18 @@ func radarActivityFromReadModel(radar *readmodels.RadarActivity, tr ports.Transl
 	return dto
 }
 
+func tradeActivityFromReadModel(trade *readmodels.TradeActivity, tr ports.Translator, locale string) *TradeActivityDTO {
+	if trade == nil {
+		return nil
+	}
+	dto := &TradeActivityDTO{OpID: trade.OpID}
+	if trade.Operation != nil {
+		m := TradeOperationFromReadModel(trade.Operation, tr, locale)
+		dto.Operation = &m
+	}
+	return dto
+}
+
 func ActivityItemDTOFromReadModel(a *readmodels.ActivityItem, tr ports.Translator, locale string) ActivityItemDTO {
 	dto := ActivityItemDTO{
 		ID:        a.ID,
@@ -210,6 +229,7 @@ func ActivityItemDTOFromReadModel(a *readmodels.ActivityItem, tr ports.Translato
 		Defense:   defenseActivityFromReadModel(a.Defense, tr, locale),
 		Scan:      scanActivityFromReadModel(a.Scan, tr, locale),
 		Radar:     radarActivityFromReadModel(a.Radar, tr, locale),
+		Trade:     tradeActivityFromReadModel(a.Trade, tr, locale),
 	}
 	return dto
 }

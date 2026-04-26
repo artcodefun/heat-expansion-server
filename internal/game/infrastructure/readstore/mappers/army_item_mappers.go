@@ -78,6 +78,20 @@ func ArmyItemPresentFromRow(r gen.ListPresentArmyItemsRow) readmodels.ArmyItemPr
 	}
 }
 
+func ArmyItemPresentFromAllRow(r gen.ListPresentArmyItemsAllRow) readmodels.ArmyItemPresent {
+	var jd dtos.ArmyPresentDTO
+	if r.PresentData.Valid {
+		_ = json.Unmarshal(r.PresentData.RawMessage, &jd)
+	}
+	refund := readmodels.PriceModel{Credits: jd.Refund.Credits, Iron: jd.Refund.Iron, Titanium: jd.Refund.Titanium, Antimatter: jd.Refund.Antimatter}
+	return readmodels.ArmyItemPresent{
+		BaseOwnedItem: readmodels.BaseOwnedItem{ID: r.ID, UserBaseID: int(r.BaseID)},
+		Prototype:     armyPrototypeFromParts(r.ProtoID, r.Name, r.Category, r.Faction, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ProductionTime, r.Space, r.ImageUrl, r.Attack, r.Defence, r.Capacity, r.Stealth, r.Speed),
+		Count:         jd.Count,
+		Refund:        refund,
+	}
+}
+
 func NewArmyItemFromPrototype(p gen.ArmyItemPrototype) readmodels.ArmyItemNew {
 	proto := ArmyPrototypeFromModel(p)
 	return readmodels.ArmyItemNew{Prototype: proto}

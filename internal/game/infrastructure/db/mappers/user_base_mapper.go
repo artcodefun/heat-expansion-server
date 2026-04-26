@@ -36,6 +36,7 @@ func UserBaseFromDB(b gen.UserBase) *domain.UserBaseModel {
 	ub.TechnologiesInProgress = []domain.TechItemInProgress{}
 	ub.TechnologiesDone = []domain.TechItemDone{}
 	ub.StorageItemsPresent = []domain.StorageItemPresent{}
+	ub.StorageItemsDeployed = []domain.StorageItemDeployed{}
 	return ub
 }
 

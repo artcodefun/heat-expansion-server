@@ -33,6 +33,7 @@ type Querier interface {
 	DeleteResourceLocation(ctx context.Context, id int64) error
 	DeleteResourceLocationBySector(ctx context.Context, arg DeleteResourceLocationBySectorParams) error
 	DeleteScanReport(ctx context.Context, id int64) error
+	DeleteTradeOperation(ctx context.Context, id int64) error
 	ExistsDiplomaticMessageByRequestAndContent(ctx context.Context, arg ExistsDiplomaticMessageByRequestAndContentParams) (bool, error)
 	ExistsForActivity(ctx context.Context, activityID uuid.NullUUID) (bool, error)
 	ExistsForOperation(ctx context.Context, arg ExistsForOperationParams) (bool, error)
@@ -78,6 +79,9 @@ type Querier interface {
 	GetStoragePrototypeByID(ctx context.Context, id int64) (StorageItemPrototype, error)
 	// Technology prototypes queries
 	GetTechPrototypeByID(ctx context.Context, id int64) (TechItemPrototype, error)
+	// Trade operations queries
+	GetTradeOperationByID(ctx context.Context, id int64) (TradeOperation, error)
+	GetTradeOperationByIDForUpdate(ctx context.Context, id int64) (TradeOperation, error)
 	// Users queries
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
 	InsertActivity(ctx context.Context, arg InsertActivityParams) (uuid.UUID, error)
@@ -99,6 +103,7 @@ type Querier interface {
 	InsertScanReport(ctx context.Context, arg InsertScanReportParams) (int64, error)
 	// Scheduled jobs queries for durable scheduler
 	InsertScheduledJob(ctx context.Context, arg InsertScheduledJobParams) (int64, error)
+	InsertTradeOperation(ctx context.Context, arg InsertTradeOperationParams) (int64, error)
 	InsertUser(ctx context.Context, arg InsertUserParams) error
 	// Activities queries
 	ListActivitiesByBase(ctx context.Context, arg ListActivitiesByBaseParams) ([]Activity, error)
@@ -110,7 +115,7 @@ type Querier interface {
 	// Base build items queries
 	ListBaseBuildItems(ctx context.Context, baseID int64) ([]BaseBuildItem, error)
 	// Base storage items queries
-	ListBaseStorageItems(ctx context.Context, baseID int64) ([]BaseStorageItem, error)
+	ListBaseStorageItems(ctx context.Context, baseID int64) ([]ListBaseStorageItemsRow, error)
 	// Base tech items queries
 	ListBaseTechItems(ctx context.Context, baseID int64) ([]BaseTechItem, error)
 	ListBasesByUserID(ctx context.Context, userID uuid.UUID) ([]UserBase, error)
@@ -139,6 +144,7 @@ type Querier interface {
 	UpdateRadarThreat(ctx context.Context, arg UpdateRadarThreatParams) (RadarThreat, error)
 	UpdateResourceLocation(ctx context.Context, arg UpdateResourceLocationParams) error
 	UpdateSector(ctx context.Context, arg UpdateSectorParams) (Sector, error)
+	UpdateTradeOperation(ctx context.Context, arg UpdateTradeOperationParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
 }
 

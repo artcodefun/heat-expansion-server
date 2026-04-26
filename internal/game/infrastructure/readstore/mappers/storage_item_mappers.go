@@ -56,6 +56,36 @@ func StorageItemPresentFromRow(r gen.ListPresentStorageItemsRow) readmodels.Stor
 	}
 }
 
+func StoragePrototypeFromTradeableRow(r gen.ListTradeableStorageItemsRow) readmodels.StorageItemPrototype {
+	return readmodels.StorageItemPrototype{
+		ID:               int(r.ProtoID),
+		Name:             r.Name,
+		Category:         readmodels.StorageCategory(r.Category),
+		EstimatedWorth:   int(r.EstimatedWorth),
+		ShortDescription: nullString(r.ShortDescription),
+		FullDescription:  nullString(r.FullDescription),
+		ImageURL:         nullString(r.ImageUrl),
+		BuffData:         buffStorageDataFromJSON(r.BuffData),
+		IntelData:        intelStorageDataFromJSON(r.IntelData),
+		DamagedData:      damagedStorageDataFromJSON(r.DamagedData),
+		ArtifactData:     artifactStorageDataFromJSON(r.ArtifactData),
+		ConsumableData:   consumableStorageDataFromJSON(r.ConsumableData),
+	}
+}
+
+func StorageItemPresentFromTradeableRow(r gen.ListTradeableStorageItemsRow) readmodels.StorageItemPresent {
+	var jd dtos.StoragePresentDTO
+	if r.PresentData.Valid {
+		_ = json.Unmarshal(r.PresentData.RawMessage, &jd)
+	}
+	return readmodels.StorageItemPresent{
+		BaseOwnedItem: readmodels.BaseOwnedItem{ID: r.ID, UserBaseID: int(r.BaseID)},
+		Prototype:     StoragePrototypeFromTradeableRow(r),
+		ExpiresAt:     jd.ExpiresAt,
+		IsActive:      jd.IsActive,
+	}
+}
+
 // Storage prototype detail helpers: JSONB (DTO shape) -> readmodels.* data
 
 func buffStorageDataFromJSON(nm pqtype.NullRawMessage) *readmodels.BuffStorageData {

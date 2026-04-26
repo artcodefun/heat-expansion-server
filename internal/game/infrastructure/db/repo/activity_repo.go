@@ -29,10 +29,10 @@ func (r *ActivityRepo) Create(ctx context.Context, item *domain.ActivityItem) er
 	return err
 }
 
-func (r *ActivityRepo) ExistsForOperation(ctx context.Context, baseID int, kind string, opID int) (bool, error) {
+func (r *ActivityRepo) ExistsForOperation(ctx context.Context, baseID int, kind domain.ActivityKind, opID int) (bool, error) {
 	return r.q.ExistsForOperation(ctx, gen.ExistsForOperationParams{
 		BaseID: int64(baseID),
-		Kind:   kind,
+		Kind:   string(kind),
 		OpID:   int64(opID),
 	})
 }

@@ -28,7 +28,7 @@ func BuildArmyPresentRaw(it domain.ArmyItemPresent) pqtype.NullRawMessage {
 }
 
 func BuildArmyDeployedRaw(it domain.ArmyItemDeployed) pqtype.NullRawMessage {
-	dto := dtos.ArmyDeployedDTO{OperationID: it.OperationID, Count: it.Count}
+	dto := dtos.ArmyDeployedDTOFromDomain(it)
 	b, _ := json.Marshal(dto)
 	return pqtype.NullRawMessage{RawMessage: b, Valid: true}
 }
@@ -68,6 +68,12 @@ func BuildTechDoneRaw(it domain.TechItemDone) pqtype.NullRawMessage {
 // Storage payloads
 func BuildStoragePresentRaw(it domain.StorageItemPresent) pqtype.NullRawMessage {
 	dto := dtos.StoragePresentDTOFromDomain(it)
+	b, _ := json.Marshal(dto)
+	return pqtype.NullRawMessage{RawMessage: b, Valid: true}
+}
+
+func BuildStorageDeployedRaw(it domain.StorageItemDeployed) pqtype.NullRawMessage {
+	dto := dtos.StorageDeployedDTOFromDomain(it)
 	b, _ := json.Marshal(dto)
 	return pqtype.NullRawMessage{RawMessage: b, Valid: true}
 }

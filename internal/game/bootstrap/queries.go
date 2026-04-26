@@ -9,6 +9,7 @@ type Queries struct {
 	Building  *queries.BuildingQueries
 	Tech      *queries.TechQueries
 	Storage   *queries.StorageQueries
+	Trade     *queries.TradeQueries
 	Sector    *queries.SectorQueries
 	Operation *queries.OperationQueries
 	Activity  *queries.ActivityQueries
@@ -27,6 +28,7 @@ func NewQueries(a *Adapters, as *AppServices) *Queries {
 		Building:  queries.NewBuildingQueries(a.BuildingRead, a.BuildPrototypes, a.UserBases, as.Access),
 		Tech:      queries.NewTechQueries(a.TechRead, a.TechPrototypes, a.UserBases, as.Access),
 		Storage:   queries.NewStorageQueries(a.StorageRead, as.Access),
+		Trade:     queries.NewTradeQueries(a.ArmyRead, a.StorageRead, a.BaseRead, a.UserBases, a.DiplomacyRead, a.TradeOperationRead, as.Access),
 		Sector:    queries.NewSectorQueries(a.SectorRead, as.Access),
 		Operation: queries.NewOperationQueries(a.OperationRead, as.Access),
 		Activity:  queries.NewActivityQueries(a.ActivityRead, as.Access),

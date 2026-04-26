@@ -29,6 +29,7 @@ type Adapters struct {
 	StoragePrototypes       ports.StoragePrototypeRepository
 	TechPrototypes          ports.TechPrototypeRepository
 	MilitaryOps             ports.MilitaryOperationRepository
+	TradeOps                ports.TradeOperationRepository
 	ScanReports             ports.ScanReportRepository
 	Activities              ports.ActivityRepository
 	RadarThreats            ports.RadarThreatRepository
@@ -39,18 +40,19 @@ type Adapters struct {
 	DiplomaticRequests      ports.DiplomaticRequestRepository
 
 	// Read Repositories (read-store / projections)
-	BaseRead      ports.BaseReadRepository
-	BuildingRead  ports.BuildingReadRepository
-	ArmyRead      ports.ArmyReadRepository
-	StorageRead   ports.StorageReadRepository
-	TechRead      ports.TechReadRepository
-	OperationRead ports.OperationReadRepository
-	ActivityRead  ports.ActivityReadRepository
-	SectorRead    ports.SectorReadRepository
-	RadarRead     ports.RadarReadRepository
-	UserRead      ports.UserReadRepository
-	AlertRead     ports.AlertReadRepository
-	DiplomacyRead ports.DiplomacyReadRepository
+	BaseRead           ports.BaseReadRepository
+	BuildingRead       ports.BuildingReadRepository
+	ArmyRead           ports.ArmyReadRepository
+	StorageRead        ports.StorageReadRepository
+	TechRead           ports.TechReadRepository
+	OperationRead      ports.OperationReadRepository
+	TradeOperationRead ports.TradeOperationReadRepository
+	ActivityRead       ports.ActivityReadRepository
+	SectorRead         ports.SectorReadRepository
+	RadarRead          ports.RadarReadRepository
+	UserRead           ports.UserReadRepository
+	AlertRead          ports.AlertReadRepository
+	DiplomacyRead      ports.DiplomacyReadRepository
 
 	// Infra
 	TxMgr      ports.TransactionManager
@@ -89,8 +91,8 @@ func NewAdapters(db *sql.DB, staticBaseURL string, jwtSecret string, i18nPath st
 	baseRead := readrepo.NewBaseReadRepo(rq)
 	sectorRead := readrepo.NewSectorReadRepo(rq, baseRead)
 	opRead := readrepo.NewOperationReadRepo(rq, sectorRead)
+	tradeOpRead := readrepo.NewTradeOperationReadRepo(rq, sectorRead)
 	radarRead := readrepo.NewRadarThreatReadRepo(rq)
-	activityRead := readrepo.NewActivityReadRepo(rq, opRead, sectorRead, radarRead)
 
 	armyProtoRepo := repo.NewArmyPrototypeRepo(q)
 	buildProtoRepo := repo.NewBuildPrototypeRepo(q)
@@ -106,6 +108,7 @@ func NewAdapters(db *sql.DB, staticBaseURL string, jwtSecret string, i18nPath st
 		StoragePrototypes:       repo.NewStoragePrototypeRepo(q),
 		TechPrototypes:          repo.NewTechPrototypeRepo(q),
 		MilitaryOps:             repo.NewMilitaryOperationRepo(q),
+		TradeOps:                repo.NewTradeOperationRepo(q),
 		ScanReports:             repo.NewScanReportRepo(q),
 		Activities:              repo.NewActivityRepo(q),
 		RadarThreats:            repo.NewRadarThreatRepo(q),
@@ -115,23 +118,24 @@ func NewAdapters(db *sql.DB, staticBaseURL string, jwtSecret string, i18nPath st
 		DiplomaticMessages:      repo.NewDiplomaticMessageRepo(q),
 		DiplomaticRequests:      repo.NewDiplomaticRequestRepo(q),
 		// Read side
-		BaseRead:      baseRead,
-		BuildingRead:  readrepo.NewBuildReadRepo(rq),
-		ArmyRead:      readrepo.NewArmyReadRepo(rq),
-		StorageRead:   readrepo.NewStorageReadRepo(rq),
-		TechRead:      readrepo.NewTechReadRepo(rq),
-		OperationRead: opRead,
-		ActivityRead:  activityRead,
-		SectorRead:    sectorRead,
-		RadarRead:     radarRead,
-		UserRead:      readrepo.NewUserReadRepo(rq),
-		AlertRead:     readrepo.NewAlertReadRepository(rq),
-		DiplomacyRead: readrepo.NewDiplomacyReadRepo(rq, baseRead),
-		TxMgr:         txMgr,
-		Tokens:        tokens,
-		Events:        publisher,
-		Scheduler:     scheduler,
-		Content:       generator,
-		Translator:    translator,
+		BaseRead:           baseRead,
+		BuildingRead:       readrepo.NewBuildReadRepo(rq),
+		ArmyRead:           readrepo.NewArmyReadRepo(rq),
+		StorageRead:        readrepo.NewStorageReadRepo(rq),
+		TechRead:           readrepo.NewTechReadRepo(rq),
+		OperationRead:      opRead,
+		TradeOperationRead: tradeOpRead,
+		ActivityRead:       readrepo.NewActivityReadRepo(rq, opRead, tradeOpRead, sectorRead, radarRead),
+		SectorRead:         sectorRead,
+		RadarRead:          radarRead,
+		UserRead:           readrepo.NewUserReadRepo(rq),
+		AlertRead:          readrepo.NewAlertReadRepository(rq),
+		DiplomacyRead:      readrepo.NewDiplomacyReadRepo(rq, baseRead),
+		TxMgr:              txMgr,
+		Tokens:             tokens,
+		Events:             publisher,
+		Scheduler:          scheduler,
+		Content:            generator,
+		Translator:         translator,
 	}, nil
 }

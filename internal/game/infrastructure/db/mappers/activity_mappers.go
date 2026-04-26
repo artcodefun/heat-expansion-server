@@ -4,7 +4,6 @@ import (
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/dtos"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/gen"
-	"github.com/sqlc-dev/pqtype"
 )
 
 // InsertActivityParamsFromDomain maps a domain.ActivityItem into sqlc params for insert.
@@ -13,6 +12,7 @@ func InsertActivityParamsFromDomain(a *domain.ActivityItem) gen.InsertActivityPa
 	defenseDTO := dtos.DefenseActivityDTOFromDomain(a.Defense)
 	scanDTO := dtos.ScanActivityDTOFromDomain(a.Scan)
 	radarDTO := dtos.RadarActivityDTOFromDomain(a.Radar)
+	tradeDTO := dtos.TradeActivityDTOFromDomain(a.Trade)
 
 	return gen.InsertActivityParams{
 		ID:          a.ID,
@@ -23,6 +23,6 @@ func InsertActivityParamsFromDomain(a *domain.ActivityItem) gen.InsertActivityPa
 		DefenseData: toNullRawMessage(defenseDTO),
 		ScanData:    toNullRawMessage(scanDTO),
 		RadarData:   toNullRawMessage(radarDTO),
-		TradeData:   pqtype.NullRawMessage{Valid: false},
+		TradeData:   toNullRawMessage(tradeDTO),
 	}
 }

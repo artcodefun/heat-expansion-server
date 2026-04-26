@@ -43,9 +43,9 @@ type ArmyDeploymentRequestDTO struct {
 
 // operationCreateBody is the JSON payload for creating a military operation.
 type operationCreateBody struct {
-	Type    OperationType `json:"type" binding:"required,operation_type"`
-	TargetX *int          `json:"target_x" binding:"required"`
-	TargetY *int          `json:"target_y" binding:"required"`
+	Type    MilitaryOperationType `json:"type" binding:"required,operation_type"`
+	TargetX *int                  `json:"target_x" binding:"required"`
+	TargetY *int                  `json:"target_y" binding:"required"`
 	// Deployed contains army stacks to send, identified by prototype IDs.
 	Deployed []ArmyDeploymentRequestDTO `json:"deployed" binding:"required,dive"`
 }
@@ -53,12 +53,12 @@ type operationCreateBody struct {
 // OperationCreateRequest binds the create operation body payload and source base URI.
 type OperationCreateRequest = Request[BaseURI, None, operationCreateBody]
 
-// IsValidOperationType returns true when value matches one of the known
-// OperationType constants. Comparison is case-insensitive.
-func IsValidOperationType(value string) bool {
+// IsValidMilitaryOperationType returns true when value matches one of the known
+// MilitaryOperationType constants. Comparison is case-insensitive.
+func IsValidMilitaryOperationType(value string) bool {
 	upper := strings.ToUpper(value)
-	switch OperationType(upper) {
-	case OperationTypeAttack, OperationTypeSpy, OperationTypeOccupation:
+	switch MilitaryOperationType(upper) {
+	case MilitaryOperationTypeAttack, MilitaryOperationTypeSpy, MilitaryOperationTypeOccupation:
 		return true
 	default:
 		return false

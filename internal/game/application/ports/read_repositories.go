@@ -44,6 +44,12 @@ type OperationReadRepository interface {
 	ListActiveOperations(ctx context.Context, baseID int) ([]*readmodels.MilitaryOperation, error)
 }
 
+// TradeOperationReadRepository exposes trade operation projections.
+type TradeOperationReadRepository interface {
+	GetTradeOperation(ctx context.Context, operationID int) (*readmodels.TradeOperation, error)
+	ListActiveTradeOperations(ctx context.Context, baseID int) ([]*readmodels.TradeOperation, error)
+}
+
 // SectorReadRepository provides sector scan report projections.
 type SectorReadRepository interface {
 	GetScansNear(ctx context.Context, baseID int, centerX, centerY, radius int) ([]*readmodels.SectorScanReport, error)
@@ -69,6 +75,7 @@ type DiplomacyReadRepository interface {
 // StorageReadRepository exposes storage item / buff projections.
 type StorageReadRepository interface {
 	ListPresentStorageItems(ctx context.Context, baseID int, category readmodels.StorageCategory) ([]*readmodels.StorageItemPresent, error)
+	ListTradeableStorageItems(ctx context.Context, baseID int) ([]*readmodels.StorageItemPresent, error)
 }
 
 // BaseReadRepository provides read-only access to base state.
@@ -85,6 +92,7 @@ type ArmyReadRepository interface {
 	ListPendingArmyItems(ctx context.Context, baseID int, category readmodels.ArmyCategory) ([]*readmodels.ArmyItemPending, error)
 	ListInProductionArmyItems(ctx context.Context, baseID int, category readmodels.ArmyCategory) ([]*readmodels.ArmyItemInProduction, error)
 	ListPresentArmyItems(ctx context.Context, baseID int, category readmodels.ArmyCategory) ([]*readmodels.ArmyItemPresent, error)
+	ListPresentArmyItemsAll(ctx context.Context, baseID int) ([]*readmodels.ArmyItemPresent, error)
 }
 
 // RadarReadRepository provides read-only access to radar threats.

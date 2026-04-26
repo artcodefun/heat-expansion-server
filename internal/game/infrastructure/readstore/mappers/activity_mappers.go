@@ -44,5 +44,10 @@ func ActivityItemFromModel(a gen.Activity) readmodels.ActivityItem {
 		_ = json.Unmarshal(a.RadarData.RawMessage, &dto)
 		item.Radar = &readmodels.RadarActivity{ThreatID: dto.ThreatID}
 	}
+	if a.TradeData.Valid {
+		var dto dtos.TradeActivityDTO
+		_ = json.Unmarshal(a.TradeData.RawMessage, &dto)
+		item.Trade = &readmodels.TradeActivity{OpID: dto.OpID}
+	}
 	return item
 }

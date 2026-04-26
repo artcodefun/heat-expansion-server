@@ -123,3 +123,22 @@ func RadarActivityFromDTO(d *RadarActivityDTO) *domain.RadarActivity {
 		ThreatID: d.ThreatID,
 	}
 }
+
+// TradeActivityDTO mirrors the JSON structure stored for trade activities.
+type TradeActivityDTO struct {
+	OpID int `json:"op_id"`
+}
+
+func TradeActivityDTOFromDomain(t *domain.TradeActivity) *TradeActivityDTO {
+	if t == nil {
+		return nil
+	}
+	return &TradeActivityDTO{OpID: t.OpID}
+}
+
+func TradeActivityFromDTO(d *TradeActivityDTO) *domain.TradeActivity {
+	if d == nil {
+		return nil
+	}
+	return &domain.TradeActivity{OpID: d.OpID}
+}

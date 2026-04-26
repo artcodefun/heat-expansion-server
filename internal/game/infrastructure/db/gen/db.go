@@ -81,6 +81,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteScanReportStmt, err = db.PrepareContext(ctx, deleteScanReport); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteScanReport: %w", err)
 	}
+	if q.deleteTradeOperationStmt, err = db.PrepareContext(ctx, deleteTradeOperation); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteTradeOperation: %w", err)
+	}
 	if q.existsDiplomaticMessageByRequestAndContentStmt, err = db.PrepareContext(ctx, existsDiplomaticMessageByRequestAndContent); err != nil {
 		return nil, fmt.Errorf("error preparing query ExistsDiplomaticMessageByRequestAndContent: %w", err)
 	}
@@ -195,6 +198,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getTechPrototypeByIDStmt, err = db.PrepareContext(ctx, getTechPrototypeByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTechPrototypeByID: %w", err)
 	}
+	if q.getTradeOperationByIDStmt, err = db.PrepareContext(ctx, getTradeOperationByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTradeOperationByID: %w", err)
+	}
+	if q.getTradeOperationByIDForUpdateStmt, err = db.PrepareContext(ctx, getTradeOperationByIDForUpdate); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTradeOperationByIDForUpdate: %w", err)
+	}
 	if q.getUserByIDStmt, err = db.PrepareContext(ctx, getUserByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserByID: %w", err)
 	}
@@ -245,6 +254,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.insertScheduledJobStmt, err = db.PrepareContext(ctx, insertScheduledJob); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertScheduledJob: %w", err)
+	}
+	if q.insertTradeOperationStmt, err = db.PrepareContext(ctx, insertTradeOperation); err != nil {
+		return nil, fmt.Errorf("error preparing query InsertTradeOperation: %w", err)
 	}
 	if q.insertUserStmt, err = db.PrepareContext(ctx, insertUser); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertUser: %w", err)
@@ -351,6 +363,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateSectorStmt, err = db.PrepareContext(ctx, updateSector); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateSector: %w", err)
 	}
+	if q.updateTradeOperationStmt, err = db.PrepareContext(ctx, updateTradeOperation); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateTradeOperation: %w", err)
+	}
 	if q.updateUserStmt, err = db.PrepareContext(ctx, updateUser); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateUser: %w", err)
 	}
@@ -452,6 +467,11 @@ func (q *Queries) Close() error {
 	if q.deleteScanReportStmt != nil {
 		if cerr := q.deleteScanReportStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteScanReportStmt: %w", cerr)
+		}
+	}
+	if q.deleteTradeOperationStmt != nil {
+		if cerr := q.deleteTradeOperationStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteTradeOperationStmt: %w", cerr)
 		}
 	}
 	if q.existsDiplomaticMessageByRequestAndContentStmt != nil {
@@ -644,6 +664,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getTechPrototypeByIDStmt: %w", cerr)
 		}
 	}
+	if q.getTradeOperationByIDStmt != nil {
+		if cerr := q.getTradeOperationByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTradeOperationByIDStmt: %w", cerr)
+		}
+	}
+	if q.getTradeOperationByIDForUpdateStmt != nil {
+		if cerr := q.getTradeOperationByIDForUpdateStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTradeOperationByIDForUpdateStmt: %w", cerr)
+		}
+	}
 	if q.getUserByIDStmt != nil {
 		if cerr := q.getUserByIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getUserByIDStmt: %w", cerr)
@@ -727,6 +757,11 @@ func (q *Queries) Close() error {
 	if q.insertScheduledJobStmt != nil {
 		if cerr := q.insertScheduledJobStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing insertScheduledJobStmt: %w", cerr)
+		}
+	}
+	if q.insertTradeOperationStmt != nil {
+		if cerr := q.insertTradeOperationStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing insertTradeOperationStmt: %w", cerr)
 		}
 	}
 	if q.insertUserStmt != nil {
@@ -904,6 +939,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateSectorStmt: %w", cerr)
 		}
 	}
+	if q.updateTradeOperationStmt != nil {
+		if cerr := q.updateTradeOperationStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateTradeOperationStmt: %w", cerr)
+		}
+	}
 	if q.updateUserStmt != nil {
 		if cerr := q.updateUserStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateUserStmt: %w", cerr)
@@ -967,6 +1007,7 @@ type Queries struct {
 	deleteResourceLocationStmt                     *sql.Stmt
 	deleteResourceLocationBySectorStmt             *sql.Stmt
 	deleteScanReportStmt                           *sql.Stmt
+	deleteTradeOperationStmt                       *sql.Stmt
 	existsDiplomaticMessageByRequestAndContentStmt *sql.Stmt
 	existsForActivityStmt                          *sql.Stmt
 	existsForOperationStmt                         *sql.Stmt
@@ -1005,6 +1046,8 @@ type Queries struct {
 	getSectorByCoordinatesForUpdateStmt            *sql.Stmt
 	getStoragePrototypeByIDStmt                    *sql.Stmt
 	getTechPrototypeByIDStmt                       *sql.Stmt
+	getTradeOperationByIDStmt                      *sql.Stmt
+	getTradeOperationByIDForUpdateStmt             *sql.Stmt
 	getUserByIDStmt                                *sql.Stmt
 	insertActivityStmt                             *sql.Stmt
 	insertAlertStmt                                *sql.Stmt
@@ -1022,6 +1065,7 @@ type Queries struct {
 	insertResourceLocationStmt                     *sql.Stmt
 	insertScanReportStmt                           *sql.Stmt
 	insertScheduledJobStmt                         *sql.Stmt
+	insertTradeOperationStmt                       *sql.Stmt
 	insertUserStmt                                 *sql.Stmt
 	listActivitiesByBaseStmt                       *sql.Stmt
 	listAlertsByUserStmt                           *sql.Stmt
@@ -1057,6 +1101,7 @@ type Queries struct {
 	updateRadarThreatStmt                          *sql.Stmt
 	updateResourceLocationStmt                     *sql.Stmt
 	updateSectorStmt                               *sql.Stmt
+	updateTradeOperationStmt                       *sql.Stmt
 	updateUserStmt                                 *sql.Stmt
 }
 
@@ -1083,6 +1128,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		deleteResourceLocationStmt:                     q.deleteResourceLocationStmt,
 		deleteResourceLocationBySectorStmt:             q.deleteResourceLocationBySectorStmt,
 		deleteScanReportStmt:                           q.deleteScanReportStmt,
+		deleteTradeOperationStmt:                       q.deleteTradeOperationStmt,
 		existsDiplomaticMessageByRequestAndContentStmt: q.existsDiplomaticMessageByRequestAndContentStmt,
 		existsForActivityStmt:                          q.existsForActivityStmt,
 		existsForOperationStmt:                         q.existsForOperationStmt,
@@ -1121,6 +1167,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getSectorByCoordinatesForUpdateStmt:            q.getSectorByCoordinatesForUpdateStmt,
 		getStoragePrototypeByIDStmt:                    q.getStoragePrototypeByIDStmt,
 		getTechPrototypeByIDStmt:                       q.getTechPrototypeByIDStmt,
+		getTradeOperationByIDStmt:                      q.getTradeOperationByIDStmt,
+		getTradeOperationByIDForUpdateStmt:             q.getTradeOperationByIDForUpdateStmt,
 		getUserByIDStmt:                                q.getUserByIDStmt,
 		insertActivityStmt:                             q.insertActivityStmt,
 		insertAlertStmt:                                q.insertAlertStmt,
@@ -1138,6 +1186,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		insertResourceLocationStmt:                     q.insertResourceLocationStmt,
 		insertScanReportStmt:                           q.insertScanReportStmt,
 		insertScheduledJobStmt:                         q.insertScheduledJobStmt,
+		insertTradeOperationStmt:                       q.insertTradeOperationStmt,
 		insertUserStmt:                                 q.insertUserStmt,
 		listActivitiesByBaseStmt:                       q.listActivitiesByBaseStmt,
 		listAlertsByUserStmt:                           q.listAlertsByUserStmt,
@@ -1173,6 +1222,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		updateRadarThreatStmt:                          q.updateRadarThreatStmt,
 		updateResourceLocationStmt:                     q.updateResourceLocationStmt,
 		updateSectorStmt:                               q.updateSectorStmt,
+		updateTradeOperationStmt:                       q.updateTradeOperationStmt,
 		updateUserStmt:                                 q.updateUserStmt,
 	}
 }

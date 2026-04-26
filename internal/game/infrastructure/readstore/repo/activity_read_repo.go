@@ -11,14 +11,15 @@ import (
 )
 
 type ActivityReadRepo struct {
-	q       *gen.Queries
-	ops     ports.OperationReadRepository
-	sectors ports.SectorReadRepository
-	radar   ports.RadarReadRepository
+	q        *gen.Queries
+	ops      ports.OperationReadRepository
+	tradeOps ports.TradeOperationReadRepository
+	sectors  ports.SectorReadRepository
+	radar    ports.RadarReadRepository
 }
 
-func NewActivityReadRepo(q *gen.Queries, ops ports.OperationReadRepository, sectors ports.SectorReadRepository, radar ports.RadarReadRepository) *ActivityReadRepo {
-	return &ActivityReadRepo{q: q, ops: ops, sectors: sectors, radar: radar}
+func NewActivityReadRepo(q *gen.Queries, ops ports.OperationReadRepository, tradeOps ports.TradeOperationReadRepository, sectors ports.SectorReadRepository, radar ports.RadarReadRepository) *ActivityReadRepo {
+	return &ActivityReadRepo{q: q, ops: ops, tradeOps: tradeOps, sectors: sectors, radar: radar}
 }
 
 func (r *ActivityReadRepo) ListOffenseActivities(ctx context.Context, baseID int, subtype readmodels.OffenseActivitySubtype, limit int) ([]*readmodels.ActivityItem, error) {
@@ -147,6 +148,15 @@ func (r *ActivityReadRepo) enrichActivity(ctx context.Context, v *readmodels.Act
 		}
 		if err == nil {
 			v.Radar.Threat = threat
+		}
+	}
+	if v.Trade != nil {
+		tradeOp, err := r.tradeOps.GetTradeOperation(ctx, v.Trade.OpID)
+		if err != nil && !errors.Is(err, ports.ErrNotFound) {
+			return err
+		}
+		if err == nil {
+			v.Trade.Operation = tradeOp
 		}
 	}
 	return nil

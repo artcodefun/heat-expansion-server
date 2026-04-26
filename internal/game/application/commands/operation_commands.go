@@ -122,7 +122,7 @@ func (c *OperationCommands) CreateMilitaryOperation(ctx context.Context, actor c
 			return err
 		}
 		for _, ready := range readyToDeploy {
-			if _, err := base.AllocateArmyToOperation(domain.ArmyDeploymentRequest{PresentItemID: ready.PresentItemID, Count: ready.Count}, createdOp.ID); err != nil {
+			if _, err := base.AllocateArmyToOperation(domain.ArmyDeploymentRequest{PresentItemID: ready.PresentItemID, Count: ready.Count}, domain.OperationKindMilitary, createdOp.ID); err != nil {
 				return err
 			}
 		}
@@ -399,7 +399,7 @@ func (c *OperationCommands) HandleMilitaryOperationReturnArrivedEvent(ctx contex
 		if err != nil {
 			return err
 		}
-		base.ReturnAllDeployedFromOperation(op.ID)
+		base.ReturnAllDeployedFromOperation(domain.OperationKindMilitary, op.ID)
 		if op.AttackResult != nil {
 			base.CreditLoot(op.AttackResult.Loot)
 

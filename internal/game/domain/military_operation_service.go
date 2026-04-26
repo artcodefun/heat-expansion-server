@@ -40,7 +40,7 @@ func (s MilitaryOperationService) ResolveAgainstUserBase(defender *UserBaseModel
 
 		// Apply effects
 		if res != nil {
-			s.Attacker.TrimDeployedToSurvivors(s.Operation.ID, res.AttackerRemaining)
+			s.Attacker.TrimDeployedToSurvivors(OperationKindMilitary, s.Operation.ID, res.AttackerRemaining)
 			defender.ApplyDefenderArmyRemaining(res.DefenderRemaining)
 			defender.ApplyRemainingDefensiveStructures(res.RemainingStructures)
 			// Deduct loot from defender resources
@@ -54,7 +54,7 @@ func (s MilitaryOperationService) ResolveAgainstUserBase(defender *UserBaseModel
 		cloak := cloakingStrengthFromBuildings(defender.BuildingsPresent)
 		res := s.Operation.ResolveSpy(cloak, defendingSpies, defenderSnaps)
 		if res != nil {
-			s.Attacker.TrimDeployedToSurvivors(s.Operation.ID, res.AttackerRemaining)
+			s.Attacker.TrimDeployedToSurvivors(OperationKindMilitary, s.Operation.ID, res.AttackerRemaining)
 			// Merge spy remaining into full defenders snapshot to avoid wiping non-spy units
 			merged := mergeSpyRemaining(allDefenders, res.DefenderRemaining)
 			defender.ApplyDefenderArmyRemaining(merged)
@@ -85,7 +85,7 @@ func (s MilitaryOperationService) ResolveAgainstResourceLocation(loc *ResourceLo
 		}
 		res := s.Operation.ResolveAttack(defenders, structures, available, nil, nil)
 		if res != nil {
-			s.Attacker.TrimDeployedToSurvivors(s.Operation.ID, res.AttackerRemaining)
+			s.Attacker.TrimDeployedToSurvivors(OperationKindMilitary, s.Operation.ID, res.AttackerRemaining)
 			loc.ApplyDefenderArmyRemaining(res.DefenderRemaining)
 			loc.ApplyRemainingDefensiveStructures(res.RemainingStructures)
 			// Deduct loot from location resources
@@ -97,7 +97,7 @@ func (s MilitaryOperationService) ResolveAgainstResourceLocation(loc *ResourceLo
 		// No cloaking at resource locations for now
 		res := s.Operation.ResolveSpy(0, defendingSpies, nil)
 		if res != nil {
-			s.Attacker.TrimDeployedToSurvivors(s.Operation.ID, res.AttackerRemaining)
+			s.Attacker.TrimDeployedToSurvivors(OperationKindMilitary, s.Operation.ID, res.AttackerRemaining)
 			merged := mergeSpyRemaining(allDefenders, res.DefenderRemaining)
 			loc.ApplyDefenderArmyRemaining(merged)
 		}
@@ -123,7 +123,7 @@ func (s MilitaryOperationService) ResolveAgainstDangerousLocation(loc *Dangerous
 		}
 		res := s.Operation.ResolveAttack(defenders, structures, available, loc.Trophies, nil)
 		if res != nil {
-			s.Attacker.TrimDeployedToSurvivors(s.Operation.ID, res.AttackerRemaining)
+			s.Attacker.TrimDeployedToSurvivors(OperationKindMilitary, s.Operation.ID, res.AttackerRemaining)
 			loc.ApplyDefenderArmyRemaining(res.DefenderRemaining)
 			loc.ApplyRemainingDefensiveStructures(res.RemainingStructures)
 
@@ -139,7 +139,7 @@ func (s MilitaryOperationService) ResolveAgainstDangerousLocation(loc *Dangerous
 		defendingSpies := filterSpyUnits(allDefenders)
 		res := s.Operation.ResolveSpy(0, defendingSpies, nil)
 		if res != nil {
-			s.Attacker.TrimDeployedToSurvivors(s.Operation.ID, res.AttackerRemaining)
+			s.Attacker.TrimDeployedToSurvivors(OperationKindMilitary, s.Operation.ID, res.AttackerRemaining)
 			merged := mergeSpyRemaining(allDefenders, res.DefenderRemaining)
 			loc.ApplyDefenderArmyRemaining(merged)
 		}
@@ -160,13 +160,13 @@ func (s MilitaryOperationService) ResolveAgainstEmptySector(sector *SectorModel)
 		res := s.Operation.ResolveAttack(defenders, structures, PriceModel{}, nil, nil)
 		if res != nil {
 			// available loot is zero; res.Loot remains empty
-			s.Attacker.TrimDeployedToSurvivors(s.Operation.ID, res.AttackerRemaining)
+			s.Attacker.TrimDeployedToSurvivors(OperationKindMilitary, s.Operation.ID, res.AttackerRemaining)
 		}
 	case MilitaryOperationTypeSpy:
 		// No defenders, no cloaking
 		res := s.Operation.ResolveSpy(0, nil, nil)
 		if res != nil {
-			s.Attacker.TrimDeployedToSurvivors(s.Operation.ID, res.AttackerRemaining)
+			s.Attacker.TrimDeployedToSurvivors(OperationKindMilitary, s.Operation.ID, res.AttackerRemaining)
 		}
 	}
 	s.Operation.StartReturn()

@@ -27,3 +27,16 @@ func (r *StorageReadRepo) ListPresentStorageItems(ctx context.Context, baseID in
 	}
 	return out, nil
 }
+
+func (r *StorageReadRepo) ListTradeableStorageItems(ctx context.Context, baseID int) ([]*readmodels.StorageItemPresent, error) {
+	rows, err := r.q.ListTradeableStorageItems(ctx, int64(baseID))
+	if err != nil {
+		return nil, err
+	}
+	out := make([]*readmodels.StorageItemPresent, 0, len(rows))
+	for _, r0 := range rows {
+		v := mappers.StorageItemPresentFromTradeableRow(r0)
+		out = append(out, &v)
+	}
+	return out, nil
+}

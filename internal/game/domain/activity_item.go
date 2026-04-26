@@ -26,6 +26,7 @@ type ActivityItem struct {
 	Defense *DefenseActivity
 	Scan    *ScanActivity
 	Radar   *RadarActivity
+	Trade   *TradeActivity
 }
 
 // OffenseActivitySubtype specifies the subtype of an offensive activity.
@@ -90,6 +91,11 @@ type ScanActivity struct {
 // RadarActivity represents a detected incoming hostility (future wiring).
 type RadarActivity struct {
 	ThreatID uuid.UUID
+}
+
+// TradeActivity summarizes a trade creation activity.
+type TradeActivity struct {
+	OpID int
 }
 
 // Helpers to build ActivityItem from domain entities
@@ -170,5 +176,11 @@ func NewActivityFromRadarThreat(userID uuid.UUID, t *RadarThreat) ActivityItem {
 	item.Radar = &RadarActivity{
 		ThreatID: t.ID,
 	}
+	return item
+}
+
+func NewActivityFromTradeOperation(userID uuid.UUID, baseID int, opID int) ActivityItem {
+	item := newEmptyActivity(userID, ActivityKindTrade, baseID, "")
+	item.Trade = &TradeActivity{OpID: opID}
 	return item
 }

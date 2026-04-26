@@ -78,6 +78,7 @@ func NewModule() *Module {
 		Tech:      commands.Tech,
 		Storage:   commands.Storage,
 		Operation: commands.Operation,
+		Trade:     commands.Trade,
 		Alert:     commands.Alert,
 		Diplomacy: commands.Diplomacy,
 	}
@@ -88,6 +89,7 @@ func NewModule() *Module {
 		Army:      queries.Army,
 		Tech:      queries.Tech,
 		Storage:   queries.Storage,
+		Trade:     queries.Trade,
 		Sector:    queries.Sector,
 		Radar:     queries.Radar,
 		Operation: queries.Operation,

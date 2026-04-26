@@ -496,6 +496,132 @@ func NewMilitaryOperationCancelledEvent(operationID int) MilitaryOperationCancel
 	}
 }
 
+// Trade operation-related domain events
+
+type TradeOperationCreatedEvent struct {
+	BasicEvent
+	OperationID     int
+	OperationUUID   uuid.UUID
+	SenderBaseID    int
+	ReceiverBaseID  int
+	ExpirationAtSec int64
+}
+
+func NewTradeOperationCreatedEvent(operationID int, operationUUID uuid.UUID, senderBaseID int, receiverBaseID int, expirationAtSec int64) TradeOperationCreatedEvent {
+	return TradeOperationCreatedEvent{
+		BasicEvent:      NewBasicEvent(),
+		OperationID:     operationID,
+		OperationUUID:   operationUUID,
+		SenderBaseID:    senderBaseID,
+		ReceiverBaseID:  receiverBaseID,
+		ExpirationAtSec: expirationAtSec,
+	}
+}
+
+type TradeOperationAcceptedEvent struct {
+	BasicEvent
+	OperationID      int
+	OutboundArriveAt int64
+}
+
+func NewTradeOperationAcceptedEvent(operationID int, outboundArriveAt int64) TradeOperationAcceptedEvent {
+	return TradeOperationAcceptedEvent{
+		BasicEvent:       NewBasicEvent(),
+		OperationID:      operationID,
+		OutboundArriveAt: outboundArriveAt,
+	}
+}
+
+type TradeOperationDeclinedEvent struct {
+	BasicEvent
+	OperationID int
+}
+
+func NewTradeOperationDeclinedEvent(operationID int) TradeOperationDeclinedEvent {
+	return TradeOperationDeclinedEvent{
+		BasicEvent:  NewBasicEvent(),
+		OperationID: operationID,
+	}
+}
+
+type TradeOperationExpiredEvent struct {
+	BasicEvent
+	OperationID int
+}
+
+func NewTradeOperationExpiredEvent(operationID int) TradeOperationExpiredEvent {
+	return TradeOperationExpiredEvent{
+		BasicEvent:  NewBasicEvent(),
+		OperationID: operationID,
+	}
+}
+
+type TradeOperationCancelledByInitiatorEvent struct {
+	BasicEvent
+	OperationID int
+}
+
+func NewTradeOperationCancelledByInitiatorEvent(operationID int) TradeOperationCancelledByInitiatorEvent {
+	return TradeOperationCancelledByInitiatorEvent{
+		BasicEvent:  NewBasicEvent(),
+		OperationID: operationID,
+	}
+}
+
+type TradeOperationOutboundEvent struct {
+	BasicEvent
+	OperationID      int
+	OutboundArriveAt int64
+}
+
+func NewTradeOperationOutboundEvent(operationID int, outboundArriveAt int64) TradeOperationOutboundEvent {
+	return TradeOperationOutboundEvent{
+		BasicEvent:       NewBasicEvent(),
+		OperationID:      operationID,
+		OutboundArriveAt: outboundArriveAt,
+	}
+}
+
+type TradeOperationArrivedEvent struct {
+	BasicEvent
+	OperationID int
+}
+
+func NewTradeOperationArrivedEvent(operationID int) TradeOperationArrivedEvent {
+	return TradeOperationArrivedEvent{
+		BasicEvent:  NewBasicEvent(),
+		OperationID: operationID,
+	}
+}
+
+type TradeOperationReturningEvent struct {
+	BasicEvent
+	OperationID    int
+	ReturnArriveAt int64
+}
+
+func NewTradeOperationReturningEvent(operationID int, returnArriveAt int64) TradeOperationReturningEvent {
+	return TradeOperationReturningEvent{
+		BasicEvent:     NewBasicEvent(),
+		OperationID:    operationID,
+		ReturnArriveAt: returnArriveAt,
+	}
+}
+
+// TradeOperationReturnArrivedEvent is emitted whenever trade operation assets
+// can be safely released back to the involved bases, regardless of completion reason.
+type TradeOperationReturnArrivedEvent struct {
+	BasicEvent
+	OperationID int
+}
+
+func NewTradeOperationReturnArrivedEvent(operationID int) TradeOperationReturnArrivedEvent {
+	return TradeOperationReturnArrivedEvent{
+		BasicEvent:  NewBasicEvent(),
+		OperationID: operationID,
+	}
+}
+
 // Scan report-related domain events
 
 // ScanReportCreatedEvent is emitted when a SectorScanReport has been persisted and is visible to the domain.

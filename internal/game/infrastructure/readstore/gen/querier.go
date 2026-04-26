@@ -30,9 +30,12 @@ type Querier interface {
 	GetScanReportByOperationUUID(ctx context.Context, sourceID uuid.NullUUID) (ScanReport, error)
 	// Sector scan report queries
 	GetScansNear(ctx context.Context, arg GetScansNearParams) ([]ScanReport, error)
+	// Trade operation read queries
+	GetTradeOperation(ctx context.Context, id int64) (TradeOperation, error)
 	// Readstore user profile queries
 	GetUserProfile(ctx context.Context, id uuid.UUID) (User, error)
 	ListActiveOperations(ctx context.Context, sourceBaseID int64) ([]MilitaryOperation, error)
+	ListActiveTradeOperations(ctx context.Context, senderBaseID int64) ([]TradeOperation, error)
 	ListAlertsByUser(ctx context.Context, arg ListAlertsByUserParams) ([]Alert, error)
 	// Prototypes queries for read-store
 	ListArmyPrototypes(ctx context.Context) ([]ArmyItemPrototype, error)
@@ -73,6 +76,7 @@ type Querier interface {
 	// Technology items lifecycle queries
 	ListTechPrototypesByIDs(ctx context.Context, dollar_1 []int64) ([]TechItemPrototype, error)
 	ListTradeActivities(ctx context.Context, arg ListTradeActivitiesParams) ([]Activity, error)
+	ListTradeableStorageItems(ctx context.Context, baseID int64) ([]ListTradeableStorageItemsRow, error)
 	// List user-owned bases (basic info only)
 	ListUserBases(ctx context.Context, userID uuid.UUID) ([]ListUserBasesRow, error)
 }

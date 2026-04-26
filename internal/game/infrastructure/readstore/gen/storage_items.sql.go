@@ -91,3 +91,76 @@ func (q *Queries) ListPresentStorageItems(ctx context.Context, arg ListPresentSt
 	}
 	return items, nil
 }
+
+const listTradeableStorageItems = `-- name: ListTradeableStorageItems :many
+SELECT bsi.id, bsi.base_id, bsi.prototype_id, bsi.status, bsi.present_data, bsi.state, p.id AS proto_id, p.name, p.category, p.estimated_worth, p.short_description, p.full_description, p.image_url, p.buff_data, p.intel_data, p.damaged_data, p.artifact_data, p.consumable_data
+FROM game.base_storage_items bsi
+JOIN game.storage_item_prototypes p ON p.id = bsi.prototype_id
+WHERE bsi.base_id = $1
+	AND bsi.status = 'PRESENT'
+	AND COALESCE((bsi.present_data->>'is_active')::boolean, false) = false
+ORDER BY p.id
+`
+
+type ListTradeableStorageItemsRow struct {
+	ID               uuid.UUID             `json:"id"`
+	BaseID           int64                 `json:"base_id"`
+	PrototypeID      int64                 `json:"prototype_id"`
+	Status           string                `json:"status"`
+	PresentData      pqtype.NullRawMessage `json:"present_data"`
+	State            json.RawMessage       `json:"state"`
+	ProtoID          int64                 `json:"proto_id"`
+	Name             string                `json:"name"`
+	Category         string                `json:"category"`
+	EstimatedWorth   int32                 `json:"estimated_worth"`
+	ShortDescription sql.NullString        `json:"short_description"`
+	FullDescription  sql.NullString        `json:"full_description"`
+	ImageUrl         sql.NullString        `json:"image_url"`
+	BuffData         pqtype.NullRawMessage `json:"buff_data"`
+	IntelData        pqtype.NullRawMessage `json:"intel_data"`
+	DamagedData      pqtype.NullRawMessage `json:"damaged_data"`
+	ArtifactData     pqtype.NullRawMessage `json:"artifact_data"`
+	ConsumableData   pqtype.NullRawMessage `json:"consumable_data"`
+}
+
+func (q *Queries) ListTradeableStorageItems(ctx context.Context, baseID int64) ([]ListTradeableStorageItemsRow, error) {
+	rows, err := q.query(ctx, q.listTradeableStorageItemsStmt, listTradeableStorageItems, baseID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListTradeableStorageItemsRow{}
+	for rows.Next() {
+		var i ListTradeableStorageItemsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.BaseID,
+			&i.PrototypeID,
+			&i.Status,
+			&i.PresentData,
+			&i.State,
+			&i.ProtoID,
+			&i.Name,
+			&i.Category,
+			&i.EstimatedWorth,
+			&i.ShortDescription,
+			&i.FullDescription,
+			&i.ImageUrl,
+			&i.BuffData,
+			&i.IntelData,
+			&i.DamagedData,
+			&i.ArtifactData,
+			&i.ConsumableData,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

@@ -66,11 +66,17 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getScansNearStmt, err = db.PrepareContext(ctx, getScansNear); err != nil {
 		return nil, fmt.Errorf("error preparing query GetScansNear: %w", err)
 	}
+	if q.getTradeOperationStmt, err = db.PrepareContext(ctx, getTradeOperation); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTradeOperation: %w", err)
+	}
 	if q.getUserProfileStmt, err = db.PrepareContext(ctx, getUserProfile); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserProfile: %w", err)
 	}
 	if q.listActiveOperationsStmt, err = db.PrepareContext(ctx, listActiveOperations); err != nil {
 		return nil, fmt.Errorf("error preparing query ListActiveOperations: %w", err)
+	}
+	if q.listActiveTradeOperationsStmt, err = db.PrepareContext(ctx, listActiveTradeOperations); err != nil {
+		return nil, fmt.Errorf("error preparing query ListActiveTradeOperations: %w", err)
 	}
 	if q.listAlertsByUserStmt, err = db.PrepareContext(ctx, listAlertsByUser); err != nil {
 		return nil, fmt.Errorf("error preparing query ListAlertsByUser: %w", err)
@@ -177,6 +183,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listTradeActivitiesStmt, err = db.PrepareContext(ctx, listTradeActivities); err != nil {
 		return nil, fmt.Errorf("error preparing query ListTradeActivities: %w", err)
 	}
+	if q.listTradeableStorageItemsStmt, err = db.PrepareContext(ctx, listTradeableStorageItems); err != nil {
+		return nil, fmt.Errorf("error preparing query ListTradeableStorageItems: %w", err)
+	}
 	if q.listUserBasesStmt, err = db.PrepareContext(ctx, listUserBases); err != nil {
 		return nil, fmt.Errorf("error preparing query ListUserBases: %w", err)
 	}
@@ -255,6 +264,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getScansNearStmt: %w", cerr)
 		}
 	}
+	if q.getTradeOperationStmt != nil {
+		if cerr := q.getTradeOperationStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTradeOperationStmt: %w", cerr)
+		}
+	}
 	if q.getUserProfileStmt != nil {
 		if cerr := q.getUserProfileStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getUserProfileStmt: %w", cerr)
@@ -263,6 +277,11 @@ func (q *Queries) Close() error {
 	if q.listActiveOperationsStmt != nil {
 		if cerr := q.listActiveOperationsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listActiveOperationsStmt: %w", cerr)
+		}
+	}
+	if q.listActiveTradeOperationsStmt != nil {
+		if cerr := q.listActiveTradeOperationsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listActiveTradeOperationsStmt: %w", cerr)
 		}
 	}
 	if q.listAlertsByUserStmt != nil {
@@ -440,6 +459,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listTradeActivitiesStmt: %w", cerr)
 		}
 	}
+	if q.listTradeableStorageItemsStmt != nil {
+		if cerr := q.listTradeableStorageItemsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listTradeableStorageItemsStmt: %w", cerr)
+		}
+	}
 	if q.listUserBasesStmt != nil {
 		if cerr := q.listUserBasesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listUserBasesStmt: %w", cerr)
@@ -498,8 +522,10 @@ type Queries struct {
 	getScanReportByIDStmt                   *sql.Stmt
 	getScanReportByOperationUUIDStmt        *sql.Stmt
 	getScansNearStmt                        *sql.Stmt
+	getTradeOperationStmt                   *sql.Stmt
 	getUserProfileStmt                      *sql.Stmt
 	listActiveOperationsStmt                *sql.Stmt
+	listActiveTradeOperationsStmt           *sql.Stmt
 	listAlertsByUserStmt                    *sql.Stmt
 	listArmyPrototypesStmt                  *sql.Stmt
 	listArmyPrototypesByIDsStmt             *sql.Stmt
@@ -535,6 +561,7 @@ type Queries struct {
 	listTechPrototypesStmt                  *sql.Stmt
 	listTechPrototypesByIDsStmt             *sql.Stmt
 	listTradeActivitiesStmt                 *sql.Stmt
+	listTradeableStorageItemsStmt           *sql.Stmt
 	listUserBasesStmt                       *sql.Stmt
 }
 
@@ -556,8 +583,10 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getScanReportByIDStmt:                   q.getScanReportByIDStmt,
 		getScanReportByOperationUUIDStmt:        q.getScanReportByOperationUUIDStmt,
 		getScansNearStmt:                        q.getScansNearStmt,
+		getTradeOperationStmt:                   q.getTradeOperationStmt,
 		getUserProfileStmt:                      q.getUserProfileStmt,
 		listActiveOperationsStmt:                q.listActiveOperationsStmt,
+		listActiveTradeOperationsStmt:           q.listActiveTradeOperationsStmt,
 		listAlertsByUserStmt:                    q.listAlertsByUserStmt,
 		listArmyPrototypesStmt:                  q.listArmyPrototypesStmt,
 		listArmyPrototypesByIDsStmt:             q.listArmyPrototypesByIDsStmt,
@@ -593,6 +622,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listTechPrototypesStmt:                  q.listTechPrototypesStmt,
 		listTechPrototypesByIDsStmt:             q.listTechPrototypesByIDsStmt,
 		listTradeActivitiesStmt:                 q.listTradeActivitiesStmt,
+		listTradeableStorageItemsStmt:           q.listTradeableStorageItemsStmt,
 		listUserBasesStmt:                       q.listUserBasesStmt,
 	}
 }

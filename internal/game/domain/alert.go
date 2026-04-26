@@ -13,6 +13,7 @@ const (
 	AlertKindIntel      AlertKind = "INTEL"
 	AlertKindSystem     AlertKind = "SYSTEM"
 	AlertKindDiplomatic AlertKind = "DIPLOMATIC"
+	AlertKindTrade      AlertKind = "TRADE"
 )
 
 type Alert struct {
@@ -76,6 +77,59 @@ func NewActivityAlert(event ActivityCreatedEvent) (*Alert, bool) {
 
 	baseID := event.BaseID
 	return NewAlert(event.UserID, &baseID, &event.ActivityID, kind, title, content, defaultAlertTTL), true
+}
+
+type TradeAlertKind string
+
+const (
+	TradeAlertKindCreated   TradeAlertKind = "CREATED"
+	TradeAlertKindAccepted  TradeAlertKind = "ACCEPTED"
+	TradeAlertKindDeclined  TradeAlertKind = "DECLINED"
+	TradeAlertKindCancelled TradeAlertKind = "CANCELLED"
+	TradeAlertKindExpired   TradeAlertKind = "EXPIRED"
+	TradeAlertKindCompleted TradeAlertKind = "COMPLETED"
+)
+
+func NewTradeAlert(op *TradeOperation, isSender bool, kind TradeAlertKind) *Alert {
+	if op == nil {
+		return nil
+	}
+
+	var userID uuid.UUID
+	var baseID int
+	if isSender {
+		userID = op.SenderUserID
+		baseID = op.SenderBaseID
+	} else {
+		userID = op.ReceiverUserID
+		baseID = op.ReceiverBaseID
+	}
+
+	var title, content TranslationKey
+	switch kind {
+	case TradeAlertKindCreated:
+		title = "alert.trade.created.title"
+		content = "alert.trade.created.content"
+	case TradeAlertKindAccepted:
+		title = "alert.trade.accepted.title"
+		content = "alert.trade.accepted.content"
+	case TradeAlertKindDeclined:
+		title = "alert.trade.declined.title"
+		content = "alert.trade.declined.content"
+	case TradeAlertKindCancelled:
+		title = "alert.trade.cancelled.title"
+		content = "alert.trade.cancelled.content"
+	case TradeAlertKindExpired:
+		title = "alert.trade.expired.title"
+		content = "alert.trade.expired.content"
+	case TradeAlertKindCompleted:
+		title = "alert.trade.completed.title"
+		content = "alert.trade.completed.content"
+	default:
+		return nil
+	}
+
+	return NewAlert(userID, &baseID, nil, AlertKindTrade, title, content, defaultAlertTTL)
 }
 
 func NewDiplomaticMessageAlert(event DiplomaticMessageSentEvent) (*Alert, bool) {

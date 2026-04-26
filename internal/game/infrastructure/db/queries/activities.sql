@@ -28,7 +28,8 @@ SELECT EXISTS (
       AND (
           (kind = 'OFFENSE' AND (offense_data->>'op_id')::bigint = sqlc.arg('op_id')::bigint) OR
           (kind = 'DEFENSE' AND (defense_data->>'op_id')::bigint = sqlc.arg('op_id')::bigint) OR
-          (kind = 'RADAR' AND (radar_data->>'op_id')::bigint = sqlc.arg('op_id')::bigint)
+          (kind = 'RADAR' AND (radar_data->>'op_id')::bigint = sqlc.arg('op_id')::bigint) OR
+          (kind = 'TRADE' AND (trade_data->>'op_id')::bigint = sqlc.arg('op_id')::bigint)
       )
 );
 

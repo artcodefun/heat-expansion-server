@@ -17,3 +17,12 @@ func PriceModelFromReadModel(m readmodels.PriceModel) PriceModelDTO {
 		Antimatter: m.Antimatter,
 	}
 }
+
+func PriceModelFromDTO(m PriceModelDTO) readmodels.PriceModel {
+	return readmodels.PriceModel{
+		Credits:    m.Credits,
+		Iron:       m.Iron,
+		Titanium:   m.Titanium,
+		Antimatter: m.Antimatter,
+	}
+}

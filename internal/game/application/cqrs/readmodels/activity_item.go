@@ -24,6 +24,7 @@ type ActivityItem struct {
 	Defense *DefenseActivity
 	Scan    *ScanActivity
 	Radar   *RadarActivity
+	Trade   *TradeActivity
 }
 
 // OffenseActivitySubtype specifies the subtype of an offensive activity.
@@ -133,4 +134,11 @@ type ScanActivity struct {
 type RadarActivity struct {
 	ThreatID uuid.UUID
 	Threat   *RadarThreat
+}
+
+// TradeActivity summarizes a trade lifecycle event.
+type TradeActivity struct {
+	OpID int
+
+	Operation *TradeOperation
 }

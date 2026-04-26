@@ -197,10 +197,20 @@ type MilitaryOperationRepository interface {
 	Tx(tx Transaction) MilitaryOperationRepository
 }
 
+// TradeOperationRepository defines persistence for trade operations.
+type TradeOperationRepository interface {
+	Create(ctx context.Context, op *domain.TradeOperation) error
+	FindByID(ctx context.Context, id int) (*domain.TradeOperation, error)
+	FindByIDForUpdate(ctx context.Context, id int) (*domain.TradeOperation, error)
+	Update(ctx context.Context, op *domain.TradeOperation) error
+	Delete(ctx context.Context, id int) error
+	Tx(tx Transaction) TradeOperationRepository
+}
+
 // ActivityRepository defines persistence for activity items (append-only feed).
 type ActivityRepository interface {
 	Create(ctx context.Context, item *domain.ActivityItem) error
-	ExistsForOperation(ctx context.Context, baseID int, kind string, opID int) (bool, error)
+	ExistsForOperation(ctx context.Context, baseID int, kind domain.ActivityKind, opID int) (bool, error)
 	ExistsForScanReport(ctx context.Context, reportID int) (bool, error)
 	// Tx returns a repository instance bound to the provided transaction.
 	Tx(tx Transaction) ActivityRepository

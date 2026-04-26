@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/google/uuid"
@@ -46,6 +47,33 @@ func TestCanPerformAttackOperation_AllowsWar(t *testing.T) {
 	err := rel.CanPerformAttackOperation()
 	if err != nil {
 		t.Fatalf("expected war relationship to allow attack, got %v", err)
+	}
+}
+
+func TestCanPerformTradeOperation_RequiresAlliance(t *testing.T) {
+	SetTestNow(t, 6_100)
+	userA := uuid.New()
+	userB := uuid.New()
+	rel := newNeutralRelationshipForTest(t, userA, userB, userA)
+
+	err := rel.CanPerformTradeOperation()
+	if err == nil {
+		t.Fatalf("expected neutral relationship to reject trade operation")
+	}
+	if !strings.HasPrefix(err.Error(), "error.domain.diplomacy.trade_requires_alliance") {
+		t.Fatalf("expected dedicated trade alliance error, got %v", err)
+	}
+}
+
+func TestCanPerformTradeOperation_AllowsAlliance(t *testing.T) {
+	SetTestNow(t, 6_200)
+	userA := uuid.New()
+	userB := uuid.New()
+	rel := newNeutralRelationshipForTest(t, userA, userB, userA)
+	rel.FormAlliance(userA)
+
+	if err := rel.CanPerformTradeOperation(); err != nil {
+		t.Fatalf("expected allied relationship to allow trade operation, got %v", err)
 	}
 }
 

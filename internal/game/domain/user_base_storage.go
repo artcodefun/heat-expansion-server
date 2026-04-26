@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"slices"
+
 	"github.com/google/uuid"
 )
 
@@ -23,6 +25,109 @@ func (ub *UserBaseModel) DeletePresentStorageItemByID(itemID uuid.UUID) error {
 	ub.AddEvent(NewStorageItemPresentDeletedEvent(ub.ID, itemID))
 	ub.recalculateStats()
 	return nil
+}
+
+// AllocateTradePayloadStorageToOperation moves payload storage items from present to deployed
+// for the given trade operation while preserving full item prototype and state.
+func (ub *UserBaseModel) AllocateTradePayloadStorageToOperation(payload TradePayload, operationID int) error {
+	if len(payload.Storage) == 0 {
+		return nil
+	}
+
+	for _, st := range payload.Storage {
+		idx := slices.IndexFunc(ub.StorageItemsPresent, func(item StorageItemPresent) bool {
+			return item.ID == st.ItemID
+		})
+		if idx == -1 {
+			return NewError("error.domain.trade.storage_item_not_tradeable", H{"item_id": st.ItemID})
+		}
+
+		item := ub.StorageItemsPresent[idx]
+		if item.IsActive {
+			return NewError("error.domain.trade.storage_item_not_tradeable", H{"item_id": st.ItemID})
+		}
+
+		ub.StorageItemsPresent = append(ub.StorageItemsPresent[:idx], ub.StorageItemsPresent[idx+1:]...)
+		ub.StorageItemsDeployed = append(ub.StorageItemsDeployed, StorageItemDeployed{
+			BaseOwnedItem: BaseOwnedItem{ID: item.ID, UserBaseID: ub.ID},
+			Prototype:     item.Prototype,
+			OperationKind: OperationKindTrade,
+			OperationID:   operationID,
+			ExpiresAt:     item.ExpiresAt,
+			IsActive:      item.IsActive,
+		})
+	}
+
+	ub.recalculateStats()
+	return nil
+}
+
+// ReturnAllDeployedStorageFromOperation moves all deployed storage items for the operation
+// back into present storage and removes deployed entries.
+func (ub *UserBaseModel) ReturnAllDeployedStorageFromOperation(operationKind OperationKind, operationID int) {
+	if len(ub.StorageItemsDeployed) == 0 {
+		return
+	}
+
+	out := make([]StorageItemDeployed, 0, len(ub.StorageItemsDeployed))
+	for _, d := range ub.StorageItemsDeployed {
+		if d.OperationKind != operationKind || d.OperationID != operationID {
+			out = append(out, d)
+			continue
+		}
+
+		ub.StorageItemsPresent = append(ub.StorageItemsPresent, StorageItemPresent{
+			BaseOwnedItem: BaseOwnedItem{ID: d.ID, UserBaseID: ub.ID},
+			Prototype:     d.Prototype,
+			ExpiresAt:     d.ExpiresAt,
+			IsActive:      d.IsActive,
+		})
+	}
+	ub.StorageItemsDeployed = out
+	ub.recalculateStats()
+}
+
+// RemoveTradeDeployedStorageByPayload removes deployed storage items matching payload item IDs
+// for a trade operation and returns the concrete items removed.
+func (ub *UserBaseModel) RemoveTradeDeployedStorageByPayload(payload []TradeStorageItemSnap, operationID int) ([]StorageItemDeployed, error) {
+	if len(payload) == 0 {
+		return nil, nil
+	}
+
+	removed := make([]StorageItemDeployed, 0, len(payload))
+	for _, st := range payload {
+		idx := slices.IndexFunc(ub.StorageItemsDeployed, func(d StorageItemDeployed) bool {
+			return d.OperationKind == OperationKindTrade && d.OperationID == operationID && d.ID == st.ItemID
+		})
+		if idx == -1 {
+			return nil, NewError("error.domain.trade.storage_item_not_tradeable", H{"item_id": st.ItemID})
+		}
+
+		removed = append(removed, ub.StorageItemsDeployed[idx])
+		ub.StorageItemsDeployed = append(ub.StorageItemsDeployed[:idx], ub.StorageItemsDeployed[idx+1:]...)
+	}
+
+	ub.recalculateStats()
+	return removed, nil
+}
+
+// AddTradeDeployedStorageItems appends concrete deployed storage items for a trade operation.
+func (ub *UserBaseModel) AddTradeDeployedStorageItems(items []StorageItemDeployed, operationID int) {
+	if len(items) == 0 {
+		return
+	}
+
+	for _, item := range items {
+		ub.StorageItemsDeployed = append(ub.StorageItemsDeployed, StorageItemDeployed{
+			BaseOwnedItem: NewBaseOwnedItem(ub.ID),
+			Prototype:     item.Prototype,
+			OperationKind: OperationKindTrade,
+			OperationID:   operationID,
+			ExpiresAt:     item.ExpiresAt,
+			IsActive:      item.IsActive,
+		})
+	}
+	ub.recalculateStats()
 }
 
 // AddStorageItem adds a new storage item to the base.

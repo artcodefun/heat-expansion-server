@@ -110,6 +110,53 @@ func (s *CrystalSpendingService) SpeedUpTechResearch(user *User, base *UserBaseM
 	return nil
 }
 
+// SpeedUpTradeOperation deducts crystals from user and speeds up an in-flight trade operation.
+// It supports both outbound and return legs by fast-forwarding the operation to arrival.
+func (s *CrystalSpendingService) SpeedUpTradeOperation(user *User, op *TradeOperation) error {
+	if op.Phase != TradePhaseOutbound && op.Phase != TradePhaseReturning {
+		return NewError("error.domain.operation.not_in_travel_phase", nil)
+	}
+
+	now := NowUnix()
+	var departAt, arriveAt int64
+	switch op.Phase {
+	case TradePhaseOutbound:
+		departAt = op.OutboundDepartAt
+		arriveAt = op.OutboundArriveAt
+	case TradePhaseReturning:
+		departAt = op.ReturnDepartAt
+		arriveAt = op.ReturnArriveAt
+	}
+
+	if arriveAt <= departAt || now >= arriveAt {
+		return NewError("error.domain.operation.no_travel_remaining", nil)
+	}
+
+	total := arriveAt - departAt
+	remaining := arriveAt - now
+	if total <= 0 || remaining <= 0 {
+		return NewError("error.domain.operation.no_travel_remaining", nil)
+	}
+
+	fraction := float64(remaining) / float64(total)
+	crystals := int(math.Ceil(float64(op.CrystalsSkipPrice) * fraction))
+	if crystals < 1 {
+		crystals = 1
+	}
+	if err := user.SpendCrystals(crystals); err != nil {
+		return err
+	}
+
+	switch op.Phase {
+	case TradePhaseOutbound:
+		_ = op.OnArrive()
+	case TradePhaseReturning:
+		_ = op.OnReturnArrive()
+	}
+
+	return nil
+}
+
 // SpeedUpOperation deducts crystals from user and speeds up an in-flight military operation.
 // It supports both outbound and return legs by fast-forwarding the operation to arrival.
 func (s *CrystalSpendingService) SpeedUpOperation(user *User, op *MilitaryOperation) error {

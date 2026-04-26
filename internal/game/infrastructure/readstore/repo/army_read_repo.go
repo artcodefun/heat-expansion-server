@@ -66,3 +66,16 @@ func (r *ArmyReadRepo) ListPresentArmyItems(ctx context.Context, baseID int, cat
 	}
 	return out, nil
 }
+
+func (r *ArmyReadRepo) ListPresentArmyItemsAll(ctx context.Context, baseID int) ([]*readmodels.ArmyItemPresent, error) {
+	rows, err := r.q.ListPresentArmyItemsAll(ctx, int64(baseID))
+	if err != nil {
+		return nil, err
+	}
+	out := make([]*readmodels.ArmyItemPresent, 0, len(rows))
+	for _, r0 := range rows {
+		v := mappers.ArmyItemPresentFromAllRow(r0)
+		out = append(out, &v)
+	}
+	return out, nil
+}

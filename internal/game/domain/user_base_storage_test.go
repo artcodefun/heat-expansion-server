@@ -3,6 +3,8 @@ package domain
 import (
 	"strings"
 	"testing"
+
+	"github.com/google/uuid"
 )
 
 func TestStorage_StartIntelDecryption_RespectsMaxDecryptions(t *testing.T) {
@@ -170,6 +172,38 @@ func TestStorage_DeleteStorageItemByID(t *testing.T) {
 	}
 	if len(base.StorageItemsPresent) != 0 {
 		t.Fatal("item not removed")
+	}
+}
+
+func TestStorage_AddTradeDeployedStorageItems_NormalizesBaseOwnership(t *testing.T) {
+	base := newBaseWithDefaults(42)
+	otherBaseID := base.ID + 1000
+	itemID := uuid.Must(uuid.NewV7())
+	proto := StorageItemPrototype{ID: 901, Category: StorageCategoryArtifact}
+
+	base.AddTradeDeployedStorageItems([]StorageItemDeployed{{
+		BaseOwnedItem: BaseOwnedItem{ID: itemID, UserBaseID: otherBaseID},
+		Prototype:     proto,
+		OperationKind: OperationKindTrade,
+		OperationID:   77,
+	}}, 77)
+
+	if len(base.StorageItemsDeployed) != 1 {
+		t.Fatalf("expected one deployed storage item, got %+v", base.StorageItemsDeployed)
+	}
+	if base.StorageItemsDeployed[0].BaseOwnedItem.UserBaseID != base.ID {
+		t.Fatalf("expected deployed storage item to be normalized to current base ID, got %d", base.StorageItemsDeployed[0].BaseOwnedItem.UserBaseID)
+	}
+	if base.StorageItemsDeployed[0].ID == itemID {
+		t.Fatalf("expected deployed storage item to have new ID, not original %s", itemID)
+	}
+
+	base.ReturnAllDeployedStorageFromOperation(OperationKindTrade, 77)
+	if len(base.StorageItemsPresent) != 1 {
+		t.Fatalf("expected storage item to return to present, got %+v", base.StorageItemsPresent)
+	}
+	if base.StorageItemsPresent[0].BaseOwnedItem.UserBaseID != base.ID {
+		t.Fatalf("expected restored storage item to be normalized to current base ID, got %d", base.StorageItemsPresent[0].BaseOwnedItem.UserBaseID)
 	}
 }
 

@@ -6,35 +6,35 @@ import (
 	"github.com/google/uuid"
 )
 
-// OperationType represents the type of a military operation at the DTO level.
-type OperationType string
+// MilitaryOperationType represents the type of a military operation at the DTO level.
+type MilitaryOperationType string
 
 const (
-	OperationTypeAttack     OperationType = "ATTACK"
-	OperationTypeSpy        OperationType = "SPY"
-	OperationTypeOccupation OperationType = "OCCUPATION"
+	MilitaryOperationTypeAttack     MilitaryOperationType = "ATTACK"
+	MilitaryOperationTypeSpy        MilitaryOperationType = "SPY"
+	MilitaryOperationTypeOccupation MilitaryOperationType = "OCCUPATION"
 )
 
-// OperationPhase represents the lifecycle stage of an operation at the DTO level.
-type OperationPhase string
+// MilitaryOperationPhase represents the lifecycle stage of a military operation at the DTO level.
+type MilitaryOperationPhase string
 
 const (
-	OperationPhasePending   OperationPhase = "PENDING"
-	OperationPhaseOutbound  OperationPhase = "OUTBOUND"
-	OperationPhaseAtTarget  OperationPhase = "AT_TARGET"
-	OperationPhaseResolving OperationPhase = "RESOLVING"
-	OperationPhaseReturning OperationPhase = "RETURNING"
-	OperationPhaseCompleted OperationPhase = "COMPLETED"
+	MilitaryOperationPhasePending   MilitaryOperationPhase = "PENDING"
+	MilitaryOperationPhaseOutbound  MilitaryOperationPhase = "OUTBOUND"
+	MilitaryOperationPhaseAtTarget  MilitaryOperationPhase = "AT_TARGET"
+	MilitaryOperationPhaseResolving MilitaryOperationPhase = "RESOLVING"
+	MilitaryOperationPhaseReturning MilitaryOperationPhase = "RETURNING"
+	MilitaryOperationPhaseCompleted MilitaryOperationPhase = "COMPLETED"
 )
 
-// OperationResult represents the outcome of an operation at the DTO level.
-type OperationResult string
+// MilitaryOperationResult represents the outcome of a military operation at the DTO level.
+type MilitaryOperationResult string
 
 const (
-	OperationResultUnknown  OperationResult = "UNKNOWN"
-	OperationResultSuccess  OperationResult = "SUCCESS"
-	OperationResultFailure  OperationResult = "FAILURE"
-	OperationResultCanceled OperationResult = "CANCELED"
+	MilitaryOperationResultUnknown  MilitaryOperationResult = "UNKNOWN"
+	MilitaryOperationResultSuccess  MilitaryOperationResult = "SUCCESS"
+	MilitaryOperationResultFailure  MilitaryOperationResult = "FAILURE"
+	MilitaryOperationResultCanceled MilitaryOperationResult = "CANCELED"
 )
 
 // SpyOutcome represents possible results of a spy operation at the DTO level.
@@ -133,27 +133,27 @@ type AttackResultDTO struct {
 
 // MilitaryOperationDTO serializes military operations for HTTP responses.
 type MilitaryOperationDTO struct {
-	ID                 int                  `json:"id"`
-	UUID               uuid.UUID            `json:"uuid"`
-	Type               OperationType        `json:"type"`
-	Phase              OperationPhase       `json:"phase"`
-	Result             OperationResult      `json:"result"`
-	SourceBaseID       int                  `json:"source_base_id"`
-	SourceCoordinates  Vector2iDTO          `json:"source_coordinates"`
-	TargetCoordinates  Vector2iDTO          `json:"target_coordinates"`
-	OutboundDepartAt   int64                `json:"outbound_depart_at"`
-	OutboundArriveAt   int64                `json:"outbound_arrive_at"`
-	ReturnDepartAt     int64                `json:"return_depart_at"`
-	ReturnArriveAt     int64                `json:"return_arrive_at"`
-	CompletedAt        int64                `json:"completed_at"`
-	CrystalsSkipPrice  int                  `json:"crystals_skip_price"`
-	Units              []MilitaryUnitDTO    `json:"units"`
-	StorageSnaps       []StorageItemSnapDTO `json:"storage_snaps"`
-	TotalModifiers     MilitaryModifiersDTO `json:"total_modifiers"`
-	SpyResult          *SpyResultDTO        `json:"spy_result,omitempty"`
-	AttackResult       *AttackResultDTO     `json:"attack_result,omitempty"`
-	ProducedScanReport *SectorDTO           `json:"produced_scan_report,omitempty"`
-	PriorScanReport    *SectorDTO           `json:"prior_scan_report,omitempty"`
+	ID                 int                     `json:"id"`
+	UUID               uuid.UUID               `json:"uuid"`
+	Type               MilitaryOperationType   `json:"type"`
+	Phase              MilitaryOperationPhase  `json:"phase"`
+	Result             MilitaryOperationResult `json:"result"`
+	SourceBaseID       int                     `json:"source_base_id"`
+	SourceCoordinates  Vector2iDTO             `json:"source_coordinates"`
+	TargetCoordinates  Vector2iDTO             `json:"target_coordinates"`
+	OutboundDepartAt   int64                   `json:"outbound_depart_at"`
+	OutboundArriveAt   int64                   `json:"outbound_arrive_at"`
+	ReturnDepartAt     int64                   `json:"return_depart_at"`
+	ReturnArriveAt     int64                   `json:"return_arrive_at"`
+	CompletedAt        int64                   `json:"completed_at"`
+	CrystalsSkipPrice  int                     `json:"crystals_skip_price"`
+	Units              []MilitaryUnitDTO       `json:"units"`
+	StorageSnaps       []StorageItemSnapDTO    `json:"storage_snaps"`
+	TotalModifiers     MilitaryModifiersDTO    `json:"total_modifiers"`
+	SpyResult          *SpyResultDTO           `json:"spy_result,omitempty"`
+	AttackResult       *AttackResultDTO        `json:"attack_result,omitempty"`
+	ProducedScanReport *SectorDTO              `json:"produced_scan_report,omitempty"`
+	PriorScanReport    *SectorDTO              `json:"prior_scan_report,omitempty"`
 }
 
 func MilitaryUnitsFromReadModel(units []readmodels.MilitaryUnitSnap, tr ports.Translator, locale string) []MilitaryUnitDTO {
@@ -239,9 +239,9 @@ func OperationFromReadModel(m *readmodels.MilitaryOperation, tr ports.Translator
 	dto := MilitaryOperationDTO{
 		ID:                m.ID,
 		UUID:              m.UUID,
-		Type:              OperationType(m.Type),
-		Phase:             OperationPhase(m.Phase),
-		Result:            OperationResult(m.Result),
+		Type:              MilitaryOperationType(m.Type),
+		Phase:             MilitaryOperationPhase(m.Phase),
+		Result:            MilitaryOperationResult(m.Result),
 		SourceBaseID:      m.SourceBaseID,
 		SourceCoordinates: Vector2iDTO{X: m.SourceCoordinates.X, Y: m.SourceCoordinates.Y},
 		TargetCoordinates: Vector2iDTO{X: m.TargetCoordinates.X, Y: m.TargetCoordinates.Y},

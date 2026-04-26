@@ -25,22 +25,23 @@ func (q *Queries) DeleteBaseStorageItemsByBase(ctx context.Context, baseID int64
 const insertBaseStorageItem = `-- name: InsertBaseStorageItem :one
 INSERT INTO game.base_storage_items (
     id, base_id, prototype_id, status,
-    present_data, state, created_at
+    present_data, deployed_data, state, created_at
 ) VALUES (
     $1, $2, $3, $4,
-    $5, $6, $7
+    $5, $6, $7, $8
 )
 RETURNING id
 `
 
 type InsertBaseStorageItemParams struct {
-	ID          uuid.UUID             `json:"id"`
-	BaseID      int64                 `json:"base_id"`
-	PrototypeID int64                 `json:"prototype_id"`
-	Status      string                `json:"status"`
-	PresentData pqtype.NullRawMessage `json:"present_data"`
-	State       json.RawMessage       `json:"state"`
-	CreatedAt   int64                 `json:"created_at"`
+	ID           uuid.UUID             `json:"id"`
+	BaseID       int64                 `json:"base_id"`
+	PrototypeID  int64                 `json:"prototype_id"`
+	Status       string                `json:"status"`
+	PresentData  pqtype.NullRawMessage `json:"present_data"`
+	DeployedData pqtype.NullRawMessage `json:"deployed_data"`
+	State        json.RawMessage       `json:"state"`
+	CreatedAt    int64                 `json:"created_at"`
 }
 
 func (q *Queries) InsertBaseStorageItem(ctx context.Context, arg InsertBaseStorageItemParams) (uuid.UUID, error) {
@@ -50,6 +51,7 @@ func (q *Queries) InsertBaseStorageItem(ctx context.Context, arg InsertBaseStora
 		arg.PrototypeID,
 		arg.Status,
 		arg.PresentData,
+		arg.DeployedData,
 		arg.State,
 		arg.CreatedAt,
 	)
@@ -61,28 +63,40 @@ func (q *Queries) InsertBaseStorageItem(ctx context.Context, arg InsertBaseStora
 const listBaseStorageItems = `-- name: ListBaseStorageItems :many
 
 SELECT id, base_id, prototype_id, status,
-       present_data, state, created_at
+    present_data, deployed_data, state, created_at
 FROM game.base_storage_items
 WHERE base_id = $1
 ORDER BY id
 `
 
+type ListBaseStorageItemsRow struct {
+	ID           uuid.UUID             `json:"id"`
+	BaseID       int64                 `json:"base_id"`
+	PrototypeID  int64                 `json:"prototype_id"`
+	Status       string                `json:"status"`
+	PresentData  pqtype.NullRawMessage `json:"present_data"`
+	DeployedData pqtype.NullRawMessage `json:"deployed_data"`
+	State        json.RawMessage       `json:"state"`
+	CreatedAt    int64                 `json:"created_at"`
+}
+
 // Base storage items queries
-func (q *Queries) ListBaseStorageItems(ctx context.Context, baseID int64) ([]BaseStorageItem, error) {
+func (q *Queries) ListBaseStorageItems(ctx context.Context, baseID int64) ([]ListBaseStorageItemsRow, error) {
 	rows, err := q.query(ctx, q.listBaseStorageItemsStmt, listBaseStorageItems, baseID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []BaseStorageItem{}
+	items := []ListBaseStorageItemsRow{}
 	for rows.Next() {
-		var i BaseStorageItem
+		var i ListBaseStorageItemsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.BaseID,
 			&i.PrototypeID,
 			&i.Status,
 			&i.PresentData,
+			&i.DeployedData,
 			&i.State,
 			&i.CreatedAt,
 		); err != nil {

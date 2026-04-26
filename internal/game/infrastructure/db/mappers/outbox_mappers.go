@@ -19,7 +19,9 @@ const (
 	jobKindRestoreDamagedItem   = "RESTORE_DAMAGED_ITEM"
 	jobKindDecryptIntelItem     = "DECRYPT_INTEL_ITEM"
 	jobKindUpdateMilitaryOp     = "UPDATE_MILITARY_OPERATION"
+	jobKindUpdateTradeOp        = "UPDATE_TRADE_OPERATION"
 	jobKindExpireDiplomaticReq  = "EXPIRE_DIPLOMATIC_REQUEST"
+	jobKindExpireTradeOp        = "EXPIRE_TRADE_OPERATION"
 	jobKindSpawnNearbyLocations = "SPAWN_NEARBY_LOCATIONS"
 	jobKindIntelligenceScan     = "INTELLIGENCE_SCAN"
 	jobKindIntelligenceRadar    = "INTELLIGENCE_RADAR"
@@ -50,9 +52,15 @@ func EncodeJob(job ports.SchadulableJob) (kind string, payload []byte, err error
 	case ports.UpdateMilitaryOperationJob:
 		payload, err = json.Marshal(dtos.UpdateMilitaryOperationJobDTOFromDomain(j))
 		return jobKindUpdateMilitaryOp, payload, err
+	case ports.UpdateTradeOperationJob:
+		payload, err = json.Marshal(dtos.UpdateTradeOperationJobDTOFromDomain(j))
+		return jobKindUpdateTradeOp, payload, err
 	case ports.ExpireDiplomaticRequestJob:
 		payload, err = json.Marshal(dtos.ExpireDiplomaticRequestJobDTOFromDomain(j))
 		return jobKindExpireDiplomaticReq, payload, err
+	case ports.ExpireTradeOperationJob:
+		payload, err = json.Marshal(dtos.ExpireTradeOperationJobDTOFromDomain(j))
+		return jobKindExpireTradeOp, payload, err
 	case ports.SpawnNearbyLocationsJob:
 		payload, err = json.Marshal(dtos.SpawnNearbyLocationsJobDTOFromDomain(j))
 		return jobKindSpawnNearbyLocations, payload, err
@@ -113,12 +121,24 @@ func DecodeJob(kind string, payload []byte) (ports.SchadulableJob, error) {
 			return nil, err
 		}
 		return dtos.UpdateMilitaryOperationJobFromDTO(dto), nil
+	case jobKindUpdateTradeOp:
+		var dto dtos.UpdateTradeOperationJobDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.UpdateTradeOperationJobFromDTO(dto), nil
 	case jobKindExpireDiplomaticReq:
 		var dto dtos.ExpireDiplomaticRequestJobDTO
 		if err := json.Unmarshal(payload, &dto); err != nil {
 			return nil, err
 		}
 		return dtos.ExpireDiplomaticRequestJobFromDTO(dto), nil
+	case jobKindExpireTradeOp:
+		var dto dtos.ExpireTradeOperationJobDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.ExpireTradeOperationJobFromDTO(dto), nil
 	case jobKindSpawnNearbyLocations:
 		var dto dtos.SpawnNearbyLocationsJobDTO
 		if err := json.Unmarshal(payload, &dto); err != nil {
@@ -175,6 +195,15 @@ const (
 	evKindMilitaryOperationReturnStarted = "MILITARY_OPERATION_RETURN_STARTED"
 	evKindMilitaryOperationReturnArrived = "MILITARY_OPERATION_RETURN_ARRIVED"
 	evKindMilitaryOperationCancelled     = "MILITARY_OPERATION_CANCELLED"
+	evKindTradeOperationCreated          = "TRADE_OPERATION_CREATED"
+	evKindTradeOperationAccepted         = "TRADE_OPERATION_ACCEPTED"
+	evKindTradeOperationDeclined         = "TRADE_OPERATION_DECLINED"
+	evKindTradeOperationExpired          = "TRADE_OPERATION_EXPIRED"
+	evKindTradeOperationCancelled        = "TRADE_OPERATION_CANCELLED_BY_INITIATOR"
+	evKindTradeOperationOutbound         = "TRADE_OPERATION_OUTBOUND"
+	evKindTradeOperationArrived          = "TRADE_OPERATION_ARRIVED"
+	evKindTradeOperationReturning        = "TRADE_OPERATION_RETURNING"
+	evKindTradeOperationReturnArrived    = "TRADE_OPERATION_RETURN_ARRIVED"
 	evKindScanReportCreated              = "SCAN_REPORT_CREATED"
 	evKindRadarThreatDetected            = "RADAR_THREAT_DETECTED"
 	evKindActivityCreated                = "ACTIVITY_CREATED"
@@ -288,6 +317,34 @@ func EncodeEvent(ev domain.DomainEvent) (kind string, payload []byte, err error)
 	case domain.MilitaryOperationCancelledEvent:
 		payload, err = json.Marshal(dtos.MilitaryOperationCancelledEventDTOFromDomain(e))
 		return evKindMilitaryOperationCancelled, payload, err
+
+	case domain.TradeOperationCreatedEvent:
+		payload, err = json.Marshal(dtos.TradeOperationCreatedEventDTOFromDomain(e))
+		return evKindTradeOperationCreated, payload, err
+	case domain.TradeOperationAcceptedEvent:
+		payload, err = json.Marshal(dtos.TradeOperationAcceptedEventDTOFromDomain(e))
+		return evKindTradeOperationAccepted, payload, err
+	case domain.TradeOperationDeclinedEvent:
+		payload, err = json.Marshal(dtos.TradeOperationDeclinedEventDTOFromDomain(e))
+		return evKindTradeOperationDeclined, payload, err
+	case domain.TradeOperationExpiredEvent:
+		payload, err = json.Marshal(dtos.TradeOperationExpiredEventDTOFromDomain(e))
+		return evKindTradeOperationExpired, payload, err
+	case domain.TradeOperationCancelledByInitiatorEvent:
+		payload, err = json.Marshal(dtos.TradeOperationCancelledByInitiatorEventDTOFromDomain(e))
+		return evKindTradeOperationCancelled, payload, err
+	case domain.TradeOperationOutboundEvent:
+		payload, err = json.Marshal(dtos.TradeOperationOutboundEventDTOFromDomain(e))
+		return evKindTradeOperationOutbound, payload, err
+	case domain.TradeOperationArrivedEvent:
+		payload, err = json.Marshal(dtos.TradeOperationArrivedEventDTOFromDomain(e))
+		return evKindTradeOperationArrived, payload, err
+	case domain.TradeOperationReturningEvent:
+		payload, err = json.Marshal(dtos.TradeOperationReturningEventDTOFromDomain(e))
+		return evKindTradeOperationReturning, payload, err
+	case domain.TradeOperationReturnArrivedEvent:
+		payload, err = json.Marshal(dtos.TradeOperationReturnArrivedEventDTOFromDomain(e))
+		return evKindTradeOperationReturnArrived, payload, err
 
 	case domain.ScanReportCreatedEvent:
 		payload, err = json.Marshal(dtos.ScanReportCreatedEventDTOFromDomain(e))
@@ -522,6 +579,61 @@ func DecodeEvent(kind string, payload []byte) (domain.DomainEvent, error) {
 			return nil, err
 		}
 		return dtos.MilitaryOperationCancelledEventFromDTO(dto), nil
+
+	case evKindTradeOperationCreated:
+		var dto dtos.TradeOperationCreatedEventDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.TradeOperationCreatedEventFromDTO(dto), nil
+	case evKindTradeOperationAccepted:
+		var dto dtos.TradeOperationAcceptedEventDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.TradeOperationAcceptedEventFromDTO(dto), nil
+	case evKindTradeOperationDeclined:
+		var dto dtos.TradeOperationDeclinedEventDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.TradeOperationDeclinedEventFromDTO(dto), nil
+	case evKindTradeOperationExpired:
+		var dto dtos.TradeOperationExpiredEventDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.TradeOperationExpiredEventFromDTO(dto), nil
+	case evKindTradeOperationCancelled:
+		var dto dtos.TradeOperationCancelledByInitiatorEventDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.TradeOperationCancelledByInitiatorEventFromDTO(dto), nil
+	case evKindTradeOperationOutbound:
+		var dto dtos.TradeOperationOutboundEventDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.TradeOperationOutboundEventFromDTO(dto), nil
+	case evKindTradeOperationArrived:
+		var dto dtos.TradeOperationArrivedEventDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.TradeOperationArrivedEventFromDTO(dto), nil
+	case evKindTradeOperationReturning:
+		var dto dtos.TradeOperationReturningEventDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.TradeOperationReturningEventFromDTO(dto), nil
+	case evKindTradeOperationReturnArrived:
+		var dto dtos.TradeOperationReturnArrivedEventDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.TradeOperationReturnArrivedEventFromDTO(dto), nil
 
 	case evKindScanReportCreated:
 		var dto dtos.ScanReportCreatedEventDTO

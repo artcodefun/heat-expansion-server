@@ -20,6 +20,7 @@ type Commands struct {
 	Tech      cqrs.TechCommands
 	Storage   cqrs.StorageCommands
 	Operation cqrs.OperationCommands
+	Trade     cqrs.TradeCommands
 	Alert     cqrs.AlertCommands
 	Diplomacy cqrs.DiplomacyCommands
 }
@@ -32,6 +33,7 @@ type Queries struct {
 	Army      cqrs.ArmyQueries
 	Tech      cqrs.TechQueries
 	Storage   cqrs.StorageQueries
+	Trade     cqrs.TradeQueries
 	Sector    cqrs.SectorQueries
 	Radar     cqrs.RadarQueries
 	Operation cqrs.OperationQueries
@@ -52,6 +54,7 @@ func NewRouter(cmd Commands, qry Queries, tokenValidator ports.TokenValidator, t
 	armyHandler := handlers.NewArmyHandler(qry.Army, cmd.Army, tr)
 	techHandler := handlers.NewTechHandler(qry.Tech, cmd.Tech, tr)
 	storageHandler := handlers.NewStorageHandler(qry.Storage, cmd.Storage, tr)
+	tradeHandler := handlers.NewTradeHandler(cmd.Trade, qry.Trade, tr)
 	sectorHandler := handlers.NewSectorHandler(qry.Sector, tr)
 	radarHandler := handlers.NewRadarHandler(qry.Radar, tr)
 	operationHandler := handlers.NewOperationHandler(qry.Operation, cmd.Operation, tr)
@@ -168,6 +171,24 @@ func NewRouter(cmd Commands, qry Queries, tokenValidator ports.TokenValidator, t
 			alerts.POST("/read-all", alertHandler.MarkAllAsRead)
 		}
 
+		// Trade
+		trade := api.Group("/trade/bases/:baseId")
+		{
+			trade.GET("/info", tradeHandler.GetInfo)
+
+			operations := trade.Group("/operations")
+			{
+				operations.GET("", tradeHandler.ListActive)
+				operations.POST("", tradeHandler.Create)
+				operations.GET("/:operationId", tradeHandler.GetOperation)
+				operations.POST("/:operationId/accept", tradeHandler.Accept)
+				operations.POST("/:operationId/decline", tradeHandler.Decline)
+				operations.POST("/:operationId/cancel", tradeHandler.Cancel)
+				operations.POST("/:operationId/speed-up", tradeHandler.SpeedUp)
+			}
+		}
+
+		// Diplomacy
 		diplomacy := api.Group("/diplomacy")
 		{
 			relationships := diplomacy.Group("/relationships")
@@ -210,7 +231,7 @@ func registerCustomValidators() {
 			return dtos.IsValidBuildCategory(fl.Field().String())
 		})
 		_ = validatorEngine.RegisterValidation("operation_type", func(fl validator.FieldLevel) bool {
-			return dtos.IsValidOperationType(fl.Field().String())
+			return dtos.IsValidMilitaryOperationType(fl.Field().String())
 		})
 		_ = validatorEngine.RegisterValidation("operation_id", func(fl validator.FieldLevel) bool {
 			return dtos.IsValidOperationID(fl.Field().String())

@@ -44,8 +44,9 @@ func TestResolveAgainstUserBase_Attack_AppliesLootAndSurvivors(t *testing.T) {
 				Capacity: 2,
 				Speed:    100,
 			},
-			OperationID: op.ID,
-			Count:       3,
+			OperationKind: OperationKindMilitary,
+			OperationID:   op.ID,
+			Count:         3,
 		},
 	}
 

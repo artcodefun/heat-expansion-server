@@ -187,6 +187,13 @@ func (r *DiplomaticRelationship) CanPerformAttackOperation() error {
 	return nil
 }
 
+func (r *DiplomaticRelationship) CanPerformTradeOperation() error {
+	if r.Status != DiplomaticStatusAllied {
+		return NewError("error.domain.diplomacy.trade_requires_alliance", nil)
+	}
+	return nil
+}
+
 func (r *DiplomaticRelationship) CanCreateAllianceRequest() error {
 	if r.IsUnknown() {
 		return nil

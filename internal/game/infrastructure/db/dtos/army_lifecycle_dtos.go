@@ -42,14 +42,23 @@ func ArmyPresentFromDTO(d ArmyPresentDTO, owned domain.BaseOwnedItem, proto doma
 }
 
 type ArmyDeployedDTO struct {
-	OperationID int `json:"operation_id"`
-	Count       int `json:"count"`
+	OperationKind string `json:"operation_kind"`
+	OperationID   int    `json:"operation_id"`
+	Count         int    `json:"count"`
 }
 
 func ArmyDeployedDTOFromDomain(a domain.ArmyItemDeployed) ArmyDeployedDTO {
-	return ArmyDeployedDTO{OperationID: a.OperationID, Count: a.Count}
+	operationKind := string(a.OperationKind)
+	if operationKind == "" {
+		operationKind = string(domain.OperationKindMilitary)
+	}
+	return ArmyDeployedDTO{OperationKind: operationKind, OperationID: a.OperationID, Count: a.Count}
 }
 
 func ArmyDeployedFromDTO(d ArmyDeployedDTO, owned domain.BaseOwnedItem, proto domain.ArmyItemPrototype) domain.ArmyItemDeployed {
-	return domain.ArmyItemDeployed{BaseOwnedItem: owned, Prototype: proto, OperationID: d.OperationID, Count: d.Count}
+	operationKind := domain.OperationKind(d.OperationKind)
+	if operationKind == "" {
+		operationKind = domain.OperationKindMilitary
+	}
+	return domain.ArmyItemDeployed{BaseOwnedItem: owned, Prototype: proto, OperationKind: operationKind, OperationID: d.OperationID, Count: d.Count}
 }

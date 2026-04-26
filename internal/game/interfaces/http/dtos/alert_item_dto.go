@@ -13,6 +13,7 @@ const (
 	AlertKindIntel      AlertKind = "INTEL"
 	AlertKindSystem     AlertKind = "SYSTEM"
 	AlertKindDiplomatic AlertKind = "DIPLOMATIC"
+	AlertKindTrade      AlertKind = "TRADE"
 )
 
 type AlertItemDTO struct {

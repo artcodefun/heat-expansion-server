@@ -55,6 +55,15 @@ type OperationCommands interface {
 	SpeedUpOperationWithCrystals(ctx context.Context, actor Actor, operationID int) error
 }
 
+// TradeCommands encapsulates trade operation mutations.
+type TradeCommands interface {
+	CreateTradeOperation(ctx context.Context, actor Actor, senderBaseID int, targetX, targetY int, offeredResources domain.PriceModel, offeredArmyRequests []domain.ArmyDeploymentRequest, offeredStorageItemIDs []uuid.UUID, requestedResources domain.PriceModel, requestedArmyRequests []domain.ArmyDeploymentRequest, requestedStorageItemIDs []uuid.UUID, transportRequests []domain.ArmyDeploymentRequest) (*domain.TradeOperation, error)
+	AcceptTradeOperation(ctx context.Context, actor Actor, operationID int) error
+	DeclineTradeOperation(ctx context.Context, actor Actor, operationID int) error
+	CancelTradeOperationByInitiator(ctx context.Context, actor Actor, operationID int) error
+	SpeedUpTradeOperationWithCrystals(ctx context.Context, actor Actor, operationID int) error
+}
+
 // AlertCommands encapsulates alert notifications management.
 type AlertCommands interface {
 	MarkAllAsRead(ctx context.Context, userID uuid.UUID) error

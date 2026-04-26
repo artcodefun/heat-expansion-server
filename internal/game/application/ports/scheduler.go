@@ -45,9 +45,20 @@ type UpdateMilitaryOperationJob struct {
 	OperationID int
 }
 
+// UpdateTradeOperationJob asks the system to advance a trade operation's phase based on time
+// (e.g., arrival at target, arrival back at source). Safe to enqueue multiple times.
+type UpdateTradeOperationJob struct {
+	OperationID int
+}
+
 // ExpireDiplomaticRequestJob asks the system to mark a pending diplomatic request as expired.
 type ExpireDiplomaticRequestJob struct {
 	RequestID uuid.UUID
+}
+
+// ExpireTradeOperationJob asks the system to expire a pending trade operation.
+type ExpireTradeOperationJob struct {
+	OperationID int
 }
 
 // SpawnNearbyLocationsJob triggers spawning of resourceful/dangerous locations near a specific user base.

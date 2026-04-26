@@ -80,13 +80,14 @@ type BaseBuildItem struct {
 }
 
 type BaseStorageItem struct {
-	ID          uuid.UUID             `json:"id"`
-	BaseID      int64                 `json:"base_id"`
-	PrototypeID int64                 `json:"prototype_id"`
-	Status      string                `json:"status"`
-	PresentData pqtype.NullRawMessage `json:"present_data"`
-	State       json.RawMessage       `json:"state"`
-	CreatedAt   int64                 `json:"created_at"`
+	ID           uuid.UUID             `json:"id"`
+	BaseID       int64                 `json:"base_id"`
+	PrototypeID  int64                 `json:"prototype_id"`
+	Status       string                `json:"status"`
+	PresentData  pqtype.NullRawMessage `json:"present_data"`
+	State        json.RawMessage       `json:"state"`
+	CreatedAt    int64                 `json:"created_at"`
+	DeployedData pqtype.NullRawMessage `json:"deployed_data"`
 }
 
 type BaseTechItem struct {
@@ -304,6 +305,35 @@ type TechItemPrototype struct {
 	ResearchTime       int64                 `json:"research_time"`
 	ImageUrl           sql.NullString        `json:"image_url"`
 	Improvement        pqtype.NullRawMessage `json:"improvement"`
+}
+
+type TradeOperation struct {
+	ID                int64           `json:"id"`
+	OperationUuid     uuid.UUID       `json:"operation_uuid"`
+	CreatedAt         int64           `json:"created_at"`
+	SenderUserID      uuid.UUID       `json:"sender_user_id"`
+	SenderBaseID      int64           `json:"sender_base_id"`
+	ReceiverUserID    uuid.UUID       `json:"receiver_user_id"`
+	ReceiverBaseID    int64           `json:"receiver_base_id"`
+	SourceX           int32           `json:"source_x"`
+	SourceY           int32           `json:"source_y"`
+	TargetX           int32           `json:"target_x"`
+	TargetY           int32           `json:"target_y"`
+	OfferedPayload    json.RawMessage `json:"offered_payload"`
+	RequestedPayload  json.RawMessage `json:"requested_payload"`
+	TransportUnits    json.RawMessage `json:"transport_units"`
+	StorageSnaps      json.RawMessage `json:"storage_snaps"`
+	TotalModifiers    json.RawMessage `json:"total_modifiers"`
+	ExpiresAt         int64           `json:"expires_at"`
+	OutboundDepartAt  int64           `json:"outbound_depart_at"`
+	OutboundArriveAt  int64           `json:"outbound_arrive_at"`
+	ArrivedAtTargetAt int64           `json:"arrived_at_target_at"`
+	ReturnDepartAt    int64           `json:"return_depart_at"`
+	ReturnArriveAt    int64           `json:"return_arrive_at"`
+	CompletedAt       int64           `json:"completed_at"`
+	Phase             string          `json:"phase"`
+	Result            string          `json:"result"`
+	CrystalsSkipPrice int64           `json:"crystals_skip_price"`
 }
 
 type User struct {
