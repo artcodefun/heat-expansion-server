@@ -468,10 +468,14 @@ func (ub *UserBaseModel) ActiveStorageSnaps() []StorageItemSnap {
 }
 
 // AddTrophies adds the provided trophies to the base's storage.
-// It requires the prototypes to be resolved by the caller.
-func (ub *UserBaseModel) AddTrophies(trophies []TrophyStorageItem, protos map[int]StorageItemPrototype) {
+// It accepts the raw prototype slice and builds the lookup map internally.
+func (ub *UserBaseModel) AddTrophies(trophies []TrophyStorageItem, protos []*StorageItemPrototype) {
+	byID := make(map[int]StorageItemPrototype, len(protos))
+	for _, p := range protos {
+		byID[p.ID] = *p
+	}
 	for _, t := range trophies {
-		if p, ok := protos[t.PrototypeID]; ok {
+		if p, ok := byID[t.PrototypeID]; ok {
 			ub.StorageItemsPresent = append(ub.StorageItemsPresent, StorageItemPresent{
 				BaseOwnedItem: NewBaseOwnedItem(ub.ID),
 				Prototype:     p,

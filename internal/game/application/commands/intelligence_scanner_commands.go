@@ -115,25 +115,23 @@ func (c *IntelligenceScannerCommands) HandleIntelligenceScanJob(ctx context.Cont
 	case domain.LocationTypeUserBase:
 		defenderBase, _ := c.BaseRepo.FindByCoordinates(ctx, sector.Coordinates.X, sector.Coordinates.Y)
 		if c.intelService.ResolveScanVisibility(scanStrength, defenderBase) {
-			report = domain.NewSectorScanReportFromUserBase(base.ID, sector, defenderBase)
+			report = domain.NewSectorScanReportFromUserBase(base.ID, sector, defenderBase, domain.ScanReportSourceScanner, &job.BuildingID)
 		} else {
-			report = domain.NewSectorScanReportFromUserBase(base.ID, sector, nil)
+			report = domain.NewSectorScanReportFromUserBase(base.ID, sector, nil, domain.ScanReportSourceScanner, &job.BuildingID)
 		}
 	case domain.LocationTypeResourceful:
 		res, _ := c.ResourceRepo.FindByCoordinates(ctx, sector.Coordinates.X, sector.Coordinates.Y)
-		report = domain.NewSectorScanReportFromResourceLocation(base.ID, sector, res)
+		report = domain.NewSectorScanReportFromResourceLocation(base.ID, sector, res, domain.ScanReportSourceScanner, &job.BuildingID)
 	case domain.LocationTypeDangerous:
 		dl, _ := c.DangerousRepo.FindByCoordinates(ctx, sector.Coordinates.X, sector.Coordinates.Y)
-		report = domain.NewSectorScanReportFromDangerousLocation(base.ID, sector, dl)
+		report = domain.NewSectorScanReportFromDangerousLocation(base.ID, sector, dl, domain.ScanReportSourceScanner, &job.BuildingID)
 	case domain.LocationTypeEmpty:
-		report = domain.NewSectorScanReportFromEmptySector(base.ID, sector)
+		report = domain.NewSectorScanReportFromEmptySector(base.ID, sector, domain.ScanReportSourceScanner, &job.BuildingID)
 	default:
 		c.reschedule(ctx, job, periodSec)
 		return nil
 	}
 
-	report.SourceType = domain.ScanReportSourceScanner
-	report.SourceID = &job.BuildingID
 	err = c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		srRepo := c.ScanReportRepo.Tx(tx)
 		if err := srRepo.Create(ctx, report); err != nil {

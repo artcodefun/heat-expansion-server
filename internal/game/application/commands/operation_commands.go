@@ -60,76 +60,36 @@ func (c *OperationCommands) CreateMilitaryOperation(ctx context.Context, actor c
 		oRepo := c.OperationRepo.Tx(tx)
 		diplomacyRepo := c.DiplomacyRepo.Tx(tx)
 		scanRepo := c.ScanReportRepo.Tx(tx)
+
 		base, err := bRepo.FindByIDForUpdate(ctx, sourceBaseID)
 		if err != nil {
 			return repoErr(err)
 		}
-		readyToDeploy, err := base.GetReadyToDeployArmy(deployments)
-		if err != nil {
-			return err
-		}
 
-		snaps := base.ActiveStorageSnaps()
-		units := domain.MilitaryUnitsFromDeployed(readyToDeploy)
-		sourceSector, err := c.Provisioner.EnsureSectorExists(ctx, sRepo, base.Coordinates.X, base.Coordinates.Y)
-		if err != nil {
+		if _, err := c.Provisioner.EnsureSectorExists(ctx, sRepo, base.Coordinates.X, base.Coordinates.Y); err != nil {
 			return err
 		}
 		targetSector, err := c.Provisioner.EnsureSectorExists(ctx, sRepo, targetX, targetY)
 		if err != nil {
 			return err
 		}
-		if opType == domain.MilitaryOperationTypeAttack {
-			knownTargetBase, err := c.isKnownPlayerBaseTarget(ctx, sRepo, scanRepo, sourceBaseID, targetSector.Coordinates.X, targetSector.Coordinates.Y)
-			if err != nil {
-				return err
-			}
-			if knownTargetBase {
-				defenderBase, err := bRepo.FindByCoordinates(ctx, targetSector.Coordinates.X, targetSector.Coordinates.Y)
-				if err != nil {
-					return repoErr(err)
-				}
-				if defenderBase.UserID != base.UserID {
-					rel, err := diplomacyRepo.FindBetweenUsers(ctx, base.UserID, defenderBase.UserID)
-					if err != nil {
-						if !errors.Is(err, ports.ErrNotFound) {
-							return repoErr(err)
-						}
-						rel, err = domain.NewUnknownRelationship(base.UserID, defenderBase.UserID)
-						if err != nil {
-							return err
-						}
-					}
-					if err := rel.CanPerformAttackOperation(); err != nil {
-						return err
-					}
-				}
-			}
+		if err := c.validateMilitaryOperationDiplomacy(ctx, opType, base, targetSector, bRepo, sRepo, scanRepo, diplomacyRepo); err != nil {
+			return err
 		}
-		var opCreationErr error
-		switch opType {
-		case domain.MilitaryOperationTypeAttack:
-			createdOp, opCreationErr = domain.NewAttackOperation(base.UserID, sourceBaseID, sourceSector.Coordinates, targetSector.Coordinates, units, snaps)
-		case domain.MilitaryOperationTypeSpy:
-			createdOp, opCreationErr = domain.NewSpyOperation(base.UserID, sourceBaseID, sourceSector.Coordinates, targetSector.Coordinates, units, snaps)
-		default:
-			return cqrs.NewAppError(cqrs.KindInvalidInput, "error.application.invalid_operation_type")
-		}
-		if opCreationErr != nil {
-			return opCreationErr
+		createdOp, err = domain.BuildMilitaryOperationForCreation(opType, base, targetSector.Coordinates, deployments)
+		if err != nil {
+			return err
 		}
 		if err := oRepo.Create(ctx, createdOp); err != nil {
 			return err
 		}
-		for _, ready := range readyToDeploy {
-			if _, err := base.AllocateArmyToOperation(domain.ArmyDeploymentRequest{PresentItemID: ready.PresentItemID, Count: ready.Count}, domain.OperationKindMilitary, createdOp.ID); err != nil {
-				return err
-			}
+		svc := domain.NewMilitaryOperationService(createdOp, base)
+		if err := svc.StartOperationAndCommitAttacker(); err != nil {
+			return err
 		}
 		if err := bRepo.Update(ctx, base); err != nil {
 			return err
 		}
-		createdOp.Start()
 		if err := oRepo.Update(ctx, createdOp); err != nil {
 			return err
 		}
@@ -211,6 +171,46 @@ func (c *OperationCommands) SpeedUpOperationWithCrystals(ctx context.Context, ac
 	return err
 }
 
+func (c *OperationCommands) validateMilitaryOperationDiplomacy(
+	ctx context.Context,
+	opType domain.MilitaryOperationType,
+	base *domain.UserBaseModel,
+	targetSector *domain.SectorModel,
+	bRepo ports.UserBaseRepository,
+	sRepo ports.SectorRepository,
+	scanRepo ports.ScanReportRepository,
+	diplomacyRepo ports.DiplomaticRelationshipRepository,
+) error {
+	if opType != domain.MilitaryOperationTypeAttack {
+		return nil
+	}
+	knownTargetBase, err := c.isKnownPlayerBaseTarget(ctx, sRepo, scanRepo, base.ID, targetSector.Coordinates.X, targetSector.Coordinates.Y)
+	if err != nil {
+		return err
+	}
+	if !knownTargetBase {
+		return nil
+	}
+	defenderBase, err := bRepo.FindByCoordinates(ctx, targetSector.Coordinates.X, targetSector.Coordinates.Y)
+	if err != nil {
+		return repoErr(err)
+	}
+	if defenderBase.UserID == base.UserID {
+		return nil
+	}
+	rel, err := diplomacyRepo.FindBetweenUsers(ctx, base.UserID, defenderBase.UserID)
+	if err != nil {
+		if !errors.Is(err, ports.ErrNotFound) {
+			return repoErr(err)
+		}
+		rel, err = domain.NewUnknownRelationship(base.UserID, defenderBase.UserID)
+		if err != nil {
+			return err
+		}
+	}
+	return rel.CanPerformAttackOperation()
+}
+
 func (_ *OperationCommands) isKnownPlayerBaseTarget(ctx context.Context, sectorRepo ports.SectorRepository, scanRepo ports.ScanReportRepository, sourceBaseID, targetX, targetY int) (bool, error) {
 	occType, err := sectorRepo.GetLocationTypeByCoordinates(ctx, targetX, targetY)
 	if err != nil {
@@ -278,8 +278,6 @@ func (c *OperationCommands) HandleMilitaryOperationArrivedEvent(ctx context.Cont
 			return err
 		}
 		if report != nil {
-			report.SourceType = domain.ScanReportSourceOperation
-			report.SourceID = &op.UUID
 			if err := srRepo.Create(ctx, report); err == nil {
 				report.EmitCreated()
 			}
@@ -335,9 +333,9 @@ func (_ *OperationCommands) resolveOperationAtTarget(
 		events = append(events, base.EventProducer.PullEvents()...)
 		if op.Result == domain.OperationResultSuccess {
 			if op.Type == domain.MilitaryOperationTypeSpy && op.SpyResult != nil && op.SpyResult.Outcome == domain.SpyOutcomeBlockedByCloaking {
-				report = domain.NewSectorScanReportFromUserBase(op.SourceBaseID, sector, nil)
+				report = domain.NewSectorScanReportFromUserBase(op.SourceBaseID, sector, nil, domain.ScanReportSourceOperation, &op.UUID)
 			} else {
-				report = domain.NewSectorScanReportFromUserBase(op.SourceBaseID, sector, base)
+				report = domain.NewSectorScanReportFromUserBase(op.SourceBaseID, sector, base, domain.ScanReportSourceOperation, &op.UUID)
 			}
 		}
 	case domain.LocationTypeResourceful:
@@ -352,9 +350,9 @@ func (_ *OperationCommands) resolveOperationAtTarget(
 		events = append(events, res.EventProducer.PullEvents()...)
 		if op.Result == domain.OperationResultSuccess {
 			if op.Type == domain.MilitaryOperationTypeSpy && op.SpyResult != nil && op.SpyResult.Outcome == domain.SpyOutcomeBlockedByCloaking {
-				report = domain.NewSectorScanReportFromResourceLocation(op.SourceBaseID, sector, nil)
+				report = domain.NewSectorScanReportFromResourceLocation(op.SourceBaseID, sector, nil, domain.ScanReportSourceOperation, &op.UUID)
 			} else {
-				report = domain.NewSectorScanReportFromResourceLocation(op.SourceBaseID, sector, res)
+				report = domain.NewSectorScanReportFromResourceLocation(op.SourceBaseID, sector, res, domain.ScanReportSourceOperation, &op.UUID)
 			}
 		}
 	case domain.LocationTypeDangerous:
@@ -369,14 +367,14 @@ func (_ *OperationCommands) resolveOperationAtTarget(
 		events = append(events, dl.EventProducer.PullEvents()...)
 		if op.Result == domain.OperationResultSuccess {
 			if op.Type == domain.MilitaryOperationTypeSpy && op.SpyResult != nil && op.SpyResult.Outcome == domain.SpyOutcomeBlockedByCloaking {
-				report = domain.NewSectorScanReportFromDangerousLocation(op.SourceBaseID, sector, nil)
+				report = domain.NewSectorScanReportFromDangerousLocation(op.SourceBaseID, sector, nil, domain.ScanReportSourceOperation, &op.UUID)
 			} else {
-				report = domain.NewSectorScanReportFromDangerousLocation(op.SourceBaseID, sector, dl)
+				report = domain.NewSectorScanReportFromDangerousLocation(op.SourceBaseID, sector, dl, domain.ScanReportSourceOperation, &op.UUID)
 			}
 		}
 	case domain.LocationTypeEmpty:
 		svc.ResolveAgainstEmptySector(sector)
-		report = domain.NewSectorScanReportFromEmptySector(op.SourceBaseID, sector)
+		report = domain.NewSectorScanReportFromEmptySector(op.SourceBaseID, sector, domain.ScanReportSourceOperation, &op.UUID)
 	default:
 		return nil, nil, fmt.Errorf("unsupported sector classification")
 	}
@@ -405,13 +403,10 @@ func (c *OperationCommands) HandleMilitaryOperationReturnArrivedEvent(ctx contex
 
 			if len(op.AttackResult.Trophies) > 0 {
 				protos, err := c.StorageProtos.Tx(tx).FindAllPrototypes(ctx)
-				if err == nil {
-					protoMap := make(map[int]domain.StorageItemPrototype, len(protos))
-					for _, p := range protos {
-						protoMap[p.ID] = *p
-					}
-					base.AddTrophies(op.AttackResult.Trophies, protoMap)
+				if err != nil {
+					return err
 				}
+				base.AddTrophies(op.AttackResult.Trophies, protos)
 			}
 		}
 		if err := bRepo.Update(ctx, base); err != nil {

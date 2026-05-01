@@ -14,6 +14,74 @@ func NewMilitaryOperationService(op *MilitaryOperation, attacker *UserBaseModel)
 	return MilitaryOperationService{Operation: op, Attacker: attacker}
 }
 
+// BuildMilitaryOperationForCreation validates deployment requests against the attacker base,
+// converts them to unit snapshots, and constructs a MilitaryOperation aggregate ready for
+// persistence. Mirrors BuildTradeOperationForCreation in its contract.
+func BuildMilitaryOperationForCreation(
+	opType MilitaryOperationType,
+	attacker *UserBaseModel,
+	targetCoords Vector2i,
+	deploymentRequests []ArmyDeploymentRequest,
+) (*MilitaryOperation, error) {
+	readyToDeploy, err := attacker.GetReadyToDeployArmy(deploymentRequests)
+	if err != nil {
+		return nil, err
+	}
+	snaps := attacker.ActiveStorageSnaps()
+	units := MilitaryUnitsFromDeployed(readyToDeploy)
+
+	switch opType {
+	case MilitaryOperationTypeAttack:
+		return NewAttackOperation(attacker.UserID, attacker.ID, attacker.Coordinates, targetCoords, units, snaps)
+	case MilitaryOperationTypeSpy:
+		return NewSpyOperation(attacker.UserID, attacker.ID, attacker.Coordinates, targetCoords, units, snaps)
+	default:
+		return nil, NewError("error.domain.operation.invalid_type", nil)
+	}
+}
+
+// StartOperationAndCommitAttacker allocates the attacker's army units to the operation and starts
+// outbound travel. Must be called after the operation has been persisted (so it has an ID).
+// Mirrors CommitSenderForTradeCreation in its contract.
+func (s MilitaryOperationService) StartOperationAndCommitAttacker() error {
+	if err := allocateMilitaryArmyByUnitSnaps(s.Attacker, s.Operation.Units, s.Operation.ID); err != nil {
+		return err
+	}
+	s.Operation.Start()
+	return nil
+}
+
+// allocateMilitaryArmyByUnitSnaps allocates army units from a base to a military operation
+// by matching present stacks against the unit snapshot prototype IDs.
+func allocateMilitaryArmyByUnitSnaps(base *UserBaseModel, units []MilitaryUnitSnap, operationID int) error {
+	for _, req := range units {
+		remaining := req.Count
+		for remaining > 0 {
+			idx := -1
+			for i, p := range base.ArmiesPresent {
+				if p.Prototype.ID == req.PrototypeID && p.Count > 0 {
+					idx = i
+					break
+				}
+			}
+			if idx == -1 {
+				return NewError("error.domain.operation.insufficient_army_units", H{"prototype_id": req.PrototypeID, "required": req.Count, "available": req.Count - remaining})
+			}
+
+			take := remaining
+			if base.ArmiesPresent[idx].Count < take {
+				take = base.ArmiesPresent[idx].Count
+			}
+
+			if _, err := base.AllocateArmyToOperation(ArmyDeploymentRequest{PresentItemID: base.ArmiesPresent[idx].ID, Count: take}, OperationKindMilitary, operationID); err != nil {
+				return err
+			}
+			remaining -= take
+		}
+	}
+	return nil
+}
+
 // ResolveAgainstUserBase resolves an operation against a defending user base and mutates
 // the operation, the attacker base (deployed survivors), and the defender base (remaining defenders/structures).
 // Loot is computed internally based on defender resources and attacker capacity.

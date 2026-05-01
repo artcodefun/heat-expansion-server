@@ -554,9 +554,7 @@ func (c *DiplomacyCommands) createMissingRevealReports(ctx context.Context, scan
 			if err != nil {
 				return err
 			}
-			report := domain.NewSectorScanReportFromUserBase(viewerBase.ID, sector, targetBase)
-			report.SourceType = domain.ScanReportSourceDiplomaticReveal
-			report.SourceID = &relationshipID
+			report := domain.NewSectorScanReportFromUserBase(viewerBase.ID, sector, targetBase, domain.ScanReportSourceDiplomaticReveal, &relationshipID)
 			if err := scanRepo.Create(ctx, report); err != nil {
 				return err
 			}

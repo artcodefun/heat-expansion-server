@@ -358,7 +358,7 @@ func (c *StorageCommands) HandleDecryptIntelItemJob(ctx context.Context, cmd por
 			if err == nil {
 				sector, _ := c.SectorRepo.Tx(tx).FindByCoordinates(ctx, loc.Coordinates.X, loc.Coordinates.Y)
 				if sector != nil {
-					report = domain.NewSectorScanReportFromResourceLocation(base.ID, sector, loc)
+					report = domain.NewSectorScanReportFromResourceLocation(base.ID, sector, loc, domain.ScanReportSourceIntel, &cmd.ItemID)
 				}
 			}
 		case domain.HiddenLocationTypeDangerous:
@@ -366,7 +366,7 @@ func (c *StorageCommands) HandleDecryptIntelItemJob(ctx context.Context, cmd por
 			if err == nil {
 				sector, _ := c.SectorRepo.Tx(tx).FindByCoordinates(ctx, loc.Coordinates.X, loc.Coordinates.Y)
 				if sector != nil {
-					report = domain.NewSectorScanReportFromDangerousLocation(base.ID, sector, loc)
+					report = domain.NewSectorScanReportFromDangerousLocation(base.ID, sector, loc, domain.ScanReportSourceIntel, &cmd.ItemID)
 				}
 			}
 		case domain.HiddenLocationTypeUserBase:
@@ -374,14 +374,12 @@ func (c *StorageCommands) HandleDecryptIntelItemJob(ctx context.Context, cmd por
 			if err == nil {
 				sector, _ := c.SectorRepo.Tx(tx).FindByCoordinates(ctx, target.Coordinates.X, target.Coordinates.Y)
 				if sector != nil {
-					report = domain.NewSectorScanReportFromUserBase(base.ID, sector, target)
+					report = domain.NewSectorScanReportFromUserBase(base.ID, sector, target, domain.ScanReportSourceIntel, &cmd.ItemID)
 				}
 			}
 		}
 
 		if report != nil {
-			report.SourceType = domain.ScanReportSourceIntel
-			report.SourceID = &cmd.ItemID
 			if err := c.ScanReports.Tx(tx).Create(ctx, report); err != nil {
 				return err
 			}

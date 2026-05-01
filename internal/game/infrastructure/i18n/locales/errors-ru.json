@@ -1,7 +1,6 @@
 {
     "error.application.forbidden": "Доступ запрещен",
     "error.application.not_found": "Не найдено",
-    "error.application.invalid_operation_type": "Недопустимый тип операции",
     "error.application.invalid_diplomatic_message_kind": "Недопустимый тип дипломатического сообщения",
     "error.application.invalid_diplomatic_request_kind": "Недопустимый тип дипломатического запроса",
     "error.application.invalid_diplomatic_receiver_target": "База получателя не принадлежит указанному пользователю получателя",
@@ -30,6 +29,8 @@
     "error.domain.operation.radar_never_enters_circle": "Операция никогда не входит в зону действия",
     "error.domain.operation.radar_moving_away": "Операция удаляется от зоны действия",
     "error.domain.operation.radar_reached_before_entering": "Операция достигнет цели до входа в зону действия",
+    "error.domain.operation.invalid_type": "Недопустимый тип операции",
+    "error.domain.operation.insufficient_army_units": "Недостаточно юнитов прототипа {prototype_id}: требуется {required}, доступно {available}",
     "error.domain.trade.invalid_users": "Недопустимые участники торговли",
     "error.domain.trade.invalid_bases": "Недопустимые идентификаторы баз для торговли",
     "error.domain.trade.same_participant": "Отправитель и получатель должны быть разными участниками",

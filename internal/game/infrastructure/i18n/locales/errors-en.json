@@ -1,7 +1,6 @@
 {
     "error.application.forbidden": "Forbidden",
     "error.application.not_found": "Not found",
-    "error.application.invalid_operation_type": "Invalid operation type",
     "error.application.invalid_diplomatic_message_kind": "Invalid diplomatic message kind",
     "error.application.invalid_diplomatic_request_kind": "Invalid diplomatic request kind",
     "error.application.invalid_diplomatic_receiver_target": "Receiver base does not belong to the provided receiver user",
@@ -30,6 +29,8 @@
     "error.domain.operation.radar_never_enters_circle": "Operation never enters circle",
     "error.domain.operation.radar_moving_away": "Operation moving away from circle",
     "error.domain.operation.radar_reached_before_entering": "Operation reaches target before entering circle",
+    "error.domain.operation.invalid_type": "Invalid operation type",
+    "error.domain.operation.insufficient_army_units": "Not enough units for prototype {prototype_id}: required {required}, available {available}",
     "error.domain.trade.invalid_users": "Invalid trade participants",
     "error.domain.trade.invalid_bases": "Invalid trade base identifiers",
     "error.domain.trade.same_participant": "Sender and receiver must be different participants",
