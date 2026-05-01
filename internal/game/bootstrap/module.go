@@ -5,7 +5,10 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
+	"sync"
+	"time"
 
 	_ "github.com/lib/pq"
 
@@ -97,8 +100,9 @@ func NewModule() *Module {
 		Alert:     queries.Alert,
 		Diplomacy: queries.Diplomacy,
 	}
+	addr := fmt.Sprintf(":%s", port)
 	router := httpapi.NewRouter(httpCommands, httpQueries, adapters.Tokens, adapters.Translator)
-	httpServer := httpapi.NewServer(router)
+	httpServer := httpapi.NewServer(router, addr)
 
 	return &Module{
 		Port:          port,
@@ -118,22 +122,36 @@ func NewModule() *Module {
 	}
 }
 
-func (m *Module) Run() {
+func (m *Module) Run(ctx context.Context) {
 	fmt.Printf("Starting server on port %s\n", m.Port)
 	fmt.Printf("Connecting to DB: %s\n", m.DBURL)
 	fmt.Println("JWT secret configured")
 	fmt.Printf("Static base URL: %s\n", m.StaticBaseURL)
 	fmt.Printf("RabbitMQ URL: %s\n", m.RabbitURL)
 	fmt.Printf("Auth Exchange: %s\n", m.AuthExchange)
-	ctx := context.Background()
+	fmt.Printf("Listening on :%s\n", m.Port)
 
-	go m.Workers.SchedulerLoop(ctx)
-	go m.Workers.IntegrationEvtLoop(ctx)
-	go m.Workers.OutboxLoop(ctx)
+	var wg sync.WaitGroup
+	wg.Add(3)
+	go func() { defer wg.Done(); m.Workers.SchedulerLoop(ctx) }()
+	go func() { defer wg.Done(); m.Workers.IntegrationEvtLoop(ctx) }()
+	go func() { defer wg.Done(); m.Workers.OutboxLoop(ctx) }()
 
-	addr := fmt.Sprintf(":%s", m.Port)
-	fmt.Printf("Listening on %s\n", addr)
-	if err := m.HTTPServer.Start(addr); err != nil {
-		log.Fatalf("http server exited: %v", err)
+	go func() {
+		if err := m.HTTPServer.Start(); err != nil {
+			slog.Error("game http server stopped", "error", err)
+		}
+	}()
+
+	<-ctx.Done()
+	slog.Info("game module: shutdown signal received, draining...")
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	if err := m.HTTPServer.Shutdown(shutdownCtx); err != nil {
+		slog.Error("game http server shutdown error", "error", err)
 	}
+
+	wg.Wait()
+	slog.Info("game module: stopped")
 }

@@ -5,7 +5,10 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
+	"sync"
+	"time"
 
 	httpapi "github.com/artcodefun/heat-expansion-server/internal/auth/interfaces/http"
 	_ "github.com/lib/pq"
@@ -15,12 +18,13 @@ type Module struct {
 	Port  string
 	DBURL string
 
-	DB       *sql.DB
-	Adapters *Adapters
-	Services *AppServices
-	Workers  *Workers
-	Commands *Commands
-	Queries  *Queries
+	DB         *sql.DB
+	Adapters   *Adapters
+	Services   *AppServices
+	Workers    *Workers
+	Commands   *Commands
+	Queries    *Queries
+	HTTPServer *httpapi.Server
 }
 
 func NewModule() *Module {
@@ -55,36 +59,50 @@ func NewModule() *Module {
 
 	WireIntegrationEvents(services, adapters.Events)
 
+	addr := fmt.Sprintf(":%s", port)
+	router := httpapi.NewRouter(
+		httpapi.Commands{Account: commands.Account},
+		httpapi.Queries{Account: queries.Account},
+		adapters.Translator,
+	)
+	server := httpapi.NewServer(router, addr)
+
 	return &Module{
-		Port:     port,
-		DBURL:    dbURL,
-		DB:       db,
-		Adapters: adapters,
-		Services: services,
-		Workers:  workers,
-		Commands: commands,
-		Queries:  queries,
+		Port:       port,
+		DBURL:      dbURL,
+		DB:         db,
+		Adapters:   adapters,
+		Services:   services,
+		Workers:    workers,
+		Commands:   commands,
+		Queries:    queries,
+		HTTPServer: server,
 	}
 }
 
-func (m *Module) Run() {
+func (m *Module) Run(ctx context.Context) {
 	fmt.Printf("Starting auth service on port %s\n", m.Port)
-	ctx := context.Background()
 
-	// Start background workers
-	go m.Workers.DomainOutboxLoop(ctx)
-	go m.Workers.IntegrationOutboxLoop(ctx)
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() { defer wg.Done(); m.Workers.DomainOutboxLoop(ctx) }()
+	go func() { defer wg.Done(); m.Workers.IntegrationOutboxLoop(ctx) }()
 
-	// HTTP Server
-	router := httpapi.NewRouter(
-		httpapi.Commands{Account: m.Commands.Account},
-		httpapi.Queries{Account: m.Queries.Account},
-		m.Adapters.Translator,
-	)
-	server := httpapi.NewServer(router)
+	go func() {
+		if err := m.HTTPServer.Start(); err != nil {
+			slog.Error("auth http server stopped", "error", err)
+		}
+	}()
 
-	addr := fmt.Sprintf(":%s", m.Port)
-	if err := server.Start(addr); err != nil {
-		log.Fatalf("auth http server exited: %v", err)
+	<-ctx.Done()
+	slog.Info("auth module: shutdown signal received, draining...")
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	if err := m.HTTPServer.Shutdown(shutdownCtx); err != nil {
+		slog.Error("auth http server shutdown error", "error", err)
 	}
+
+	wg.Wait()
+	slog.Info("auth module: stopped")
 }
