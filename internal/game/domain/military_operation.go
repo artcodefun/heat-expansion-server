@@ -766,6 +766,13 @@ func (op *MilitaryOperation) TotalCapacity() int {
 	return int(math.Round(SumEffectiveCapacity(op.Units, mods.CapacityMul)))
 }
 
+func (op *MilitaryOperation) ProducedVisibleIntel() bool {
+	if op.Type != MilitaryOperationTypeSpy {
+		return true
+	}
+	return op.SpyResult == nil || op.SpyResult.Outcome != SpyOutcomeBlockedByCloaking
+}
+
 // computeLoadFromLocation fills available carrying capacity using the available
 // resource pool, prioritizing lower value resources first (least expensive to most expensive).
 // This incentivizes players to fully loot a location.

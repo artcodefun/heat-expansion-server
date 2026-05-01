@@ -89,9 +89,21 @@ func (c *WorldGenerationCommands) HandleSpawnNearbyLocationsJob(ctx context.Cont
 		return nil
 	}
 
-	storageProtos, _ := c.StoragePrototypes.FindAllPrototypes(ctx)
-	armyProtos, _ := c.ArmyPrototypes.FindAllPrototypes(ctx)
-	buildProtos, _ := c.BuildPrototypes.FindAllPrototypes(ctx)
+	storageProtos, err := c.StoragePrototypes.FindAllPrototypes(ctx)
+	if err != nil {
+		c.reschedule(ctx, job.BaseID)
+		return nil
+	}
+	armyProtos, err := c.ArmyPrototypes.FindAllPrototypes(ctx)
+	if err != nil {
+		c.reschedule(ctx, job.BaseID)
+		return nil
+	}
+	buildProtos, err := c.BuildPrototypes.FindAllPrototypes(ctx)
+	if err != nil {
+		c.reschedule(ctx, job.BaseID)
+		return nil
+	}
 
 	r2 := c.SpawnRadius * c.SpawnRadius
 	for i := 0; i < c.SpawnAttemptsPerJob; i++ {
@@ -110,8 +122,8 @@ func (c *WorldGenerationCommands) HandleSpawnNearbyLocationsJob(ctx context.Cont
 				return err
 			})
 		}
-		lt, _ := c.Sectors.GetLocationTypeByCoordinates(ctx, targetX, targetY)
-		if lt != domain.LocationTypeEmpty {
+		lt, err := c.Sectors.GetLocationTypeByCoordinates(ctx, targetX, targetY)
+		if err != nil || lt != domain.LocationTypeEmpty {
 			continue
 		}
 		roll := r.Float64()
@@ -161,88 +173,92 @@ func (c *WorldGenerationCommands) HandleSpawnNearbyLocationsJob(ctx context.Cont
 }
 
 func (c *WorldGenerationCommands) HandleUserBaseCreatedEvent(ctx context.Context, ev domain.UserBaseCreatedEvent) error {
-	// 1. Immediately spawn specific resourceful locations nearby.
-	// - 1 Credit and 1 Iron at radius 1.
-	// - 4 locations (one of each type) at radius 2 (but not radius 1).
 	base, err := c.UserBases.FindByID(ctx, ev.BaseID)
 	if err == nil {
-		armyProtos, _ := c.ArmyPrototypes.FindAllPrototypes(ctx)
-		buildProtos, _ := c.BuildPrototypes.FindAllPrototypes(ctx)
+		_ = c.spawnInitialLocations(ctx, base) // best-effort; recurring job fills any gaps
+	}
+	jitter := int64(rand.Intn(60))
+	return c.Scheduler.Schedule(ctx, ports.SpawnNearbyLocationsJob{BaseID: ev.BaseID}, time.Now().Unix()+jitter)
+}
 
-		r := rand.New(rand.NewSource(time.Now().UnixNano()))
-		center := base.Coordinates
+func (c *WorldGenerationCommands) spawnInitialLocations(ctx context.Context, base *domain.UserBaseModel) error {
+	armyProtos, err := c.ArmyPrototypes.FindAllPrototypes(ctx)
+	if err != nil {
+		return err
+	}
+	buildProtos, err := c.BuildPrototypes.FindAllPrototypes(ctx)
+	if err != nil {
+		return err
+	}
 
-		// Define tasks: resource type and required distance
-		tasks := []struct {
-			resType domain.ResourceType
-			dist    int
-		}{
-			{domain.ResourceTypeCredits, 1},
-			{domain.ResourceTypeIron, 1},
-			{domain.ResourceTypeCredits, 2},
-			{domain.ResourceTypeIron, 2},
-			{domain.ResourceTypeTitanium, 2},
-			{domain.ResourceTypeAntimatter, 2},
-		}
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	center := base.Coordinates
 
-		for _, task := range tasks {
-			candidates := domain.HexRing(center, task.dist)
-			r.Shuffle(len(candidates), func(i, j int) {
-				candidates[i], candidates[j] = candidates[j], candidates[i]
+	tasks := []struct {
+		resType domain.ResourceType
+		dist    int
+	}{
+		{domain.ResourceTypeCredits, 1},
+		{domain.ResourceTypeIron, 1},
+		{domain.ResourceTypeCredits, 2},
+		{domain.ResourceTypeIron, 2},
+		{domain.ResourceTypeTitanium, 2},
+		{domain.ResourceTypeAntimatter, 2},
+	}
+
+	for _, task := range tasks {
+		candidates := domain.HexRing(center, task.dist)
+		r.Shuffle(len(candidates), func(i, j int) {
+			candidates[i], candidates[j] = candidates[j], candidates[i]
+		})
+
+		found := false
+		for _, target := range candidates {
+			targetX, targetY := target.X, target.Y
+
+			_ = c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
+				sRepo := c.Sectors.Tx(tx)
+				rRepo := c.ResourceLocations.Tx(tx)
+
+				tSector, err := c.Provisioner.EnsureSectorExists(ctx, sRepo, targetX, targetY)
+				if err != nil {
+					return err
+				}
+
+				lt, err := sRepo.GetLocationTypeByCoordinates(ctx, targetX, targetY)
+				if err != nil || lt != domain.LocationTypeEmpty {
+					return nil
+				}
+
+				defense := domain.AppropriateLocationDefense(base.Stats, domain.LocationTypeResourceful)
+				if task.dist == 1 {
+					defense *= 0.5
+				}
+				worth := int(defense * domain.WorthDefenderPower)
+				loc := domain.NewResourceLocation(
+					tSector.Coordinates,
+					task.resType,
+					domain.FactionForResourceType(task.resType),
+					worth,
+					defense,
+					armyProtos,
+					buildProtos,
+				)
+
+				if err := c.Provisioner.CreateResourceLocationIfEmpty(ctx, sRepo, rRepo, loc); err != nil {
+					return err
+				}
+
+				found = true
+				return nil
 			})
 
-			found := false
-			for _, target := range candidates {
-				targetX, targetY := target.X, target.Y
-
-				_ = c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
-					sRepo := c.Sectors.Tx(tx)
-					rRepo := c.ResourceLocations.Tx(tx)
-
-					// Ensure sector exists
-					tSector, err := c.Provisioner.EnsureSectorExists(ctx, sRepo, targetX, targetY)
-					if err != nil {
-						return err
-					}
-
-					// Check if empty
-					lt, _ := sRepo.GetLocationTypeByCoordinates(ctx, targetX, targetY)
-					if lt != domain.LocationTypeEmpty {
-						return nil // Try another spot
-					}
-
-					defense := domain.AppropriateLocationDefense(base.Stats, domain.LocationTypeResourceful)
-					if task.dist == 1 {
-						defense *= 0.5
-					}
-					worth := int(defense * domain.WorthDefenderPower)
-					loc := domain.NewResourceLocation(
-						tSector.Coordinates,
-						task.resType,
-						domain.FactionForResourceType(task.resType),
-						worth,
-						defense,
-						armyProtos,
-						buildProtos,
-					)
-
-					if err := c.Provisioner.CreateResourceLocationIfEmpty(ctx, sRepo, rRepo, loc); err != nil {
-						return err
-					}
-
-					found = true
-					return nil
-				})
-
-				if found {
-					break
-				}
+			if found {
+				break
 			}
 		}
 	}
-
-	jitter := int64(rand.Intn(60))
-	return c.Scheduler.Schedule(ctx, ports.SpawnNearbyLocationsJob{BaseID: ev.BaseID}, time.Now().Unix()+jitter)
+	return nil
 }
 
 func (c *WorldGenerationCommands) persistResourceful(ctx context.Context, loc *domain.ResourceLocationModel) error {

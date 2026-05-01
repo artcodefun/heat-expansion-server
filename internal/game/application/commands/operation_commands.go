@@ -332,11 +332,11 @@ func (_ *OperationCommands) resolveOperationAtTarget(
 		}
 		events = append(events, base.EventProducer.PullEvents()...)
 		if op.Result == domain.OperationResultSuccess {
-			if op.Type == domain.MilitaryOperationTypeSpy && op.SpyResult != nil && op.SpyResult.Outcome == domain.SpyOutcomeBlockedByCloaking {
-				report = domain.NewSectorScanReportFromUserBase(op.SourceBaseID, sector, nil, domain.ScanReportSourceOperation, &op.UUID)
-			} else {
-				report = domain.NewSectorScanReportFromUserBase(op.SourceBaseID, sector, base, domain.ScanReportSourceOperation, &op.UUID)
+			var visibleBase *domain.UserBaseModel
+			if op.ProducedVisibleIntel() {
+				visibleBase = base
 			}
+			report = domain.NewSectorScanReportFromUserBase(op.SourceBaseID, sector, visibleBase, domain.ScanReportSourceOperation, &op.UUID)
 		}
 	case domain.LocationTypeResourceful:
 		res, err := rRepo.FindByCoordinatesForUpdate(ctx, op.TargetCoordinates.X, op.TargetCoordinates.Y)
@@ -349,11 +349,11 @@ func (_ *OperationCommands) resolveOperationAtTarget(
 		}
 		events = append(events, res.EventProducer.PullEvents()...)
 		if op.Result == domain.OperationResultSuccess {
-			if op.Type == domain.MilitaryOperationTypeSpy && op.SpyResult != nil && op.SpyResult.Outcome == domain.SpyOutcomeBlockedByCloaking {
-				report = domain.NewSectorScanReportFromResourceLocation(op.SourceBaseID, sector, nil, domain.ScanReportSourceOperation, &op.UUID)
-			} else {
-				report = domain.NewSectorScanReportFromResourceLocation(op.SourceBaseID, sector, res, domain.ScanReportSourceOperation, &op.UUID)
+			var visibleRes *domain.ResourceLocationModel
+			if op.ProducedVisibleIntel() {
+				visibleRes = res
 			}
+			report = domain.NewSectorScanReportFromResourceLocation(op.SourceBaseID, sector, visibleRes, domain.ScanReportSourceOperation, &op.UUID)
 		}
 	case domain.LocationTypeDangerous:
 		dl, err := dRepo.FindByCoordinatesForUpdate(ctx, op.TargetCoordinates.X, op.TargetCoordinates.Y)
@@ -366,11 +366,11 @@ func (_ *OperationCommands) resolveOperationAtTarget(
 		}
 		events = append(events, dl.EventProducer.PullEvents()...)
 		if op.Result == domain.OperationResultSuccess {
-			if op.Type == domain.MilitaryOperationTypeSpy && op.SpyResult != nil && op.SpyResult.Outcome == domain.SpyOutcomeBlockedByCloaking {
-				report = domain.NewSectorScanReportFromDangerousLocation(op.SourceBaseID, sector, nil, domain.ScanReportSourceOperation, &op.UUID)
-			} else {
-				report = domain.NewSectorScanReportFromDangerousLocation(op.SourceBaseID, sector, dl, domain.ScanReportSourceOperation, &op.UUID)
+			var visibleDl *domain.DangerousLocationModel
+			if op.ProducedVisibleIntel() {
+				visibleDl = dl
 			}
+			report = domain.NewSectorScanReportFromDangerousLocation(op.SourceBaseID, sector, visibleDl, domain.ScanReportSourceOperation, &op.UUID)
 		}
 	case domain.LocationTypeEmpty:
 		svc.ResolveAgainstEmptySector(sector)
