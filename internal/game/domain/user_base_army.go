@@ -50,12 +50,7 @@ func (ub *UserBaseModel) QueueArmy(proto *ArmyItemPrototype, count int) error {
 	}
 
 	// Validate resources
-	totalPrice := PriceModel{
-		Credits:    proto.Price.Credits * count,
-		Iron:       proto.Price.Iron * count,
-		Titanium:   proto.Price.Titanium * count,
-		Antimatter: proto.Price.Antimatter * count,
-	}
+	totalPrice := proto.Price.Multiply(count)
 	if err := ub.Stats.CheckResources(totalPrice); err != nil {
 		return err
 	}
@@ -178,12 +173,7 @@ func (ub *UserBaseModel) CancelPendingArmyByID(itemID uuid.UUID, count int) erro
 		return NewError("error.domain.army.invalid_cancel_count", H{"count": count, "pending_count": item.Count})
 	}
 	// Refund resources for the canceled amount
-	refund := PriceModel{
-		Credits:    item.Prototype.Price.Credits * count,
-		Iron:       item.Prototype.Price.Iron * count,
-		Titanium:   item.Prototype.Price.Titanium * count,
-		Antimatter: item.Prototype.Price.Antimatter * count,
-	}
+	refund := item.Prototype.Price.Multiply(count)
 	ub.CreditLoot(refund)
 	if count == item.Count {
 		// Remove from pending
@@ -237,12 +227,7 @@ func (ub *UserBaseModel) DeletePresentArmyByID(itemID uuid.UUID, count int) erro
 		return NewError("error.domain.army.invalid_delete_count", H{"count": count, "present_count": item.Count})
 	}
 	// Refund resources for the deleted amount
-	refund := PriceModel{
-		Credits:    item.Refund.Credits * count,
-		Iron:       item.Refund.Iron * count,
-		Titanium:   item.Refund.Titanium * count,
-		Antimatter: item.Refund.Antimatter * count,
-	}
+	refund := item.Refund.Multiply(count)
 	ub.CreditLoot(refund)
 	if count == item.Count {
 		// Remove from present

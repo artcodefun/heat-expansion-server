@@ -146,10 +146,10 @@ func (dl *ResourceLocationModel) ApplyRemainingDefensiveStructures(remaining []D
 
 // DeductLoot subtracts the provided loot from the location's resource pool, clamped at zero.
 func (dl *ResourceLocationModel) DeductLoot(loot PriceModel) {
-	dl.Resources.Credits = maxInt(dl.Resources.Credits-loot.Credits, 0)
-	dl.Resources.Iron = maxInt(dl.Resources.Iron-loot.Iron, 0)
-	dl.Resources.Titanium = maxInt(dl.Resources.Titanium-loot.Titanium, 0)
-	dl.Resources.Antimatter = maxInt(dl.Resources.Antimatter-loot.Antimatter, 0)
+	dl.Resources.Credits = max(dl.Resources.Credits-loot.Credits, 0)
+	dl.Resources.Iron = max(dl.Resources.Iron-loot.Iron, 0)
+	dl.Resources.Titanium = max(dl.Resources.Titanium-loot.Titanium, 0)
+	dl.Resources.Antimatter = max(dl.Resources.Antimatter-loot.Antimatter, 0)
 
 	dl.CheckIfDrained()
 }

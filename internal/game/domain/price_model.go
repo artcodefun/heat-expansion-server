@@ -8,6 +8,15 @@ type PriceModel struct {
 	Antimatter int
 }
 
+func (p PriceModel) Multiply(n int) PriceModel {
+	return PriceModel{
+		Credits:    p.Credits * n,
+		Iron:       p.Iron * n,
+		Titanium:   p.Titanium * n,
+		Antimatter: p.Antimatter * n,
+	}
+}
+
 func (p PriceModel) Divide(n int) PriceModel {
 	if n <= 0 {
 		return p

@@ -146,10 +146,10 @@ func (s MilitaryOperationService) ResolveAgainstResourceLocation(loc *ResourceLo
 		defenders := loc.MaterializeDefenderArmySnapshot()
 		structures := loc.MaterializeDefenderStructureSnapshot()
 		available := PriceModel{
-			Credits:    maxInt(loc.Resources.Credits, 0),
-			Iron:       maxInt(loc.Resources.Iron, 0),
-			Titanium:   maxInt(loc.Resources.Titanium, 0),
-			Antimatter: maxInt(loc.Resources.Antimatter, 0),
+			Credits:    max(loc.Resources.Credits, 0),
+			Iron:       max(loc.Resources.Iron, 0),
+			Titanium:   max(loc.Resources.Titanium, 0),
+			Antimatter: max(loc.Resources.Antimatter, 0),
 		}
 		res := s.Operation.ResolveAttack(defenders, structures, available, nil, nil)
 		if res != nil {
@@ -184,10 +184,10 @@ func (s MilitaryOperationService) ResolveAgainstDangerousLocation(loc *Dangerous
 		defenders := loc.MaterializeDefenderArmySnapshot()
 		structures := loc.MaterializeDefenderStructureSnapshot()
 		available := PriceModel{
-			Credits:    maxInt(loc.Resources.Credits, 0),
-			Iron:       maxInt(loc.Resources.Iron, 0),
-			Titanium:   maxInt(loc.Resources.Titanium, 0),
-			Antimatter: maxInt(loc.Resources.Antimatter, 0),
+			Credits:    max(loc.Resources.Credits, 0),
+			Iron:       max(loc.Resources.Iron, 0),
+			Titanium:   max(loc.Resources.Titanium, 0),
+			Antimatter: max(loc.Resources.Antimatter, 0),
 		}
 		res := s.Operation.ResolveAttack(defenders, structures, available, loc.Trophies, nil)
 		if res != nil {
@@ -238,15 +238,6 @@ func (s MilitaryOperationService) ResolveAgainstEmptySector(sector *SectorModel)
 		}
 	}
 	s.Operation.StartReturn()
-}
-
-// --- internal helpers (value-object helpers retained: capacity + loot capping) ---
-
-func maxInt(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
 }
 
 // --- local helpers for spy resolution ---
