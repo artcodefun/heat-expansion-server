@@ -33,7 +33,12 @@ The patterns and conventions below apply to the **Game** service (`internal/game
   - Command handlers do **not** publish directly; they call `OutboxEventRepository.Save(events)` inside the transaction.
   - `OutboxService` (in `internal/game/application/services/outbox_service.go`) runs in a background loop from `App.Run` and pulls from the `domain_events` table to publish via `EventPublisher`.
   - When adding new events, update outbox DTOs/mappers in `internal/game/infrastructure/db/dtos` and `mappers` rather than encoding from domain types directly in handlers.
- - **Dependencies are never optional**
+- **Scheduled jobs**
+  - Jobs are created via `Scheduler.Schedule()` inside event handlers, which run outside the outbox transaction. The system provides **at-least-once** delivery — duplicate job executions are possible under crash/retry scenarios.
+  - **Every job handler must be idempotent.** Use domain state guards so a duplicate invocation is a no-op.
+  - Jobs are never created directly in command handlers or outside of event handlers.
+  - Self-rescheduling jobs must use **positive-only jitter** when computing the next `executeAt`. Never subtract from the period — firing early can cause legitimate runs to be silently skipped by time-based idempotency checks.
+- **Dependencies are never optional**
    - Command handlers, query handlers, and services treat their constructor dependencies as required. Do **not** add `nil` checks (e.g. `if c.Outbox != nil`) around injected ports/services.
    - If something can be `nil`, fix the wiring in `internal/bootstrap` (adapters/services/commands/queries) instead of guarding at the use site.
 - **Access control & provisioning**

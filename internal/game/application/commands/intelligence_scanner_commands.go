@@ -60,12 +60,6 @@ func (c *IntelligenceScannerCommands) HandleBuildingProductionFinishedEvent(ctx 
 }
 
 func (c *IntelligenceScannerCommands) HandleIntelligenceScanJob(ctx context.Context, job ports.IntelligenceScanJob) error {
-	// 1. Idempotency: skip if already scanned recently
-	now := domain.NowUnix()
-	exists, err := c.ScanReportRepo.RecentReportExistsByScanner(ctx, job.BuildingID, now-60) // small buffer for overlapping runs
-	if err != nil || exists {
-		return err
-	}
 
 	base, err := c.BaseRepo.FindByID(ctx, job.BaseID)
 	if err != nil {
@@ -93,6 +87,14 @@ func (c *IntelligenceScannerCommands) HandleIntelligenceScanJob(ctx context.Cont
 	scanStrength := scannerProto.IntelligenceData.StealthStrength
 	if scanStrength <= 0 {
 		scanStrength = 100
+	}
+
+	now := domain.NowUnix()
+
+	// Idempotency: skip if already scanned within this scanner's cooldown period.
+	exists, err := c.ScanReportRepo.RecentReportExistsByScanner(ctx, job.BuildingID, now-periodSec)
+	if err != nil || exists {
+		return err
 	}
 
 	target := randomSectorInRange(base.Coordinates, rangeTiles)
@@ -149,7 +151,7 @@ func (c *IntelligenceScannerCommands) HandleIntelligenceScanJob(ctx context.Cont
 }
 
 func (c *IntelligenceScannerCommands) reschedule(ctx context.Context, job ports.IntelligenceScanJob, periodSec int64) {
-	jitter := int64(rand.Intn(60) - 30)
+	jitter := int64(rand.Intn(31) + 30)
 	_ = c.Scheduler.Schedule(ctx, job, time.Now().Unix()+periodSec+jitter)
 }
 
