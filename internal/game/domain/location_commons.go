@@ -1,6 +1,9 @@
 package domain
 
-import "math/rand"
+import (
+	"math"
+	"math/rand"
+)
 
 // Faction represents the origin of an army unit or location defenders.
 type Faction string
@@ -16,6 +19,46 @@ const (
 	FactionObsidianSentinels Faction = "OBSIDIAN"        // NPC: Dangerous (Trophies)
 	FactionNeuralWormApex    Faction = "NEURAL_WORM"     // NPC: Dangerous (Intel)
 )
+
+// FactionForResourceType returns the NPC faction that guards locations of the given resource type.
+func FactionForResourceType(r ResourceType) Faction {
+	switch r {
+	case ResourceTypeIron:
+		return FactionFerrousSwarm
+	case ResourceTypeTitanium:
+		return FactionTitanArachnids
+	case ResourceTypeAntimatter:
+		return FactionVoidEcho
+	default:
+		return FactionMarauders
+	}
+}
+
+const (
+	// Base defense power for each location type at a fresh player's progression level.
+	baseResourcefulDefense = 10.0
+	baseDangerousDefense   = 40.0
+	// Attack benchmark for a new player filling starting space with basic infantry (e.g. 100 riflemen = 100 attack).
+	spawnStartingPower = 100.0
+)
+
+// AppropriateLocationDefense returns the target defense power for a newly spawned
+// location near a base. It scales with the player's actual military strength,
+// using MaxSpace as a floor for when armies are deployed away.
+func AppropriateLocationDefense(stats UserBaseStats, locType LocationType) float64 {
+	var base float64
+	switch locType {
+	case LocationTypeResourceful:
+		base = baseResourcefulDefense
+	case LocationTypeDangerous:
+		base = baseDangerousDefense
+	default:
+		return 0
+	}
+	spaceFactor := math.Max(1.0, float64(stats.MaxSpace)/float64(DefaultMaxSpace))
+	armyFactor := float64(stats.Attack) / spawnStartingPower
+	return base * math.Max(spaceFactor, armyFactor)
+}
 
 const (
 	WorthCredit             = 1.0
@@ -108,23 +151,18 @@ func (stats *LocationResourceStats) FillFromBudget(totalBudget float64, primaryT
 	}
 }
 
-// FillDefenders populates the provided army and structure stacks based on a total worth budget.
-// It uses WorthDefenderPower to calculate the target total combat power (using Defence values).
+// FillDefenders populates the provided army and structure stacks until their combined
+// defence power reaches targetPower.
 func FillDefenders(
 	armies *[]ArmyStack,
 	structures *[]DefenseStack,
 	faction Faction,
-	totalWorth int,
+	targetPower float64,
 	armyProtos []*ArmyItemPrototype,
 	buildProtos []*BuildItemPrototype,
 ) {
-	if totalWorth <= 0 {
+	if targetPower <= 0 {
 		return
-	}
-
-	targetPower := float64(totalWorth) / WorthDefenderPower
-	if targetPower < 1 {
-		targetPower = 1
 	}
 
 	// 1. Filter prototypes by faction
@@ -169,16 +207,10 @@ func FillDefenders(
 	}
 
 	currentPower := 0.0
-	// To avoid infinite loops if power is 0 (though we filtered builds)
-	maxIterations := 100
-	iterations := 0
-
-	// We'll use maps to aggregate stacks before finalizing
 	armyCounts := make(map[int]int)
 	buildCounts := make(map[int]int)
 
-	for currentPower < targetPower && iterations < maxIterations {
-		iterations++
+	for currentPower < targetPower {
 
 		// Randomly pick between army and build if both available
 		useArmy := len(factionArmies) > 0

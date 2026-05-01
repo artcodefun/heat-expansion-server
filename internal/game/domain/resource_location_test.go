@@ -24,6 +24,7 @@ func TestResourceLocation_DrainedLifecycle(t *testing.T) {
 		ResourceTypeIron,
 		FactionMarauders,
 		1000,
+		20.0,
 		[]*ArmyItemPrototype{armyProto},
 		[]*BuildItemPrototype{buildProto},
 	)

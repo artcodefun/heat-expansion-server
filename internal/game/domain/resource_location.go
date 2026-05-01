@@ -29,11 +29,14 @@ type ResourceLocationModel struct {
 }
 
 // NewResourceLocation creates and initializes a ResourceLocationModel.
+// totalWorth drives the lootable resource pool; defenseTarget is the desired
+// defender combat power and is independent of worth.
 func NewResourceLocation(
 	coords Vector2i,
 	resType ResourceType,
 	faction Faction,
 	totalWorth int,
+	defenseTarget float64,
 	armyProtos []*ArmyItemPrototype,
 	buildProtos []*BuildItemPrototype,
 ) *ResourceLocationModel {
@@ -44,7 +47,7 @@ func NewResourceLocation(
 		TotalWorth:      totalWorth,
 	}
 	loc.FillResources()
-	loc.FillDefenders(armyProtos, buildProtos)
+	loc.FillDefenders(defenseTarget, armyProtos, buildProtos)
 	return loc
 }
 
@@ -72,9 +75,9 @@ func (dl *ResourceLocationModel) FillResources() {
 	dl.Resources.FillFromBudget(float64(dl.TotalWorth), dl.Type, 0.7)
 }
 
-// FillDefenders populates the location with defenders based on its TotalWorth and Faction.
-func (rl *ResourceLocationModel) FillDefenders(armyProtos []*ArmyItemPrototype, buildProtos []*BuildItemPrototype) {
-	FillDefenders(&rl.DefendingArmies, &rl.DefendingStructures, rl.DefenderFaction, rl.TotalWorth, armyProtos, buildProtos)
+// FillDefenders populates the location with defenders targeting defenseTarget combat power.
+func (rl *ResourceLocationModel) FillDefenders(defenseTarget float64, armyProtos []*ArmyItemPrototype, buildProtos []*BuildItemPrototype) {
+	FillDefenders(&rl.DefendingArmies, &rl.DefendingStructures, rl.DefenderFaction, defenseTarget, armyProtos, buildProtos)
 }
 
 // MaterializeDefenderArmySnapshot builds battle-ready snapshots using current prototype values.

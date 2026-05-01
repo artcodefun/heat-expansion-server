@@ -26,10 +26,13 @@ type DangerousLocationModel struct {
 }
 
 // NewDangerousLocation creates and initializes a DangerousLocationModel.
+// totalWorth drives the lootable trophy/resource pool; defenseTarget is the desired
+// defender combat power and is independent of worth.
 func NewDangerousLocation(
 	coords Vector2i,
 	faction Faction,
 	totalWorth int,
+	defenseTarget float64,
 	storageProtos []*StorageItemPrototype,
 	armyProtos []*ArmyItemPrototype,
 	buildProtos []*BuildItemPrototype,
@@ -40,7 +43,7 @@ func NewDangerousLocation(
 		TotalWorth:      totalWorth,
 	}
 	loc.FillTrophiesAndResources(storageProtos)
-	loc.FillDefenders(armyProtos, buildProtos)
+	loc.FillDefenders(defenseTarget, armyProtos, buildProtos)
 	return loc
 }
 
@@ -101,9 +104,9 @@ func (dl *DangerousLocationModel) FillTrophiesAndResources(availableTrophies []*
 	dl.Resources.FillFromBudget(totalResourceBudget, "", 0)
 }
 
-// FillDefenders populates the location with defenders based on its TotalWorth and Faction.
-func (dl *DangerousLocationModel) FillDefenders(armyProtos []*ArmyItemPrototype, buildProtos []*BuildItemPrototype) {
-	FillDefenders(&dl.DefendingArmies, &dl.DefendingStructures, dl.DefenderFaction, dl.TotalWorth, armyProtos, buildProtos)
+// FillDefenders populates the location with defenders targeting defenseTarget combat power.
+func (dl *DangerousLocationModel) FillDefenders(defenseTarget float64, armyProtos []*ArmyItemPrototype, buildProtos []*BuildItemPrototype) {
+	FillDefenders(&dl.DefendingArmies, &dl.DefendingStructures, dl.DefenderFaction, defenseTarget, armyProtos, buildProtos)
 }
 
 // MaterializeDefenderArmySnapshot builds battle-ready snapshots using current prototype values.

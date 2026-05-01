@@ -89,12 +89,6 @@ func (c *WorldGenerationCommands) HandleSpawnNearbyLocationsJob(ctx context.Cont
 		return nil
 	}
 
-	// Development scaling: Use MaxSpace as a proxy for base level (default is 100)
-	scaleFactor := float64(base.Stats.MaxSpace) / float64(domain.DefaultMaxSpace)
-	if scaleFactor < 1.0 {
-		scaleFactor = 1.0
-	}
-
 	storageProtos, _ := c.StoragePrototypes.FindAllPrototypes(ctx)
 	armyProtos, _ := c.ArmyPrototypes.FindAllPrototypes(ctx)
 	buildProtos, _ := c.BuildPrototypes.FindAllPrototypes(ctx)
@@ -124,24 +118,14 @@ func (c *WorldGenerationCommands) HandleSpawnNearbyLocationsJob(ctx context.Cont
 		if resourceCount < c.MaxResourcefulNearby && (roll < 0.7 || dangerousCount >= c.MaxDangerousNearby) {
 			resTypes := []domain.ResourceType{domain.ResourceTypeCredits, domain.ResourceTypeIron, domain.ResourceTypeTitanium, domain.ResourceTypeAntimatter}
 			resType := resTypes[r.Intn(len(resTypes))]
-
-			// Assign faction associated with the resource
-			faction := domain.FactionMarauders
-			switch resType {
-			case domain.ResourceTypeIron:
-				faction = domain.FactionFerrousSwarm
-			case domain.ResourceTypeTitanium:
-				faction = domain.FactionTitanArachnids
-			case domain.ResourceTypeAntimatter:
-				faction = domain.FactionVoidEcho
-			}
-
-			worth := int(float64(500+r.Intn(1000)) * scaleFactor)
+			defense := domain.AppropriateLocationDefense(base.Stats, domain.LocationTypeResourceful) * (1.0 + r.Float64()*2.0)
+			worth := int(defense * domain.WorthDefenderPower)
 			loc := domain.NewResourceLocation(
 				tSector.Coordinates,
 				resType,
-				faction,
+				domain.FactionForResourceType(resType),
 				worth,
+				defense,
 				armyProtos,
 				buildProtos,
 			)
@@ -149,7 +133,6 @@ func (c *WorldGenerationCommands) HandleSpawnNearbyLocationsJob(ctx context.Cont
 			_ = c.persistResourceful(ctx, loc)
 			break
 		} else if dangerousCount < c.MaxDangerousNearby {
-			// Pick a random dangerous NPC faction
 			dangFactions := []domain.Faction{
 				domain.FactionCustodianProtocol,
 				domain.FactionScorchWalkers,
@@ -157,12 +140,13 @@ func (c *WorldGenerationCommands) HandleSpawnNearbyLocationsJob(ctx context.Cont
 				domain.FactionNeuralWormApex,
 			}
 			faction := dangFactions[r.Intn(len(dangFactions))]
-
-			worth := int(float64(2000+r.Intn(3000)) * scaleFactor)
+			defense := domain.AppropriateLocationDefense(base.Stats, domain.LocationTypeDangerous) * (1.0 + r.Float64()*1.5)
+			worth := int(defense * domain.WorthDefenderPower)
 			loc := domain.NewDangerousLocation(
 				tSector.Coordinates,
 				faction,
 				worth,
+				defense,
 				storageProtos,
 				armyProtos,
 				buildProtos,
@@ -202,7 +186,7 @@ func (c *WorldGenerationCommands) HandleUserBaseCreatedEvent(ctx context.Context
 		}
 
 		for _, task := range tasks {
-			candidates := c.getHexRing(center, task.dist)
+			candidates := domain.HexRing(center, task.dist)
 			r.Shuffle(len(candidates), func(i, j int) {
 				candidates[i], candidates[j] = candidates[j], candidates[i]
 			})
@@ -227,25 +211,17 @@ func (c *WorldGenerationCommands) HandleUserBaseCreatedEvent(ctx context.Context
 						return nil // Try another spot
 					}
 
-					faction := domain.FactionMarauders
-					switch task.resType {
-					case domain.ResourceTypeIron:
-						faction = domain.FactionFerrousSwarm
-					case domain.ResourceTypeTitanium:
-						faction = domain.FactionTitanArachnids
-					case domain.ResourceTypeAntimatter:
-						faction = domain.FactionVoidEcho
-					}
-
-					worth := 500
+					defense := domain.AppropriateLocationDefense(base.Stats, domain.LocationTypeResourceful)
 					if task.dist == 1 {
-						worth = 250
+						defense *= 0.5
 					}
+					worth := int(defense * domain.WorthDefenderPower)
 					loc := domain.NewResourceLocation(
 						tSector.Coordinates,
 						task.resType,
-						faction,
+						domain.FactionForResourceType(task.resType),
 						worth,
+						defense,
 						armyProtos,
 						buildProtos,
 					)
@@ -267,60 +243,6 @@ func (c *WorldGenerationCommands) HandleUserBaseCreatedEvent(ctx context.Context
 
 	jitter := int64(rand.Intn(60))
 	return c.Scheduler.Schedule(ctx, ports.SpawnNearbyLocationsJob{BaseID: ev.BaseID}, time.Now().Unix()+jitter)
-}
-
-func (c *WorldGenerationCommands) getHexRing(center domain.Vector2i, dist int) []domain.Vector2i {
-	// Pointy-top offset coordinates (even-row)
-	// We use cube coordinates internally to find the ring.
-	centerCube := offsetToCube(center)
-	var results []domain.Vector2i
-
-	// Cube neighbor directions
-	directions := []cube{
-		{1, -1, 0}, {1, 0, -1}, {0, 1, -1},
-		{-1, 1, 0}, {-1, 0, 1}, {0, -1, 1},
-	}
-
-	// To get a ring at distance N:
-	// Start at center + direction[4]*dist
-	// Then move dist steps in each of the 6 directions.
-	startCube := cube{
-		q: centerCube.q + directions[4].q*dist,
-		r: centerCube.r + directions[4].r*dist,
-		s: centerCube.s + directions[4].s*dist,
-	}
-
-	curr := startCube
-	for i := 0; i < 6; i++ {
-		for j := 0; j < dist; j++ {
-			results = append(results, cubeToOffset(curr))
-			curr = cube{
-				q: curr.q + directions[i].q,
-				r: curr.r + directions[i].r,
-				s: curr.s + directions[i].s,
-			}
-		}
-	}
-
-	return results
-}
-
-type cube struct {
-	q, r, s int
-}
-
-func offsetToCube(v domain.Vector2i) cube {
-	// Pointy-top Even-row offset to Cube
-	q := v.X - (v.Y-(v.Y&1))/2
-	r := v.Y
-	return cube{q: q, r: r, s: -q - r}
-}
-
-func cubeToOffset(c cube) domain.Vector2i {
-	// Cube to Pointy-top Even-row offset
-	x := c.q + (c.r-(c.r&1))/2
-	y := c.r
-	return domain.Vector2i{X: x, Y: y}
 }
 
 func (c *WorldGenerationCommands) persistResourceful(ctx context.Context, loc *domain.ResourceLocationModel) error {
