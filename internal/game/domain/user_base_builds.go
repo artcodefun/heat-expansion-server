@@ -207,29 +207,21 @@ func (ub *UserBaseModel) hasControlSubtype(subtype ControlSubtype) bool {
 }
 
 func (ub *UserBaseModel) TotalRadarStealthStrength() int {
-	total := 0
-	for _, b := range ub.BuildingsPresent {
-		if b.Prototype.IntelligenceData != nil && b.Prototype.IntelligenceData.Subtype == IntelligenceSubtypeRadar {
-			total += b.Prototype.IntelligenceData.StealthStrength
-		}
-	}
-	return total
+	return ub.totalStealthStrengthForSubtype(IntelligenceSubtypeRadar)
 }
 
 func (ub *UserBaseModel) TotalCloakingStealthStrength() int {
-	total := 0
-	for _, b := range ub.BuildingsPresent {
-		if b.Prototype.IntelligenceData != nil && b.Prototype.IntelligenceData.Subtype == IntelligenceSubtypeCloaking {
-			total += b.Prototype.IntelligenceData.StealthStrength
-		}
-	}
-	return total
+	return ub.totalStealthStrengthForSubtype(IntelligenceSubtypeCloaking)
 }
 
 func (ub *UserBaseModel) TotalInterceptionStealthStrength() int {
+	return ub.totalStealthStrengthForSubtype(IntelligenceSubtypeScanInterceptor)
+}
+
+func (ub *UserBaseModel) totalStealthStrengthForSubtype(subtype IntelligenceSubtype) int {
 	total := 0
 	for _, b := range ub.BuildingsPresent {
-		if b.Prototype.IntelligenceData != nil && b.Prototype.IntelligenceData.Subtype == IntelligenceSubtypeScanInterceptor {
+		if b.Prototype.IntelligenceData != nil && b.Prototype.IntelligenceData.Subtype == subtype {
 			total += b.Prototype.IntelligenceData.StealthStrength
 		}
 	}

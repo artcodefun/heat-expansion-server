@@ -55,7 +55,7 @@ func TestBasePlacementService_ExpandsOutsideDenseCenter(t *testing.T) {
 	if _, exists := occupiedSet[[2]int{x, y}]; exists {
 		t.Fatalf("expected a free coordinate, got occupied (%d,%d)", x, y)
 	}
-	if intAbs(x) <= 2 && intAbs(y) <= 2 {
+	if max(x, -x) <= 2 && max(y, -y) <= 2 {
 		t.Fatalf("expected placement outside dense center square, got (%d,%d)", x, y)
 	}
 }

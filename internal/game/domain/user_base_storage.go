@@ -49,7 +49,7 @@ func (ub *UserBaseModel) AllocateTradePayloadStorageToOperation(payload TradePay
 
 		ub.StorageItemsPresent = append(ub.StorageItemsPresent[:idx], ub.StorageItemsPresent[idx+1:]...)
 		ub.StorageItemsDeployed = append(ub.StorageItemsDeployed, StorageItemDeployed{
-			BaseOwnedItem: BaseOwnedItem{ID: item.ID, UserBaseID: ub.ID},
+			BaseOwnedItem: item.BaseOwnedItem,
 			Prototype:     item.Prototype,
 			OperationKind: OperationKindTrade,
 			OperationID:   operationID,
@@ -77,7 +77,7 @@ func (ub *UserBaseModel) ReturnAllDeployedStorageFromOperation(operationKind Ope
 		}
 
 		ub.StorageItemsPresent = append(ub.StorageItemsPresent, StorageItemPresent{
-			BaseOwnedItem: BaseOwnedItem{ID: d.ID, UserBaseID: ub.ID},
+			BaseOwnedItem: d.BaseOwnedItem,
 			Prototype:     d.Prototype,
 			ExpiresAt:     d.ExpiresAt,
 			IsActive:      d.IsActive,

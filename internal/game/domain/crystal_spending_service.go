@@ -6,6 +6,16 @@ import (
 	"github.com/google/uuid"
 )
 
+func remainingCrystals(startDate, completionDate int64, basePrice int) int {
+	remaining := completionDate - NowUnix()
+	total := completionDate - startDate
+	crystals := int(math.Ceil(float64(basePrice) * float64(remaining) / float64(total)))
+	if crystals < 1 {
+		return 1
+	}
+	return crystals
+}
+
 // CrystalSpendingService is a pure domain service for crystal-based speedup operations.
 
 type CrystalSpendingService struct{}
@@ -29,14 +39,7 @@ func (s *CrystalSpendingService) SpeedUpBuildingProduction(user *User, base *Use
 
 	item := base.BuildingsInProduction[idx]
 
-	remaining := item.CompletionDate - NowUnix()
-	total := item.CompletionDate - item.StartDate
-	fraction := float64(remaining) / float64(total)
-	crystals := int(math.Ceil(float64(item.CrystalsSkipPrice) * fraction))
-	if crystals < 1 {
-		crystals = 1 // Minimum price
-	}
-	if err := user.SpendCrystals(crystals); err != nil {
+	if err := user.SpendCrystals(remainingCrystals(item.StartDate, item.CompletionDate, item.CrystalsSkipPrice)); err != nil {
 		return err
 	}
 	if err := base.SpeedUpBuildingProduction(buildingItemID); err != nil {
@@ -61,14 +64,7 @@ func (s *CrystalSpendingService) SpeedUpArmyProduction(user *User, base *UserBas
 
 	item := base.ArmiesInProduction[idx]
 
-	remaining := item.CompletionDate - NowUnix()
-	total := item.CompletionDate - item.StartDate
-	fraction := float64(remaining) / float64(total)
-	crystals := int(math.Ceil(float64(item.CrystalsSkipPrice) * fraction))
-	if crystals < 1 {
-		crystals = 1 // Minimum price
-	}
-	if err := user.SpendCrystals(crystals); err != nil {
+	if err := user.SpendCrystals(remainingCrystals(item.StartDate, item.CompletionDate, item.CrystalsSkipPrice)); err != nil {
 		return err
 	}
 	if err := base.SpeedUpArmyProduction(armyItemID); err != nil {
@@ -93,14 +89,7 @@ func (s *CrystalSpendingService) SpeedUpTechResearch(user *User, base *UserBaseM
 
 	item := base.TechnologiesInProgress[idx]
 
-	remaining := item.CompletionDate - NowUnix()
-	total := item.CompletionDate - item.StartDate
-	fraction := float64(remaining) / float64(total)
-	crystals := int(math.Ceil(float64(item.CrystalsSkipPrice) * fraction))
-	if crystals < 1 {
-		crystals = 1 // Minimum price
-	}
-	if err := user.SpendCrystals(crystals); err != nil {
+	if err := user.SpendCrystals(remainingCrystals(item.StartDate, item.CompletionDate, item.CrystalsSkipPrice)); err != nil {
 		return err
 	}
 	if err := base.SpeedUpTechResearch(techItemID); err != nil {

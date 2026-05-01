@@ -49,10 +49,10 @@ func (s *BasePlacementService) FindFreeChunkForBase(occupied []Vector2i) (int, i
 	minDistSq := int64(s.minBaseDistance) * int64(s.minBaseDistance)
 	for radius := 0; ; radius++ {
 		bestDistSq := int64(-1)
-		best := make([]Vector2i, 0, intMax(1, 8*radius))
+		best := make([]Vector2i, 0, max(1, 8*radius))
 		for x := -radius; x <= radius; x++ {
 			for y := -radius; y <= radius; y++ {
-				if intMax(intAbs(x), intAbs(y)) != radius {
+				if max(max(x, -x), max(y, -y)) != radius {
 					continue
 				}
 				if _, exists := occupiedSet[[2]int{x, y}]; exists {
@@ -106,16 +106,3 @@ func floorDiv(a int, b int) int {
 	return -(((-a) + b - 1) / b)
 }
 
-func intMax(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
-
-func intAbs(a int) int {
-	if a < 0 {
-		return -a
-	}
-	return a
-}
