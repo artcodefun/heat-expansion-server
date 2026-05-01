@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"errors"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
@@ -350,29 +351,46 @@ func (c *StorageCommands) HandleDecryptIntelItemJob(ctx context.Context, cmd por
 			return err
 		}
 
-		// Find closest location of the revealed type
 		var report *domain.SectorScanReport
 		switch intelType {
 		case domain.HiddenLocationTypeResourceful:
 			loc, err := c.ResourceLocations.Tx(tx).FindClosest(ctx, base.Coordinates.X, base.Coordinates.Y)
+			if err != nil && !errors.Is(err, ports.ErrNotFound) {
+				return err
+			}
 			if err == nil {
-				sector, _ := c.SectorRepo.Tx(tx).FindByCoordinates(ctx, loc.Coordinates.X, loc.Coordinates.Y)
+				sector, err := c.SectorRepo.Tx(tx).FindByCoordinates(ctx, loc.Coordinates.X, loc.Coordinates.Y)
+				if err != nil && !errors.Is(err, ports.ErrNotFound) {
+					return err
+				}
 				if sector != nil {
 					report = domain.NewSectorScanReportFromResourceLocation(base.ID, sector, loc, domain.ScanReportSourceIntel, &cmd.ItemID)
 				}
 			}
 		case domain.HiddenLocationTypeDangerous:
 			loc, err := c.DangerousLocations.Tx(tx).FindClosest(ctx, base.Coordinates.X, base.Coordinates.Y)
+			if err != nil && !errors.Is(err, ports.ErrNotFound) {
+				return err
+			}
 			if err == nil {
-				sector, _ := c.SectorRepo.Tx(tx).FindByCoordinates(ctx, loc.Coordinates.X, loc.Coordinates.Y)
+				sector, err := c.SectorRepo.Tx(tx).FindByCoordinates(ctx, loc.Coordinates.X, loc.Coordinates.Y)
+				if err != nil && !errors.Is(err, ports.ErrNotFound) {
+					return err
+				}
 				if sector != nil {
 					report = domain.NewSectorScanReportFromDangerousLocation(base.ID, sector, loc, domain.ScanReportSourceIntel, &cmd.ItemID)
 				}
 			}
 		case domain.HiddenLocationTypeUserBase:
 			target, err := c.BaseRepo.Tx(tx).FindClosest(ctx, base.Coordinates.X, base.Coordinates.Y)
+			if err != nil && !errors.Is(err, ports.ErrNotFound) {
+				return err
+			}
 			if err == nil {
-				sector, _ := c.SectorRepo.Tx(tx).FindByCoordinates(ctx, target.Coordinates.X, target.Coordinates.Y)
+				sector, err := c.SectorRepo.Tx(tx).FindByCoordinates(ctx, target.Coordinates.X, target.Coordinates.Y)
+				if err != nil && !errors.Is(err, ports.ErrNotFound) {
+					return err
+				}
 				if sector != nil {
 					report = domain.NewSectorScanReportFromUserBase(base.ID, sector, target, domain.ScanReportSourceIntel, &cmd.ItemID)
 				}
