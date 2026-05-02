@@ -6,6 +6,10 @@ WORKDIR /app
 # Install build dependencies
 RUN apk add --no-cache git curl
 
+# Install golang-migrate — separate layer, cached until version changes
+RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz && \
+    mv migrate /usr/local/bin/migrate
+
 # Download dependencies
 COPY go.mod go.sum ./
 RUN go mod download
@@ -14,14 +18,11 @@ RUN go mod download
 COPY . .
 
 # Build the application
-RUN go build -o /app/heat-expansion-server ./cmd/server
-
-# Install golang-migrate for the final image
-RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz && \
-    mv migrate /usr/local/bin/migrate
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -ldflags="-w -s" -o /app/heat-expansion-server ./cmd/server
 
 # Final stage
-FROM alpine:latest
+FROM alpine:3.21
 
 WORKDIR /app
 
