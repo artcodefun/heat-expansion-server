@@ -14,6 +14,15 @@ receivers:
       http:
         endpoint: "0.0.0.0:4318"
 
+  hostmetrics:
+    collection_interval: 30s
+    scrapers:
+      cpu:
+      memory:
+      disk:
+      load:
+      network:
+
 processors:
   memory_limiter:
     check_interval: 5s
@@ -46,7 +55,7 @@ service:
       processors: [memory_limiter, batch]
       exporters: [otlphttp]
     metrics:
-      receivers: [otlp]
+      receivers: [otlp, hostmetrics]
       processors: [memory_limiter, batch]
       exporters: [otlphttp]
     logs:

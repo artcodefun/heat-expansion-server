@@ -33,9 +33,12 @@ services:
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.123.0
     restart: always
+    pid: host
     command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
     ports:
       - "127.0.0.1:4317:4317"
       - "127.0.0.1:4318:4318"
