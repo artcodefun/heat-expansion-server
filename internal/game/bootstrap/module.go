@@ -55,7 +55,7 @@ func NewModule() *Module {
 	if err := db.Ping(); err != nil {
 		log.Fatal("Database is unreachable:", err)
 	}
-	fmt.Println("Connected to database successfully!")
+	slog.Info("connected to game database")
 
 	adapters, err := NewAdapters(db, staticBaseURL, jwtSecret, i18nPath)
 	if err != nil {
@@ -123,13 +123,7 @@ func NewModule() *Module {
 }
 
 func (m *Module) Run(ctx context.Context) {
-	fmt.Printf("Starting server on port %s\n", m.Port)
-	fmt.Printf("Connecting to DB: %s\n", m.DBURL)
-	fmt.Println("JWT secret configured")
-	fmt.Printf("Static base URL: %s\n", m.StaticBaseURL)
-	fmt.Printf("RabbitMQ URL: %s\n", m.RabbitURL)
-	fmt.Printf("Auth Exchange: %s\n", m.AuthExchange)
-	fmt.Printf("Listening on :%s\n", m.Port)
+	slog.Info("starting game service", "port", m.Port)
 
 	var wg sync.WaitGroup
 	wg.Add(3)

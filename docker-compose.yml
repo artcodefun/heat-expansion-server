@@ -30,6 +30,24 @@ services:
       timeout: 5s
       retries: 5
 
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.123.0
+    restart: always
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
+    ports:
+      - "127.0.0.1:4317:4317"
+      - "127.0.0.1:4318:4318"
+      - "127.0.0.1:13133:13133"
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:13133/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   server:
     build:
       context: .
@@ -39,6 +57,8 @@ services:
       db:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      otel-collector:
         condition: service_healthy
     ports:
       - "127.0.0.1:8080:8080"
@@ -56,6 +76,8 @@ services:
       - AUTH_MIGRATIONS_TABLE=auth_schema_migrations
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
       - AUTH_INTEGRATION_EXCHANGE=auth.integration
+      - OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4317
+      - OTEL_SERVICE_NAME=heat-expansion
     volumes:
       - ./i18n/game:/app/i18n
 
