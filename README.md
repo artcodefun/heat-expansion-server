@@ -35,6 +35,13 @@ docker-compose up --build
 
 The Game Server listens on `GAME_PORT` (default `8080`) and the Auth Server on `AUTH_PORT` (default `8081`).
 
+## Observability
+
+The server exports traces, metrics, and logs via **OTLP/gRPC** to an OpenTelemetry Collector, which forwards them to Grafana Cloud.
+
+Set `OTEL_EXPORTER_OTLP_ENDPOINT` to your collector's gRPC address (e.g. `localhost:4317`).  
+  Leave it **empty** to run in no-op mode — telemetry is fully disabled, which is the default for local dev.
+
 ## Internationalization (i18n)
 
 The server supports multi-language responses based on the `Accept-Language` HTTP header. 
