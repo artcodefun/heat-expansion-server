@@ -5,6 +5,8 @@ import (
 	"log/slog"
 	"time"
 
+	"go.opentelemetry.io/otel/codes"
+
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/repo"
@@ -37,13 +39,13 @@ func NewWorkers(
 				case <-ctx.Done():
 					return
 				case <-ticker.C:
-					if err := outbox.ProcessBatch(ctx, 100); err != nil {
-						slog.Error("game outbox dispatch failed", "error", err.Error())
-					}
+					processBatch(ctx, "game.outbox.process_batch", "game outbox dispatch failed", func(batchCtx context.Context) error {
+						return outbox.ProcessBatch(batchCtx, 100)
+					})
 				case <-signalChan:
-					if err := outbox.ProcessBatch(ctx, 100); err != nil {
-						slog.Error("game outbox dispatch failed", "error", err.Error())
-					}
+					processBatch(ctx, "game.outbox.process_batch", "game outbox dispatch failed", func(batchCtx context.Context) error {
+						return outbox.ProcessBatch(batchCtx, 100)
+					})
 				}
 			}
 		},
@@ -56,8 +58,19 @@ func NewWorkers(
 		},
 		IntegrationEvtLoop: func(ctx context.Context) {
 			if err := consumer.Start(ctx); err != nil {
-				slog.Warn("failed to start game integration consumer", "error", err.Error())
+				slog.WarnContext(ctx, "failed to start game integration consumer", "error", err.Error())
 			}
 		},
+	}
+}
+
+func processBatch(ctx context.Context, spanName, errMsg string, fn func(context.Context) error) {
+	batchCtx, span := gameTracer.Start(ctx, spanName)
+	defer span.End()
+
+	if err := fn(batchCtx); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		slog.ErrorContext(batchCtx, errMsg, "error", err.Error())
 	}
 }

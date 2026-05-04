@@ -10,7 +10,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/XSAM/otelsql"
 	_ "github.com/lib/pq"
+	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/events"
 	httpapi "github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http"
@@ -48,7 +50,10 @@ func NewModule() *Module {
 		log.Fatal("Missing required environment variables. Please check your .env file.")
 	}
 
-	db, err := sql.Open("postgres", dbURL)
+	db, err := otelsql.Open("postgres", dbURL,
+		otelsql.WithAttributes(semconv.DBSystemPostgreSQL),
+		otelsql.WithSpanOptions(otelsql.SpanOptions{Ping: false}),
+	)
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
 	}

@@ -5,6 +5,7 @@ go 1.25.1
 require github.com/lib/pq v1.10.9
 
 require (
+	github.com/XSAM/otelsql v0.42.0
 	github.com/gin-gonic/gin v1.12.0
 	github.com/go-playground/validator/v10 v10.30.2
 	github.com/golang-jwt/jwt/v5 v5.3.0
