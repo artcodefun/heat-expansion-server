@@ -45,7 +45,7 @@ func NewModule() *Module {
 	if err := db.Ping(); err != nil {
 		log.Fatal("Auth database is unreachable:", err)
 	}
-	fmt.Println("Connected to auth database successfully!")
+	slog.Info("connected to auth database")
 
 	adapters, err := NewAdapters(db, jwtSecret, rabbitURL, intExchange)
 	if err != nil {
@@ -81,7 +81,7 @@ func NewModule() *Module {
 }
 
 func (m *Module) Run(ctx context.Context) {
-	fmt.Printf("Starting auth service on port %s\n", m.Port)
+	slog.Info("starting auth service", "port", m.Port)
 
 	var wg sync.WaitGroup
 	wg.Add(2)

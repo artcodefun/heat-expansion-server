@@ -55,6 +55,10 @@ The patterns and conventions below apply to the **Game** service (`internal/game
   - Idempotency is enforced on `(origin_id, event_type)` in the integration outbox table.
   - Publishing is performed via RabbitMQ (using a `topic` exchange and event type as routing key) with a console fallback for local dev.
 
+- **Observability & logging**
+  - Telemetry is initialised in `cmd/server/telemetry.go`. It wires up OTel TracerProvider, MeterProvider, and LoggerProvider, and bridges the global `slog` logger to OTel via `otelslog`. When `OTEL_EXPORTER_OTLP_ENDPOINT` is empty the whole setup is a no-op.
+  - **Always use context-aware `slog` methods** (`slog.InfoContext`, `slog.WarnContext`, `slog.ErrorContext`, `slog.DebugContext`) rather than their context-free variants (`slog.Info`, `slog.Warn`, etc.). The `otelslog` bridge reads the active span from the context and injects `trace_id` and `span_id` into the log record, correlating logs with traces in Grafana. Dropping the context breaks that correlation silently.
+
 - **Internationalization (i18n)**
   - All user-facing strings (errors, notifications, prototype names) must be translatable.
   - **Systemic locales**: Errors, alerts, and world generation text are stored in `internal/game/infrastructure/i18n/locales/*.json` and embedded into the binary via `go:embed`.

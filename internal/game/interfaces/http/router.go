@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 )
 
 // Commands groups CQRS command interfaces needed by HTTP handlers.
@@ -45,6 +46,7 @@ type Queries struct {
 // NewRouter constructs the Gin engine, registers middleware and routes.
 func NewRouter(cmd Commands, qry Queries, tokenValidator ports.TokenValidator, tr ports.Translator) *gin.Engine {
 	r := gin.Default()
+	r.Use(otelgin.Middleware("heat-expansion-game"))
 	registerCustomValidators()
 
 	// Initialize handlers at the top for consistency

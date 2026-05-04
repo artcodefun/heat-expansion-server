@@ -1,0 +1,67 @@
+# OpenTelemetry Collector configuration.
+# Receives OTLP from the Go app and exports to Grafana Cloud via the OTLP gateway.
+#
+# Required environment variables (injected via docker-compose env_file):
+#   GRAFANA_OTLP_ENDPOINT   e.g. https://otlp-gateway-prod-eu-west-2.grafana.net/otlp
+#   GRAFANA_INSTANCE_ID     numeric Grafana Cloud stack/instance ID
+#   GRAFANA_API_KEY         Grafana Cloud API key with logs:write, metrics:write, traces:write scopes
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: "0.0.0.0:4317"
+      http:
+        endpoint: "0.0.0.0:4318"
+
+  hostmetrics:
+    collection_interval: 30s
+    scrapers:
+      cpu:
+      memory:
+      disk:
+      load:
+      network:
+
+processors:
+  memory_limiter:
+    check_interval: 5s
+    limit_mib: 256
+    spike_limit_mib: 64
+  batch:
+    timeout: 5s
+    send_batch_size: 512
+
+exporters:
+  otlphttp:
+    endpoint: "${env:GRAFANA_OTLP_ENDPOINT}"
+    auth:
+      authenticator: basicauth/grafana
+
+extensions:
+  basicauth/grafana:
+    client_auth:
+      username: "${env:GRAFANA_INSTANCE_ID}"
+      password: "${env:GRAFANA_API_KEY}"
+
+  health_check:
+    endpoint: "0.0.0.0:13133"
+
+service:
+  extensions: [basicauth/grafana, health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlphttp]
+    metrics:
+      receivers: [otlp, hostmetrics]
+      processors: [memory_limiter, batch]
+      exporters: [otlphttp]
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlphttp]
+  telemetry:
+    logs:
+      level: "warn"
