@@ -45,11 +45,6 @@ services:
       - "127.0.0.1:13133:13133"
     env_file:
       - .env
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:13133/"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   server:
     build:
@@ -62,7 +57,7 @@ services:
       rabbitmq:
         condition: service_healthy
       otel-collector:
-        condition: service_healthy
+        condition: service_started
     ports:
       - "127.0.0.1:8080:8080"
       - "127.0.0.1:8081:8081"
