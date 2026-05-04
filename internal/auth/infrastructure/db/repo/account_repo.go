@@ -22,9 +22,7 @@ func NewAccountRepository(db *sql.DB) *AccountRepository {
 
 func (r *AccountRepository) Tx(tx ports.Transaction) ports.AccountRepository {
 	if sqlTx, ok := tx.(*sql.Tx); ok {
-		return &AccountRepository{
-			db: r.db.WithTx(sqlTx),
-		}
+		return &AccountRepository{db: r.db.WithTx(sqlTx)}
 	}
 	return r
 }
@@ -73,4 +71,11 @@ func (r *AccountRepository) FindByID(ctx context.Context, id uuid.UUID) (*domain
 		Email:        row.Email,
 		PasswordHash: row.PasswordHash,
 	}, nil
+}
+
+func (r *AccountRepository) UpdatePassword(ctx context.Context, id uuid.UUID, newHash string) error {
+	return r.db.UpdateAccountPasswordHash(ctx, gen.UpdateAccountPasswordHashParams{
+		ID:           id,
+		PasswordHash: newHash,
+	})
 }

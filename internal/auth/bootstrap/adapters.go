@@ -6,6 +6,7 @@ import (
 
 	"github.com/artcodefun/heat-expansion-server/internal/auth/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/db/repo"
+	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/email"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/events"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/i18n"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/i18n/locales"
@@ -22,9 +23,18 @@ type Adapters struct {
 	IntegrationOutbox ports.IntegrationOutboxRepository
 	IntegrationEvents ports.IntegrationEventPublisher
 	Translator        ports.Translator
+	ResetRepo         ports.PasswordResetRepository
+	EmailSender       ports.EmailSender
 }
 
-func NewAdapters(db *sql.DB, jwtSecret string, rabbitURL string, integrationExchange string) (*Adapters, error) {
+type SMTPConfig struct {
+	Host     string
+	User     string
+	Password string
+	From     string
+}
+
+func NewAdapters(db *sql.DB, jwtSecret string, rabbitURL string, integrationExchange string, smtpCfg SMTPConfig) (*Adapters, error) {
 	intPublisher, err := events.NewRabbitMQPublisher(rabbitURL, integrationExchange)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize RabbitMQ publisher: %w", err)
@@ -45,5 +55,7 @@ func NewAdapters(db *sql.DB, jwtSecret string, rabbitURL string, integrationExch
 		IntegrationOutbox: repo.NewIntegrationOutboxRepo(db),
 		IntegrationEvents: intPublisher,
 		Translator:        translator,
+		ResetRepo:         repo.NewPasswordResetRepository(db),
+		EmailSender:       email.NewSMTPSender(smtpCfg.Host, smtpCfg.User, smtpCfg.Password, smtpCfg.From),
 	}, nil
 }

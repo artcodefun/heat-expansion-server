@@ -14,15 +14,20 @@ type Querier interface {
 	ClaimUnpublishedEvents(ctx context.Context, limit int32) ([]ClaimUnpublishedEventsRow, error)
 	ClaimUnpublishedIntegrationEvents(ctx context.Context, limit int32) ([]ClaimUnpublishedIntegrationEventsRow, error)
 	CreateAccount(ctx context.Context, arg CreateAccountParams) (CreateAccountRow, error)
+	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) error
 	GetAccountByEmail(ctx context.Context, email string) (GetAccountByEmailRow, error)
 	GetAccountByID(ctx context.Context, id uuid.UUID) (GetAccountByIDRow, error)
+	GetActivePasswordResetToken(ctx context.Context, arg GetActivePasswordResetTokenParams) (AuthPasswordResetToken, error)
 	IntegrationEventExists(ctx context.Context, arg IntegrationEventExistsParams) (bool, error)
+	InvalidateAccountPasswordResetTokens(ctx context.Context, arg InvalidateAccountPasswordResetTokensParams) error
 	MarkEventPublished(ctx context.Context, arg MarkEventPublishedParams) error
 	MarkIntegrationEventPublished(ctx context.Context, arg MarkIntegrationEventPublishedParams) error
+	MarkPasswordResetTokenUsed(ctx context.Context, arg MarkPasswordResetTokenUsedParams) error
 	NotifyIntegrationOutboxEvent(ctx context.Context) error
 	NotifyOutboxEvent(ctx context.Context) error
 	SaveIntegrationEvent(ctx context.Context, arg SaveIntegrationEventParams) error
 	SaveOutboxEvent(ctx context.Context, arg SaveOutboxEventParams) error
+	UpdateAccountPasswordHash(ctx context.Context, arg UpdateAccountPasswordHashParams) error
 }
 
 var _ Querier = (*Queries)(nil)

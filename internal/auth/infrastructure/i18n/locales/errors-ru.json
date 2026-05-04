@@ -3,5 +3,7 @@
     "error.application.forbidden": "Доступ запрещен",
     "error.application.auth.email_taken": "Этот адрес электронной почты уже используется",
     "error.application.auth.invalid_creds": "Неверный адрес почты или пароль",
+    "error.application.auth.account_not_found": "Аккаунт с таким адресом электронной почты не найден",
+    "error.application.auth.invalid_reset_token": "Код для сброса пароля недействителен или устарел",
     "error.application.internal_server_error": "Внутренняя ошибка сервера"
 }

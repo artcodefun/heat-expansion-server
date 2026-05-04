@@ -3,5 +3,7 @@
     "error.application.forbidden": "Permission denied",
     "error.application.auth.email_taken": "Email already in use",
     "error.application.auth.invalid_creds": "Invalid email or password",
+    "error.application.auth.account_not_found": "No account found with that email address",
+    "error.application.auth.invalid_reset_token": "Password reset code is invalid or has expired",
     "error.application.internal_server_error": "Internal server error"
 }

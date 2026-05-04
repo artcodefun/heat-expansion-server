@@ -38,3 +38,11 @@ type AuthIntegrationEvent struct {
 	PublishedAt sql.NullInt64   `json:"published_at"`
 	OriginID    uuid.NullUUID   `json:"origin_id"`
 }
+
+type AuthPasswordResetToken struct {
+	ID        uuid.UUID     `json:"id"`
+	AccountID uuid.UUID     `json:"account_id"`
+	TokenHash string        `json:"token_hash"`
+	ExpiresAt int64         `json:"expires_at"`
+	UsedAt    sql.NullInt64 `json:"used_at"`
+}

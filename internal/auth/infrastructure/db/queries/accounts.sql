@@ -12,3 +12,8 @@ WHERE email = $1;
 SELECT id, name, email, password_hash
 FROM auth.users
 WHERE id = $1;
+
+-- name: UpdateAccountPasswordHash :exec
+UPDATE auth.users
+SET password_hash = $2
+WHERE id = $1;

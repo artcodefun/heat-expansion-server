@@ -97,3 +97,19 @@ func (q *Queries) GetAccountByID(ctx context.Context, id uuid.UUID) (GetAccountB
 	)
 	return i, err
 }
+
+const updateAccountPasswordHash = `-- name: UpdateAccountPasswordHash :exec
+UPDATE auth.users
+SET password_hash = $2
+WHERE id = $1
+`
+
+type UpdateAccountPasswordHashParams struct {
+	ID           uuid.UUID `json:"id"`
+	PasswordHash string    `json:"password_hash"`
+}
+
+func (q *Queries) UpdateAccountPasswordHash(ctx context.Context, arg UpdateAccountPasswordHashParams) error {
+	_, err := q.exec(ctx, q.updateAccountPasswordHashStmt, updateAccountPasswordHash, arg.ID, arg.PasswordHash)
+	return err
+}
