@@ -11,3 +11,8 @@ WHERE account_id = $1 AND token_hash = $2 AND used_at IS NULL AND expires_at > E
 UPDATE auth.password_reset_tokens
 SET used_at = $2
 WHERE id = $1;
+
+-- name: InvalidateAccountPasswordResetTokens :exec
+UPDATE auth.password_reset_tokens
+SET used_at = $2
+WHERE account_id = $1 AND used_at IS NULL;

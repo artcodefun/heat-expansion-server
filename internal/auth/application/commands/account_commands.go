@@ -105,6 +105,11 @@ func (c *AccountCommands) RequestPasswordReset(ctx context.Context, actor cqrs.A
 		return cqrs.ErrAccountNotFound
 	}
 
+	now := time.Now().Unix()
+	if err := c.resetRepo.InvalidateByAccount(ctx, acc.ID, now); err != nil {
+		return err
+	}
+
 	rawToken, tokenHash, err := generateResetToken()
 	if err != nil {
 		return err

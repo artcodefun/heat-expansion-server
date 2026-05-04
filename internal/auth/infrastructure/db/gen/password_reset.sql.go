@@ -58,6 +58,22 @@ func (q *Queries) GetActivePasswordResetToken(ctx context.Context, arg GetActive
 	return i, err
 }
 
+const invalidateAccountPasswordResetTokens = `-- name: InvalidateAccountPasswordResetTokens :exec
+UPDATE auth.password_reset_tokens
+SET used_at = $2
+WHERE account_id = $1 AND used_at IS NULL
+`
+
+type InvalidateAccountPasswordResetTokensParams struct {
+	AccountID uuid.UUID     `json:"account_id"`
+	UsedAt    sql.NullInt64 `json:"used_at"`
+}
+
+func (q *Queries) InvalidateAccountPasswordResetTokens(ctx context.Context, arg InvalidateAccountPasswordResetTokensParams) error {
+	_, err := q.exec(ctx, q.invalidateAccountPasswordResetTokensStmt, invalidateAccountPasswordResetTokens, arg.AccountID, arg.UsedAt)
+	return err
+}
+
 const markPasswordResetTokenUsed = `-- name: MarkPasswordResetTokenUsed :exec
 UPDATE auth.password_reset_tokens
 SET used_at = $2

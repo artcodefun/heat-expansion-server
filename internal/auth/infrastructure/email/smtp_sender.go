@@ -57,9 +57,12 @@ func (s *SMTPSender) send(toEmail string, msg []byte) error {
 	if err != nil {
 		return fmt.Errorf("smtp dial: %w", err)
 	}
+	// Deadline covers the full SMTP exchange, not just the TCP dial.
+	conn.SetDeadline(time.Now().Add(dialTimeout))
 
 	client, err := smtp.NewClient(conn, s.host)
 	if err != nil {
+		conn.Close()
 		return fmt.Errorf("smtp client: %w", err)
 	}
 	defer client.Close()

@@ -64,3 +64,10 @@ func (r *PasswordResetRepository) MarkUsed(ctx context.Context, id uuid.UUID, us
 		UsedAt: sql.NullInt64{Int64: usedAt, Valid: true},
 	})
 }
+
+func (r *PasswordResetRepository) InvalidateByAccount(ctx context.Context, accountID uuid.UUID, usedAt int64) error {
+	return r.db.InvalidateAccountPasswordResetTokens(ctx, gen.InvalidateAccountPasswordResetTokensParams{
+		AccountID: accountID,
+		UsedAt:    sql.NullInt64{Int64: usedAt, Valid: true},
+	})
+}

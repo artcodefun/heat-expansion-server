@@ -48,6 +48,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.integrationEventExistsStmt, err = db.PrepareContext(ctx, integrationEventExists); err != nil {
 		return nil, fmt.Errorf("error preparing query IntegrationEventExists: %w", err)
 	}
+	if q.invalidateAccountPasswordResetTokensStmt, err = db.PrepareContext(ctx, invalidateAccountPasswordResetTokens); err != nil {
+		return nil, fmt.Errorf("error preparing query InvalidateAccountPasswordResetTokens: %w", err)
+	}
 	if q.markEventPublishedStmt, err = db.PrepareContext(ctx, markEventPublished); err != nil {
 		return nil, fmt.Errorf("error preparing query MarkEventPublished: %w", err)
 	}
@@ -115,6 +118,11 @@ func (q *Queries) Close() error {
 	if q.integrationEventExistsStmt != nil {
 		if cerr := q.integrationEventExistsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing integrationEventExistsStmt: %w", cerr)
+		}
+	}
+	if q.invalidateAccountPasswordResetTokensStmt != nil {
+		if cerr := q.invalidateAccountPasswordResetTokensStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing invalidateAccountPasswordResetTokensStmt: %w", cerr)
 		}
 	}
 	if q.markEventPublishedStmt != nil {
@@ -194,45 +202,47 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db                                    DBTX
-	tx                                    *sql.Tx
-	claimUnpublishedEventsStmt            *sql.Stmt
-	claimUnpublishedIntegrationEventsStmt *sql.Stmt
-	createAccountStmt                     *sql.Stmt
-	createPasswordResetTokenStmt          *sql.Stmt
-	getAccountByEmailStmt                 *sql.Stmt
-	getAccountByIDStmt                    *sql.Stmt
-	getActivePasswordResetTokenStmt       *sql.Stmt
-	integrationEventExistsStmt            *sql.Stmt
-	markEventPublishedStmt                *sql.Stmt
-	markIntegrationEventPublishedStmt     *sql.Stmt
-	markPasswordResetTokenUsedStmt        *sql.Stmt
-	notifyIntegrationOutboxEventStmt      *sql.Stmt
-	notifyOutboxEventStmt                 *sql.Stmt
-	saveIntegrationEventStmt              *sql.Stmt
-	saveOutboxEventStmt                   *sql.Stmt
-	updateAccountPasswordHashStmt         *sql.Stmt
+	db                                       DBTX
+	tx                                       *sql.Tx
+	claimUnpublishedEventsStmt               *sql.Stmt
+	claimUnpublishedIntegrationEventsStmt    *sql.Stmt
+	createAccountStmt                        *sql.Stmt
+	createPasswordResetTokenStmt             *sql.Stmt
+	getAccountByEmailStmt                    *sql.Stmt
+	getAccountByIDStmt                       *sql.Stmt
+	getActivePasswordResetTokenStmt          *sql.Stmt
+	integrationEventExistsStmt               *sql.Stmt
+	invalidateAccountPasswordResetTokensStmt *sql.Stmt
+	markEventPublishedStmt                   *sql.Stmt
+	markIntegrationEventPublishedStmt        *sql.Stmt
+	markPasswordResetTokenUsedStmt           *sql.Stmt
+	notifyIntegrationOutboxEventStmt         *sql.Stmt
+	notifyOutboxEventStmt                    *sql.Stmt
+	saveIntegrationEventStmt                 *sql.Stmt
+	saveOutboxEventStmt                      *sql.Stmt
+	updateAccountPasswordHashStmt            *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:                                    tx,
-		tx:                                    tx,
-		claimUnpublishedEventsStmt:            q.claimUnpublishedEventsStmt,
-		claimUnpublishedIntegrationEventsStmt: q.claimUnpublishedIntegrationEventsStmt,
-		createAccountStmt:                     q.createAccountStmt,
-		createPasswordResetTokenStmt:          q.createPasswordResetTokenStmt,
-		getAccountByEmailStmt:                 q.getAccountByEmailStmt,
-		getAccountByIDStmt:                    q.getAccountByIDStmt,
-		getActivePasswordResetTokenStmt:       q.getActivePasswordResetTokenStmt,
-		integrationEventExistsStmt:            q.integrationEventExistsStmt,
-		markEventPublishedStmt:                q.markEventPublishedStmt,
-		markIntegrationEventPublishedStmt:     q.markIntegrationEventPublishedStmt,
-		markPasswordResetTokenUsedStmt:        q.markPasswordResetTokenUsedStmt,
-		notifyIntegrationOutboxEventStmt:      q.notifyIntegrationOutboxEventStmt,
-		notifyOutboxEventStmt:                 q.notifyOutboxEventStmt,
-		saveIntegrationEventStmt:              q.saveIntegrationEventStmt,
-		saveOutboxEventStmt:                   q.saveOutboxEventStmt,
-		updateAccountPasswordHashStmt:         q.updateAccountPasswordHashStmt,
+		db:                                       tx,
+		tx:                                       tx,
+		claimUnpublishedEventsStmt:               q.claimUnpublishedEventsStmt,
+		claimUnpublishedIntegrationEventsStmt:    q.claimUnpublishedIntegrationEventsStmt,
+		createAccountStmt:                        q.createAccountStmt,
+		createPasswordResetTokenStmt:             q.createPasswordResetTokenStmt,
+		getAccountByEmailStmt:                    q.getAccountByEmailStmt,
+		getAccountByIDStmt:                       q.getAccountByIDStmt,
+		getActivePasswordResetTokenStmt:          q.getActivePasswordResetTokenStmt,
+		integrationEventExistsStmt:               q.integrationEventExistsStmt,
+		invalidateAccountPasswordResetTokensStmt: q.invalidateAccountPasswordResetTokensStmt,
+		markEventPublishedStmt:                   q.markEventPublishedStmt,
+		markIntegrationEventPublishedStmt:        q.markIntegrationEventPublishedStmt,
+		markPasswordResetTokenUsedStmt:           q.markPasswordResetTokenUsedStmt,
+		notifyIntegrationOutboxEventStmt:         q.notifyIntegrationOutboxEventStmt,
+		notifyOutboxEventStmt:                    q.notifyOutboxEventStmt,
+		saveIntegrationEventStmt:                 q.saveIntegrationEventStmt,
+		saveOutboxEventStmt:                      q.saveOutboxEventStmt,
+		updateAccountPasswordHashStmt:            q.updateAccountPasswordHashStmt,
 	}
 }

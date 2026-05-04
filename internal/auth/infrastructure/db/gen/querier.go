@@ -19,6 +19,7 @@ type Querier interface {
 	GetAccountByID(ctx context.Context, id uuid.UUID) (GetAccountByIDRow, error)
 	GetActivePasswordResetToken(ctx context.Context, arg GetActivePasswordResetTokenParams) (AuthPasswordResetToken, error)
 	IntegrationEventExists(ctx context.Context, arg IntegrationEventExistsParams) (bool, error)
+	InvalidateAccountPasswordResetTokens(ctx context.Context, arg InvalidateAccountPasswordResetTokensParams) error
 	MarkEventPublished(ctx context.Context, arg MarkEventPublishedParams) error
 	MarkIntegrationEventPublished(ctx context.Context, arg MarkIntegrationEventPublishedParams) error
 	MarkPasswordResetTokenUsed(ctx context.Context, arg MarkPasswordResetTokenUsedParams) error

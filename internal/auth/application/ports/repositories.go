@@ -18,5 +18,6 @@ type PasswordResetRepository interface {
 	Create(ctx context.Context, token *domain.PasswordResetToken) error
 	FindByAccountAndTokenHash(ctx context.Context, accountID uuid.UUID, tokenHash string) (*domain.PasswordResetToken, error)
 	MarkUsed(ctx context.Context, id uuid.UUID, usedAt int64) error
+	InvalidateByAccount(ctx context.Context, accountID uuid.UUID, usedAt int64) error
 	Tx(tx Transaction) PasswordResetRepository
 }
