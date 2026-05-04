@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
+
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/repo"
 )
@@ -65,9 +68,13 @@ func (s *DBScheduler) Run(ctx context.Context) {
 		}
 
 		now := time.Now().Unix()
-		_ = s.processDueJobs(ctx, now, batchLimit)
-
-		next, err := s.repo.GetNext(ctx)
+		pollCtx, span := otel.Tracer("heat-expansion-game").Start(ctx, "game.scheduler.process_batch")
+		if err := s.processDueJobs(pollCtx, now, batchLimit); err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+		}
+		next, err := s.repo.GetNext(pollCtx)
+		span.End()
 		sleepFor := idleSleep
 
 		if err == nil && next != nil {

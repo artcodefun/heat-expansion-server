@@ -5,9 +5,14 @@ import (
 	"log/slog"
 	"time"
 
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
+
 	"github.com/artcodefun/heat-expansion-server/internal/auth/application/services"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/db/repo"
 )
+
+var authTracer = otel.Tracer("heat-expansion-auth")
 
 type Workers struct {
 	DomainOutboxLoop      func(ctx context.Context)
@@ -32,13 +37,13 @@ func NewWorkers(
 				case <-ctx.Done():
 					return
 				case <-ticker.C:
-					if err := outbox.ProcessBatch(ctx, 100); err != nil {
-						slog.Error("auth outbox dispatch failed", "error", err.Error())
-					}
+					processBatch(ctx, "auth.outbox.process_batch", "auth outbox dispatch failed", func(batchCtx context.Context) error {
+						return outbox.ProcessBatch(batchCtx, 100)
+					})
 				case <-signalChan:
-					if err := outbox.ProcessBatch(ctx, 100); err != nil {
-						slog.Error("auth outbox dispatch failed", "error", err.Error())
-					}
+					processBatch(ctx, "auth.outbox.process_batch", "auth outbox dispatch failed", func(batchCtx context.Context) error {
+						return outbox.ProcessBatch(batchCtx, 100)
+					})
 				}
 			}
 		},
@@ -54,15 +59,26 @@ func NewWorkers(
 				case <-ctx.Done():
 					return
 				case <-ticker.C:
-					if err := intOutbox.ProcessBatch(ctx, 100); err != nil {
-						slog.Error("auth integration outbox dispatch failed", "error", err.Error())
-					}
+					processBatch(ctx, "auth.integration_outbox.process_batch", "auth integration outbox dispatch failed", func(batchCtx context.Context) error {
+						return intOutbox.ProcessBatch(batchCtx, 100)
+					})
 				case <-signalChan:
-					if err := intOutbox.ProcessBatch(ctx, 100); err != nil {
-						slog.Error("auth integration outbox dispatch failed", "error", err.Error())
-					}
+					processBatch(ctx, "auth.integration_outbox.process_batch", "auth integration outbox dispatch failed", func(batchCtx context.Context) error {
+						return intOutbox.ProcessBatch(batchCtx, 100)
+					})
 				}
 			}
 		},
+	}
+}
+
+func processBatch(ctx context.Context, spanName, errMsg string, fn func(context.Context) error) {
+	batchCtx, span := authTracer.Start(ctx, spanName)
+	defer span.End()
+
+	if err := fn(batchCtx); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		slog.ErrorContext(batchCtx, errMsg, "error", err.Error())
 	}
 }

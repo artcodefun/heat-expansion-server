@@ -10,8 +10,11 @@ import (
 	"sync"
 	"time"
 
-	httpapi "github.com/artcodefun/heat-expansion-server/internal/auth/interfaces/http"
+	"github.com/XSAM/otelsql"
 	_ "github.com/lib/pq"
+	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
+
+	httpapi "github.com/artcodefun/heat-expansion-server/internal/auth/interfaces/http"
 )
 
 type Module struct {
@@ -38,7 +41,10 @@ func NewModule() *Module {
 		log.Fatal("Missing required auth environment variables (AUTH_PORT, AUTH_DB_URL, AUTH_JWT_SECRET, RABBITMQ_URL, AUTH_INTEGRATION_EXCHANGE)")
 	}
 
-	db, err := sql.Open("postgres", dbURL)
+	db, err := otelsql.Open("postgres", dbURL,
+		otelsql.WithAttributes(semconv.DBSystemPostgreSQL),
+		otelsql.WithSpanOptions(otelsql.SpanOptions{Ping: false}),
+	)
 	if err != nil {
 		log.Fatal("Failed to connect to auth database:", err)
 	}
