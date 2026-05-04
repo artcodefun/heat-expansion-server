@@ -9,6 +9,7 @@ At a high level, the Auth service models user access and security credentials.
 - **Accounts**: The core aggregate `Account` represents a user's identity. It stores basic profile information (name, email) and a secure `password_hash`.
 - **Registration**: Handles new account creation, ensuring email uniqueness and initializing security credentials.
 - **Authentication**: Validates user credentials and issues secure JWT tokens for session management.
+- **Password Reset**: Allows users to regain access by requesting a one-time 8-digit code sent to their email. The code is valid for 1 hour and can only be used once.
 - **Events**: Emits `AccountRegisteredEvent` when a new account is created, which is then projected as an integration event for other services (like the Game service) to consume.
 
 ## Architecture
@@ -18,15 +19,16 @@ This service uses Hexagonal Architecture (Ports and Adapters), DDD (Domain-drive
 ### Key Layers
 
 - **Domain**: `internal/auth/domain`
-  - Business rules, `Account` aggregate, and domain events (e.g., `AccountRegisteredEvent`).
+  - Business rules, `Account` aggregate, `PasswordResetToken` value object, and domain events (e.g., `AccountRegisteredEvent`).
 - **Application**: `internal/auth/application`
-  - `commands/`: Write-side command handlers for registration and login.
+  - `commands/`: Write-side command handlers for registration, login, and password reset.
   - `cqrs/`: CQRS contract definitions.
-  - `ports/`: Interfaces for repositories, token providers, and password hashers.
+  - `ports/`: Interfaces for repositories, token providers, password hashers, and email sender.
   - `services/`: App-level services like the outbox loop.
 - **Infrastructure**: `internal/auth/infrastructure`
   - `db/`: Persistence using sqlc (`migrations/`, `repo/`).
   - `security/`: Implementations for JWT tokens and bcrypt hashing.
+  - `email/`: SMTP email sender (implicit TLS, port 465) for password reset codes.
 - **Interfaces**: `internal/auth/interfaces/http`
   - Primary adapters (HTTP handlers, DTOs, and router).
 - **Bootstrap / Wiring**: `internal/auth/bootstrap`
@@ -40,6 +42,6 @@ From repo root:
 - Run: `make run`
 - SQLC: `make sqlc` (inside `internal/auth/infrastructure`)
 
-## Database schema
+## Database Schema
 
 All tables live in the `auth` schema (e.g. `auth.users`, `auth.domain_events`, …).
