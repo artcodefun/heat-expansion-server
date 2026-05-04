@@ -30,6 +30,8 @@ func NewRouter(cmd Commands, qry Queries, tr ports.Translator) *gin.Engine {
 	{
 		v1.POST("/register", handler.Register)
 		v1.POST("/login", handler.Login)
+		v1.POST("/password-reset/request", handler.RequestPasswordReset)
+		v1.POST("/password-reset/confirm", handler.ResetPassword)
 	}
 
 	return r

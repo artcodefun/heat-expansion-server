@@ -62,10 +62,8 @@ func handleCoreErr(c *gin.Context, tr ports.Translator, err error) bool {
 		status = http.StatusForbidden
 	case cqrs.KindConflict:
 		status = http.StatusConflict
-	case cqrs.KindUnauthenticated:
-		status = http.StatusUnauthorized
 	case cqrs.KindInvalidInput:
-		status = http.StatusBadRequest
+		status = http.StatusUnprocessableEntity
 	}
 
 	c.JSON(status, gin.H{

@@ -37,8 +37,18 @@ func NewModule() *Module {
 	jwtSecret := os.Getenv("AUTH_JWT_SECRET")
 	intExchange := os.Getenv("AUTH_INTEGRATION_EXCHANGE")
 
+	smtpCfg := SMTPConfig{
+		Host:     os.Getenv("AUTH_SMTP_HOST"),
+		User:     os.Getenv("AUTH_SMTP_USER"),
+		Password: os.Getenv("AUTH_SMTP_PASSWORD"),
+		From:     os.Getenv("AUTH_SMTP_FROM"),
+	}
+
 	if port == "" || dbURL == "" || jwtSecret == "" || rabbitURL == "" || intExchange == "" {
 		log.Fatal("Missing required auth environment variables (AUTH_PORT, AUTH_DB_URL, AUTH_JWT_SECRET, RABBITMQ_URL, AUTH_INTEGRATION_EXCHANGE)")
+	}
+	if smtpCfg.Host == "" || smtpCfg.User == "" || smtpCfg.Password == "" || smtpCfg.From == "" {
+		log.Fatal("Missing required SMTP environment variables (AUTH_SMTP_HOST, AUTH_SMTP_USER, AUTH_SMTP_PASSWORD, AUTH_SMTP_FROM)")
 	}
 
 	db, err := otelsql.Open("postgres", dbURL,
@@ -53,7 +63,7 @@ func NewModule() *Module {
 	}
 	slog.Info("connected to auth database")
 
-	adapters, err := NewAdapters(db, jwtSecret, rabbitURL, intExchange)
+	adapters, err := NewAdapters(db, jwtSecret, rabbitURL, intExchange, smtpCfg)
 	if err != nil {
 		log.Fatal("Failed to initialize auth adapters:", err)
 	}

@@ -17,6 +17,8 @@ func NewCommands(adapters *Adapters) *Commands {
 			adapters.TokenProvider,
 			adapters.Outbox,
 			adapters.TxMgr,
+			adapters.ResetRepo,
+			adapters.EmailSender,
 		),
 	}
 }

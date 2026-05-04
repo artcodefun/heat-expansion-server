@@ -10,7 +10,6 @@ const (
 	KindInternal ErrorKind = iota
 	KindNotFound
 	KindForbidden
-	KindUnauthenticated
 	KindConflict
 	KindInvalidInput
 )
@@ -37,5 +36,7 @@ var (
 	ErrNotFound           = NewAppError(KindNotFound, "error.application.not_found")
 	ErrForbidden          = NewAppError(KindForbidden, "error.application.forbidden")
 	ErrEmailAlreadyInUse  = NewAppError(KindConflict, "error.application.auth.email_taken")
-	ErrInvalidCredentials = NewAppError(KindUnauthenticated, "error.application.auth.invalid_creds")
+	ErrInvalidCredentials = NewAppError(KindInvalidInput, "error.application.auth.invalid_creds")
+	ErrInvalidResetToken  = NewAppError(KindInvalidInput, "error.application.auth.invalid_reset_token")
+	ErrAccountNotFound    = NewAppError(KindNotFound, "error.application.auth.account_not_found")
 )

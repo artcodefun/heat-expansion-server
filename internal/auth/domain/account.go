@@ -28,3 +28,7 @@ func RegisterAccount(name, email, passwordHash string) *Account {
 
 	return a
 }
+
+func (a *Account) ChangePassword(newHash string) {
+	a.PasswordHash = newHash
+}

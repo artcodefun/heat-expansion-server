@@ -14,3 +14,13 @@ type AccountLoginRequest struct {
 type LoginResponse struct {
 	Token string `json:"token"`
 }
+
+type PasswordResetRequest struct {
+	Email string `json:"email" binding:"required,email"`
+}
+
+type PasswordResetConfirmRequest struct {
+	Email       string `json:"email" binding:"required,email"`
+	Token       string `json:"token" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required,min=6"`
+}
