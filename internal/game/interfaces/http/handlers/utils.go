@@ -69,6 +69,6 @@ func handleCoreErr(c *gin.Context, tr ports.Translator, err error) bool {
 
 	// Fallback: 500 with generic message.
 	c.JSON(http.StatusInternalServerError, gin.H{"error": tr.T(locale, "error.application.internal_server_error", nil)})
-	slog.Error("internal error occured", "request", c.Request.URL.Path, "error", err.Error())
+	slog.ErrorContext(c.Request.Context(), "internal error occured", "request", c.Request.URL.Path, "error", err.Error())
 	return true
 }

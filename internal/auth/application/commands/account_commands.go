@@ -121,7 +121,7 @@ func (c *AccountCommands) RequestPasswordReset(ctx context.Context, actor cqrs.A
 	}
 
 	if err := c.emailSender.SendPasswordReset(ctx, acc.Email, acc.Name, rawToken); err != nil {
-		slog.ErrorContext(ctx, "failed to send password reset email", "account_id", acc.ID, "error", err)
+		slog.ErrorContext(ctx, "failed to send password reset email", "account_id", acc.ID.String(), "error", err)
 		return err
 	}
 
