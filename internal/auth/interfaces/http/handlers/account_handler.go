@@ -56,7 +56,7 @@ func (h *AccountHandler) RequestPasswordReset(c *gin.Context) {
 	if err := h.commands.RequestPasswordReset(c.Request.Context(), actor, req.Email); handleCoreErr(c, h.translator, err) {
 		return
 	}
-	c.Status(http.StatusNoContent)
+	c.Status(http.StatusOK)
 }
 
 // ResetPassword handles POST /api/v1/password-reset/confirm.
@@ -69,5 +69,5 @@ func (h *AccountHandler) ResetPassword(c *gin.Context) {
 	if err := h.commands.ResetPassword(c.Request.Context(), actor, req.Email, req.Token, req.NewPassword); handleCoreErr(c, h.translator, err) {
 		return
 	}
-	c.Status(http.StatusNoContent)
+	c.Status(http.StatusOK)
 }
