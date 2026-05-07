@@ -1,0 +1,135 @@
+openapi: 3.0.3
+info:
+  title: Heat Expansion Auth API
+  version: 0.1.0
+  description: |
+    Authentication and account access service for Heat Expansion.
+    This API covers account registration, login, and password recovery flows used by game clients and other trusted consumers.
+servers:
+  - url: .
+tags:
+  - name: Auth
+paths:
+  /register:
+    post:
+      tags: [Auth]
+      summary: Register a new account
+      operationId: registerAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 6
+      responses:
+        '201':
+          description: Account registered
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+  /login:
+    post:
+      tags: [Auth]
+      summary: Authenticate an existing account
+      operationId: loginAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login succeeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+  /password-reset/request:
+    post:
+      tags: [Auth]
+      summary: Request password reset
+      operationId: requestPasswordReset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Reset request accepted
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+  /password-reset/confirm:
+    post:
+      tags: [Auth]
+      summary: Confirm password reset
+      operationId: confirmPasswordReset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, token, new_password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                token:
+                  type: string
+                new_password:
+                  type: string
+                  minLength: 6
+      responses:
+        '200':
+          description: Password updated
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+components:
+  responses:
+    ErrorResponse:
+      description: Request failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+    LoginResponse:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string

@@ -16,7 +16,7 @@ This repo is a Go backend for the Heat Expansion strategy game. It uses Hexagona
   - `interfaces/http`: Primary adapter (HTTP handlers/DTOs/middleware/router).
   - `bootstrap/`: Dependency wiring for the game service.
 - **Auth service**: `internal/auth` (IAM, JWT, Integration producers)
-- **Shared contracts**: `contracts/` (Versioned integration event schemas)
+- **Shared contracts**: `contracts/` (Versioned integration event schemas and HTTP OpenAPI contracts)
 - **Other services (WIP)**: `internal/billing`.
 
 ## Key Patterns & Conventions
@@ -47,9 +47,10 @@ The patterns and conventions below apply to the **Game** service (`internal/game
 - **HTTP layer**
   - Handlers in `internal/game/interfaces/http/handlers` should call into `bootstrap.Commands`/`bootstrap.Queries`, not directly into repositories or DB.
   - Map domain/CQRS errors to HTTP status codes consistently using existing helpers in `http/dtos` and middleware.
+  - HTTP contracts live under `contracts/<service>/http/vN/openapi.yaml`. Whenever an HTTP route, request DTO, response DTO, status code, auth requirement, or public API behavior changes, update the corresponding OpenAPI file in the same change.
 
 - **Integration Events**
-  - External events live in `contracts/`. They consist of a generic `IntegrationEvent` envelope and versioned payloads (e.g., `contracts/auth/v1/AccountRegisteredV1`).
+  - External events live in `contracts/`. They consist of a generic `IntegrationEvent` envelope and versioned payloads (e.g., `contracts/auth/events/v1/AccountRegisteredV1`).
   - Use `RegisterPayload` in `init()` functions to enable polymorphic unmarshaling.
   - Integration events are produced from domain events via an `IntegrationProducer` and stored in an `IntegrationOutbox`.
   - Idempotency is enforced on `(origin_id, event_type)` in the integration outbox table.

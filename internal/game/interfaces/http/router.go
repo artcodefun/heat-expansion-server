@@ -1,6 +1,9 @@
 package http
 
 import (
+	"net/http"
+
+	contract "github.com/artcodefun/heat-expansion-server/contracts/game/http/v1"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http/dtos"
@@ -9,6 +12,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 )
 
@@ -63,6 +68,7 @@ func NewRouter(cmd Commands, qry Queries, tokenValidator ports.TokenValidator, t
 	activityHandler := handlers.NewActivityHandler(qry.Activity, tr)
 	alertHandler := handlers.NewAlertHandler(qry.Alert, cmd.Alert, tr)
 	diplomacyHandler := handlers.NewDiplomacyHandler(qry.Diplomacy, cmd.Diplomacy, tr)
+	globalHandler := handlers.NewGlobalHandler()
 
 	// Global routes
 	r.GET("/health", HealthHandler)
@@ -70,7 +76,12 @@ func NewRouter(cmd Commands, qry Queries, tokenValidator ports.TokenValidator, t
 	// Public routes (no auth)
 	publicApi := r.Group("/api/v1")
 	{
-		publicApi.GET("/min-client-version", MinClientVersionHandler)
+		publicApi.GET("/openapi.yaml", func(c *gin.Context) {
+			c.Data(http.StatusOK, "application/yaml; charset=utf-8", contract.OpenAPI())
+		})
+		publicApi.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, ginSwagger.URL("../openapi.yaml")))
+
+		publicApi.GET("/min-client-version", globalHandler.GetMinClientVersion)
 	}
 
 	// Private routes (auth required)

@@ -1,4 +1,4 @@
-package auth
+package events
 
 import (
 	"encoding/json"
@@ -55,17 +55,17 @@ var (
 // RegisterPayload registers a factory for a given event type string.
 func RegisterPayload(eventType string, factory PayloadFactory) {
 	if eventType == "" {
-		panic("auth.RegisterPayload: eventType is empty")
+		panic("events.RegisterPayload: eventType is empty")
 	}
 	if factory == nil {
-		panic("auth.RegisterPayload: factory is nil")
+		panic("events.RegisterPayload: factory is nil")
 	}
 
 	payloadRegistryMu.Lock()
 	defer payloadRegistryMu.Unlock()
 
 	if _, exists := payloadRegistry[eventType]; exists {
-		panic(fmt.Sprintf("auth.RegisterPayload: duplicate registration for type %q", eventType))
+		panic(fmt.Sprintf("events.RegisterPayload: duplicate registration for type %q", eventType))
 	}
 
 	payloadRegistry[eventType] = factory
@@ -79,7 +79,6 @@ func (u UnknownPayload) MarshalJSON() ([]byte, error) { return json.RawMessage(u
 
 // Unmarshal parses the JSON-encoded data and stores the result in an IntegrationEvent.
 func Unmarshal(data []byte) (IntegrationEvent, error) {
-	// First, unmarshal metadata to find the type
 	var envelope struct {
 		ID         uuid.UUID       `json:"id"`
 		Type       string          `json:"type"`
@@ -97,7 +96,6 @@ func Unmarshal(data []byte) (IntegrationEvent, error) {
 	payloadRegistryMu.RUnlock()
 
 	if !ok {
-		// If unknown type, return with UnknownPayload as payload
 		return IntegrationEvent{
 			ID:         envelope.ID,
 			Type:       envelope.Type,

@@ -3,9 +3,9 @@ package ports
 import (
 	"context"
 
-	"github.com/artcodefun/heat-expansion-server/contracts/auth"
+	authevents "github.com/artcodefun/heat-expansion-server/contracts/auth/events"
 )
 
 type IntegrationEventPublisher interface {
-	Publish(ctx context.Context, event auth.IntegrationEvent) error
+	Publish(ctx context.Context, event authevents.IntegrationEvent) error
 }

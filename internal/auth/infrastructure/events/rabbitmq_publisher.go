@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/artcodefun/heat-expansion-server/contracts/auth"
+	authevents "github.com/artcodefun/heat-expansion-server/contracts/auth/events"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -82,7 +82,7 @@ func (p *RabbitMQPublisher) connect() error {
 	return nil
 }
 
-func (p *RabbitMQPublisher) Publish(ctx context.Context, event auth.IntegrationEvent) error {
+func (p *RabbitMQPublisher) Publish(ctx context.Context, event authevents.IntegrationEvent) error {
 	p.mu.RLock()
 	conn := p.conn
 	p.mu.RUnlock()
