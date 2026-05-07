@@ -1,12 +1,12 @@
 package v1
 
 import (
-	"github.com/artcodefun/heat-expansion-server/contracts/auth"
+	"github.com/artcodefun/heat-expansion-server/contracts/auth/events"
 	"github.com/google/uuid"
 )
 
 func init() {
-	auth.RegisterPayload(EventAccountRegisteredV1, func() auth.IntegrationEventPayload {
+	events.RegisterPayload(EventAccountRegisteredV1, func() events.IntegrationEventPayload {
 		return &AccountRegisteredV1{}
 	})
 }

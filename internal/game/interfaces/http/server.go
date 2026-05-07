@@ -37,8 +37,3 @@ func (s *Server) Shutdown(ctx context.Context) error {
 func HealthHandler(c *gin.Context) {
 	c.JSON(200, gin.H{"status": "ok"})
 }
-
-// MinClientVersionHandler returns the minimum supported client version.
-func MinClientVersionHandler(c *gin.Context) {
-	c.JSON(200, gin.H{"version": "0.2.0"})
-}

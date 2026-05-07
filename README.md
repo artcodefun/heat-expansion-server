@@ -17,8 +17,12 @@ This repository is structured as a **modular monolith**: multiple services live 
 - **Billing**: billing/subscription-related code (in progress).
   - Location: `internal/billing`
 
-- **Contracts**: shared integration event schemas and envelope definitions.
-  - Location: `contracts/`
+## API Contracts
+
+- Auth HTTP contract: `contracts/auth/http/v1/openapi.yaml`
+- Game HTTP contract: `contracts/game/http/v1/openapi.yaml`
+- Auth integration events: `contracts/auth/events/`
+- Swagger UI is served by each service at `/api/v1/docs`, backed by the versioned OpenAPI document at `/api/v1/openapi.yaml`.
 
 ## Getting started
 

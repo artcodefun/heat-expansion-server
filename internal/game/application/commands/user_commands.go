@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	v1 "github.com/artcodefun/heat-expansion-server/contracts/auth/v1"
+	v1 "github.com/artcodefun/heat-expansion-server/contracts/auth/events/v1"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 )

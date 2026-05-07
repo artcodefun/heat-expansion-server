@@ -1,0 +1,3207 @@
+openapi: 3.0.3
+info:
+  title: Heat Expansion Game API
+  version: 0.1.0
+  description: |
+    Core gameplay service for Heat Expansion.
+    This API exposes player-facing game capabilities such as base management, production, operations, storage, radar, diplomacy, trade, alerts, and activity history.
+servers:
+  - url: .
+tags:
+  - name: Public
+  - name: User
+  - name: Bases
+  - name: Buildings
+  - name: Army
+  - name: Tech
+  - name: Storage
+  - name: Sectors
+  - name: Radar
+  - name: Operations
+  - name: Activities
+  - name: Alerts
+  - name: Trade
+  - name: Diplomacy
+paths:
+  /min-client-version:
+    get:
+      tags: [Public]
+      summary: Return minimum supported client version
+      operationId: getMinClientVersion
+      responses:
+        '200':
+          description: Minimum supported version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MinClientVersionResponse'
+  /user/balance:
+    get:
+      tags: [User]
+      summary: Get current user crystal balance
+      operationId: getCrystalBalance
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Balance returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCrystalBalanceResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases:
+    get:
+      tags: [Bases]
+      summary: List bases owned by the authenticated user
+      operationId: listUserBases
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Base list returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserBaseDTO'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/status:
+    get:
+      tags: [Bases]
+      summary: Get aggregated resource and combat state for a base
+      operationId: getBaseStatus
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+      responses:
+        '200':
+          description: Base status returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResourcesDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/buildings/new:
+    get:
+      tags: [Buildings]
+      summary: List available building prototypes for a category
+      operationId: listNewBuildings
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/BuildCategoryQuery'
+      responses:
+        '200':
+          description: Available building prototypes returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BuildItemNewDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/buildings/pending:
+    get:
+      tags: [Buildings]
+      summary: List pending buildings for a category
+      operationId: listPendingBuildings
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/BuildCategoryQuery'
+      responses:
+        '200':
+          description: Pending buildings returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BuildItemPendingDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/buildings/in-production:
+    get:
+      tags: [Buildings]
+      summary: List buildings in production for a category
+      operationId: listBuildingsInProduction
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/BuildCategoryQuery'
+      responses:
+        '200':
+          description: Buildings in production returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BuildItemInProductionDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/buildings/present:
+    get:
+      tags: [Buildings]
+      summary: List present buildings for a category
+      operationId: listPresentBuildings
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/BuildCategoryQuery'
+      responses:
+        '200':
+          description: Present buildings returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BuildItemPresentDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/buildings/queue:
+    post:
+      tags: [Buildings]
+      summary: Queue a building for production
+      operationId: queueBuilding
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [prototype_id]
+              properties:
+                prototype_id:
+                  type: integer
+                  minimum: 1
+      responses:
+        '202':
+          description: Building queued
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/buildings/production/{itemId}/speed-up:
+    post:
+      tags: [Buildings]
+      summary: Spend crystals to speed up building production
+      operationId: speedUpBuildingProduction
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/ItemIdUuid'
+      responses:
+        '200':
+          description: Building production sped up
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/buildings/pending/{itemId}/cancel:
+    post:
+      tags: [Buildings]
+      summary: Cancel a pending building
+      operationId: cancelPendingBuilding
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/ItemIdUuid'
+      responses:
+        '200':
+          description: Pending building cancelled
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/buildings/present/{itemId}:
+    delete:
+      tags: [Buildings]
+      summary: Delete a present building
+      operationId: deletePresentBuilding
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/ItemIdUuid'
+      responses:
+        '200':
+          description: Present building deleted
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/army/new:
+    get:
+      tags: [Army]
+      summary: List available army prototypes for a category
+      operationId: listNewArmy
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/ArmyCategoryQuery'
+      responses:
+        '200':
+          description: Available army prototypes returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ArmyItemNewDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/army/pending:
+    get:
+      tags: [Army]
+      summary: List pending army items for a category
+      operationId: listPendingArmy
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/ArmyCategoryQuery'
+      responses:
+        '200':
+          description: Pending army items returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ArmyItemPendingDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/army/in-production:
+    get:
+      tags: [Army]
+      summary: List army items in production for a category
+      operationId: listArmyInProduction
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/ArmyCategoryQuery'
+      responses:
+        '200':
+          description: Army items in production returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ArmyItemInProductionDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/army/present:
+    get:
+      tags: [Army]
+      summary: List present army items for a category
+      operationId: listPresentArmy
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/ArmyCategoryQuery'
+      responses:
+        '200':
+          description: Present army items returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ArmyItemPresentDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/army/queue:
+    post:
+      tags: [Army]
+      summary: Queue army production
+      operationId: queueArmy
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [prototype_id, count]
+              properties:
+                prototype_id:
+                  type: integer
+                  minimum: 1
+                count:
+                  type: integer
+                  minimum: 1
+      responses:
+        '202':
+          description: Army queued
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/army/production/{itemId}/speed-up:
+    post:
+      tags: [Army]
+      summary: Spend crystals to speed up army production
+      operationId: speedUpArmyProduction
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/ItemIdUuid'
+      responses:
+        '200':
+          description: Army production sped up
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/army/pending/{itemId}/cancel:
+    post:
+      tags: [Army]
+      summary: Cancel a pending army item
+      operationId: cancelPendingArmy
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/ItemIdUuid'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArmyCountRequest'
+      responses:
+        '200':
+          description: Pending army item cancelled
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/army/present/{itemId}:
+    delete:
+      tags: [Army]
+      summary: Delete present army items
+      operationId: deletePresentArmy
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/ItemIdUuid'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArmyCountRequest'
+      responses:
+        '200':
+          description: Present army items deleted
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/tech/new:
+    get:
+      tags: [Tech]
+      summary: List researchable tech items for a category
+      operationId: listNewTech
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/TechCategoryQuery'
+      responses:
+        '200':
+          description: New tech items returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TechItemNewDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/tech/in-progress:
+    get:
+      tags: [Tech]
+      summary: List tech items currently being researched for a category
+      operationId: listTechInProgress
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/TechCategoryQuery'
+      responses:
+        '200':
+          description: In-progress tech items returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TechItemInProgressDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/tech/done:
+    get:
+      tags: [Tech]
+      summary: List completed tech items for a category
+      operationId: listDoneTech
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/TechCategoryQuery'
+      responses:
+        '200':
+          description: Completed tech items returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TechItemDoneDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/tech/queue:
+    post:
+      tags: [Tech]
+      summary: Queue a technology for research
+      operationId: queueTech
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [prototype_id]
+              properties:
+                prototype_id:
+                  type: integer
+                  minimum: 1
+      responses:
+        '202':
+          description: Research queued
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/tech/production/{itemId}/speed-up:
+    post:
+      tags: [Tech]
+      summary: Spend crystals to speed up technology research
+      operationId: speedUpTechResearch
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/ItemIdUuid'
+      responses:
+        '200':
+          description: Technology research sped up
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/storage/present:
+    get:
+      tags: [Storage]
+      summary: List present storage items for a category
+      operationId: listPresentStorageItems
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/StorageCategoryQuery'
+      responses:
+        '200':
+          description: Present storage items returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StorageItemPresentDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/storage/items/{itemId}:
+    delete:
+      tags: [Storage]
+      summary: Delete a present storage item
+      operationId: deleteStorageItem
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/ItemIdUuid'
+      responses:
+        '200':
+          description: Storage item deleted
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/storage/items/{itemId}/activate:
+    post:
+      tags: [Storage]
+      summary: Activate a buff storage item
+      operationId: activateBuff
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/ItemIdUuid'
+      responses:
+        '200':
+          description: Buff activated
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/storage/items/{itemId}/decrypt:
+    post:
+      tags: [Storage]
+      summary: Start intel decryption
+      operationId: startIntelDecryption
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/ItemIdUuid'
+      responses:
+        '200':
+          description: Intel decryption started
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/storage/items/{itemId}/restore:
+    post:
+      tags: [Storage]
+      summary: Start damaged item restoration
+      operationId: startDamagedItemRestoration
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/ItemIdUuid'
+      responses:
+        '200':
+          description: Damaged item restoration started
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/storage/items/{itemId}/enable:
+    post:
+      tags: [Storage]
+      summary: Activate an artifact
+      operationId: activateArtifact
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/ItemIdUuid'
+      responses:
+        '200':
+          description: Artifact activated
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/storage/items/{itemId}/disable:
+    post:
+      tags: [Storage]
+      summary: Deactivate an artifact
+      operationId: deactivateArtifact
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/ItemIdUuid'
+      responses:
+        '200':
+          description: Artifact deactivated
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/storage/items/{itemId}/open:
+    post:
+      tags: [Storage]
+      summary: Open a consumable box
+      operationId: openStorageConsumableBox
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/ItemIdUuid'
+      responses:
+        '200':
+          description: Consumable box opened
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/sectors/scans/near:
+    get:
+      tags: [Sectors]
+      summary: Get nearby sector scan reports
+      operationId: getScansNear
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - name: centerX
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: centerY
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: radius
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+      responses:
+        '200':
+          description: Sector scan reports returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SectorDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/sectors/scans/{id}:
+    get:
+      tags: [Sectors]
+      summary: Get a sector scan report by ID
+      operationId: getScanById
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Sector scan report returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SectorDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/sectors/scans/before:
+    get:
+      tags: [Sectors]
+      summary: Get the latest scan report before a point in time
+      operationId: getLatestScanBefore
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - name: x
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: y
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Sector scan report returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SectorDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/threats:
+    get:
+      tags: [Radar]
+      summary: List incoming radar threats for a base
+      operationId: listIncomingThreats
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+      responses:
+        '200':
+          description: Incoming threats returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RadarThreatDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/operations:
+    get:
+      tags: [Operations]
+      summary: List operations for a base
+      operationId: listOperationsByBase
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+      responses:
+        '200':
+          description: Operations returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MilitaryOperationDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    post:
+      tags: [Operations]
+      summary: Create a military operation
+      operationId: createOperation
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type, target_x, target_y, deployed]
+              properties:
+                type:
+                  type: string
+                  enum: [ATTACK, SPY, OCCUPATION]
+                target_x:
+                  type: integer
+                target_y:
+                  type: integer
+                deployed:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ArmyDeploymentRequest'
+      responses:
+        '201':
+          description: Operation created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedIntIDResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/operations/active:
+    get:
+      tags: [Operations]
+      summary: List active operations for a base
+      operationId: listActiveOperations
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+      responses:
+        '200':
+          description: Active operations returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MilitaryOperationDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/operations/{operationId}:
+    get:
+      tags: [Operations]
+      summary: Get a single operation
+      operationId: getOperation
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/OperationLookupId'
+      responses:
+        '200':
+          description: Operation returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MilitaryOperationDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/operations/{operationId}/speed-up:
+    post:
+      tags: [Operations]
+      summary: Speed up an operation with crystals
+      operationId: speedUpOperation
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/OperationId'
+      responses:
+        '200':
+          description: Operation sped up
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/operations/{operationId}/cancel:
+    post:
+      tags: [Operations]
+      summary: Cancel an operation
+      operationId: cancelOperation
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/OperationId'
+      responses:
+        '200':
+          description: Operation cancelled
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/activities/offense:
+    get:
+      tags: [Activities]
+      summary: List offensive activities for a base
+      operationId: listOffenseActivities
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+        - name: subtype
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ATTACK, SPY]
+      responses:
+        '200':
+          description: Offensive activities returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActivityItemDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/activities/defense:
+    get:
+      tags: [Activities]
+      summary: List defensive activities for a base
+      operationId: listDefenseActivities
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+        - name: subtype
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ATTACK, SPY]
+      responses:
+        '200':
+          description: Defensive activities returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActivityItemDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/activities/scan:
+    get:
+      tags: [Activities]
+      summary: List scan activities for a base
+      operationId: listScanActivities
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+        - name: subtype
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [REPORT_PRODUCED, EXTERNAL_SCAN_DETECTED]
+      responses:
+        '200':
+          description: Scan activities returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActivityItemDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/activities/radar:
+    get:
+      tags: [Activities]
+      summary: List radar activities for a base
+      operationId: listRadarActivities
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+      responses:
+        '200':
+          description: Radar activities returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActivityItemDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/activities/trade:
+    get:
+      tags: [Activities]
+      summary: List trade activities for a base
+      operationId: listTradeActivities
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+      responses:
+        '200':
+          description: Trade activities returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActivityItemDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /alerts:
+    get:
+      tags: [Alerts]
+      summary: List active alerts for the authenticated user
+      operationId: listActiveAlerts
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Alerts returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AlertItemDTO'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /alerts/unread-count:
+    get:
+      tags: [Alerts]
+      summary: Get unread alert count
+      operationId: getUnreadAlertCount
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Unread alert count returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /alerts/read-all:
+    post:
+      tags: [Alerts]
+      summary: Mark all alerts as read
+      operationId: markAllAlertsAsRead
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Alerts marked as read
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /trade/bases/{baseId}/info:
+    get:
+      tags: [Trade]
+      summary: Get trade info for a base and target coordinates
+      operationId: getTradeInfo
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - name: targetX
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: targetY
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Trade info returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TradeInfoDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /trade/bases/{baseId}/operations:
+    get:
+      tags: [Trade]
+      summary: List active trade operations for a base
+      operationId: listActiveTradeOperations
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+      responses:
+        '200':
+          description: Active trade operations returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TradeOperationDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    post:
+      tags: [Trade]
+      summary: Create a trade operation
+      operationId: createTradeOperation
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [target_x, target_y, offered_resources, requested_resources]
+              properties:
+                target_x:
+                  type: integer
+                target_y:
+                  type: integer
+                offered_resources:
+                  $ref: '#/components/schemas/PriceModelDTO'
+                offered_army:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ArmyDeploymentRequest'
+                offered_storage_item_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                requested_resources:
+                  $ref: '#/components/schemas/PriceModelDTO'
+                requested_army:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ArmyDeploymentRequest'
+                requested_storage_item_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                transport_units:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ArmyDeploymentRequest'
+      responses:
+        '201':
+          description: Trade operation created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedIntIDResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /trade/bases/{baseId}/operations/{operationId}:
+    get:
+      tags: [Trade]
+      summary: Get a trade operation by ID
+      operationId: getTradeOperation
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/OperationId'
+      responses:
+        '200':
+          description: Trade operation returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TradeOperationDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /trade/bases/{baseId}/operations/{operationId}/accept:
+    post:
+      tags: [Trade]
+      summary: Accept a trade operation
+      operationId: acceptTradeOperation
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/OperationId'
+      responses:
+        '200':
+          description: Trade operation accepted
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /trade/bases/{baseId}/operations/{operationId}/decline:
+    post:
+      tags: [Trade]
+      summary: Decline a trade operation
+      operationId: declineTradeOperation
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/OperationId'
+      responses:
+        '200':
+          description: Trade operation declined
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /trade/bases/{baseId}/operations/{operationId}/cancel:
+    post:
+      tags: [Trade]
+      summary: Cancel a trade operation by the initiator
+      operationId: cancelTradeOperation
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/OperationId'
+      responses:
+        '200':
+          description: Trade operation cancelled
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /trade/bases/{baseId}/operations/{operationId}/speed-up:
+    post:
+      tags: [Trade]
+      summary: Spend crystals to speed up a trade operation
+      operationId: speedUpTradeOperation
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/OperationId'
+      responses:
+        '200':
+          description: Trade operation sped up
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /diplomacy/relationships:
+    get:
+      tags: [Diplomacy]
+      summary: List diplomatic relationships
+      operationId: listDiplomaticRelationships
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [NEUTRAL, ALLIED, WAR]
+      responses:
+        '200':
+          description: Relationships returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DiplomaticRelationshipDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /diplomacy/relationships/{userId}:
+    get:
+      tags: [Diplomacy]
+      summary: Get a single diplomatic relationship
+      operationId: getDiplomaticRelationship
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserIdUuid'
+      responses:
+        '200':
+          description: Relationship returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiplomaticRelationshipDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /diplomacy/relationships/{userId}/declare-war:
+    post:
+      tags: [Diplomacy]
+      summary: Declare war on another user
+      operationId: declareWar
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserIdUuid'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiplomaticRelationshipActionRequest'
+      responses:
+        '200':
+          description: War declared
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedUUIDResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /diplomacy/relationships/{userId}/break-alliance:
+    post:
+      tags: [Diplomacy]
+      summary: Break an alliance with another user
+      operationId: breakAlliance
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserIdUuid'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiplomaticRelationshipActionRequest'
+      responses:
+        '200':
+          description: Alliance broken
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedUUIDResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /diplomacy/messages/available:
+    get:
+      tags: [Diplomacy]
+      summary: List available informational diplomatic message templates
+      operationId: listAvailableDiplomaticMessages
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Available informational messages returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranslatedMessageMap'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /diplomacy/messages/chats:
+    get:
+      tags: [Diplomacy]
+      summary: List diplomatic chats
+      operationId: listDiplomaticChats
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Chats returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DiplomaticChatDTO'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /diplomacy/messages/unread-count:
+    get:
+      tags: [Diplomacy]
+      summary: Get unread diplomatic message count
+      operationId: getUnreadDiplomaticMessageCount
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Unread count returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /diplomacy/messages/chats/{userId}:
+    get:
+      tags: [Diplomacy]
+      summary: List messages in a chat with another user
+      operationId: listDiplomaticChatMessages
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserIdUuid'
+      responses:
+        '200':
+          description: Chat messages returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DiplomaticMessageDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /diplomacy/messages/chats/{userId}/read:
+    post:
+      tags: [Diplomacy]
+      summary: Mark a diplomatic chat as read
+      operationId: markDiplomaticChatAsRead
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserIdUuid'
+      responses:
+        '200':
+          description: Chat marked as read
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /diplomacy/messages:
+    post:
+      tags: [Diplomacy]
+      summary: Send an informational diplomatic message
+      operationId: sendDiplomaticMessage
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [senderBaseId, receiverUserId, content]
+              properties:
+                senderBaseId:
+                  type: integer
+                  minimum: 1
+                receiverUserId:
+                  type: string
+                  format: uuid
+                receiverBaseId:
+                  type: integer
+                content:
+                  type: string
+                  enum:
+                    - diplomacy.message.greeting_friendly_hello.content
+                    - diplomacy.message.greeting_formal_introduction.content
+                    - diplomacy.message.greeting_sign_of_admiration.content
+                    - diplomacy.message.warning_keep_out_of_our_sector.content
+                    - diplomacy.message.warning_do_not_interfere.content
+                    - diplomacy.message.warning_general_threat.content
+      responses:
+        '201':
+          description: Informational message sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedUUIDResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /diplomacy/requests/pending:
+    get:
+      tags: [Diplomacy]
+      summary: List pending diplomatic requests
+      operationId: listPendingDiplomaticRequests
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Pending requests returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DiplomaticRequestDTO'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /diplomacy/requests:
+    post:
+      tags: [Diplomacy]
+      summary: Send a diplomatic request
+      operationId: sendDiplomaticRequest
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [senderBaseId, receiverUserId, kind]
+              properties:
+                senderBaseId:
+                  type: integer
+                  minimum: 1
+                receiverUserId:
+                  type: string
+                  format: uuid
+                receiverBaseId:
+                  type: integer
+                kind:
+                  type: string
+                  enum: [COALITION_PROPOSAL, CEASEFIRE_PROPOSAL]
+      responses:
+        '201':
+          description: Diplomatic request sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedUUIDResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /diplomacy/requests/{requestId}/accept:
+    post:
+      tags: [Diplomacy]
+      summary: Accept a diplomatic request
+      operationId: acceptDiplomaticRequest
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RequestIdUuid'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiplomaticRequestActionRequest'
+      responses:
+        '200':
+          description: Diplomatic request accepted
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /diplomacy/requests/{requestId}/reject:
+    post:
+      tags: [Diplomacy]
+      summary: Reject a diplomatic request
+      operationId: rejectDiplomaticRequest
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RequestIdUuid'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiplomaticRequestActionRequest'
+      responses:
+        '200':
+          description: Diplomatic request rejected
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    BaseId:
+      name: baseId
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    ItemIdUuid:
+      name: itemId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    OperationId:
+      name: operationId
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    OperationLookupId:
+      name: operationId
+      in: path
+      required: true
+      schema:
+        oneOf:
+          - type: integer
+            minimum: 1
+          - type: string
+            format: uuid
+    UserIdUuid:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RequestIdUuid:
+      name: requestId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    BuildCategoryQuery:
+      name: category
+      in: query
+      required: true
+      schema:
+        $ref: '#/components/schemas/BuildCategory'
+    ArmyCategoryQuery:
+      name: category
+      in: query
+      required: true
+      schema:
+        $ref: '#/components/schemas/ArmyCategory'
+    TechCategoryQuery:
+      name: category
+      in: query
+      required: true
+      schema:
+        $ref: '#/components/schemas/TechCategory'
+    StorageCategoryQuery:
+      name: category
+      in: query
+      required: true
+      schema:
+        $ref: '#/components/schemas/StorageCategory'
+  responses:
+    BadRequestError:
+      description: Request binding or validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnauthorizedError:
+      description: Missing or invalid bearer token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFoundError:
+      description: Requested entity was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ErrorResponse:
+      description: Request failed with an application, domain, or internal error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    MinClientVersionResponse:
+      type: object
+      required: [version]
+      properties:
+        version:
+          type: string
+          example: 0.2.0
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+    CountResponse:
+      type: object
+      required: [count]
+      properties:
+        count:
+          type: integer
+    CreatedIntIDResponse:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: integer
+    CreatedUUIDResponse:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+          format: uuid
+    UserCrystalBalanceResponse:
+      type: object
+      required: [crystals]
+      properties:
+        crystals:
+          type: integer
+    Vector2iDTO:
+      type: object
+      required: [x, y]
+      properties:
+        x:
+          type: integer
+        y:
+          type: integer
+    PriceModelDTO:
+      type: object
+      required: [credits, iron, titanium, antimatter]
+      properties:
+        credits:
+          type: integer
+        iron:
+          type: integer
+        titanium:
+          type: integer
+        antimatter:
+          type: integer
+    BaseOwnedItemDTO:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+          format: uuid
+    BuildCategory:
+      type: string
+      enum: [CONTROL, RESOURCES, DEFENSE, MILITARY, INTELLIGENCE]
+    ArmyCategory:
+      type: string
+      enum: [INFANTRY, ARMORED, ARTILLERY, AVIATION, SPY, SPECIAL]
+    TechCategory:
+      type: string
+      enum: [ARMY, BUILD, BASE, POLITICS]
+    StorageCategory:
+      type: string
+      enum: [BUFF, INTEL, DAMAGED, ARTIFACT, CONSUMABLE]
+    Faction:
+      type: string
+      enum: [EXO_COALITION, MARAUDERS, FERROUS_SWARM, TITAN_ARACHNIDS, VOID_ECHO, CUSTODIAN, SCORCH_WALKERS, OBSIDIAN, NEURAL_WORM]
+    UserBaseDTO:
+      type: object
+      required: [id, owner_user_id, coordinates, name]
+      properties:
+        id:
+          type: integer
+        owner_user_id:
+          type: string
+          format: uuid
+        coordinates:
+          $ref: '#/components/schemas/Vector2iDTO'
+        name:
+          type: string
+        description:
+          type: string
+        image_url:
+          type: string
+    BaseResourcesDTO:
+      type: object
+      required:
+        [credits, credits_capacity, credits_production, iron, iron_capacity, iron_production, titanium, titanium_capacity, titanium_production, antimatter, antimatter_capacity, antimatter_production, defence, attack, space, max_space, calculation_timestamp]
+      properties:
+        credits:
+          type: number
+        credits_capacity:
+          type: integer
+        credits_production:
+          type: number
+        iron:
+          type: number
+        iron_capacity:
+          type: integer
+        iron_production:
+          type: number
+        titanium:
+          type: number
+        titanium_capacity:
+          type: integer
+        titanium_production:
+          type: number
+        antimatter:
+          type: number
+        antimatter_capacity:
+          type: integer
+        antimatter_production:
+          type: number
+        defence:
+          type: integer
+        attack:
+          type: integer
+        space:
+          type: integer
+        max_space:
+          type: integer
+        calculation_timestamp:
+          type: integer
+          format: int64
+    ArmyCountRequest:
+      type: object
+      required: [count]
+      properties:
+        count:
+          type: integer
+          minimum: 1
+    BuildItemPrototypeDTO:
+      type: object
+      required: [id, name, category, faction, short_description, full_description, price, space, image_url, production_time]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          $ref: '#/components/schemas/BuildCategory'
+        faction:
+          $ref: '#/components/schemas/Faction'
+        short_description:
+          type: string
+        full_description:
+          type: string
+        price:
+          $ref: '#/components/schemas/PriceModelDTO'
+        space:
+          type: integer
+        image_url:
+          type: string
+        production_time:
+          type: integer
+        control_data:
+          $ref: '#/components/schemas/ControlBuildingDataDTO'
+        resources_data:
+          $ref: '#/components/schemas/ResourcesBuildingDataDTO'
+        defense_data:
+          $ref: '#/components/schemas/DefenseBuildingDataDTO'
+        military_data:
+          $ref: '#/components/schemas/MilitaryBuildingDataDTO'
+        intelligence_data:
+          $ref: '#/components/schemas/IntelligenceBuildingDataDTO'
+    ControlBuildingDataDTO:
+      type: object
+      required: [subtype]
+      properties:
+        subtype:
+          type: string
+          enum: [REPAIR_CENTER, CRYPTOGRAPHY_LAB, ARTIFACT_LAB, TRADING_TERMINAL, MAILING_TERMINAL]
+    ResourcesBuildingDataDTO:
+      type: object
+      required: [credits_production, iron_production, titanium_production, antimatter_production, credits_capacity, iron_capacity, titanium_capacity, antimatter_capacity]
+      properties:
+        credits_production:
+          type: number
+        iron_production:
+          type: number
+        titanium_production:
+          type: number
+        antimatter_production:
+          type: number
+        credits_capacity:
+          type: integer
+        iron_capacity:
+          type: integer
+        titanium_capacity:
+          type: integer
+        antimatter_capacity:
+          type: integer
+    DefenseBuildingDataDTO:
+      type: object
+      required: [defence_bonus]
+      properties:
+        defence_bonus:
+          type: integer
+    MilitaryBuildingDataDTO:
+      type: object
+      required: [unlock_army_category]
+      properties:
+        unlock_army_category:
+          $ref: '#/components/schemas/ArmyCategory'
+    IntelligenceBuildingDataDTO:
+      type: object
+      required: [subtype, stealth_strength, scan_range, scan_cooldown]
+      properties:
+        subtype:
+          type: string
+          enum: [SCANNER, RADAR, CLOAKING, SCAN_INTERCEPTOR]
+        stealth_strength:
+          type: integer
+        scan_range:
+          type: integer
+        scan_cooldown:
+          type: integer
+    BuildItemNewDTO:
+      allOf:
+        - $ref: '#/components/schemas/BuildItemPrototypeDTO'
+    BuildItemPendingDTO:
+      type: object
+      required: [id, prototype]
+      properties:
+        id:
+          type: string
+          format: uuid
+        prototype:
+          $ref: '#/components/schemas/BuildItemPrototypeDTO'
+    BuildItemInProductionDTO:
+      type: object
+      required: [id, prototype, start_date, completion_date, crystals_skip_price]
+      properties:
+        id:
+          type: string
+          format: uuid
+        prototype:
+          $ref: '#/components/schemas/BuildItemPrototypeDTO'
+        start_date:
+          type: integer
+        completion_date:
+          type: integer
+        crystals_skip_price:
+          type: integer
+    BuildItemPresentDTO:
+      type: object
+      required: [id, prototype, refund]
+      properties:
+        id:
+          type: string
+          format: uuid
+        prototype:
+          $ref: '#/components/schemas/BuildItemPrototypeDTO'
+        refund:
+          $ref: '#/components/schemas/PriceModelDTO'
+    ArmyItemPrototypeDTO:
+      type: object
+      required: [id, name, category, faction, short_description, full_description, price, space, image_url, attack, defence, capacity, stealth, speed, production_time]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          $ref: '#/components/schemas/ArmyCategory'
+        faction:
+          $ref: '#/components/schemas/Faction'
+        short_description:
+          type: string
+        full_description:
+          type: string
+        price:
+          $ref: '#/components/schemas/PriceModelDTO'
+        space:
+          type: integer
+        image_url:
+          type: string
+        attack:
+          type: integer
+        defence:
+          type: integer
+        capacity:
+          type: integer
+        stealth:
+          type: integer
+        speed:
+          type: integer
+        production_time:
+          type: integer
+    ArmyItemNewDTO:
+      allOf:
+        - $ref: '#/components/schemas/ArmyItemPrototypeDTO'
+    ArmyItemPendingDTO:
+      type: object
+      required: [id, prototype, count]
+      properties:
+        id:
+          type: string
+          format: uuid
+        prototype:
+          $ref: '#/components/schemas/ArmyItemPrototypeDTO'
+        count:
+          type: integer
+    ArmyItemInProductionDTO:
+      type: object
+      required: [id, prototype, start_date, completion_date, crystals_skip_price]
+      properties:
+        id:
+          type: string
+          format: uuid
+        prototype:
+          $ref: '#/components/schemas/ArmyItemPrototypeDTO'
+        start_date:
+          type: integer
+        completion_date:
+          type: integer
+        crystals_skip_price:
+          type: integer
+    ArmyItemPresentDTO:
+      type: object
+      required: [id, prototype, count, refund]
+      properties:
+        id:
+          type: string
+          format: uuid
+        prototype:
+          $ref: '#/components/schemas/ArmyItemPrototypeDTO'
+        count:
+          type: integer
+        refund:
+          $ref: '#/components/schemas/PriceModelDTO'
+    TechImprovementDTO:
+      type: object
+      required: [type, value]
+      properties:
+        type:
+          type: string
+          enum: [SPACE_CAPACITY, OPERATIONS_COUNT, ACTIVE_BUFFS_COUNT, ACTIVE_ARTIFACTS_COUNT, ACTIVE_RESTORATIONS_COUNT, BUILDING_PRODUCTION_COUNT, ACTIVE_DECRYPTION_COUNT]
+        value:
+          type: integer
+        max_level:
+          type: integer
+    TechItemPrototypeDTO:
+      type: object
+      required: [id, name, category, short_description, full_description, price, image_url, research_time]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          $ref: '#/components/schemas/TechCategory'
+        short_description:
+          type: string
+        full_description:
+          type: string
+        price:
+          $ref: '#/components/schemas/PriceModelDTO'
+        image_url:
+          type: string
+        research_time:
+          type: integer
+        improvement:
+          $ref: '#/components/schemas/TechImprovementDTO'
+    TechItemNewDTO:
+      type: object
+      required: [id, name, category, short_description, full_description, price, image_url, research_time, current_level]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          $ref: '#/components/schemas/TechCategory'
+        short_description:
+          type: string
+        full_description:
+          type: string
+        price:
+          $ref: '#/components/schemas/PriceModelDTO'
+        image_url:
+          type: string
+        research_time:
+          type: integer
+        improvement:
+          $ref: '#/components/schemas/TechImprovementDTO'
+        current_level:
+          type: integer
+    TechItemInProgressDTO:
+      type: object
+      required: [id, prototype, start_date, completion_date, crystals_skip_price, current_level]
+      properties:
+        id:
+          type: string
+          format: uuid
+        prototype:
+          $ref: '#/components/schemas/TechItemPrototypeDTO'
+        start_date:
+          type: integer
+        completion_date:
+          type: integer
+        crystals_skip_price:
+          type: integer
+        current_level:
+          type: integer
+    TechItemDoneDTO:
+      type: object
+      required: [id, prototype, level]
+      properties:
+        id:
+          type: string
+          format: uuid
+        prototype:
+          $ref: '#/components/schemas/TechItemPrototypeDTO'
+        level:
+          type: integer
+    BuffStorageDataDTO:
+      type: object
+      required: [type, value, duration_seconds]
+      properties:
+        type:
+          type: string
+          enum: [CREDITS_PRODUCTION, IRON_PRODUCTION, TITANIUM_PRODUCTION, ATTACK_INCREASE, DEFENCE_INCREASE, STEALTH_INCREASE, CAPACITY_INCREASE, SPEED_INCREASE]
+        value:
+          type: number
+        duration_seconds:
+          type: integer
+          format: int64
+    IntelStorageDataDTO:
+      type: object
+      required: [type, decryption_seconds]
+      properties:
+        type:
+          type: string
+          enum: [RESOURCEFUL, DANGEROUS, USERBASE]
+        decryption_seconds:
+          type: integer
+          format: int64
+    DamagedStorageDataDTO:
+      type: object
+      required: [restore_price, original_unit_id]
+      properties:
+        restore_price:
+          $ref: '#/components/schemas/PriceModelDTO'
+        original_unit_id:
+          type: integer
+    ArtifactStorageDataDTO:
+      type: object
+      required: [type, value]
+      properties:
+        type:
+          type: string
+          enum: [CREDITS_PRODUCTION, IRON_PRODUCTION, TITANIUM_PRODUCTION, ATTACK_INCREASE, DEFENCE_INCREASE, STEALTH_INCREASE, CAPACITY_INCREASE, SPEED_INCREASE]
+        value:
+          type: number
+    ConsumableStorageDataDTO:
+      type: object
+      required: [type, box_contents, box_size]
+      properties:
+        type:
+          type: string
+          enum: [BOX, WARP_CAPSULE]
+        box_contents:
+          type: array
+          items:
+            type: string
+            enum: [CREDITS, IRON, TITANIUM, ANTIMATTER, CRYSTALS, BUFF, INTEL, DAMAGED, ARTIFACT]
+        box_size:
+          type: integer
+    StorageItemPrototypeDTO:
+      type: object
+      required: [id, name, category, short_description, full_description, image_url]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          $ref: '#/components/schemas/StorageCategory'
+        short_description:
+          type: string
+        full_description:
+          type: string
+        image_url:
+          type: string
+        buff_data:
+          $ref: '#/components/schemas/BuffStorageDataDTO'
+        intel_data:
+          $ref: '#/components/schemas/IntelStorageDataDTO'
+        damaged_data:
+          $ref: '#/components/schemas/DamagedStorageDataDTO'
+        artifact_data:
+          $ref: '#/components/schemas/ArtifactStorageDataDTO'
+        consumable_data:
+          $ref: '#/components/schemas/ConsumableStorageDataDTO'
+    StorageItemPresentDTO:
+      type: object
+      required: [id, prototype, is_active]
+      properties:
+        id:
+          type: string
+          format: uuid
+        prototype:
+          $ref: '#/components/schemas/StorageItemPrototypeDTO'
+        expires_at:
+          type: integer
+          format: int64
+        is_active:
+          type: boolean
+    SectorOwnerDTO:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+    ScanInfoDTO:
+      type: object
+      required: [credits, iron, titanium, antimatter, defence, attack, space]
+      properties:
+        credits:
+          type: integer
+        iron:
+          type: integer
+        titanium:
+          type: integer
+        antimatter:
+          type: integer
+        defence:
+          type: integer
+        attack:
+          type: integer
+        space:
+          type: integer
+    SectorDTO:
+      type: object
+      required: [coordinates, type, name, description, image_url, scan_date, scan_report_id, scan_info, source_type]
+      properties:
+        coordinates:
+          $ref: '#/components/schemas/Vector2iDTO'
+        type:
+          type: string
+          enum: [HOME, UNKNOWN, BASE, EMPTY, RESOURCEFUL, DANGEROUS]
+        owner:
+          $ref: '#/components/schemas/SectorOwnerDTO'
+        name:
+          type: string
+        description:
+          type: string
+        image_url:
+          type: string
+        scan_date:
+          type: integer
+        scan_report_id:
+          type: integer
+        scan_info:
+          $ref: '#/components/schemas/ScanInfoDTO'
+        source_type:
+          type: string
+          enum: [UNKNOWN, OPERATION, SCANNER, INTEL, DIPLOMATIC_REVEAL]
+        source_id:
+          type: string
+          format: uuid
+    RadarThreatDTO:
+      type: object
+      required: [id, operationId, ownerBaseId, detectedAt, detectedCoordinates, source, target, estimatedArrivalAt, type, status, attack, speed, stealth, capacity]
+      properties:
+        id:
+          type: string
+        operationId:
+          type: integer
+        ownerBaseId:
+          type: integer
+        detectedAt:
+          type: integer
+          format: int64
+        detectedCoordinates:
+          $ref: '#/components/schemas/Vector2iDTO'
+        source:
+          $ref: '#/components/schemas/Vector2iDTO'
+        target:
+          $ref: '#/components/schemas/Vector2iDTO'
+        estimatedArrivalAt:
+          type: integer
+          format: int64
+        arrivalAt:
+          type: integer
+          format: int64
+        type:
+          type: string
+          enum: [ATTACK, SPY]
+        status:
+          type: string
+          enum: [ARRIVING, LOST, ARRIVED]
+        attack:
+          type: integer
+        speed:
+          type: integer
+        stealth:
+          type: integer
+        capacity:
+          type: integer
+    ArmyDeploymentRequest:
+      type: object
+      required: [present_item_id, count]
+      properties:
+        present_item_id:
+          type: string
+          format: uuid
+        count:
+          type: integer
+          minimum: 1
+    MilitaryUnitDTO:
+      type: object
+      required: [prototype_id, current_prototype, name, image_url, category, attack, defence, capacity, stealth, speed, space, count]
+      properties:
+        prototype_id:
+          type: integer
+        current_prototype:
+          $ref: '#/components/schemas/ArmyItemPrototypeDTO'
+        name:
+          type: string
+        image_url:
+          type: string
+        category:
+          $ref: '#/components/schemas/ArmyCategory'
+        attack:
+          type: integer
+        defence:
+          type: integer
+        capacity:
+          type: integer
+        stealth:
+          type: integer
+        speed:
+          type: integer
+        space:
+          type: integer
+        count:
+          type: integer
+    DefenseStructureDTO:
+      type: object
+      required: [prototype_id, current_prototype, name, image_url, defence, space, count]
+      properties:
+        prototype_id:
+          type: integer
+        current_prototype:
+          $ref: '#/components/schemas/BuildItemPrototypeDTO'
+        name:
+          type: string
+        image_url:
+          type: string
+        defence:
+          type: integer
+        space:
+          type: integer
+        count:
+          type: integer
+    TrophyStorageItemDTO:
+      type: object
+      required: [prototype]
+      properties:
+        prototype:
+          $ref: '#/components/schemas/StorageItemPrototypeDTO'
+    MilitaryModifiersDTO:
+      type: object
+      required: [attack_mul, defence_mul, stealth_mul, capacity_mul, speed_mul]
+      properties:
+        attack_mul:
+          type: number
+        defence_mul:
+          type: number
+        stealth_mul:
+          type: number
+        capacity_mul:
+          type: number
+        speed_mul:
+          type: number
+    StorageItemSnapDTO:
+      type: object
+      required: [prototype_id, current_prototype, name, short_description, image_url, category]
+      properties:
+        prototype_id:
+          type: integer
+        current_prototype:
+          $ref: '#/components/schemas/StorageItemPrototypeDTO'
+        name:
+          type: string
+        short_description:
+          type: string
+        image_url:
+          type: string
+        category:
+          $ref: '#/components/schemas/StorageCategory'
+        buff_data:
+          $ref: '#/components/schemas/BuffStorageDataDTO'
+        artifact_data:
+          $ref: '#/components/schemas/ArtifactStorageDataDTO'
+    SpyResultDTO:
+      type: object
+      required: [outcome, attacker_remaining, defender_remaining, defenders_before, defender_storage_snaps, total_defender_modifiers]
+      properties:
+        outcome:
+          type: string
+          enum: [BLOCKED_BY_CLOAKING_EMPTY_REPORT, DEFEATED_BY_DEFENDING_SPIES, REPORT_PRODUCED]
+        attacker_remaining:
+          type: array
+          items:
+            $ref: '#/components/schemas/MilitaryUnitDTO'
+        defender_remaining:
+          type: array
+          items:
+            $ref: '#/components/schemas/MilitaryUnitDTO'
+        defenders_before:
+          type: array
+          items:
+            $ref: '#/components/schemas/MilitaryUnitDTO'
+        defender_storage_snaps:
+          type: array
+          items:
+            $ref: '#/components/schemas/StorageItemSnapDTO'
+        total_defender_modifiers:
+          $ref: '#/components/schemas/MilitaryModifiersDTO'
+    AttackResultDTO:
+      type: object
+      required: [outcome, attacker_remaining, defender_remaining, remaining_structures, loot, trophies, defenders_before, structures_before, defender_storage_snaps, total_defender_modifiers]
+      properties:
+        outcome:
+          type: string
+          enum: [ATTACKER_WON, DEFENDER_HELD]
+        attacker_remaining:
+          type: array
+          items:
+            $ref: '#/components/schemas/MilitaryUnitDTO'
+        defender_remaining:
+          type: array
+          items:
+            $ref: '#/components/schemas/MilitaryUnitDTO'
+        remaining_structures:
+          type: array
+          items:
+            $ref: '#/components/schemas/DefenseStructureDTO'
+        loot:
+          $ref: '#/components/schemas/PriceModelDTO'
+        trophies:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrophyStorageItemDTO'
+        defenders_before:
+          type: array
+          items:
+            $ref: '#/components/schemas/MilitaryUnitDTO'
+        structures_before:
+          type: array
+          items:
+            $ref: '#/components/schemas/DefenseStructureDTO'
+        defender_storage_snaps:
+          type: array
+          items:
+            $ref: '#/components/schemas/StorageItemSnapDTO'
+        total_defender_modifiers:
+          $ref: '#/components/schemas/MilitaryModifiersDTO'
+    MilitaryOperationDTO:
+      type: object
+      required: [id, uuid, type, phase, result, source_base_id, source_coordinates, target_coordinates, outbound_depart_at, outbound_arrive_at, return_depart_at, return_arrive_at, completed_at, crystals_skip_price, units, storage_snaps, total_modifiers]
+      properties:
+        id:
+          type: integer
+        uuid:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [ATTACK, SPY, OCCUPATION]
+        phase:
+          type: string
+          enum: [PENDING, OUTBOUND, AT_TARGET, RESOLVING, RETURNING, COMPLETED]
+        result:
+          type: string
+          enum: [UNKNOWN, SUCCESS, FAILURE, CANCELED]
+        source_base_id:
+          type: integer
+        source_coordinates:
+          $ref: '#/components/schemas/Vector2iDTO'
+        target_coordinates:
+          $ref: '#/components/schemas/Vector2iDTO'
+        outbound_depart_at:
+          type: integer
+          format: int64
+        outbound_arrive_at:
+          type: integer
+          format: int64
+        return_depart_at:
+          type: integer
+          format: int64
+        return_arrive_at:
+          type: integer
+          format: int64
+        completed_at:
+          type: integer
+          format: int64
+        crystals_skip_price:
+          type: integer
+        units:
+          type: array
+          items:
+            $ref: '#/components/schemas/MilitaryUnitDTO'
+        storage_snaps:
+          type: array
+          items:
+            $ref: '#/components/schemas/StorageItemSnapDTO'
+        total_modifiers:
+          $ref: '#/components/schemas/MilitaryModifiersDTO'
+        spy_result:
+          $ref: '#/components/schemas/SpyResultDTO'
+        attack_result:
+          $ref: '#/components/schemas/AttackResultDTO'
+        produced_scan_report:
+          $ref: '#/components/schemas/SectorDTO'
+        prior_scan_report:
+          $ref: '#/components/schemas/SectorDTO'
+    OffenseActivityDTO:
+      type: object
+      required: [opId, subtype]
+      properties:
+        opId:
+          type: integer
+        subtype:
+          type: string
+          enum: [ATTACK, SPY]
+        operation:
+          $ref: '#/components/schemas/MilitaryOperationDTO'
+    OffenderInfoDTO:
+      type: object
+      required: [type, targetCoordinates, contactDate, result, units, storageSnaps, totalModifiers]
+      properties:
+        type:
+          type: string
+          enum: [ATTACK, SPY, OCCUPATION]
+        sourceCoordinates:
+          $ref: '#/components/schemas/Vector2iDTO'
+        targetCoordinates:
+          $ref: '#/components/schemas/Vector2iDTO'
+        contactDate:
+          type: integer
+          format: int64
+        result:
+          type: string
+          enum: [UNKNOWN, SUCCESS, FAILURE, CANCELED]
+        units:
+          type: array
+          items:
+            $ref: '#/components/schemas/MilitaryUnitDTO'
+        storageSnaps:
+          type: array
+          items:
+            $ref: '#/components/schemas/StorageItemSnapDTO'
+        totalModifiers:
+          $ref: '#/components/schemas/MilitaryModifiersDTO'
+        spyResult:
+          $ref: '#/components/schemas/SpyResultDTO'
+        attackResult:
+          $ref: '#/components/schemas/AttackResultDTO'
+    DefenseActivityDTO:
+      type: object
+      required: [opId, subtype]
+      properties:
+        opId:
+          type: integer
+        subtype:
+          type: string
+          enum: [ATTACK, SPY]
+        offender:
+          $ref: '#/components/schemas/OffenderInfoDTO'
+        priorOpponentScan:
+          $ref: '#/components/schemas/SectorDTO'
+    ScanInterceptInfoDTO:
+      type: object
+      required: [scannedCoordinates, scanPenetratedCloaking, uncertaintyRadius]
+      properties:
+        scannedCoordinates:
+          $ref: '#/components/schemas/Vector2iDTO'
+        scanPenetratedCloaking:
+          type: boolean
+        possibleSource:
+          $ref: '#/components/schemas/Vector2iDTO'
+        uncertaintyRadius:
+          type: integer
+    ScanActivityDTO:
+      type: object
+      required: [subtype]
+      properties:
+        subtype:
+          type: string
+          enum: [REPORT_PRODUCED, EXTERNAL_SCAN_DETECTED]
+        reportId:
+          type: integer
+        intercept:
+          $ref: '#/components/schemas/ScanInterceptInfoDTO'
+        report:
+          $ref: '#/components/schemas/SectorDTO'
+    RadarActivityDTO:
+      type: object
+      required: [threatId]
+      properties:
+        threatId:
+          type: string
+        threat:
+          $ref: '#/components/schemas/RadarThreatDTO'
+    TradeArmyItemSnapDTO:
+      type: object
+      required: [prototype_id, current_prototype, count, capacity]
+      properties:
+        prototype_id:
+          type: integer
+        current_prototype:
+          $ref: '#/components/schemas/ArmyItemPrototypeDTO'
+        count:
+          type: integer
+        capacity:
+          type: integer
+    TradeStorageItemSnapDTO:
+      type: object
+      required: [item_id, prototype_id, current_prototype, category]
+      properties:
+        item_id:
+          type: string
+          format: uuid
+        prototype_id:
+          type: integer
+        current_prototype:
+          $ref: '#/components/schemas/StorageItemPrototypeDTO'
+        category:
+          $ref: '#/components/schemas/StorageCategory'
+    TradePayloadDTO:
+      type: object
+      required: [resources, storage, army]
+      properties:
+        resources:
+          $ref: '#/components/schemas/PriceModelDTO'
+        storage:
+          type: array
+          items:
+            $ref: '#/components/schemas/TradeStorageItemSnapDTO'
+        army:
+          type: array
+          items:
+            $ref: '#/components/schemas/TradeArmyItemSnapDTO'
+    TradeOperationDTO:
+      type: object
+      required: [id, uuid, created_at, sender_user_id, sender_base_id, receiver_user_id, receiver_base_id, source_coordinates, target_coordinates, offered_payload, requested_payload, transport_units, storage_snaps, total_modifiers, expires_at, outbound_depart_at, outbound_arrive_at, arrived_at_target_at, return_depart_at, return_arrive_at, completed_at, crystals_skip_price, phase, result]
+      properties:
+        id:
+          type: integer
+        uuid:
+          type: string
+          format: uuid
+        created_at:
+          type: integer
+          format: int64
+        sender_user_id:
+          type: string
+          format: uuid
+        sender_base_id:
+          type: integer
+        receiver_user_id:
+          type: string
+          format: uuid
+        receiver_base_id:
+          type: integer
+        source_coordinates:
+          $ref: '#/components/schemas/Vector2iDTO'
+        target_coordinates:
+          $ref: '#/components/schemas/Vector2iDTO'
+        offered_payload:
+          $ref: '#/components/schemas/TradePayloadDTO'
+        requested_payload:
+          $ref: '#/components/schemas/TradePayloadDTO'
+        transport_units:
+          type: array
+          items:
+            $ref: '#/components/schemas/MilitaryUnitDTO'
+        storage_snaps:
+          type: array
+          items:
+            $ref: '#/components/schemas/StorageItemSnapDTO'
+        total_modifiers:
+          $ref: '#/components/schemas/MilitaryModifiersDTO'
+        expires_at:
+          type: integer
+          format: int64
+        outbound_depart_at:
+          type: integer
+          format: int64
+        outbound_arrive_at:
+          type: integer
+          format: int64
+        arrived_at_target_at:
+          type: integer
+          format: int64
+        return_depart_at:
+          type: integer
+          format: int64
+        return_arrive_at:
+          type: integer
+          format: int64
+        completed_at:
+          type: integer
+          format: int64
+        crystals_skip_price:
+          type: integer
+        phase:
+          type: string
+          enum: [PENDING, OUTBOUND, ARRIVED, RETURNING, COMPLETED]
+        result:
+          type: string
+          enum: [UNKNOWN, SUCCESS, CANCELED, DECLINED, EXPIRED, FAILURE]
+        sender_scan_of_receiver:
+          $ref: '#/components/schemas/SectorDTO'
+        receiver_scan_of_sender:
+          $ref: '#/components/schemas/SectorDTO'
+    TradeInfoDTO:
+      type: object
+      required: [resources, army, storage]
+      properties:
+        resources:
+          $ref: '#/components/schemas/PriceModelDTO'
+        army:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArmyItemPresentDTO'
+        storage:
+          type: array
+          items:
+            $ref: '#/components/schemas/StorageItemPresentDTO'
+    ActivityItemDTO:
+      type: object
+      required: [id, kind, createdAt, baseId]
+      properties:
+        id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum: [OFFENSE, DEFENSE, SCAN, RADAR, TRADE]
+        createdAt:
+          type: integer
+          format: int64
+        baseId:
+          type: integer
+        offense:
+          $ref: '#/components/schemas/OffenseActivityDTO'
+        defense:
+          $ref: '#/components/schemas/DefenseActivityDTO'
+        scan:
+          $ref: '#/components/schemas/ScanActivityDTO'
+        radar:
+          $ref: '#/components/schemas/RadarActivityDTO'
+        trade:
+          type: object
+          required: [opId]
+          properties:
+            opId:
+              type: integer
+            operation:
+              $ref: '#/components/schemas/TradeOperationDTO'
+    AlertItemDTO:
+      type: object
+      required: [id, userId, kind, title, content, isRead, createdAt, expiresAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        baseId:
+          type: integer
+        activityId:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum: [COMBAT, INTEL, SYSTEM, DIPLOMATIC, TRADE]
+        title:
+          type: string
+        content:
+          type: string
+        isRead:
+          type: boolean
+        createdAt:
+          type: integer
+          format: int64
+        expiresAt:
+          type: integer
+          format: int64
+    DiplomaticRelationshipDTO:
+      type: object
+      required: [otherUserId, otherUserName, status, changedByUserId, changedAt]
+      properties:
+        otherUserId:
+          type: string
+          format: uuid
+        otherUserName:
+          type: string
+        status:
+          type: string
+          enum: [NEUTRAL, ALLIED, WAR]
+        changedByUserId:
+          type: string
+          format: uuid
+        changedAt:
+          type: integer
+          format: int64
+        warDeclaredAt:
+          type: integer
+          format: int64
+        warAttacksAllowedAt:
+          type: integer
+          format: int64
+        neutralityProtectedUntil:
+          type: integer
+          format: int64
+    BaseLocationDataDTO:
+      type: object
+      required: [coordinates, name]
+      properties:
+        coordinates:
+          $ref: '#/components/schemas/Vector2iDTO'
+        name:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: string
+    DiplomaticRequestDTO:
+      type: object
+      required: [id, senderUserId, senderUserName, receiverUserId, receiverUserName, kind, status, createdAt, expiresAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        senderUserId:
+          type: string
+          format: uuid
+        senderUserName:
+          type: string
+        receiverUserId:
+          type: string
+          format: uuid
+        receiverUserName:
+          type: string
+        senderBaseId:
+          type: integer
+        receiverBaseId:
+          type: integer
+        kind:
+          type: string
+          enum: [COALITION_PROPOSAL, CEASEFIRE_PROPOSAL]
+        status:
+          type: string
+          enum: [PENDING, ACCEPTED, REJECTED, EXPIRED]
+        createdAt:
+          type: integer
+          format: int64
+        resolvedAt:
+          type: integer
+          format: int64
+        expiresAt:
+          type: integer
+          format: int64
+    DiplomaticMessageDTO:
+      type: object
+      required: [id, senderUserId, senderUserName, receiverUserId, receiverUserName, isRead, content, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        senderUserId:
+          type: string
+          format: uuid
+        senderUserName:
+          type: string
+        receiverUserId:
+          type: string
+          format: uuid
+        receiverUserName:
+          type: string
+        senderBaseId:
+          type: integer
+        senderBase:
+          $ref: '#/components/schemas/BaseLocationDataDTO'
+        receiverBaseId:
+          type: integer
+        requestId:
+          type: string
+          format: uuid
+        request:
+          $ref: '#/components/schemas/DiplomaticRequestDTO'
+        replyToMessageId:
+          type: string
+          format: uuid
+        isRead:
+          type: boolean
+        content:
+          type: string
+        createdAt:
+          type: integer
+          format: int64
+    DiplomaticChatDTO:
+      type: object
+      required: [otherUserId, otherUserName, unreadCount]
+      properties:
+        otherUserId:
+          type: string
+          format: uuid
+        otherUserName:
+          type: string
+        lastMessage:
+          $ref: '#/components/schemas/DiplomaticMessageDTO'
+        unreadCount:
+          type: integer
+    TranslatedMessageMap:
+      type: object
+      additionalProperties:
+        type: string
+    DiplomaticRelationshipActionRequest:
+      type: object
+      required: [senderBaseId]
+      properties:
+        senderBaseId:
+          type: integer
+          minimum: 1
+        receiverBaseId:
+          type: integer
+    DiplomaticRequestActionRequest:
+      type: object
+      required: [senderBaseId]
+      properties:
+        senderBaseId:
+          type: integer
+          minimum: 1

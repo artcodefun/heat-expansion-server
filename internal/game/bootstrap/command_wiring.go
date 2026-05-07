@@ -8,8 +8,8 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/codes"
 
-	"github.com/artcodefun/heat-expansion-server/contracts/auth"
-	v1 "github.com/artcodefun/heat-expansion-server/contracts/auth/v1"
+	authevents "github.com/artcodefun/heat-expansion-server/contracts/auth/events"
+	v1 "github.com/artcodefun/heat-expansion-server/contracts/auth/events/v1"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 	infraevents "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/events"
@@ -26,7 +26,7 @@ func WireCommandIntegrationEvents(c *Commands, consumer *infraevents.RabbitMQCon
 		defer span.End()
 
 		err := func() error {
-			envelope, err := auth.Unmarshal(d.Body)
+			envelope, err := authevents.Unmarshal(d.Body)
 			if err != nil {
 				return err
 			}
