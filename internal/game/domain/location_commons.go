@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"math"
 	"math/rand"
 )
 
@@ -39,7 +38,7 @@ const (
 	baseResourcefulDefense = 10.0
 	baseDangerousDefense   = 40.0
 	// Attack benchmark for a new player filling starting space with basic infantry (e.g. 100 riflemen = 100 attack).
-	spawnStartingPower = 100.0
+	spawnStartingPower = 50.0
 )
 
 // AppropriateLocationDefense returns the target defense power for a newly spawned
@@ -55,9 +54,9 @@ func AppropriateLocationDefense(stats UserBaseStats, locType LocationType) float
 	default:
 		return 0
 	}
-	spaceFactor := math.Max(1.0, float64(stats.MaxSpace)/float64(DefaultMaxSpace))
+	spaceFactor := max(1.0, float64(stats.MaxSpace)/float64(DefaultMaxSpace))
 	armyFactor := float64(stats.Attack) / spawnStartingPower
-	return base * math.Max(spaceFactor, armyFactor)
+	return base * max(spaceFactor, armyFactor)
 }
 
 const (

@@ -37,14 +37,14 @@ func TestAppropriateLocationDefense(t *testing.T) {
 			name:        "army factor dominant over space (small base, strong army)",
 			stats:       UserBaseStats{MaxSpace: DefaultMaxSpace, Attack: 1000, Defence: 1000},
 			locType:     LocationTypeResourceful,
-			expectedMin: 100.0, // baseResourcefulDefense * (1000 / spawnStartingPower)
-			expectedMax: 100.0,
+			expectedMin: 200.0, // baseResourcefulDefense * (1000 / spawnStartingPower)
+			expectedMax: 200.0,
 		},
 		{
 			name:    "space floor beats weak army (army deployed away)",
 			stats:   UserBaseStats{MaxSpace: 500, Attack: 50, Defence: 50},
 			locType: LocationTypeResourceful,
-			// spaceFactor=5, armyFactor=0.5 → space wins → 10*5=50
+			// spaceFactor=5, armyFactor=1 → space wins → 10*5=50
 			expectedMin: 50.0,
 			expectedMax: 50.0,
 		},
@@ -52,17 +52,17 @@ func TestAppropriateLocationDefense(t *testing.T) {
 			name:    "mid-game player (MaxSpace=500, decent army)",
 			stats:   UserBaseStats{MaxSpace: 500, Attack: 5000, Defence: 4000},
 			locType: LocationTypeResourceful,
-			// armyFactor = 5000/100 = 50, spaceFactor = 5 → army wins → 10*50=500
-			expectedMin: 500.0,
-			expectedMax: 500.0,
+			// armyFactor = 5000/50 = 100, spaceFactor = 5 → army wins → 10*100=1000
+			expectedMin: 1000.0,
+			expectedMax: 1000.0,
 		},
 		{
 			name:    "production player, army home (MaxSpace=2800, strong army)",
 			stats:   UserBaseStats{MaxSpace: 2800, Attack: 50000, Defence: 40000},
 			locType: LocationTypeResourceful,
-			// armyFactor = 50000/100 = 500, spaceFactor = 28 → army wins → 10*500=5000
-			expectedMin: 5000.0,
-			expectedMax: 5000.0,
+			// armyFactor = 50000/50 = 1000, spaceFactor = 28 → army wins → 10*1000=10000
+			expectedMin: 10000.0,
+			expectedMax: 10000.0,
 		},
 		{
 			name:    "production player, army deployed (MaxSpace=2800, no army home)",
@@ -76,9 +76,9 @@ func TestAppropriateLocationDefense(t *testing.T) {
 			name:    "production player, dangerous location",
 			stats:   UserBaseStats{MaxSpace: 2800, Attack: 50000, Defence: 40000},
 			locType: LocationTypeDangerous,
-			// armyFactor = 500 → 40*500=20000
-			expectedMin: 20000.0,
-			expectedMax: 20000.0,
+			// armyFactor = 1000 → 40*1000=40000
+			expectedMin: 40000.0,
+			expectedMax: 40000.0,
 		},
 		{
 			name:        "unknown location type returns zero",
