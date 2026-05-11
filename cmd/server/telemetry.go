@@ -74,7 +74,7 @@ func initTelemetry(ctx context.Context) (shutdown func(context.Context) error, e
 		return nil, err
 	}
 	mp := metric.NewMeterProvider(
-		metric.WithReader(metric.NewPeriodicReader(metricExporter, metric.WithInterval(15*time.Second))),
+		metric.WithReader(metric.NewPeriodicReader(metricExporter, metric.WithInterval(60*time.Second))),
 		metric.WithResource(res),
 	)
 	otel.SetMeterProvider(mp)

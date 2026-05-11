@@ -15,7 +15,7 @@ receivers:
         endpoint: "0.0.0.0:4318"
 
   hostmetrics:
-    collection_interval: 30s
+    collection_interval: 60s
     scrapers:
       cpu:
       memory:
