@@ -99,6 +99,28 @@ func TestAppropriateLocationDefense(t *testing.T) {
 	}
 }
 
+func TestWorthFromDefense(t *testing.T) {
+	cases := []struct {
+		name    string
+		defense float64
+		want    int
+	}{
+		{name: "zero defense", defense: 0, want: 0},
+		{name: "linear floor stays unchanged", defense: 100, want: 5000},
+		{name: "low defense stays linear", defense: 10, want: 500},
+		{name: "ten thousand defense flattens", defense: 10000, want: 50000},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := WorthFromDefense(tc.defense)
+			if got != tc.want {
+				t.Errorf("WorthFromDefense(%.2f) = %d, want %d", tc.defense, got, tc.want)
+			}
+		})
+	}
+}
+
 func TestFillDefenders_EmptyOnZeroTarget(t *testing.T) {
 	proto := &ArmyItemPrototype{ID: 1, Faction: FactionMarauders, Defence: 10}
 	var armies []ArmyStack

@@ -131,7 +131,7 @@ func (c *WorldGenerationCommands) HandleSpawnNearbyLocationsJob(ctx context.Cont
 			resTypes := []domain.ResourceType{domain.ResourceTypeCredits, domain.ResourceTypeIron, domain.ResourceTypeTitanium, domain.ResourceTypeAntimatter}
 			resType := resTypes[r.Intn(len(resTypes))]
 			defense := domain.AppropriateLocationDefense(base.Stats, domain.LocationTypeResourceful) * (1.0 + r.Float64()*2.0)
-			worth := int(defense * domain.WorthDefenderPower)
+			worth := domain.WorthFromDefense(defense)
 			loc := domain.NewResourceLocation(
 				tSector.Coordinates,
 				resType,
@@ -153,7 +153,7 @@ func (c *WorldGenerationCommands) HandleSpawnNearbyLocationsJob(ctx context.Cont
 			}
 			faction := dangFactions[r.Intn(len(dangFactions))]
 			defense := domain.AppropriateLocationDefense(base.Stats, domain.LocationTypeDangerous) * (1.0 + r.Float64()*1.5)
-			worth := int(defense * domain.WorthDefenderPower)
+			worth := domain.WorthFromDefense(defense)
 			loc := domain.NewDangerousLocation(
 				tSector.Coordinates,
 				faction,
@@ -234,7 +234,7 @@ func (c *WorldGenerationCommands) spawnInitialLocations(ctx context.Context, bas
 				if task.dist == 1 {
 					defense *= 0.5
 				}
-				worth := int(defense * domain.WorthDefenderPower)
+				worth := domain.WorthFromDefense(defense)
 				loc := domain.NewResourceLocation(
 					tSector.Coordinates,
 					task.resType,
