@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"math"
 	"math/rand"
 )
 
@@ -39,6 +40,8 @@ const (
 	baseDangerousDefense   = 40.0
 	// Attack benchmark for a new player filling starting space with basic infantry (e.g. 100 riflemen = 100 attack).
 	spawnStartingPower = 50.0
+	// Defense worth stays linear up to this reference point, then flattens with a square-root curve.
+	defenseWorthReference = 100.0
 )
 
 // AppropriateLocationDefense returns the target defense power for a newly spawned
@@ -57,6 +60,20 @@ func AppropriateLocationDefense(stats UserBaseStats, locType LocationType) float
 	spaceFactor := max(1.0, float64(stats.MaxSpace)/float64(DefaultMaxSpace))
 	armyFactor := float64(stats.Attack) / spawnStartingPower
 	return base * max(spaceFactor, armyFactor)
+}
+
+// WorthFromDefense converts defender combat power into a loot/resource budget.
+// It stays linear for small locations, then flattens so very strong locations
+// do not scale to absurd prize values.
+func WorthFromDefense(defense float64) int {
+	if defense <= 0 {
+		return 0
+	}
+	if defense <= defenseWorthReference {
+		return int(defense * WorthDefenderPower)
+	}
+	baseWorth := defenseWorthReference * WorthDefenderPower
+	return int(baseWorth * math.Sqrt(defense/defenseWorthReference))
 }
 
 const (
