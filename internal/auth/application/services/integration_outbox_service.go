@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"github.com/artcodefun/heat-expansion-server/internal/auth/application/ports"
@@ -44,6 +45,12 @@ func (s *IntegrationOutboxService) ProcessBatch(ctx context.Context, limit int) 
 		now := time.Now().Unix()
 		for _, evt := range events {
 			if err := s.Publisher.Publish(ctx, evt); err != nil {
+				slog.WarnContext(ctx, "auth integration outbox event publish failed; leaving event unpublished for retry",
+					"event_id", evt.ID.String(),
+					"event_type", evt.Type,
+					"origin_id", evt.OriginID.String(),
+					"error", err.Error(),
+				)
 				continue
 			}
 

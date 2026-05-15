@@ -2,7 +2,7 @@ package events
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"sync"
 	"time"
 
@@ -42,7 +42,7 @@ func (c *RabbitMQConsumer) Subscribe(exchange, queue, routingKey string, handler
 }
 
 func (c *RabbitMQConsumer) Start(ctx context.Context) error {
-	if err := c.connect(); err != nil {
+	if err := c.connect(ctx); err != nil {
 		return err
 	}
 
@@ -53,7 +53,7 @@ func (c *RabbitMQConsumer) Start(ctx context.Context) error {
 	return nil
 }
 
-func (c *RabbitMQConsumer) connect() error {
+func (c *RabbitMQConsumer) connect(ctx context.Context) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -116,18 +116,36 @@ func (c *RabbitMQConsumer) connect() error {
 	c.conn = conn
 
 	// Reconnection
-	go func() {
+	go func(ctx context.Context) {
 		closeChan := conn.NotifyClose(make(chan *amqp.Error))
-		<-closeChan
-		log.Println("RabbitMQ connection closed, reconnecting...")
-		for {
-			time.Sleep(5 * time.Second)
-			if err := c.connect(); err == nil {
-				log.Println("RabbitMQ reconnected")
+		select {
+		case <-ctx.Done():
+			return
+		case err := <-closeChan:
+			if err == nil {
 				return
 			}
+
+			slog.WarnContext(ctx, "rabbitmq connection closed; reconnecting",
+				"error", err.Error(),
+			)
 		}
-	}()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(5 * time.Second):
+			}
+
+			if err := c.connect(ctx); err == nil {
+				slog.InfoContext(ctx, "rabbitmq reconnected")
+				return
+			} else {
+				slog.WarnContext(ctx, "rabbitmq reconnect attempt failed", "error", err.Error())
+			}
+		}
+	}(ctx)
 
 	return nil
 }
@@ -145,7 +163,12 @@ func (c *RabbitMQConsumer) consumeLoop(ctx context.Context, sub Subscription) {
 
 		ch, err := conn.Channel()
 		if err != nil {
-			log.Printf("Failed to open channel for queue %s: %v", sub.Queue, err)
+			slog.WarnContext(ctx, "failed to open rabbitmq channel",
+				"queue", sub.Queue,
+				"exchange", sub.Exchange,
+				"routing_key", sub.RoutingKey,
+				"error", err.Error(),
+			)
 			time.Sleep(5 * time.Second)
 			continue
 		}
@@ -161,12 +184,21 @@ func (c *RabbitMQConsumer) consumeLoop(ctx context.Context, sub Subscription) {
 		)
 		if err != nil {
 			ch.Close()
-			log.Printf("Failed to register consumer for queue %s: %v", sub.Queue, err)
+			slog.WarnContext(ctx, "failed to register rabbitmq consumer",
+				"queue", sub.Queue,
+				"exchange", sub.Exchange,
+				"routing_key", sub.RoutingKey,
+				"error", err.Error(),
+			)
 			time.Sleep(5 * time.Second)
 			continue
 		}
 
-		log.Printf("Started consuming from queue: %s", sub.Queue)
+		slog.InfoContext(ctx, "rabbitmq consumer loop started",
+			"queue", sub.Queue,
+			"exchange", sub.Exchange,
+			"routing_key", sub.RoutingKey,
+		)
 
 		done := false
 		for !done {
@@ -176,11 +208,22 @@ func (c *RabbitMQConsumer) consumeLoop(ctx context.Context, sub Subscription) {
 				return
 			case d, ok := <-msgs:
 				if !ok {
+					slog.WarnContext(ctx, "rabbitmq delivery channel closed; restarting consumer loop",
+						"queue", sub.Queue,
+						"exchange", sub.Exchange,
+						"routing_key", sub.RoutingKey,
+					)
 					done = true
 					break
 				}
 				if err := sub.Handler(ctx, d); err != nil {
-					log.Printf("Error handling delivery from queue %s: %v", sub.Queue, err)
+					slog.WarnContext(ctx, "rabbitmq delivery handler failed",
+						"queue", sub.Queue,
+						"exchange", sub.Exchange,
+						"routing_key", sub.RoutingKey,
+						"delivery_tag", d.DeliveryTag,
+						"error", err.Error(),
+					)
 					d.Nack(false, true)
 				} else {
 					d.Ack(false)

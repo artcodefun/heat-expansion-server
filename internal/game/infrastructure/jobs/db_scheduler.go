@@ -3,6 +3,7 @@ package jobs
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"go.opentelemetry.io/otel"
@@ -72,6 +73,7 @@ func (s *DBScheduler) Run(ctx context.Context) {
 		if err := s.processDueJobs(pollCtx, now, batchLimit); err != nil {
 			span.RecordError(err)
 			span.SetStatus(codes.Error, err.Error())
+			slog.ErrorContext(pollCtx, "game scheduler batch processing failed", "error", err.Error())
 		}
 		next, err := s.repo.GetNext(pollCtx)
 		span.End()
@@ -110,6 +112,12 @@ func (s *DBScheduler) processDueJobs(ctx context.Context, now int64, limit int32
 			// Deliver the job to listener before marking it as dispatched.
 			// If a handler fails, skip marking dispatched so it can be retried.
 			if err := s.notifyListener(ctx, row.Job); err != nil {
+				slog.WarnContext(ctx, "game scheduled job handler failed; leaving job undispatched for retry",
+					"scheduled_job_id", row.ID,
+					"job_type", fmt.Sprintf("%T", row.Job),
+					"execute_at", row.ExecuteAt,
+					"error", err.Error(),
+				)
 				continue
 			}
 
