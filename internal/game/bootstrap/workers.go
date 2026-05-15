@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"time"
 
@@ -26,8 +27,16 @@ func NewWorkers(
 	scheduler ports.Scheduler,
 	consumer *events.RabbitMQConsumer,
 ) *Workers {
+	runner, ok := scheduler.(*jobs.DBScheduler)
+	if !ok {
+		panic(fmt.Sprintf("game workers require *jobs.DBScheduler, got %T", scheduler))
+	}
+
 	return &Workers{
 		OutboxLoop: func(ctx context.Context) {
+			slog.InfoContext(ctx, "game outbox worker started")
+			defer slog.InfoContext(ctx, "game outbox worker stopped")
+
 			ticker := time.NewTicker(5 * time.Second)
 			defer ticker.Stop()
 
@@ -50,16 +59,20 @@ func NewWorkers(
 			}
 		},
 		SchedulerLoop: func(ctx context.Context) {
-			runner, ok := scheduler.(*jobs.DBScheduler)
-			if !ok {
-				return
-			}
+			slog.InfoContext(ctx, "game scheduler worker started")
+			defer slog.InfoContext(ctx, "game scheduler worker stopped")
 			runner.Run(ctx)
 		},
 		IntegrationEvtLoop: func(ctx context.Context) {
+			slog.InfoContext(ctx, "game integration consumer started")
+			defer slog.InfoContext(ctx, "game integration consumer stopped")
+
 			if err := consumer.Start(ctx); err != nil {
 				slog.WarnContext(ctx, "failed to start game integration consumer", "error", err.Error())
+				return
 			}
+
+			<-ctx.Done()
 		},
 	}
 }

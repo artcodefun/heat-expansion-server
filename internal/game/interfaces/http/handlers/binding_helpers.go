@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"reflect"
 	"strings"
@@ -17,23 +18,29 @@ import (
 func bindRequest[U, Q, B any](c *gin.Context, req *dtos.Request[U, Q, B]) bool {
 	if needsBind[U]() {
 		if err := bindUri(c, &req.Uri); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": bindErrorMessage(err, &req.Uri)})
+			writeBindError(c, "uri", err, &req.Uri)
 			return false
 		}
 	}
 	if needsBind[Q]() {
 		if err := bindQuery(c, &req.Query); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": bindErrorMessage(err, &req.Query)})
+			writeBindError(c, "query", err, &req.Query)
 			return false
 		}
 	}
 	if needsBind[B]() {
 		if err := bindJSON(c, &req.Body); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": bindErrorMessage(err, &req.Body)})
+			writeBindError(c, "json", err, &req.Body)
 			return false
 		}
 	}
 	return true
+}
+
+func writeBindError(c *gin.Context, source string, err error, dest interface{}) {
+	message := bindErrorMessage(err, dest)
+	slog.WarnContext(c.Request.Context(), "request rejected; invalid input", "method", c.Request.Method, "path", c.Request.URL.Path, "source", source, "error", message)
+	c.JSON(http.StatusBadRequest, gin.H{"error": message})
 }
 
 func bindErrorMessage(err error, dest interface{}) string {

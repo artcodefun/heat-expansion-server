@@ -74,6 +74,7 @@ func handleCoreErr(c *gin.Context, tr ports.Translator, err error) bool {
 
 func bindRequest(c *gin.Context, req interface{}) bool {
 	if err := c.ShouldBindJSON(req); err != nil {
+		slog.WarnContext(c.Request.Context(), "request rejected; invalid input", "method", c.Request.Method, "path", c.Request.URL.Path, "source", "json", "error", err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return false
 	}

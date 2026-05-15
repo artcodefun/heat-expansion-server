@@ -26,6 +26,9 @@ func NewWorkers(
 ) *Workers {
 	return &Workers{
 		DomainOutboxLoop: func(ctx context.Context) {
+			slog.InfoContext(ctx, "auth outbox worker started")
+			defer slog.InfoContext(ctx, "auth outbox worker stopped")
+
 			ticker := time.NewTicker(5 * time.Second)
 			defer ticker.Stop()
 
@@ -48,6 +51,9 @@ func NewWorkers(
 			}
 		},
 		IntegrationOutboxLoop: func(ctx context.Context) {
+			slog.InfoContext(ctx, "auth integration outbox worker started")
+			defer slog.InfoContext(ctx, "auth integration outbox worker stopped")
+
 			ticker := time.NewTicker(5 * time.Second)
 			defer ticker.Stop()
 

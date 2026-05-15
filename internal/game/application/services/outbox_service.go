@@ -2,6 +2,8 @@ package services
 
 import (
 	"context"
+	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
@@ -47,6 +49,11 @@ func (s *OutboxService) ProcessBatch(ctx context.Context, limit int) error {
 			if err := s.Publisher.Publish(ctx, r.Event); err != nil {
 				// If publishing fails, skip marking this event as published so it
 				// can be retried in a subsequent batch.
+				slog.WarnContext(ctx, "game outbox event publish failed; leaving event unpublished for retry",
+					"outbox_event_id", r.ID,
+					"event_type", fmt.Sprintf("%T", r.Event),
+					"error", err.Error(),
+				)
 				continue
 			}
 

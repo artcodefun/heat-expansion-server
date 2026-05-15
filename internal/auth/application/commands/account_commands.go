@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"github.com/artcodefun/heat-expansion-server/internal/auth/application/cqrs"
@@ -55,7 +56,7 @@ func (c *AccountCommands) RegisterAccount(ctx context.Context, actor cqrs.Actor,
 
 	acc := domain.RegisterAccount(name, email, hash)
 
-	return c.txMgr.WithTx(ctx, func(tx ports.Transaction) error {
+	err = c.txMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		repo := c.repo.Tx(tx)
 		outbox := c.outbox.Tx(tx)
 
@@ -65,6 +66,7 @@ func (c *AccountCommands) RegisterAccount(ctx context.Context, actor cqrs.Actor,
 			return err
 		}
 		if existing != nil {
+			slog.WarnContext(ctx, "registration rejected; email already in use", "email_fingerprint", emailFingerprint(email))
 			return cqrs.ErrEmailAlreadyInUse
 		}
 
@@ -74,6 +76,12 @@ func (c *AccountCommands) RegisterAccount(ctx context.Context, actor cqrs.Actor,
 
 		return outbox.Save(ctx, acc.PullEvents())
 	})
+	if err != nil {
+		return err
+	}
+
+	slog.InfoContext(ctx, "account registered", "account_id", acc.ID.String())
+	return nil
 }
 
 func (c *AccountCommands) Login(ctx context.Context, actor cqrs.Actor, email, password string) (string, error) {
@@ -84,14 +92,22 @@ func (c *AccountCommands) Login(ctx context.Context, actor cqrs.Actor, email, pa
 		return "", err
 	}
 	if acc == nil {
+		slog.WarnContext(ctx, "login rejected; account not found", "email_fingerprint", emailFingerprint(email))
 		return "", cqrs.ErrInvalidCredentials
 	}
 
 	if !c.hasher.Verify(password, acc.PasswordHash) {
+		slog.WarnContext(ctx, "login rejected; invalid password", "account_id", acc.ID.String())
 		return "", cqrs.ErrInvalidCredentials
 	}
 
-	return c.tokenProvider.Generate(acc.ID)
+	token, err := c.tokenProvider.Generate(acc.ID)
+	if err != nil {
+		return "", err
+	}
+
+	slog.InfoContext(ctx, "login succeeded", "account_id", acc.ID.String())
+	return token, nil
 }
 
 func (c *AccountCommands) RequestPasswordReset(ctx context.Context, actor cqrs.Actor, email string) error {
@@ -102,6 +118,7 @@ func (c *AccountCommands) RequestPasswordReset(ctx context.Context, actor cqrs.A
 		return err
 	}
 	if acc == nil {
+		slog.WarnContext(ctx, "password reset request rejected; account not found", "email_fingerprint", emailFingerprint(email))
 		return cqrs.ErrAccountNotFound
 	}
 
@@ -125,6 +142,8 @@ func (c *AccountCommands) RequestPasswordReset(ctx context.Context, actor cqrs.A
 		return err
 	}
 
+	slog.InfoContext(ctx, "password reset requested", "account_id", acc.ID.String())
+
 	return nil
 }
 
@@ -136,6 +155,7 @@ func (c *AccountCommands) ResetPassword(ctx context.Context, actor cqrs.Actor, e
 		return err
 	}
 	if acc == nil {
+		slog.WarnContext(ctx, "password reset rejected; account not found", "email_fingerprint", emailFingerprint(email))
 		return cqrs.ErrAccountNotFound
 	}
 
@@ -146,6 +166,7 @@ func (c *AccountCommands) ResetPassword(ctx context.Context, actor cqrs.Actor, e
 		return err
 	}
 	if resetToken == nil || resetToken.IsExpired() || resetToken.IsUsed() {
+		slog.WarnContext(ctx, "password reset rejected; invalid token", "account_id", acc.ID.String())
 		return cqrs.ErrInvalidResetToken
 	}
 
@@ -156,12 +177,18 @@ func (c *AccountCommands) ResetPassword(ctx context.Context, actor cqrs.Actor, e
 	acc.ChangePassword(newHash)
 
 	now := time.Now().Unix()
-	return c.txMgr.WithTx(ctx, func(tx ports.Transaction) error {
+	err = c.txMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		if err := c.repo.Tx(tx).UpdatePassword(ctx, acc.ID, acc.PasswordHash); err != nil {
 			return err
 		}
 		return c.resetRepo.Tx(tx).MarkUsed(ctx, resetToken.ID, now)
 	})
+	if err != nil {
+		return err
+	}
+
+	slog.InfoContext(ctx, "password reset completed", "account_id", acc.ID.String())
+	return nil
 }
 
 // generateResetToken returns an 8-digit numeric code and its SHA-256 hash.
@@ -180,4 +207,10 @@ func generateResetToken() (rawToken, tokenHash string, err error) {
 func hashToken(rawToken string) string {
 	h := sha256.Sum256([]byte(rawToken))
 	return hex.EncodeToString(h[:])
+}
+
+func emailFingerprint(email string) string {
+	normalized := strings.ToLower(strings.TrimSpace(email))
+	digest := sha256.Sum256([]byte(normalized))
+	return hex.EncodeToString(digest[:6])
 }
