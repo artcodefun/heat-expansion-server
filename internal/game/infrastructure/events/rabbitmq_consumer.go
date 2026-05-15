@@ -118,14 +118,19 @@ func (c *RabbitMQConsumer) connect(ctx context.Context) error {
 	// Reconnection
 	go func(ctx context.Context) {
 		closeChan := conn.NotifyClose(make(chan *amqp.Error))
-		err := <-closeChan
-		if err == nil {
+		select {
+		case <-ctx.Done():
 			return
+		case err := <-closeChan:
+			if err == nil {
+				return
+			}
+
+			slog.WarnContext(ctx, "rabbitmq connection closed; reconnecting",
+				"error", err.Error(),
+			)
 		}
 
-		slog.WarnContext(ctx, "rabbitmq connection closed; reconnecting",
-			"error", err.Error(),
-		)
 		for {
 			select {
 			case <-ctx.Done():
