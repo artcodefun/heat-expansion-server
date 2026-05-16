@@ -2499,7 +2499,7 @@ components:
           type: integer
     SectorDTO:
       type: object
-      required: [coordinates, type, name, description, image_url, scan_date, scan_report_id, scan_info, source_type]
+      required: [coordinates, type, name, description, image_url, scan_date, scan_report_id, scan_info, is_cloaked, source_type]
       properties:
         coordinates:
           $ref: '#/components/schemas/Vector2iDTO'
@@ -2520,6 +2520,8 @@ components:
           type: integer
         scan_info:
           $ref: '#/components/schemas/ScanInfoDTO'
+        is_cloaked:
+          type: boolean
         source_type:
           type: string
           enum: [UNKNOWN, OPERATION, SCANNER, INTEL, DIPLOMATIC_REVEAL]

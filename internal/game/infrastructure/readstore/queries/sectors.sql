@@ -7,7 +7,7 @@ WHERE base_id = $1
   AND ((sector_x - $2) * (sector_x - $2)
     +  (sector_y - $3) * (sector_y - $3))
       <= ($4::int * $4::int)
-ORDER BY sector_x, sector_y, created_at DESC;
+ORDER BY sector_x, sector_y, is_cloaked ASC, created_at DESC;
 
 -- name: GetScanReportByID :one
 SELECT *
