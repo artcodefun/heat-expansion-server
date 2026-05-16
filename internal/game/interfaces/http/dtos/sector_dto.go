@@ -38,6 +38,7 @@ type SectorDTO struct {
 	ScanDate     int             `json:"scan_date"`
 	ScanReportID int             `json:"scan_report_id"`
 	ScanInfo     *ScanInfoDTO    `json:"scan_info"`
+	IsCloaked    bool            `json:"is_cloaked"`
 	SourceType   ScanSourceType  `json:"source_type"`
 	SourceID     *uuid.UUID      `json:"source_id,omitempty"`
 }
@@ -102,6 +103,7 @@ func SectorScanReportFromReadModel(r *readmodels.SectorScanReport, tr ports.Tran
 		ScanDate:     int(r.CreatedAt),
 		ScanReportID: r.ID,
 		ScanInfo:     scanInfoFromReadModel(r.Info),
+		IsCloaked:    r.IsCloaked,
 		SourceType:   ScanSourceType(r.SourceType),
 		SourceID:     r.SourceID,
 	}
