@@ -140,6 +140,10 @@ func TestResolveAgainstUserBase_Spy_BlockedByCloaking_PreservesNonSpyDefenders(t
 		BaseOwnedItem: NewBaseOwnedItem(defender.ID),
 		Prototype:     ArmyItemPrototype{ID: 500, Category: ArmyCategoryInfantry, Attack: 5, Defence: 5},
 		Count:         3,
+	}, {
+		BaseOwnedItem: NewBaseOwnedItem(defender.ID),
+		Prototype:     ArmyItemPrototype{ID: 501, Category: ArmyCategorySpy, Attack: 1, Defence: 2},
+		Count:         2,
 	}}
 
 	service := NewMilitaryOperationService(op, &UserBaseModel{ID: 10, UserID: uuid.New()})
@@ -147,6 +151,9 @@ func TestResolveAgainstUserBase_Spy_BlockedByCloaking_PreservesNonSpyDefenders(t
 
 	if op.SpyResult == nil || op.SpyResult.Outcome != SpyOutcomeBlockedByCloaking {
 		t.Fatalf("expected spy outcome BLOCKED_BY_CLOAKING, got %+v", op.SpyResult)
+	}
+	if len(op.SpyResult.DefenderRemaining) != 0 || len(op.SpyResult.DefendersBefore) != 0 || len(op.SpyResult.DefenderStorageSnaps) != 0 {
+		t.Fatalf("expected blocked spy result to hide defender intel, got %+v", op.SpyResult)
 	}
 	if op.Result != OperationResultSuccess {
 		t.Fatalf("expected operation result SUCCESS, got %s", op.Result)

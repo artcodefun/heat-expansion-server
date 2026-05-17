@@ -240,9 +240,13 @@ func TestSpy_BlockedByCloaking_OutcomeAndReturn(t *testing.T) {
 	op.UpdatePhaseBasedOnTime()
 
 	// Strong cloaking at target (>= attacker stealth) should block the spy
-	res := op.ResolveSpy(10, nil, nil)
+	defendingSpies := []MilitaryUnitSnap{{PrototypeID: 600, Category: ArmyCategorySpy, Attack: 1, Defence: 5, Count: 3}}
+	res := op.ResolveSpy(10, defendingSpies, nil)
 	if res == nil || res.Outcome != SpyOutcomeBlockedByCloaking {
 		t.Fatalf("expected spy outcome BLOCKED_BY_CLOAKING, got %+v", op.SpyResult)
+	}
+	if len(res.DefenderRemaining) != 0 || len(res.DefendersBefore) != 0 || len(res.DefenderStorageSnaps) != 0 {
+		t.Fatalf("expected blocked spy result to hide defender intel, got %+v", res)
 	}
 	if op.Result != OperationResultSuccess {
 		t.Fatalf("expected operation result SUCCESS, got %s", op.Result)
