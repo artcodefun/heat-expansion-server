@@ -231,20 +231,12 @@ func (op *MilitaryOperation) ResolveSpy(targetCloakingStrength int, defendingSpi
 	// Snapshot defenders before resolving for UI diffs
 	defBefore := cloneUnits(defendingSpies)
 
-	// 1) Cloaking check: if target cloaking >= attacker stealth -> empty report; units unharmed.
-	// targetCloakingStrength is assumed to be already modified if it comes from buildings.
-	// But let's assume it should also be multiplied by defender modifiers if they affect it?
-	// Usually cloaking is building-based, so it might not be affected by ARM/INF/etc modifiers.
-	// For now we keep it as is, but we compare against float.
+	// 1) Cloaking check: if target cloaking >= attacker stealth, the report is empty and no defender intel is exposed.
 	if float64(targetCloakingStrength) >= attackerStealth {
 		res := &SpyResult{
 			Outcome: SpyOutcomeBlockedByCloaking,
-			// Everyone survives in this outcome
-			AttackerRemaining:      cloneUnits(attackers),
-			DefenderRemaining:      cloneUnits(defendingSpies),
-			DefendersBefore:        defBefore,
-			DefenderStorageSnaps:   cloneStorageSnaps(defenderStorageSnaps),
-			TotalDefenderModifiers: defMods,
+			// Everyone survives in this outcome; no defender intel should be exposed.
+			AttackerRemaining: cloneUnits(attackers),
 		}
 		op.SpyResult = res
 		op.Result = OperationResultSuccess
