@@ -17,6 +17,7 @@ func ArmyPrototypeFromDB(p gen.ArmyItemPrototype) *domain.ArmyItemPrototype {
 		ID:                 int(p.ID),
 		Name:               p.Name,
 		Category:           domain.ArmyCategory(p.Category),
+		CreationSources:    creationSourcesFromJSON(p.CreationSources),
 		Faction:            domain.Faction(p.Faction),
 		UnlockTechnologyID: nullableIntPtr(p.UnlockTechnologyID.Int64, p.UnlockTechnologyID.Valid),
 		ShortDescription:   nullStringToString(&p.ShortDescription.String, p.ShortDescription.Valid),

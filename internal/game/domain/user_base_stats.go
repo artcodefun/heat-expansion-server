@@ -241,6 +241,25 @@ func (ub *UserBaseModel) CreditLoot(loot PriceModel) {
 	}
 }
 
+func (s UserBaseStats) CanReceiveResourceAmount(resourceType ResourceType, amount int) bool {
+	if amount <= 0 {
+		return true
+	}
+	value := float64(amount)
+	switch resourceType {
+	case ResourceTypeCredits:
+		return s.Credits+value <= float64(s.CreditsCapacity)
+	case ResourceTypeIron:
+		return s.Iron+value <= float64(s.IronCapacity)
+	case ResourceTypeTitanium:
+		return s.Titanium+value <= float64(s.TitaniumCapacity)
+	case ResourceTypeAntimatter:
+		return s.Antimatter+value <= float64(s.AntimatterCapacity)
+	default:
+		return false
+	}
+}
+
 // FillStarterResources sets Credits and Iron to their current maximum capacity.
 func (ub *UserBaseModel) FillStarterResources() {
 	ub.Stats.Credits = float64(ub.Stats.CreditsCapacity)

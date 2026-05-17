@@ -12,6 +12,10 @@ type UserQueries interface {
 	GetUserProfile(ctx context.Context, actor Actor, userID uuid.UUID) (*readmodels.User, error)
 }
 
+type BlackMarketQueries interface {
+	ListResourceRates(ctx context.Context, actor Actor, baseID int) ([]*readmodels.BlackMarketResourceRate, error)
+}
+
 // BaseQueries: high-level base stats.
 type BaseQueries interface {
 	GetBaseStats(ctx context.Context, actor Actor, baseID int) (*readmodels.UserBaseStats, error)

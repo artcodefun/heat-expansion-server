@@ -1,7 +1,7 @@
 -- Building items lifecycle queries
 
 -- name: ListBuildPrototypesByIDs :many
-SELECT p.id, p.name, p.category, p.faction, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.control_data, p.resources_data, p.defense_data, p.military_data, p.intelligence_data
+SELECT *
 FROM game.build_item_prototypes p
 WHERE p.id = ANY($1::bigint[])
 ORDER BY p.id;

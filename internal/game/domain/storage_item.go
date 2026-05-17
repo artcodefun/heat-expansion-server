@@ -25,6 +25,7 @@ type StorageItemPrototype struct {
 	ID               int
 	Name             TranslationKey
 	Category         StorageCategory
+	CreationSources  []CreationSource
 	EstimatedWorth   int // Rough worth in credits
 	ShortDescription TranslationKey
 	FullDescription  TranslationKey

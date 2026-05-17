@@ -17,7 +17,7 @@ import (
 
 const listBuildPrototypesByIDs = `-- name: ListBuildPrototypesByIDs :many
 
-SELECT p.id, p.name, p.category, p.faction, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.control_data, p.resources_data, p.defense_data, p.military_data, p.intelligence_data
+SELECT id, name, category, faction, unlock_technology_id, short_description, full_description, price, production_time, space, image_url, control_data, resources_data, defense_data, military_data, intelligence_data, creation_sources
 FROM game.build_item_prototypes p
 WHERE p.id = ANY($1::bigint[])
 ORDER BY p.id
@@ -50,6 +50,7 @@ func (q *Queries) ListBuildPrototypesByIDs(ctx context.Context, dollar_1 []int64
 			&i.DefenseData,
 			&i.MilitaryData,
 			&i.IntelligenceData,
+			&i.CreationSources,
 		); err != nil {
 			return nil, err
 		}

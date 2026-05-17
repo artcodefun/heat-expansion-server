@@ -8,7 +8,11 @@ import (
 )
 
 // UserCommands encapsulates mutating user operations.
-type UserCommands interface {
+type UserCommands interface{}
+
+// BlackMarketCommands encapsulates Black Market mutations.
+type BlackMarketCommands interface {
+	PurchaseResources(ctx context.Context, actor Actor, baseID int, resourceType domain.ResourceType, crystals int) error
 }
 
 // BaseCommands encapsulates base creation operations.

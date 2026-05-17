@@ -17,7 +17,7 @@ import (
 
 const listArmyPrototypesByIDs = `-- name: ListArmyPrototypesByIDs :many
 
-SELECT p.id, p.name, p.category, p.faction, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.attack, p.defence, p.capacity, p.stealth, p.speed
+SELECT id, name, category, faction, unlock_technology_id, short_description, full_description, price, production_time, space, image_url, attack, defence, capacity, stealth, speed, creation_sources
 FROM game.army_item_prototypes p
 WHERE p.id = ANY($1::bigint[])
 ORDER BY p.id
@@ -50,6 +50,7 @@ func (q *Queries) ListArmyPrototypesByIDs(ctx context.Context, dollar_1 []int64)
 			&i.Capacity,
 			&i.Stealth,
 			&i.Speed,
+			&i.CreationSources,
 		); err != nil {
 			return nil, err
 		}

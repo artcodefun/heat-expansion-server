@@ -216,6 +216,7 @@ func (c *StorageCommands) OpenConsumableBox(ctx context.Context, actor cqrs.Acto
 	if err != nil {
 		return err
 	}
+	allProtos = domain.FilterStorageItemPrototypesByCreationSource(allProtos, domain.CreationSourceConsumableBox)
 
 	// Filter them by category
 	var buffProtos, intelProtos, damagedProtos, artifactProtos []domain.StorageItemPrototype

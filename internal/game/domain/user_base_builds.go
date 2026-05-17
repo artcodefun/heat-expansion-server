@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"slices"
+
 	"github.com/google/uuid"
 )
 
@@ -8,6 +10,9 @@ import (
 func (ub *UserBaseModel) AvailableBuildings(allPrototypes []*BuildItemPrototype) []*BuildItemPrototype {
 	available := []*BuildItemPrototype{}
 	for _, proto := range allPrototypes {
+		if !slices.Contains(proto.CreationSources, CreationSourcePlayerBase) {
+			continue
+		}
 		// Players can only build EXO_COALITION buildings
 		if proto.Faction != FactionExoCoalition {
 			continue

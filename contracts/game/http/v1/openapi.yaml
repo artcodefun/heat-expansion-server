@@ -10,6 +10,7 @@ servers:
 tags:
   - name: Public
   - name: User
+  - name: Black Market
   - name: Bases
   - name: Buildings
   - name: Army
@@ -49,6 +50,54 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserCrystalBalanceResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/black-market/resources:
+    get:
+      tags: [Black Market]
+      summary: List Black Market resource rates for a base
+      operationId: listBlackMarketResourceRates
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+      responses:
+        '200':
+          description: Resource exchange rates returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BlackMarketResourceRateDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/black-market/resources/purchase:
+    post:
+      tags: [Black Market]
+      summary: Spend crystals to buy resources for a base
+      operationId: purchaseBlackMarketResources
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlackMarketResourcePurchaseRequest'
+      responses:
+        '200':
+          description: Resource purchase completed
+        '400':
+          $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         default:
@@ -1986,6 +2035,27 @@ components:
       properties:
         crystals:
           type: integer
+    BlackMarketResourceType:
+      type: string
+      enum: [CREDITS, IRON, TITANIUM, ANTIMATTER]
+    BlackMarketResourceRateDTO:
+      type: object
+      required: [resource_type, amount_per_crystal]
+      properties:
+        resource_type:
+          $ref: '#/components/schemas/BlackMarketResourceType'
+        amount_per_crystal:
+          type: integer
+          minimum: 1
+    BlackMarketResourcePurchaseRequest:
+      type: object
+      required: [resource_type, crystals]
+      properties:
+        resource_type:
+          $ref: '#/components/schemas/BlackMarketResourceType'
+        crystals:
+          type: integer
+          minimum: 1
     Vector2iDTO:
       type: object
       required: [x, y]

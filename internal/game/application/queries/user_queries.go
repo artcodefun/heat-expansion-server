@@ -9,9 +9,13 @@ import (
 	"github.com/google/uuid"
 )
 
-type UserQueries struct{ Repo ports.UserReadRepository }
+type UserQueries struct {
+	Repo ports.UserReadRepository
+}
 
-func NewUserQueries(repo ports.UserReadRepository) *UserQueries { return &UserQueries{Repo: repo} }
+func NewUserQueries(repo ports.UserReadRepository) *UserQueries {
+	return &UserQueries{Repo: repo}
+}
 
 func (q *UserQueries) GetUserProfile(ctx context.Context, _ cqrs.Actor, userID uuid.UUID) (*readmodels.User, error) {
 	user, err := q.Repo.GetUserProfile(ctx, userID)

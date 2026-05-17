@@ -15,6 +15,7 @@ type Commands struct {
 	Radar       *commands.IntelligenceRadarCommands
 	RadarThreat *commands.RadarThreatCommands
 	User        *commands.UserCommands
+	BlackMarket *commands.BlackMarketCommands
 	Activity    *commands.ActivityCommands
 	World       *commands.WorldGenerationCommands
 	Alert       *commands.AlertCommands
@@ -36,6 +37,7 @@ func NewCommands(a *Adapters, as *AppServices) *Commands {
 		Radar:       commands.NewIntelligenceRadarCommands(a.UserBases, a.MilitaryOps, a.RadarThreats, a.Scheduler, a.OutboxEvents, a.TxMgr),
 		RadarThreat: commands.NewRadarThreatCommands(a.RadarThreats, a.OutboxEvents, a.TxMgr),
 		User:        commands.NewUserCommands(a.Users, a.OutboxEvents, a.TxMgr),
+		BlackMarket: commands.NewBlackMarketCommands(a.Users, a.UserBases, a.TxMgr, as.Access),
 		Activity:    commands.NewActivityCommands(a.Activities, a.MilitaryOps, a.RadarThreats, a.Sectors, a.UserBases, a.ScanReports, a.OutboxEvents, a.TxMgr),
 		World:       commands.NewWorldGenerationCommands(a.UserBases, a.Sectors, a.ResourceLocations, a.DangerousLocations, a.StoragePrototypes, a.ArmyPrototypes, a.BuildPrototypes, a.Content, as.Provisioner, a.Scheduler, a.TxMgr),
 		Alert:       commands.NewAlertCommands(a.Alerts, a.TradeOps, a.TxMgr),

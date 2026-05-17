@@ -124,3 +124,29 @@ func TestStats_CreditAndDeductLoot(t *testing.T) {
 		t.Errorf("CreditLoot failed: credits=%v, iron=%v", base.Stats.Credits, base.Stats.Iron)
 	}
 }
+
+func TestStats_CanReceiveResourceAmount(t *testing.T) {
+	stats := UserBaseStats{
+		Credits:            100,
+		CreditsCapacity:    150,
+		Iron:               50,
+		IronCapacity:       60,
+		Titanium:           10,
+		TitaniumCapacity:   20,
+		Antimatter:         1,
+		AntimatterCapacity: 2,
+	}
+
+	if !stats.CanReceiveResourceAmount(ResourceTypeCredits, 50) {
+		t.Fatal("expected credits to fit")
+	}
+	if stats.CanReceiveResourceAmount(ResourceTypeIron, 11) {
+		t.Fatal("expected iron to exceed capacity")
+	}
+	if !stats.CanReceiveResourceAmount(ResourceTypeTitanium, 10) {
+		t.Fatal("expected titanium to fit exactly")
+	}
+	if stats.CanReceiveResourceAmount(ResourceTypeAntimatter, 2) {
+		t.Fatal("expected antimatter to exceed capacity")
+	}
+}

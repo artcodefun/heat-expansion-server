@@ -10,6 +10,9 @@ import (
 func (ub *UserBaseModel) AvailableArmies(allPrototypes []*ArmyItemPrototype) []*ArmyItemPrototype {
 	available := []*ArmyItemPrototype{}
 	for _, proto := range allPrototypes {
+		if !slices.Contains(proto.CreationSources, CreationSourcePlayerBase) {
+			continue
+		}
 		// Players can only build EXO_COALITION units
 		if proto.Faction != FactionExoCoalition {
 			continue

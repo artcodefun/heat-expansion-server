@@ -42,6 +42,7 @@ func StoragePrototypeFromDB(p gen.StorageItemPrototype) *domain.StorageItemProto
 		ID:               int(p.ID),
 		Name:             p.Name,
 		Category:         domain.StorageCategory(p.Category),
+		CreationSources:  creationSourcesFromJSON(p.CreationSources),
 		EstimatedWorth:   int(p.EstimatedWorth),
 		ShortDescription: nullStringToString(&p.ShortDescription.String, p.ShortDescription.Valid),
 		FullDescription:  nullStringToString(&p.FullDescription.String, p.FullDescription.Valid),
