@@ -123,9 +123,13 @@ func (s MilitaryOperationService) ResolveAgainstUserBase(defender *UserBaseModel
 		res := s.Operation.ResolveSpy(cloak, defendingSpies, defenderSnaps)
 		if res != nil {
 			s.Attacker.TrimDeployedToSurvivors(OperationKindMilitary, s.Operation.ID, res.AttackerRemaining)
-			// Merge spy remaining into full defenders snapshot to avoid wiping non-spy units
-			merged := mergeSpyRemaining(allDefenders, res.DefenderRemaining)
-			defender.ApplyDefenderArmyRemaining(merged)
+			if res.Outcome == SpyOutcomeBlockedByCloaking {
+				defender.ApplyDefenderArmyRemaining(allDefenders)
+			} else {
+				// Merge spy remaining into full defenders snapshot to avoid wiping non-spy units.
+				merged := mergeSpyRemaining(allDefenders, res.DefenderRemaining)
+				defender.ApplyDefenderArmyRemaining(merged)
+			}
 		}
 	default:
 		// Fallback: do nothing special
@@ -166,8 +170,12 @@ func (s MilitaryOperationService) ResolveAgainstResourceLocation(loc *ResourceLo
 		res := s.Operation.ResolveSpy(0, defendingSpies, nil)
 		if res != nil {
 			s.Attacker.TrimDeployedToSurvivors(OperationKindMilitary, s.Operation.ID, res.AttackerRemaining)
-			merged := mergeSpyRemaining(allDefenders, res.DefenderRemaining)
-			loc.ApplyDefenderArmyRemaining(merged)
+			if res.Outcome == SpyOutcomeBlockedByCloaking {
+				loc.ApplyDefenderArmyRemaining(allDefenders)
+			} else {
+				merged := mergeSpyRemaining(allDefenders, res.DefenderRemaining)
+				loc.ApplyDefenderArmyRemaining(merged)
+			}
 		}
 	}
 	s.Operation.StartReturn()
@@ -208,8 +216,12 @@ func (s MilitaryOperationService) ResolveAgainstDangerousLocation(loc *Dangerous
 		res := s.Operation.ResolveSpy(0, defendingSpies, nil)
 		if res != nil {
 			s.Attacker.TrimDeployedToSurvivors(OperationKindMilitary, s.Operation.ID, res.AttackerRemaining)
-			merged := mergeSpyRemaining(allDefenders, res.DefenderRemaining)
-			loc.ApplyDefenderArmyRemaining(merged)
+			if res.Outcome == SpyOutcomeBlockedByCloaking {
+				loc.ApplyDefenderArmyRemaining(allDefenders)
+			} else {
+				merged := mergeSpyRemaining(allDefenders, res.DefenderRemaining)
+				loc.ApplyDefenderArmyRemaining(merged)
+			}
 		}
 	}
 	s.Operation.StartReturn()

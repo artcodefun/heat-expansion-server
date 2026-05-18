@@ -162,8 +162,14 @@ func TestResolveAgainstUserBase_Spy_BlockedByCloaking_PreservesNonSpyDefenders(t
 		t.Fatalf("expected returning phase after resolve, got %s", op.Phase)
 	}
 
-	// Non-spy defenders must remain unchanged (spy merge only touches spies)
-	if len(defender.ArmiesPresent) != 1 || defender.ArmiesPresent[0].Prototype.Category != ArmyCategoryInfantry || defender.ArmiesPresent[0].Count != 3 {
+	// The full defender garrison should remain unchanged on a cloaking block.
+	if len(defender.ArmiesPresent) != 2 {
+		t.Fatalf("unexpected defender armies state: %+v", defender.ArmiesPresent)
+	}
+	if defender.ArmiesPresent[0].Prototype.Category != ArmyCategoryInfantry || defender.ArmiesPresent[0].Count != 3 {
+		t.Fatalf("unexpected infantry state: %+v", defender.ArmiesPresent[0])
+	}
+	if defender.ArmiesPresent[1].Prototype.Category != ArmyCategorySpy || defender.ArmiesPresent[1].Count != 2 {
 		t.Fatalf("unexpected defender armies state: %+v", defender.ArmiesPresent)
 	}
 }
