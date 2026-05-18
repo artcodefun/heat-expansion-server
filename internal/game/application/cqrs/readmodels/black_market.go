@@ -12,14 +12,16 @@ const (
 )
 
 type BlackMarketResourceRate struct {
-	ResourceType     ResourceType
-	AmountPerCrystal int
+	ResourceType   ResourceType
+	CrystalsCost   int
+	ResourceAmount int
 }
 
 func BlackMarketResourceRateFromDomain(rate domain.BlackMarketResourceRate) *BlackMarketResourceRate {
 	return &BlackMarketResourceRate{
-		ResourceType:     ResourceType(rate.ResourceType),
-		AmountPerCrystal: rate.AmountPerCrystal,
+		ResourceType:   ResourceType(rate.ResourceType),
+		CrystalsCost:   rate.CrystalsCost,
+		ResourceAmount: rate.ResourceAmount,
 	}
 }
 

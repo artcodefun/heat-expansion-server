@@ -125,28 +125,59 @@ func TestStats_CreditAndDeductLoot(t *testing.T) {
 	}
 }
 
-func TestStats_CanReceiveResourceAmount(t *testing.T) {
-	stats := UserBaseStats{
-		Credits:            100,
-		CreditsCapacity:    150,
-		Iron:               50,
-		IronCapacity:       60,
-		Titanium:           10,
-		TitaniumCapacity:   20,
-		Antimatter:         1,
-		AntimatterCapacity: 2,
+func TestReceiveResource_RespectsCapacity(t *testing.T) {
+	base := newBaseWithDefaults(1)
+	base.Stats.Credits = 100
+	base.Stats.CreditsCapacity = 150
+
+	if err := base.ReceiveResource(ResourceTypeCredits, 50); err != nil {
+		t.Fatalf("expected credits to fit, got %v", err)
+	}
+	if base.Stats.Credits != 150 {
+		t.Fatalf("expected credits to reach capacity, got %v", base.Stats.Credits)
+	}
+	if err := base.ReceiveResource(ResourceTypeCredits, 1); err == nil {
+		t.Fatal("expected credits overflow to fail")
+	}
+	if base.Stats.Credits != 150 {
+		t.Fatalf("expected credits unchanged after overflow, got %v", base.Stats.Credits)
 	}
 
-	if !stats.CanReceiveResourceAmount(ResourceTypeCredits, 50) {
-		t.Fatal("expected credits to fit")
+	base.Stats.Iron = 50
+	base.Stats.IronCapacity = 60
+	if err := base.ReceiveResource(ResourceTypeIron, 11); err == nil {
+		t.Fatal("expected iron overflow to fail")
 	}
-	if stats.CanReceiveResourceAmount(ResourceTypeIron, 11) {
-		t.Fatal("expected iron to exceed capacity")
+	if base.Stats.Iron != 50 {
+		t.Fatalf("expected iron unchanged after overflow, got %v", base.Stats.Iron)
 	}
-	if !stats.CanReceiveResourceAmount(ResourceTypeTitanium, 10) {
-		t.Fatal("expected titanium to fit exactly")
+
+	base.Stats.Titanium = 10
+	base.Stats.TitaniumCapacity = 20
+	if err := base.ReceiveResource(ResourceTypeTitanium, 10); err != nil {
+		t.Fatalf("expected titanium to fit exactly, got %v", err)
 	}
-	if stats.CanReceiveResourceAmount(ResourceTypeAntimatter, 2) {
-		t.Fatal("expected antimatter to exceed capacity")
+	if base.Stats.Titanium != 20 {
+		t.Fatalf("expected titanium to reach capacity, got %v", base.Stats.Titanium)
+	}
+
+	base.Stats.Antimatter = 1
+	base.Stats.AntimatterCapacity = 2
+	if err := base.ReceiveResource(ResourceTypeAntimatter, 2); err == nil {
+		t.Fatal("expected antimatter overflow to fail")
+	}
+	if base.Stats.Antimatter != 1 {
+		t.Fatalf("expected antimatter unchanged after overflow, got %v", base.Stats.Antimatter)
+	}
+}
+
+func TestReceiveResource_RejectsInvalidInputs(t *testing.T) {
+	base := newBaseWithDefaults(1)
+
+	if err := base.ReceiveResource(ResourceTypeCredits, 0); err == nil {
+		t.Fatal("expected zero amount to fail")
+	}
+	if err := base.ReceiveResource(ResourceType("INVALID"), 1); err == nil {
+		t.Fatal("expected invalid resource type to fail")
 	}
 }

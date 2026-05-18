@@ -25,6 +25,24 @@ func TestBlackMarketService_PurchaseResources_SpendsCrystalsAndCreditsBase(t *te
 	}
 }
 
+func TestBlackMarketService_PurchaseResources_AntimatterCostsTenCrystals(t *testing.T) {
+	service := NewBlackMarketService()
+	user := &User{ID: uuid.New(), Crystals: 20}
+	base := newBaseWithDefaults(3)
+	base.Stats.Antimatter = 0
+
+	if err := service.PurchaseResources(user, base, ResourceTypeAntimatter, 10); err != nil {
+		t.Fatalf("PurchaseResources error: %v", err)
+	}
+
+	if user.Crystals != 10 {
+		t.Fatalf("expected 10 crystals remaining, got %d", user.Crystals)
+	}
+	if base.Stats.Antimatter != 1 {
+		t.Fatalf("expected antimatter to increase by 1, got %v", base.Stats.Antimatter)
+	}
+}
+
 func TestBlackMarketService_PurchaseResources_RejectsWhenBaseCannotReceive(t *testing.T) {
 	service := NewBlackMarketService()
 	user := &User{ID: uuid.New(), Crystals: 10}
@@ -41,13 +59,34 @@ func TestBlackMarketService_PurchaseResources_RejectsWhenBaseCannotReceive(t *te
 	if !errors.As(err, &domainErr) {
 		t.Fatalf("expected domain error, got %T", err)
 	}
-	if domainErr.Key != "error.domain.black_market.resource_capacity_reached" {
-		t.Fatalf("expected black market capacity key, got %s", domainErr.Key)
+	if domainErr.Key != "error.domain.base.resource_capacity_reached" {
+		t.Fatalf("expected base capacity key, got %s", domainErr.Key)
 	}
 	if user.Crystals != startingCrystals {
 		t.Fatalf("expected crystals unchanged, got %d", user.Crystals)
 	}
 	if base.Stats.Iron != startingIron {
 		t.Fatalf("expected iron unchanged, got %v", base.Stats.Iron)
+	}
+}
+
+func TestBlackMarketService_PurchaseResources_RejectsInvalidCrystalMultiple(t *testing.T) {
+	service := NewBlackMarketService()
+	user := &User{ID: uuid.New(), Crystals: 10}
+	base := newBaseWithDefaults(4)
+
+	err := service.PurchaseResources(user, base, ResourceTypeAntimatter, 5)
+	if err == nil {
+		t.Fatal("expected invalid crystal amount error")
+	}
+	var domainErr Error
+	if !errors.As(err, &domainErr) {
+		t.Fatalf("expected domain error, got %T", err)
+	}
+	if domainErr.Key != "error.domain.black_market.invalid_crystal_amount" {
+		t.Fatalf("expected invalid crystal amount key, got %s", domainErr.Key)
+	}
+	if user.Crystals != 10 {
+		t.Fatalf("expected crystals unchanged, got %d", user.Crystals)
 	}
 }

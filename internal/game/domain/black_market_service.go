@@ -14,15 +14,17 @@ func (s *BlackMarketService) PurchaseResources(user *User, base *UserBaseModel, 
 		return err
 	}
 
-	resourceAmount := rate.AmountPerCrystal * crystals
-	if !base.Stats.CanReceiveResourceAmount(resourceType, resourceAmount) {
-		return NewError("error.domain.black_market.resource_capacity_reached", H{"resource": resourceType})
+	resourceAmount, err := rate.ResourceAmountForCrystals(crystals)
+	if err != nil {
+		return err
+	}
+	if err := base.ReceiveResource(resourceType, resourceAmount); err != nil {
+		return err
 	}
 
 	if err := user.SpendCrystals(crystals); err != nil {
 		return err
 	}
-	base.CreditLoot(rate.ResourcesForCrystals(crystals))
 
 	return nil
 }

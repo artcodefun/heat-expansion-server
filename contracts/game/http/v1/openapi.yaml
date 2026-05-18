@@ -2040,11 +2040,14 @@ components:
       enum: [CREDITS, IRON, TITANIUM, ANTIMATTER]
     BlackMarketResourceRateDTO:
       type: object
-      required: [resource_type, amount_per_crystal]
+      required: [resource_type, crystals_cost, resource_amount]
       properties:
         resource_type:
           $ref: '#/components/schemas/BlackMarketResourceType'
-        amount_per_crystal:
+        crystals_cost:
+          type: integer
+          minimum: 1
+        resource_amount:
           type: integer
           minimum: 1
     BlackMarketResourcePurchaseRequest:

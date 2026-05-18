@@ -13,14 +13,16 @@ const (
 )
 
 type BlackMarketResourceRateDTO struct {
-	ResourceType     ResourceType `json:"resource_type"`
-	AmountPerCrystal int          `json:"amount_per_crystal"`
+	ResourceType   ResourceType `json:"resource_type"`
+	CrystalsCost   int          `json:"crystals_cost"`
+	ResourceAmount int          `json:"resource_amount"`
 }
 
 func BlackMarketResourceRateDTOFromReadModel(rate *readmodels.BlackMarketResourceRate) BlackMarketResourceRateDTO {
 	return BlackMarketResourceRateDTO{
-		ResourceType:     ResourceType(rate.ResourceType),
-		AmountPerCrystal: rate.AmountPerCrystal,
+		ResourceType:   ResourceType(rate.ResourceType),
+		CrystalsCost:   rate.CrystalsCost,
+		ResourceAmount: rate.ResourceAmount,
 	}
 }
 

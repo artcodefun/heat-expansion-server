@@ -3,24 +3,29 @@ package domain
 import "fmt"
 
 const (
-	BlackMarketCreditsAmountPerCrystal    = 100
-	BlackMarketIronAmountPerCrystal       = 25
-	BlackMarketTitaniumAmountPerCrystal   = 5
-	BlackMarketAntimatterAmountPerCrystal = 1
+	BlackMarketCreditsCrystalsPerUnit    = 1
+	BlackMarketCreditsAmountPerUnit      = 100
+	BlackMarketIronCrystalsPerUnit       = 1
+	BlackMarketIronAmountPerUnit         = 25
+	BlackMarketTitaniumCrystalsPerUnit   = 1
+	BlackMarketTitaniumAmountPerUnit     = 5
+	BlackMarketAntimatterCrystalsPerUnit = 10
+	BlackMarketAntimatterAmountPerUnit   = 1
 )
 
 // BlackMarketResourceRate defines the Black Market exchange rate for a resource.
 type BlackMarketResourceRate struct {
-	ResourceType     ResourceType
-	AmountPerCrystal int
+	ResourceType   ResourceType
+	CrystalsCost   int
+	ResourceAmount int
 }
 
 func ListBlackMarketResourceRates() []BlackMarketResourceRate {
 	return []BlackMarketResourceRate{
-		{ResourceType: ResourceTypeCredits, AmountPerCrystal: BlackMarketCreditsAmountPerCrystal},
-		{ResourceType: ResourceTypeIron, AmountPerCrystal: BlackMarketIronAmountPerCrystal},
-		{ResourceType: ResourceTypeTitanium, AmountPerCrystal: BlackMarketTitaniumAmountPerCrystal},
-		{ResourceType: ResourceTypeAntimatter, AmountPerCrystal: BlackMarketAntimatterAmountPerCrystal},
+		{ResourceType: ResourceTypeCredits, CrystalsCost: BlackMarketCreditsCrystalsPerUnit, ResourceAmount: BlackMarketCreditsAmountPerUnit},
+		{ResourceType: ResourceTypeIron, CrystalsCost: BlackMarketIronCrystalsPerUnit, ResourceAmount: BlackMarketIronAmountPerUnit},
+		{ResourceType: ResourceTypeTitanium, CrystalsCost: BlackMarketTitaniumCrystalsPerUnit, ResourceAmount: BlackMarketTitaniumAmountPerUnit},
+		{ResourceType: ResourceTypeAntimatter, CrystalsCost: BlackMarketAntimatterCrystalsPerUnit, ResourceAmount: BlackMarketAntimatterAmountPerUnit},
 	}
 }
 
@@ -33,18 +38,9 @@ func BlackMarketResourceRateFor(resourceType ResourceType) (BlackMarketResourceR
 	return BlackMarketResourceRate{}, NewError("error.domain.black_market.rate_not_available", H{"resource": fmt.Sprint(resourceType)})
 }
 
-func (r BlackMarketResourceRate) ResourcesForCrystals(crystals int) PriceModel {
-	amount := r.AmountPerCrystal * crystals
-	switch r.ResourceType {
-	case ResourceTypeCredits:
-		return PriceModel{Credits: amount}
-	case ResourceTypeIron:
-		return PriceModel{Iron: amount}
-	case ResourceTypeTitanium:
-		return PriceModel{Titanium: amount}
-	case ResourceTypeAntimatter:
-		return PriceModel{Antimatter: amount}
-	default:
-		return PriceModel{}
+func (r BlackMarketResourceRate) ResourceAmountForCrystals(crystals int) (int, error) {
+	if crystals <= 0 || crystals%r.CrystalsCost != 0 {
+		return 0, NewError("error.domain.black_market.invalid_crystal_amount", H{"resource": fmt.Sprint(r.ResourceType), "crystals_cost": r.CrystalsCost})
 	}
+	return (crystals / r.CrystalsCost) * r.ResourceAmount, nil
 }

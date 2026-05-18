@@ -241,22 +241,40 @@ func (ub *UserBaseModel) CreditLoot(loot PriceModel) {
 	}
 }
 
-func (s UserBaseStats) CanReceiveResourceAmount(resourceType ResourceType, amount int) bool {
+// ReceiveResource adds a single resource type to the base if it fits its capacity.
+// It returns a domain error when the resource type is invalid or the capacity would be exceeded.
+func (ub *UserBaseModel) ReceiveResource(resourceType ResourceType, amount int) error {
 	if amount <= 0 {
-		return true
+		return NewError("error.domain.base.invalid_resource_amount", H{"amount": amount})
 	}
 	value := float64(amount)
 	switch resourceType {
 	case ResourceTypeCredits:
-		return s.Credits+value <= float64(s.CreditsCapacity)
+		if ub.Stats.Credits+value > float64(ub.Stats.CreditsCapacity) {
+			return NewError("error.domain.base.resource_capacity_reached", H{"resource": resourceType, "capacity": ub.Stats.CreditsCapacity})
+		}
+		ub.Stats.Credits += value
+		return nil
 	case ResourceTypeIron:
-		return s.Iron+value <= float64(s.IronCapacity)
+		if ub.Stats.Iron+value > float64(ub.Stats.IronCapacity) {
+			return NewError("error.domain.base.resource_capacity_reached", H{"resource": resourceType, "capacity": ub.Stats.IronCapacity})
+		}
+		ub.Stats.Iron += value
+		return nil
 	case ResourceTypeTitanium:
-		return s.Titanium+value <= float64(s.TitaniumCapacity)
+		if ub.Stats.Titanium+value > float64(ub.Stats.TitaniumCapacity) {
+			return NewError("error.domain.base.resource_capacity_reached", H{"resource": resourceType, "capacity": ub.Stats.TitaniumCapacity})
+		}
+		ub.Stats.Titanium += value
+		return nil
 	case ResourceTypeAntimatter:
-		return s.Antimatter+value <= float64(s.AntimatterCapacity)
+		if ub.Stats.Antimatter+value > float64(ub.Stats.AntimatterCapacity) {
+			return NewError("error.domain.base.resource_capacity_reached", H{"resource": resourceType, "capacity": ub.Stats.AntimatterCapacity})
+		}
+		ub.Stats.Antimatter += value
+		return nil
 	default:
-		return false
+		return NewError("error.domain.base.invalid_resource_type", H{"resource": resourceType})
 	}
 }
 
