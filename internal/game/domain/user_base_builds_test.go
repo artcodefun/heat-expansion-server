@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -141,6 +142,50 @@ func TestBuilding_AvailableBuildings_RequiresPlayerBaseOrigin(t *testing.T) {
 	}
 	if available[0].ID != 2 {
 		t.Fatalf("expected PLAYER_BASE building to be available, got prototype %d", available[0].ID)
+	}
+}
+
+func TestBuilding_ReceiveBuilding_AddsPresentBuilding(t *testing.T) {
+	base := newBaseWithDefaults(12)
+	proto := BuildItemPrototype{
+		ID:              21,
+		Category:        BuildCategoryResources,
+		CreationSources: []CreationSource{CreationSourcePlayerBase},
+		Faction:         FactionExoCoalition,
+		Space:           1,
+	}
+
+	if err := base.ReceiveBuilding(proto); err != nil {
+		t.Fatalf("ReceiveBuilding error: %v", err)
+	}
+	if len(base.BuildingsPresent) != 1 {
+		t.Fatalf("expected one building present, got %+v", base.BuildingsPresent)
+	}
+}
+
+func TestBuilding_ReceiveBuilding_RespectsSpace(t *testing.T) {
+	base := newBaseWithDefaults(13)
+	base.BuildingsPresent = []BuildItemPresent{{
+		BaseOwnedItem: NewBaseOwnedItem(base.ID),
+		Prototype:     BuildItemPrototype{ID: 90, Space: 100},
+	}}
+	proto := BuildItemPrototype{
+		ID:              22,
+		Category:        BuildCategoryResources,
+		CreationSources: []CreationSource{CreationSourceBlackMarket},
+		Faction:         FactionExoCoalition,
+		Space:           2,
+	}
+
+	err := base.ReceiveBuilding(proto)
+	if err == nil {
+		t.Fatal("expected not enough space error")
+	}
+	if !strings.HasPrefix(err.Error(), "error.domain.building.not_enough_space") {
+		t.Fatalf("expected not enough space error, got %v", err)
+	}
+	if len(base.BuildingsPresent) != 1 {
+		t.Fatalf("expected existing buildings to remain unchanged after space failure, got %+v", base.BuildingsPresent)
 	}
 }
 

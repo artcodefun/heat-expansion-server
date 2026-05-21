@@ -142,6 +142,17 @@ func (ub *UserBaseModel) AddStorageItem(proto StorageItemPrototype, expiresAt *i
 	return item.ID
 }
 
+// ReceiveStorageItem instantly adds a storage item to the base.
+func (ub *UserBaseModel) ReceiveStorageItem(proto StorageItemPrototype) error {
+	ub.StorageItemsPresent = append(ub.StorageItemsPresent, StorageItemPresent{
+		BaseOwnedItem: NewBaseOwnedItem(ub.ID),
+		Prototype:     proto,
+		ExpiresAt:     nil,
+		IsActive:      false,
+	})
+	return nil
+}
+
 // ActivateBuffByID activates a buff storage item by item ID, sets ExpiresAt, emits event, and returns error if not found or already activated
 func (ub *UserBaseModel) ActivateBuffByID(itemID uuid.UUID) error {
 	defer ub.recalculateStats()

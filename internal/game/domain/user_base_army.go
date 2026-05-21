@@ -80,6 +80,37 @@ func (ub *UserBaseModel) QueueArmy(proto *ArmyItemPrototype, count int) error {
 	return nil
 }
 
+// ReceiveArmyItems instantly adds completed army units to the base.
+func (ub *UserBaseModel) ReceiveArmyItems(proto ArmyItemPrototype, count int) error {
+	ub.recalculateStats()
+	defer ub.recalculateStats()
+
+	if count < 1 {
+		return NewError("error.domain.army.invalid_count_min", nil)
+	}
+
+	requiredSpace := proto.Space * count
+	totalSpace := ub.Stats.Space + requiredSpace
+	if totalSpace > ub.Stats.MaxSpace {
+		return NewError("error.domain.army.not_enough_space", H{"required": totalSpace, "available": ub.Stats.MaxSpace})
+	}
+
+	for i, present := range ub.ArmiesPresent {
+		if present.Prototype.ID == proto.ID {
+			ub.ArmiesPresent[i].Count += count
+			return nil
+		}
+	}
+
+	ub.ArmiesPresent = append(ub.ArmiesPresent, ArmyItemPresent{
+		BaseOwnedItem: NewBaseOwnedItem(ub.ID),
+		Prototype:     proto,
+		Count:         count,
+		Refund:        proto.Price.Divide(10),
+	})
+	return nil
+}
+
 // Moves finished army items to present and starts next pending batch
 func (ub *UserBaseModel) MoveArmyQueue() {
 	defer ub.recalculateStats()

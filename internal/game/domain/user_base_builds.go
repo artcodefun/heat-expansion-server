@@ -75,6 +75,24 @@ func (ub *UserBaseModel) AddToBuildQueue(proto *BuildItemPrototype) error {
 	return nil
 }
 
+// ReceiveBuilding instantly adds a completed building to the base.
+func (ub *UserBaseModel) ReceiveBuilding(proto BuildItemPrototype) error {
+	ub.recalculateStats()
+	defer ub.recalculateStats()
+
+	totalSpace := ub.Stats.Space + proto.Space
+	if totalSpace > ub.Stats.MaxSpace {
+		return NewError("error.domain.building.not_enough_space", H{"required": totalSpace, "available": ub.Stats.MaxSpace})
+	}
+
+	ub.BuildingsPresent = append(ub.BuildingsPresent, BuildItemPresent{
+		BaseOwnedItem: NewBaseOwnedItem(ub.ID),
+		Prototype:     proto,
+		Refund:        proto.Price.Divide(10),
+	})
+	return nil
+}
+
 // Moves finished production items to present and starts next pending item
 func (ub *UserBaseModel) MoveBuildQueue() {
 	defer ub.recalculateStats()

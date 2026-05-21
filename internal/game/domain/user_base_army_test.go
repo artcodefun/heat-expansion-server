@@ -325,6 +325,73 @@ func TestArmy_AvailableArmies_RequiresPlayerBaseOrigin(t *testing.T) {
 	}
 }
 
+func TestArmy_ReceiveArmyItems_AddsAndMergesUnits(t *testing.T) {
+	base := newBaseWithDefaults(13)
+	base.BuildingsPresent = append(base.BuildingsPresent, BuildItemPresent{
+		BaseOwnedItem: NewBaseOwnedItem(base.ID),
+		Prototype: BuildItemPrototype{
+			ID:              20,
+			Category:        BuildCategoryMilitary,
+			CreationSources: []CreationSource{CreationSourcePlayerBase},
+			Faction:         FactionExoCoalition,
+			MilitaryData:    &MilitaryBuildingData{UnlockArmyCategory: ArmyCategoryInfantry},
+		},
+	})
+
+	proto := ArmyItemPrototype{
+		ID:              300,
+		Category:        ArmyCategoryInfantry,
+		CreationSources: []CreationSource{CreationSourceBlackMarket},
+		Faction:         FactionExoCoalition,
+		Price:           PriceModel{Credits: 10},
+		Space:           1,
+	}
+
+	if err := base.ReceiveArmyItems(proto, 2); err != nil {
+		t.Fatalf("ReceiveArmyItems error: %v", err)
+	}
+	if len(base.ArmiesPresent) != 1 {
+		t.Fatalf("expected 1 present army stack, got %+v", base.ArmiesPresent)
+	}
+	if base.ArmiesPresent[0].Count != 2 {
+		t.Fatalf("expected 2 army units, got %+v", base.ArmiesPresent[0])
+	}
+
+	if err := base.ReceiveArmyItems(proto, 3); err != nil {
+		t.Fatalf("ReceiveArmyItems merge error: %v", err)
+	}
+	if base.ArmiesPresent[0].Count != 5 {
+		t.Fatalf("expected merged army count 5, got %+v", base.ArmiesPresent[0])
+	}
+}
+
+func TestArmy_ReceiveArmyItems_RespectsSpace(t *testing.T) {
+	base := newBaseWithDefaults(14)
+	base.BuildingsPresent = append(base.BuildingsPresent, BuildItemPresent{
+		BaseOwnedItem: NewBaseOwnedItem(base.ID),
+		Prototype: BuildItemPrototype{
+			ID:    21,
+			Space: 100,
+		},
+	})
+
+	proto := ArmyItemPrototype{
+		ID:              301,
+		Category:        ArmyCategoryInfantry,
+		CreationSources: []CreationSource{CreationSourceBlackMarket},
+		Faction:         FactionExoCoalition,
+		Space:           2,
+	}
+
+	err := base.ReceiveArmyItems(proto, 1)
+	if err == nil {
+		t.Fatal("expected not enough space error")
+	}
+	if !strings.HasPrefix(err.Error(), "error.domain.army.not_enough_space") {
+		t.Fatalf("expected not enough space error, got %v", err)
+	}
+}
+
 func TestArmy_GetReadyToDeployArmy_SuccessDoesNotMutate(t *testing.T) {
 	base := newBaseWithDefaults(30)
 
