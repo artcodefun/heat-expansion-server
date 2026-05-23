@@ -25,6 +25,7 @@ const (
 	jobKindSpawnNearbyLocations = "SPAWN_NEARBY_LOCATIONS"
 	jobKindIntelligenceScan     = "INTELLIGENCE_SCAN"
 	jobKindIntelligenceRadar    = "INTELLIGENCE_RADAR"
+	jobKindRefreshBlackMarket   = "REFRESH_BLACK_MARKET_OFFERS"
 )
 
 // EncodeJob converts a typed Scheduler job into a kind label and JSON payload
@@ -70,6 +71,9 @@ func EncodeJob(job ports.SchadulableJob) (kind string, payload []byte, err error
 	case ports.IntelligenceRadarJob:
 		payload, err = json.Marshal(dtos.IntelligenceRadarJobDTOFromDomain(j))
 		return jobKindIntelligenceRadar, payload, err
+	case ports.RefreshBlackMarketOffersJob:
+		payload, err = json.Marshal(dtos.RefreshBlackMarketOffersJobDTOFromDomain(j))
+		return jobKindRefreshBlackMarket, payload, err
 	default:
 		return "", nil, errors.New("unsupported scheduler job type")
 	}
@@ -157,6 +161,12 @@ func DecodeJob(kind string, payload []byte) (ports.SchadulableJob, error) {
 			return nil, err
 		}
 		return dtos.IntelligenceRadarJobFromDTO(dto), nil
+	case jobKindRefreshBlackMarket:
+		var dto dtos.RefreshBlackMarketOffersJobDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.RefreshBlackMarketOffersJobFromDTO(dto), nil
 	default:
 		return nil, errors.New("unknown scheduler job kind")
 	}

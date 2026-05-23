@@ -13,6 +13,7 @@ type UserCommands interface{}
 // BlackMarketCommands encapsulates Black Market mutations.
 type BlackMarketCommands interface {
 	PurchaseResources(ctx context.Context, actor Actor, baseID int, resourceType domain.ResourceType, crystals int) error
+	PurchaseOffer(ctx context.Context, actor Actor, baseID int, offerID int64, quantity int) error
 }
 
 // BaseCommands encapsulates base creation operations.

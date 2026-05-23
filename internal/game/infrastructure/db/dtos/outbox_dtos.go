@@ -171,6 +171,16 @@ func IntelligenceRadarJobFromDTO(d IntelligenceRadarJobDTO) ports.IntelligenceRa
 	return ports.IntelligenceRadarJob{BaseID: d.BaseID, OperationID: d.OperationID}
 }
 
+type RefreshBlackMarketOffersJobDTO struct{}
+
+func RefreshBlackMarketOffersJobDTOFromDomain(ports.RefreshBlackMarketOffersJob) RefreshBlackMarketOffersJobDTO {
+	return RefreshBlackMarketOffersJobDTO{}
+}
+
+func RefreshBlackMarketOffersJobFromDTO(RefreshBlackMarketOffersJobDTO) ports.RefreshBlackMarketOffersJob {
+	return ports.RefreshBlackMarketOffersJob{}
+}
+
 // =========================
 // Event DTOs
 // =========================

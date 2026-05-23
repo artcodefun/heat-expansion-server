@@ -35,6 +35,21 @@ func (h *BlackMarketHandler) ListResourceRates(c *gin.Context) {
 	c.JSON(http.StatusOK, dtos.BlackMarketResourceRateDTOListFromReadModels(items))
 }
 
+// ListOffers handles GET /bases/:baseId/black-market/offers and returns the active Black Market offers.
+func (h *BlackMarketHandler) ListOffers(c *gin.Context) {
+	var req dtos.BlackMarketOffersListRequest
+	if !bindRequest(c, &req) {
+		return
+	}
+
+	items, err := h.queries.ListActiveOffers(c.Request.Context(), actor(c), req.Uri.BaseID, dtos.BlackMarketOfferKindPtrFromDTO(req.Query.Kind), req.Query.Limited)
+	if handleCoreErr(c, h.translator, err) {
+		return
+	}
+
+	c.JSON(http.StatusOK, dtos.BlackMarketOfferDTOListFromReadModels(items, h.translator, getLocale(c)))
+}
+
 // PurchaseResources handles POST /bases/:baseId/black-market/resources/purchase and spends crystals for resources.
 func (h *BlackMarketHandler) PurchaseResources(c *gin.Context) {
 	var req dtos.BlackMarketResourcesPurchaseRequest
@@ -49,6 +64,21 @@ func (h *BlackMarketHandler) PurchaseResources(c *gin.Context) {
 		dtos.ResourceTypeFromDTO(req.Body.ResourceType),
 		req.Body.Crystals,
 	)
+	if handleCoreErr(c, h.translator, err) {
+		return
+	}
+
+	c.Status(http.StatusOK)
+}
+
+// PurchaseOffer handles POST /bases/:baseId/black-market/offers/:offerId/purchase and buys a Black Market offer.
+func (h *BlackMarketHandler) PurchaseOffer(c *gin.Context) {
+	var req dtos.BlackMarketOfferPurchaseRequest
+	if !bindRequest(c, &req) {
+		return
+	}
+
+	err := h.commands.PurchaseOffer(c.Request.Context(), actor(c), req.Uri.BaseID, req.Uri.OfferID, req.Body.Quantity)
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}

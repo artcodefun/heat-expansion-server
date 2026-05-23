@@ -3,6 +3,7 @@ package bootstrap
 import (
 	"context"
 	"log/slog"
+	"sync"
 	"time"
 
 	"go.opentelemetry.io/otel/codes"
@@ -18,6 +19,7 @@ type Workers struct {
 	OutboxLoop         func(ctx context.Context)
 	SchedulerLoop      func(ctx context.Context)
 	IntegrationEvtLoop func(ctx context.Context)
+	wg                 sync.WaitGroup
 }
 
 func NewWorkers(
@@ -62,6 +64,19 @@ func NewWorkers(
 			}
 		},
 	}
+}
+
+// Start launches all background worker loops.
+func (w *Workers) Start(ctx context.Context) {
+	w.wg.Add(3)
+	go func() { defer w.wg.Done(); w.SchedulerLoop(ctx) }()
+	go func() { defer w.wg.Done(); w.IntegrationEvtLoop(ctx) }()
+	go func() { defer w.wg.Done(); w.OutboxLoop(ctx) }()
+}
+
+// Wait blocks until all background worker loops have exited.
+func (w *Workers) Wait() {
+	w.wg.Wait()
 }
 
 func processBatch(ctx context.Context, spanName, errMsg string, fn func(context.Context) error) {

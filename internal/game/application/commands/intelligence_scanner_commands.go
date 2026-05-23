@@ -60,7 +60,6 @@ func (c *IntelligenceScannerCommands) HandleBuildingProductionFinishedEvent(ctx 
 }
 
 func (c *IntelligenceScannerCommands) HandleIntelligenceScanJob(ctx context.Context, job ports.IntelligenceScanJob) error {
-
 	base, err := c.BaseRepo.FindByID(ctx, job.BaseID)
 	if err != nil {
 		return err
@@ -99,18 +98,23 @@ func (c *IntelligenceScannerCommands) HandleIntelligenceScanJob(ctx context.Cont
 
 	target := randomSectorInRange(base.Coordinates, rangeTiles)
 	sector, err := c.SectorRepo.FindByCoordinates(ctx, target.X, target.Y)
-	if err == ports.ErrNotFound || sector == nil {
-		_ = c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
+	if err == ports.ErrNotFound {
+		err = c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 			var inErr error
 			sector, inErr = c.SectorProvisioner.EnsureSectorExists(ctx, c.SectorRepo.Tx(tx), target.X, target.Y)
 			return inErr
 		})
+		if err != nil {
+			return err
+		}
 	} else if err != nil {
-		c.reschedule(ctx, job, periodSec)
-		return nil
+		return err
 	}
 
-	occType, _ := c.SectorRepo.GetLocationTypeByCoordinates(ctx, sector.Coordinates.X, sector.Coordinates.Y)
+	occType, err := c.SectorRepo.GetLocationTypeByCoordinates(ctx, sector.Coordinates.X, sector.Coordinates.Y)
+	if err != nil {
+		return err
+	}
 	var report *domain.SectorScanReport
 
 	switch occType {
@@ -145,9 +149,12 @@ func (c *IntelligenceScannerCommands) HandleIntelligenceScanJob(ctx context.Cont
 		}
 		return nil
 	})
+	if err != nil {
+		return err
+	}
 
 	c.reschedule(ctx, job, periodSec)
-	return err
+	return nil
 }
 
 func (c *IntelligenceScannerCommands) reschedule(ctx context.Context, job ports.IntelligenceScanJob, periodSec int64) {

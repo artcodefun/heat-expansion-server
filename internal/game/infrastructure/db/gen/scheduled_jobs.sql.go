@@ -110,6 +110,43 @@ func (q *Queries) InsertScheduledJob(ctx context.Context, arg InsertScheduledJob
 	return id, err
 }
 
+const insertScheduledJobIfNotExists = `-- name: InsertScheduledJobIfNotExists :one
+WITH acquired AS (
+  SELECT pg_advisory_xact_lock(hashtext($1)::bigint)
+)
+INSERT INTO game.scheduled_jobs (
+  kind, payload, execute_at, created_at, dispatched
+) SELECT
+  $1, $2, $3, $4, FALSE
+FROM acquired
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM game.scheduled_jobs
+  WHERE kind = $1
+    AND dispatched = FALSE
+)
+RETURNING id
+`
+
+type InsertScheduledJobIfNotExistsParams struct {
+	Kind      string          `json:"kind"`
+	Payload   json.RawMessage `json:"payload"`
+	ExecuteAt int64           `json:"execute_at"`
+	CreatedAt int64           `json:"created_at"`
+}
+
+func (q *Queries) InsertScheduledJobIfNotExists(ctx context.Context, arg InsertScheduledJobIfNotExistsParams) (int64, error) {
+	row := q.queryRow(ctx, q.insertScheduledJobIfNotExistsStmt, insertScheduledJobIfNotExists,
+		arg.Kind,
+		arg.Payload,
+		arg.ExecuteAt,
+		arg.CreatedAt,
+	)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
 const markScheduledJobDispatched = `-- name: MarkScheduledJobDispatched :exec
 UPDATE game.scheduled_jobs
 SET dispatched = TRUE,

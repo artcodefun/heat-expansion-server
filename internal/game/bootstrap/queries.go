@@ -35,7 +35,7 @@ func NewQueries(a *Adapters, as *AppServices) *Queries {
 		Activity:    queries.NewActivityQueries(a.ActivityRead, as.Access),
 		Radar:       queries.NewRadarQueries(a.RadarRead, as.Access),
 		User:        queries.NewUserQueries(a.UserRead),
-		BlackMarket: queries.NewBlackMarketQueries(as.Access),
+		BlackMarket: queries.NewBlackMarketQueries(a.BlackMarketRead, as.Access),
 		Alert:       queries.NewAlertQueries(a.AlertRead),
 		Diplomacy:   queries.NewDiplomacyQueries(a.DiplomacyRead)}
 }

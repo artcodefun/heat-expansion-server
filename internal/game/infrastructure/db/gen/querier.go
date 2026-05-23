@@ -6,6 +6,7 @@ package gen
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/google/uuid"
 )
@@ -48,6 +49,9 @@ type Querier interface {
 	GetBaseByCoordinatesForUpdate(ctx context.Context, arg GetBaseByCoordinatesForUpdateParams) (UserBase, error)
 	GetBaseByID(ctx context.Context, id int64) (UserBase, error)
 	GetBaseByIDForUpdate(ctx context.Context, id int64) (UserBase, error)
+	// Black market offers queries
+	GetBlackMarketOfferByID(ctx context.Context, id int64) (BlackMarketOffer, error)
+	GetBlackMarketOfferByIDForUpdate(ctx context.Context, id int64) (BlackMarketOffer, error)
 	// Building prototypes queries
 	GetBuildPrototypeByID(ctx context.Context, id int64) (BuildItemPrototype, error)
 	// Dangerous locations queries
@@ -90,6 +94,7 @@ type Querier interface {
 	InsertBaseBuildItem(ctx context.Context, arg InsertBaseBuildItemParams) (uuid.UUID, error)
 	InsertBaseStorageItem(ctx context.Context, arg InsertBaseStorageItemParams) (uuid.UUID, error)
 	InsertBaseTechItem(ctx context.Context, arg InsertBaseTechItemParams) (uuid.UUID, error)
+	InsertBlackMarketOffer(ctx context.Context, arg InsertBlackMarketOfferParams) (BlackMarketOffer, error)
 	InsertDangerousLocation(ctx context.Context, arg InsertDangerousLocationParams) (int64, error)
 	InsertDiplomaticMessage(ctx context.Context, arg InsertDiplomaticMessageParams) error
 	InsertDiplomaticRelationship(ctx context.Context, arg InsertDiplomaticRelationshipParams) error
@@ -103,8 +108,10 @@ type Querier interface {
 	InsertScanReport(ctx context.Context, arg InsertScanReportParams) (int64, error)
 	// Scheduled jobs queries for durable scheduler
 	InsertScheduledJob(ctx context.Context, arg InsertScheduledJobParams) (int64, error)
+	InsertScheduledJobIfNotExists(ctx context.Context, arg InsertScheduledJobIfNotExistsParams) (int64, error)
 	InsertTradeOperation(ctx context.Context, arg InsertTradeOperationParams) (int64, error)
 	InsertUser(ctx context.Context, arg InsertUserParams) error
+	ListActiveLimitedBlackMarketOffers(ctx context.Context, now sql.NullInt64) ([]BlackMarketOffer, error)
 	// Activities queries
 	ListActivitiesByBase(ctx context.Context, arg ListActivitiesByBaseParams) ([]Activity, error)
 	ListAlertsByUser(ctx context.Context, arg ListAlertsByUserParams) ([]Alert, error)
@@ -120,6 +127,7 @@ type Querier interface {
 	ListBaseTechItems(ctx context.Context, baseID int64) ([]BaseTechItem, error)
 	ListBasesByUserID(ctx context.Context, userID uuid.UUID) ([]UserBase, error)
 	ListBuildPrototypes(ctx context.Context) ([]BuildItemPrototype, error)
+	ListExpiredLimitedBlackMarketOffers(ctx context.Context, now sql.NullInt64) ([]BlackMarketOffer, error)
 	ListOccupiedSectorCoordinates(ctx context.Context) ([]ListOccupiedSectorCoordinatesRow, error)
 	ListOpsBySourceBase(ctx context.Context, arg ListOpsBySourceBaseParams) ([]MilitaryOperation, error)
 	ListOpsByTargetCoordinates(ctx context.Context, arg ListOpsByTargetCoordinatesParams) ([]MilitaryOperation, error)
@@ -137,6 +145,7 @@ type Querier interface {
 	RadarThreatExists(ctx context.Context, arg RadarThreatExistsParams) (bool, error)
 	RecentReportExistsByScanner(ctx context.Context, arg RecentReportExistsByScannerParams) (bool, error)
 	UpdateBase(ctx context.Context, arg UpdateBaseParams) (UserBase, error)
+	UpdateBlackMarketOffer(ctx context.Context, arg UpdateBlackMarketOfferParams) (BlackMarketOffer, error)
 	UpdateDangerousLocation(ctx context.Context, arg UpdateDangerousLocationParams) error
 	UpdateDiplomaticRelationship(ctx context.Context, arg UpdateDiplomaticRelationshipParams) error
 	UpdateDiplomaticRequest(ctx context.Context, arg UpdateDiplomaticRequestParams) error

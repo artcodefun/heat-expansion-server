@@ -7,7 +7,6 @@ import (
 	"log"
 	"log/slog"
 	"os"
-	"sync"
 	"time"
 
 	"github.com/XSAM/otelsql"
@@ -99,10 +98,7 @@ func NewModule() *Module {
 func (m *Module) Run(ctx context.Context) {
 	slog.Info("starting auth service", "port", m.Port)
 
-	var wg sync.WaitGroup
-	wg.Add(2)
-	go func() { defer wg.Done(); m.Workers.DomainOutboxLoop(ctx) }()
-	go func() { defer wg.Done(); m.Workers.IntegrationOutboxLoop(ctx) }()
+	m.Workers.Start(ctx)
 
 	go func() {
 		if err := m.HTTPServer.Start(); err != nil {
@@ -119,6 +115,6 @@ func (m *Module) Run(ctx context.Context) {
 		slog.Error("auth http server shutdown error", "error", err)
 	}
 
-	wg.Wait()
+	m.Workers.Wait()
 	slog.Info("auth module: stopped")
 }

@@ -99,6 +99,8 @@ func NewRouter(cmd Commands, qry Queries, tokenValidator ports.TokenValidator, t
 		{
 			blackMarket.GET("/resources", blackMarketHandler.ListResourceRates)
 			blackMarket.POST("/resources/purchase", blackMarketHandler.PurchaseResources)
+			blackMarket.GET("/offers", blackMarketHandler.ListOffers)
+			blackMarket.POST("/offers/:offerId/purchase", blackMarketHandler.PurchaseOffer)
 		}
 
 		// Base
@@ -276,6 +278,9 @@ func registerCustomValidators() {
 		})
 		_ = validatorEngine.RegisterValidation("resource_type", func(fl validator.FieldLevel) bool {
 			return dtos.IsValidResourceType(fl.Field().String())
+		})
+		_ = validatorEngine.RegisterValidation("black_market_offer_kind", func(fl validator.FieldLevel) bool {
+			return dtos.IsValidBlackMarketOfferKind(fl.Field().String())
 		})
 	}
 }

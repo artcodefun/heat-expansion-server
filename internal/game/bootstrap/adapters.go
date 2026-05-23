@@ -28,6 +28,7 @@ type Adapters struct {
 	BuildPrototypes         ports.BuildPrototypeRepository
 	StoragePrototypes       ports.StoragePrototypeRepository
 	TechPrototypes          ports.TechPrototypeRepository
+	BlackMarketOffers       ports.BlackMarketOfferRepository
 	MilitaryOps             ports.MilitaryOperationRepository
 	TradeOps                ports.TradeOperationRepository
 	ScanReports             ports.ScanReportRepository
@@ -47,6 +48,7 @@ type Adapters struct {
 	TechRead           ports.TechReadRepository
 	OperationRead      ports.OperationReadRepository
 	TradeOperationRead ports.TradeOperationReadRepository
+	BlackMarketRead    ports.BlackMarketReadRepository
 	ActivityRead       ports.ActivityReadRepository
 	SectorRead         ports.SectorReadRepository
 	RadarRead          ports.RadarReadRepository
@@ -98,6 +100,7 @@ func NewAdapters(db *sql.DB, staticBaseURL string, jwtSecret string, i18nPath st
 	buildProtoRepo := repo.NewBuildPrototypeRepo(q)
 
 	return &Adapters{
+		// Repositories
 		Users:                   repo.NewUserRepo(q),
 		UserBases:               repo.NewUserBaseRepo(q),
 		Sectors:                 repo.NewSectorRepo(q),
@@ -107,6 +110,7 @@ func NewAdapters(db *sql.DB, staticBaseURL string, jwtSecret string, i18nPath st
 		BuildPrototypes:         buildProtoRepo,
 		StoragePrototypes:       repo.NewStoragePrototypeRepo(q),
 		TechPrototypes:          repo.NewTechPrototypeRepo(q),
+		BlackMarketOffers:       repo.NewBlackMarketOfferRepo(q),
 		MilitaryOps:             repo.NewMilitaryOperationRepo(q),
 		TradeOps:                repo.NewTradeOperationRepo(q),
 		ScanReports:             repo.NewScanReportRepo(q),
@@ -117,6 +121,7 @@ func NewAdapters(db *sql.DB, staticBaseURL string, jwtSecret string, i18nPath st
 		DiplomaticRelationships: repo.NewDiplomaticRelationshipRepo(q),
 		DiplomaticMessages:      repo.NewDiplomaticMessageRepo(q),
 		DiplomaticRequests:      repo.NewDiplomaticRequestRepo(q),
+
 		// Read side
 		BaseRead:           baseRead,
 		BuildingRead:       readrepo.NewBuildReadRepo(rq),
@@ -125,17 +130,20 @@ func NewAdapters(db *sql.DB, staticBaseURL string, jwtSecret string, i18nPath st
 		TechRead:           readrepo.NewTechReadRepo(rq),
 		OperationRead:      opRead,
 		TradeOperationRead: tradeOpRead,
+		BlackMarketRead:    readrepo.NewBlackMarketReadRepo(rq),
 		ActivityRead:       readrepo.NewActivityReadRepo(rq, opRead, tradeOpRead, sectorRead, radarRead),
 		SectorRead:         sectorRead,
 		RadarRead:          radarRead,
 		UserRead:           readrepo.NewUserReadRepo(rq),
 		AlertRead:          readrepo.NewAlertReadRepository(rq),
 		DiplomacyRead:      readrepo.NewDiplomacyReadRepo(rq, baseRead),
-		TxMgr:              txMgr,
-		Tokens:             tokens,
-		Events:             publisher,
-		Scheduler:          scheduler,
-		Content:            generator,
-		Translator:         translator,
+
+		// Infra
+		TxMgr:      txMgr,
+		Tokens:     tokens,
+		Events:     publisher,
+		Scheduler:  scheduler,
+		Content:    generator,
+		Translator: translator,
 	}, nil
 }

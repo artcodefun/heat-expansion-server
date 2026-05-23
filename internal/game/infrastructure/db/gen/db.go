@@ -123,6 +123,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getBaseByIDForUpdateStmt, err = db.PrepareContext(ctx, getBaseByIDForUpdate); err != nil {
 		return nil, fmt.Errorf("error preparing query GetBaseByIDForUpdate: %w", err)
 	}
+	if q.getBlackMarketOfferByIDStmt, err = db.PrepareContext(ctx, getBlackMarketOfferByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetBlackMarketOfferByID: %w", err)
+	}
+	if q.getBlackMarketOfferByIDForUpdateStmt, err = db.PrepareContext(ctx, getBlackMarketOfferByIDForUpdate); err != nil {
+		return nil, fmt.Errorf("error preparing query GetBlackMarketOfferByIDForUpdate: %w", err)
+	}
 	if q.getBuildPrototypeByIDStmt, err = db.PrepareContext(ctx, getBuildPrototypeByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetBuildPrototypeByID: %w", err)
 	}
@@ -225,6 +231,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.insertBaseTechItemStmt, err = db.PrepareContext(ctx, insertBaseTechItem); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertBaseTechItem: %w", err)
 	}
+	if q.insertBlackMarketOfferStmt, err = db.PrepareContext(ctx, insertBlackMarketOffer); err != nil {
+		return nil, fmt.Errorf("error preparing query InsertBlackMarketOffer: %w", err)
+	}
 	if q.insertDangerousLocationStmt, err = db.PrepareContext(ctx, insertDangerousLocation); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertDangerousLocation: %w", err)
 	}
@@ -255,11 +264,17 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.insertScheduledJobStmt, err = db.PrepareContext(ctx, insertScheduledJob); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertScheduledJob: %w", err)
 	}
+	if q.insertScheduledJobIfNotExistsStmt, err = db.PrepareContext(ctx, insertScheduledJobIfNotExists); err != nil {
+		return nil, fmt.Errorf("error preparing query InsertScheduledJobIfNotExists: %w", err)
+	}
 	if q.insertTradeOperationStmt, err = db.PrepareContext(ctx, insertTradeOperation); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertTradeOperation: %w", err)
 	}
 	if q.insertUserStmt, err = db.PrepareContext(ctx, insertUser); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertUser: %w", err)
+	}
+	if q.listActiveLimitedBlackMarketOffersStmt, err = db.PrepareContext(ctx, listActiveLimitedBlackMarketOffers); err != nil {
+		return nil, fmt.Errorf("error preparing query ListActiveLimitedBlackMarketOffers: %w", err)
 	}
 	if q.listActivitiesByBaseStmt, err = db.PrepareContext(ctx, listActivitiesByBase); err != nil {
 		return nil, fmt.Errorf("error preparing query ListActivitiesByBase: %w", err)
@@ -290,6 +305,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.listBuildPrototypesStmt, err = db.PrepareContext(ctx, listBuildPrototypes); err != nil {
 		return nil, fmt.Errorf("error preparing query ListBuildPrototypes: %w", err)
+	}
+	if q.listExpiredLimitedBlackMarketOffersStmt, err = db.PrepareContext(ctx, listExpiredLimitedBlackMarketOffers); err != nil {
+		return nil, fmt.Errorf("error preparing query ListExpiredLimitedBlackMarketOffers: %w", err)
 	}
 	if q.listOccupiedSectorCoordinatesStmt, err = db.PrepareContext(ctx, listOccupiedSectorCoordinates); err != nil {
 		return nil, fmt.Errorf("error preparing query ListOccupiedSectorCoordinates: %w", err)
@@ -341,6 +359,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.updateBaseStmt, err = db.PrepareContext(ctx, updateBase); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateBase: %w", err)
+	}
+	if q.updateBlackMarketOfferStmt, err = db.PrepareContext(ctx, updateBlackMarketOffer); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateBlackMarketOffer: %w", err)
 	}
 	if q.updateDangerousLocationStmt, err = db.PrepareContext(ctx, updateDangerousLocation); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateDangerousLocation: %w", err)
@@ -539,6 +560,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getBaseByIDForUpdateStmt: %w", cerr)
 		}
 	}
+	if q.getBlackMarketOfferByIDStmt != nil {
+		if cerr := q.getBlackMarketOfferByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getBlackMarketOfferByIDStmt: %w", cerr)
+		}
+	}
+	if q.getBlackMarketOfferByIDForUpdateStmt != nil {
+		if cerr := q.getBlackMarketOfferByIDForUpdateStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getBlackMarketOfferByIDForUpdateStmt: %w", cerr)
+		}
+	}
 	if q.getBuildPrototypeByIDStmt != nil {
 		if cerr := q.getBuildPrototypeByIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getBuildPrototypeByIDStmt: %w", cerr)
@@ -709,6 +740,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing insertBaseTechItemStmt: %w", cerr)
 		}
 	}
+	if q.insertBlackMarketOfferStmt != nil {
+		if cerr := q.insertBlackMarketOfferStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing insertBlackMarketOfferStmt: %w", cerr)
+		}
+	}
 	if q.insertDangerousLocationStmt != nil {
 		if cerr := q.insertDangerousLocationStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing insertDangerousLocationStmt: %w", cerr)
@@ -759,6 +795,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing insertScheduledJobStmt: %w", cerr)
 		}
 	}
+	if q.insertScheduledJobIfNotExistsStmt != nil {
+		if cerr := q.insertScheduledJobIfNotExistsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing insertScheduledJobIfNotExistsStmt: %w", cerr)
+		}
+	}
 	if q.insertTradeOperationStmt != nil {
 		if cerr := q.insertTradeOperationStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing insertTradeOperationStmt: %w", cerr)
@@ -767,6 +808,11 @@ func (q *Queries) Close() error {
 	if q.insertUserStmt != nil {
 		if cerr := q.insertUserStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing insertUserStmt: %w", cerr)
+		}
+	}
+	if q.listActiveLimitedBlackMarketOffersStmt != nil {
+		if cerr := q.listActiveLimitedBlackMarketOffersStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listActiveLimitedBlackMarketOffersStmt: %w", cerr)
 		}
 	}
 	if q.listActivitiesByBaseStmt != nil {
@@ -817,6 +863,11 @@ func (q *Queries) Close() error {
 	if q.listBuildPrototypesStmt != nil {
 		if cerr := q.listBuildPrototypesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listBuildPrototypesStmt: %w", cerr)
+		}
+	}
+	if q.listExpiredLimitedBlackMarketOffersStmt != nil {
+		if cerr := q.listExpiredLimitedBlackMarketOffersStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listExpiredLimitedBlackMarketOffersStmt: %w", cerr)
 		}
 	}
 	if q.listOccupiedSectorCoordinatesStmt != nil {
@@ -902,6 +953,11 @@ func (q *Queries) Close() error {
 	if q.updateBaseStmt != nil {
 		if cerr := q.updateBaseStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateBaseStmt: %w", cerr)
+		}
+	}
+	if q.updateBlackMarketOfferStmt != nil {
+		if cerr := q.updateBlackMarketOfferStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateBlackMarketOfferStmt: %w", cerr)
 		}
 	}
 	if q.updateDangerousLocationStmt != nil {
@@ -1021,6 +1077,8 @@ type Queries struct {
 	getBaseByCoordinatesForUpdateStmt              *sql.Stmt
 	getBaseByIDStmt                                *sql.Stmt
 	getBaseByIDForUpdateStmt                       *sql.Stmt
+	getBlackMarketOfferByIDStmt                    *sql.Stmt
+	getBlackMarketOfferByIDForUpdateStmt           *sql.Stmt
 	getBuildPrototypeByIDStmt                      *sql.Stmt
 	getDangerousLocationByIDStmt                   *sql.Stmt
 	getDangerousLocationBySectorStmt               *sql.Stmt
@@ -1055,6 +1113,7 @@ type Queries struct {
 	insertBaseBuildItemStmt                        *sql.Stmt
 	insertBaseStorageItemStmt                      *sql.Stmt
 	insertBaseTechItemStmt                         *sql.Stmt
+	insertBlackMarketOfferStmt                     *sql.Stmt
 	insertDangerousLocationStmt                    *sql.Stmt
 	insertDiplomaticMessageStmt                    *sql.Stmt
 	insertDiplomaticRelationshipStmt               *sql.Stmt
@@ -1065,8 +1124,10 @@ type Queries struct {
 	insertResourceLocationStmt                     *sql.Stmt
 	insertScanReportStmt                           *sql.Stmt
 	insertScheduledJobStmt                         *sql.Stmt
+	insertScheduledJobIfNotExistsStmt              *sql.Stmt
 	insertTradeOperationStmt                       *sql.Stmt
 	insertUserStmt                                 *sql.Stmt
+	listActiveLimitedBlackMarketOffersStmt         *sql.Stmt
 	listActivitiesByBaseStmt                       *sql.Stmt
 	listAlertsByUserStmt                           *sql.Stmt
 	listAllBasesStmt                               *sql.Stmt
@@ -1077,6 +1138,7 @@ type Queries struct {
 	listBaseTechItemsStmt                          *sql.Stmt
 	listBasesByUserIDStmt                          *sql.Stmt
 	listBuildPrototypesStmt                        *sql.Stmt
+	listExpiredLimitedBlackMarketOffersStmt        *sql.Stmt
 	listOccupiedSectorCoordinatesStmt              *sql.Stmt
 	listOpsBySourceBaseStmt                        *sql.Stmt
 	listOpsByTargetCoordinatesStmt                 *sql.Stmt
@@ -1094,6 +1156,7 @@ type Queries struct {
 	radarThreatExistsStmt                          *sql.Stmt
 	recentReportExistsByScannerStmt                *sql.Stmt
 	updateBaseStmt                                 *sql.Stmt
+	updateBlackMarketOfferStmt                     *sql.Stmt
 	updateDangerousLocationStmt                    *sql.Stmt
 	updateDiplomaticRelationshipStmt               *sql.Stmt
 	updateDiplomaticRequestStmt                    *sql.Stmt
@@ -1142,6 +1205,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getBaseByCoordinatesForUpdateStmt:              q.getBaseByCoordinatesForUpdateStmt,
 		getBaseByIDStmt:                                q.getBaseByIDStmt,
 		getBaseByIDForUpdateStmt:                       q.getBaseByIDForUpdateStmt,
+		getBlackMarketOfferByIDStmt:                    q.getBlackMarketOfferByIDStmt,
+		getBlackMarketOfferByIDForUpdateStmt:           q.getBlackMarketOfferByIDForUpdateStmt,
 		getBuildPrototypeByIDStmt:                      q.getBuildPrototypeByIDStmt,
 		getDangerousLocationByIDStmt:                   q.getDangerousLocationByIDStmt,
 		getDangerousLocationBySectorStmt:               q.getDangerousLocationBySectorStmt,
@@ -1176,6 +1241,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		insertBaseBuildItemStmt:                        q.insertBaseBuildItemStmt,
 		insertBaseStorageItemStmt:                      q.insertBaseStorageItemStmt,
 		insertBaseTechItemStmt:                         q.insertBaseTechItemStmt,
+		insertBlackMarketOfferStmt:                     q.insertBlackMarketOfferStmt,
 		insertDangerousLocationStmt:                    q.insertDangerousLocationStmt,
 		insertDiplomaticMessageStmt:                    q.insertDiplomaticMessageStmt,
 		insertDiplomaticRelationshipStmt:               q.insertDiplomaticRelationshipStmt,
@@ -1186,8 +1252,10 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		insertResourceLocationStmt:                     q.insertResourceLocationStmt,
 		insertScanReportStmt:                           q.insertScanReportStmt,
 		insertScheduledJobStmt:                         q.insertScheduledJobStmt,
+		insertScheduledJobIfNotExistsStmt:              q.insertScheduledJobIfNotExistsStmt,
 		insertTradeOperationStmt:                       q.insertTradeOperationStmt,
 		insertUserStmt:                                 q.insertUserStmt,
+		listActiveLimitedBlackMarketOffersStmt:         q.listActiveLimitedBlackMarketOffersStmt,
 		listActivitiesByBaseStmt:                       q.listActivitiesByBaseStmt,
 		listAlertsByUserStmt:                           q.listAlertsByUserStmt,
 		listAllBasesStmt:                               q.listAllBasesStmt,
@@ -1198,6 +1266,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listBaseTechItemsStmt:                          q.listBaseTechItemsStmt,
 		listBasesByUserIDStmt:                          q.listBasesByUserIDStmt,
 		listBuildPrototypesStmt:                        q.listBuildPrototypesStmt,
+		listExpiredLimitedBlackMarketOffersStmt:        q.listExpiredLimitedBlackMarketOffersStmt,
 		listOccupiedSectorCoordinatesStmt:              q.listOccupiedSectorCoordinatesStmt,
 		listOpsBySourceBaseStmt:                        q.listOpsBySourceBaseStmt,
 		listOpsByTargetCoordinatesStmt:                 q.listOpsByTargetCoordinatesStmt,
@@ -1215,6 +1284,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		radarThreatExistsStmt:                          q.radarThreatExistsStmt,
 		recentReportExistsByScannerStmt:                q.recentReportExistsByScannerStmt,
 		updateBaseStmt:                                 q.updateBaseStmt,
+		updateBlackMarketOfferStmt:                     q.updateBlackMarketOfferStmt,
 		updateDangerousLocationStmt:                    q.updateDangerousLocationStmt,
 		updateDiplomaticRelationshipStmt:               q.updateDiplomaticRelationshipStmt,
 		updateDiplomaticRequestStmt:                    q.updateDiplomaticRequestStmt,

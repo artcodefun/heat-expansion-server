@@ -7,7 +7,6 @@ import (
 	"log"
 	"log/slog"
 	"os"
-	"sync"
 	"time"
 
 	"github.com/XSAM/otelsql"
@@ -132,11 +131,11 @@ func NewModule() *Module {
 func (m *Module) Run(ctx context.Context) {
 	slog.Info("starting game service", "port", m.Port)
 
-	var wg sync.WaitGroup
-	wg.Add(3)
-	go func() { defer wg.Done(); m.Workers.SchedulerLoop(ctx) }()
-	go func() { defer wg.Done(); m.Workers.IntegrationEvtLoop(ctx) }()
-	go func() { defer wg.Done(); m.Workers.OutboxLoop(ctx) }()
+	if err := seedPeriodicJobs(ctx, m.DB); err != nil {
+		log.Fatal("Failed to seed periodic jobs:", err)
+	}
+
+	m.Workers.Start(ctx)
 
 	go func() {
 		if err := m.HTTPServer.Start(); err != nil {
@@ -153,6 +152,6 @@ func (m *Module) Run(ctx context.Context) {
 		slog.Error("game http server shutdown error", "error", err)
 	}
 
-	wg.Wait()
+	m.Workers.Wait()
 	slog.Info("game module: stopped")
 }

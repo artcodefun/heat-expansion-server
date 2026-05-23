@@ -20,6 +20,33 @@ type BlackMarketResourceRate struct {
 	ResourceAmount int
 }
 
+type BlackMarketOfferKind string
+
+const (
+	BlackMarketOfferKindBuilding BlackMarketOfferKind = "BUILDING"
+	BlackMarketOfferKindArmy     BlackMarketOfferKind = "ARMY"
+	BlackMarketOfferKindStorage  BlackMarketOfferKind = "STORAGE"
+)
+
+const BlackMarketLimitedOfferDurationSeconds = 24 * 60 * 60
+
+type BlackMarketOffer struct {
+	ID              int64
+	Kind            BlackMarketOfferKind
+	PrototypeID     int
+	PriceInCrystals int
+	EndsAt          *int64
+	IsLimited       bool
+	Priority        int
+}
+
+func (o BlackMarketOffer) IsActive(now int64) bool {
+	if !o.IsLimited {
+		return true
+	}
+	return o.EndsAt != nil && *o.EndsAt > now
+}
+
 func ListBlackMarketResourceRates() []BlackMarketResourceRate {
 	return []BlackMarketResourceRate{
 		{ResourceType: ResourceTypeCredits, CrystalsCost: BlackMarketCreditsCrystalsPerUnit, ResourceAmount: BlackMarketCreditsAmountPerUnit},

@@ -17,6 +17,27 @@ type BlackMarketResourceRate struct {
 	ResourceAmount int
 }
 
+type BlackMarketOfferKind string
+
+const (
+	BlackMarketOfferKindBuilding BlackMarketOfferKind = "BUILDING"
+	BlackMarketOfferKindArmy     BlackMarketOfferKind = "ARMY"
+	BlackMarketOfferKindStorage  BlackMarketOfferKind = "STORAGE"
+)
+
+type BlackMarketOffer struct {
+	ID              int64
+	Kind            BlackMarketOfferKind
+	PrototypeID     int
+	PriceInCrystals int
+	EndsAt          *int64
+	IsLimited       bool
+	Priority        int
+	Building        *BuildItemPrototype
+	Army            *ArmyItemPrototype
+	Storage         *StorageItemPrototype
+}
+
 func BlackMarketResourceRateFromDomain(rate domain.BlackMarketResourceRate) *BlackMarketResourceRate {
 	return &BlackMarketResourceRate{
 		ResourceType:   ResourceType(rate.ResourceType),

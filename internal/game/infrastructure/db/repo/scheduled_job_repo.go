@@ -3,6 +3,7 @@ package repo
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
@@ -58,6 +59,32 @@ func (r *ScheduledJobRepo) Insert(ctx context.Context, job ports.SchadulableJob,
 		ExecuteAt: executeAt,
 		CreatedAt: createdAt,
 	})
+}
+
+// InsertIfNotExists stores a new scheduled job row only when no undispatched job of the same kind exists.
+func (r *ScheduledJobRepo) InsertIfNotExists(ctx context.Context, job ports.SchadulableJob, executeAt, createdAt int64) (bool, error) {
+	if createdAt == 0 {
+		createdAt = time.Now().Unix()
+	}
+
+	kind, payload, err := mappers.EncodeJob(job)
+	if err != nil {
+		return false, err
+	}
+
+	_, err = r.q.InsertScheduledJobIfNotExists(ctx, gen.InsertScheduledJobIfNotExistsParams{
+		Kind:      kind,
+		Payload:   payload,
+		ExecuteAt: executeAt,
+		CreatedAt: createdAt,
+	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
 }
 
 // ClaimDue returns up to limit jobs that are due for execution (execute_at <= now)
