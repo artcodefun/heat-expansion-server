@@ -34,7 +34,7 @@ type BlackMarketOffersListRequest = Request[BaseURI, blackMarketOffersQuery, Non
 type BlackMarketOfferPurchaseRequest = Request[BlackMarketOfferURI, None, blackMarketOfferPurchaseBody]
 
 func IsValidResourceType(value string) bool {
-	upper := strings.ToUpper(value)
+	upper := strings.ToUpper(strings.TrimSpace(value))
 	switch ResourceType(upper) {
 	case ResourceTypeCredits, ResourceTypeIron, ResourceTypeTitanium, ResourceTypeAntimatter:
 		return true

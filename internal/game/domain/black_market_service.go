@@ -20,11 +20,11 @@ func (s *BlackMarketService) PurchaseResources(user *User, base *UserBaseModel, 
 	if err != nil {
 		return err
 	}
-	if err := base.ReceiveResource(resourceType, resourceAmount); err != nil {
-		return err
-	}
 
 	if err := user.SpendCrystals(crystals); err != nil {
+		return err
+	}
+	if err := base.ReceiveResource(resourceType, resourceAmount); err != nil {
 		return err
 	}
 
@@ -38,10 +38,13 @@ func (s *BlackMarketService) PurchaseBuildingOffer(user *User, base *UserBaseMod
 	if err := validateBlackMarketBuildPrototype(proto); err != nil {
 		return err
 	}
+	if err := user.SpendCrystals(offer.PriceInCrystals); err != nil {
+		return err
+	}
 	if err := base.ReceiveBuilding(*proto); err != nil {
 		return err
 	}
-	return user.SpendCrystals(offer.PriceInCrystals)
+	return nil
 }
 
 func (s *BlackMarketService) PurchaseArmyOffer(user *User, base *UserBaseModel, offer BlackMarketOffer, proto *ArmyItemPrototype, quantity int) error {
@@ -51,10 +54,13 @@ func (s *BlackMarketService) PurchaseArmyOffer(user *User, base *UserBaseModel, 
 	if err := validateBlackMarketArmyPrototype(proto); err != nil {
 		return err
 	}
+	if err := user.SpendCrystals(offer.PriceInCrystals * quantity); err != nil {
+		return err
+	}
 	if err := base.ReceiveArmyItems(*proto, quantity); err != nil {
 		return err
 	}
-	return user.SpendCrystals(offer.PriceInCrystals * quantity)
+	return nil
 }
 
 func (s *BlackMarketService) PurchaseStorageOffer(user *User, base *UserBaseModel, offer BlackMarketOffer, proto *StorageItemPrototype) error {
@@ -64,10 +70,13 @@ func (s *BlackMarketService) PurchaseStorageOffer(user *User, base *UserBaseMode
 	if err := validateBlackMarketStoragePrototype(proto); err != nil {
 		return err
 	}
+	if err := user.SpendCrystals(offer.PriceInCrystals); err != nil {
+		return err
+	}
 	if err := base.ReceiveStorageItem(*proto); err != nil {
 		return err
 	}
-	return user.SpendCrystals(offer.PriceInCrystals)
+	return nil
 }
 
 func validateBlackMarketOffer(offer BlackMarketOffer, expectedKind BlackMarketOfferKind, quantity int) error {
@@ -75,7 +84,7 @@ func validateBlackMarketOffer(offer BlackMarketOffer, expectedKind BlackMarketOf
 		return NewError("error.domain.black_market.invalid_offer_quantity", H{"quantity": quantity})
 	}
 	if offer.Kind != expectedKind {
-		return NewError("error.domain.black_market.offer_kind_invalid", H{"kind": offer.Kind})
+		return NewError("error.domain.black_market.offer_kind_mismatch", nil)
 	}
 	if !offer.IsActive(NowUnix()) {
 		return NewError("error.domain.black_market.offer_not_active", H{"offer_id": offer.ID})

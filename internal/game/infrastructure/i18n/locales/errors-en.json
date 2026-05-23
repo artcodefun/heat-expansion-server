@@ -11,6 +11,7 @@
     "error.domain.black_market.rate_not_available": "Black Market rate not available for {resource}",
     "error.domain.black_market.invalid_crystal_amount": "Black Market purchase for {resource} must use a crystal cost of {crystals_cost}",
     "error.domain.black_market.prototype_not_available": "Prototype {prototype} is not available from the Black Market",
+    "error.domain.black_market.offer_kind_mismatch": "Black Market offer kind does not match the requested purchase",
     "error.domain.black_market.offer_not_active": "Black Market offer is not active",
     "error.domain.black_market.invalid_offer_quantity": "Black Market offer quantity is invalid",
     "error.domain.base.resource_capacity_reached": "Base cannot receive more {resource}: capacity {capacity}",

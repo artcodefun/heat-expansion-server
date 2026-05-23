@@ -62,8 +62,8 @@ func TestBlackMarketService_PurchaseResources_RejectsWhenBaseCannotReceive(t *te
 	if domainErr.Key != "error.domain.base.resource_capacity_reached" {
 		t.Fatalf("expected base capacity key, got %s", domainErr.Key)
 	}
-	if user.Crystals != startingCrystals {
-		t.Fatalf("expected crystals unchanged, got %d", user.Crystals)
+	if user.Crystals != startingCrystals-1 {
+		t.Fatalf("expected crystals to be spent before the base credit fails, got %d", user.Crystals)
 	}
 	if base.Stats.Iron != startingIron {
 		t.Fatalf("expected iron unchanged, got %v", base.Stats.Iron)
