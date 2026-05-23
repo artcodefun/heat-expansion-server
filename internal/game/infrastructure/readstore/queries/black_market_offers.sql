@@ -7,7 +7,7 @@ SELECT o.id, o.kind, o.price_in_crystals, o.ends_at, o.is_limited, o.priority,
 FROM game.black_market_offers o
 JOIN game.build_item_prototypes p ON p.id = o.prototype_id
 WHERE o.kind = 'BUILDING'
-  AND (sqlc.narg(limited) IS NULL OR o.is_limited = sqlc.narg(limited))
+  AND (sqlc.narg(limited)::boolean IS NULL OR o.is_limited = sqlc.narg(limited)::boolean)
   AND (NOT o.is_limited OR o.ends_at > @now)
   AND p.creation_sources @> '["BLACK_MARKET"]'::jsonb
 ORDER BY o.priority DESC, o.id ASC;
@@ -19,7 +19,7 @@ SELECT o.id, o.kind, o.price_in_crystals, o.ends_at, o.is_limited, o.priority,
 FROM game.black_market_offers o
 JOIN game.army_item_prototypes p ON p.id = o.prototype_id
 WHERE o.kind = 'ARMY'
-  AND (sqlc.narg(limited) IS NULL OR o.is_limited = sqlc.narg(limited))
+  AND (sqlc.narg(limited)::boolean IS NULL OR o.is_limited = sqlc.narg(limited)::boolean)
   AND (NOT o.is_limited OR o.ends_at > @now)
   AND p.creation_sources @> '["BLACK_MARKET"]'::jsonb
 ORDER BY o.priority DESC, o.id ASC;
@@ -31,7 +31,7 @@ SELECT o.id, o.kind, o.price_in_crystals, o.ends_at, o.is_limited, o.priority,
 FROM game.black_market_offers o
 JOIN game.storage_item_prototypes p ON p.id = o.prototype_id
 WHERE o.kind = 'STORAGE'
-  AND (sqlc.narg(limited) IS NULL OR o.is_limited = sqlc.narg(limited))
+  AND (sqlc.narg(limited)::boolean IS NULL OR o.is_limited = sqlc.narg(limited)::boolean)
   AND (NOT o.is_limited OR o.ends_at > @now)
   AND p.creation_sources @> '["BLACK_MARKET"]'::jsonb
 ORDER BY o.priority DESC, o.id ASC;
