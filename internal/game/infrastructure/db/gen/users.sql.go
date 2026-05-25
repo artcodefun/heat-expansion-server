@@ -26,6 +26,20 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
 	return i, err
 }
 
+const getUserByIDForUpdate = `-- name: GetUserByIDForUpdate :one
+SELECT id, name, crystals
+FROM game.users
+WHERE id = $1
+FOR UPDATE
+`
+
+func (q *Queries) GetUserByIDForUpdate(ctx context.Context, id uuid.UUID) (User, error) {
+	row := q.queryRow(ctx, q.getUserByIDForUpdateStmt, getUserByIDForUpdate, id)
+	var i User
+	err := row.Scan(&i.ID, &i.Name, &i.Crystals)
+	return i, err
+}
+
 const insertUser = `-- name: InsertUser :exec
 INSERT INTO game.users (
     id, name, crystals

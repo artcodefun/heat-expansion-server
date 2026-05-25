@@ -5,6 +5,12 @@ SELECT id, name, crystals
 FROM game.users
 WHERE id = @id;
 
+-- name: GetUserByIDForUpdate :one
+SELECT id, name, crystals
+FROM game.users
+WHERE id = @id
+FOR UPDATE;
+
 -- name: InsertUser :exec
 INSERT INTO game.users (
     id, name, crystals

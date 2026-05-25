@@ -89,7 +89,7 @@ func (c *ArmyCommands) SpeedUpArmyProductionWithCrystals(ctx context.Context, ac
 		if err != nil {
 			return repoErr(err)
 		}
-		user, err := uRepo.FindByID(ctx, actor.UserID)
+		user, err := uRepo.FindByIDForUpdate(ctx, actor.UserID)
 		if err != nil {
 			return repoErr(err)
 		}

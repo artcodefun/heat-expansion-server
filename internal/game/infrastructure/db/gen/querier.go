@@ -88,6 +88,7 @@ type Querier interface {
 	GetTradeOperationByIDForUpdate(ctx context.Context, id int64) (TradeOperation, error)
 	// Users queries
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
+	GetUserByIDForUpdate(ctx context.Context, id uuid.UUID) (User, error)
 	InsertActivity(ctx context.Context, arg InsertActivityParams) (uuid.UUID, error)
 	InsertAlert(ctx context.Context, arg InsertAlertParams) error
 	InsertBaseArmyItem(ctx context.Context, arg InsertBaseArmyItemParams) (uuid.UUID, error)

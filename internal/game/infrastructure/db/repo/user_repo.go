@@ -47,8 +47,14 @@ func (r *UserRepo) FindByID(ctx context.Context, id uuid.UUID) (*domain.User, er
 
 // FindByIDForUpdate uses a FOR UPDATE lock. Requires a transaction-bound repo.
 func (r *UserRepo) FindByIDForUpdate(ctx context.Context, id uuid.UUID) (*domain.User, error) {
-	// sqlc does not generate a FOR UPDATE variant yet; placeholder for future query.
-	return r.FindByID(ctx, id)
+	u, err := r.q.GetUserByIDForUpdate(ctx, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ports.ErrNotFound
+		}
+		return nil, err
+	}
+	return mappers.UserFromDB(u), nil
 }
 
 func (r *UserRepo) Update(ctx context.Context, user *domain.User) error {

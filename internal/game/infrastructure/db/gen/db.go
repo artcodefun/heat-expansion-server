@@ -213,6 +213,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getUserByIDStmt, err = db.PrepareContext(ctx, getUserByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserByID: %w", err)
 	}
+	if q.getUserByIDForUpdateStmt, err = db.PrepareContext(ctx, getUserByIDForUpdate); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUserByIDForUpdate: %w", err)
+	}
 	if q.insertActivityStmt, err = db.PrepareContext(ctx, insertActivity); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertActivity: %w", err)
 	}
@@ -710,6 +713,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getUserByIDStmt: %w", cerr)
 		}
 	}
+	if q.getUserByIDForUpdateStmt != nil {
+		if cerr := q.getUserByIDForUpdateStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUserByIDForUpdateStmt: %w", cerr)
+		}
+	}
 	if q.insertActivityStmt != nil {
 		if cerr := q.insertActivityStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing insertActivityStmt: %w", cerr)
@@ -1107,6 +1115,7 @@ type Queries struct {
 	getTradeOperationByIDStmt                      *sql.Stmt
 	getTradeOperationByIDForUpdateStmt             *sql.Stmt
 	getUserByIDStmt                                *sql.Stmt
+	getUserByIDForUpdateStmt                       *sql.Stmt
 	insertActivityStmt                             *sql.Stmt
 	insertAlertStmt                                *sql.Stmt
 	insertBaseArmyItemStmt                         *sql.Stmt
@@ -1235,6 +1244,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getTradeOperationByIDStmt:                      q.getTradeOperationByIDStmt,
 		getTradeOperationByIDForUpdateStmt:             q.getTradeOperationByIDForUpdateStmt,
 		getUserByIDStmt:                                q.getUserByIDStmt,
+		getUserByIDForUpdateStmt:                       q.getUserByIDForUpdateStmt,
 		insertActivityStmt:                             q.insertActivityStmt,
 		insertAlertStmt:                                q.insertAlertStmt,
 		insertBaseArmyItemStmt:                         q.insertBaseArmyItemStmt,
