@@ -80,31 +80,26 @@ func (c *WorldGenerationCommands) HandleSpawnNearbyLocationsJob(ctx context.Cont
 	// 2. Count locations in range using SQL
 	resourceCount, dangerousCount, err := c.Sectors.CountLocationsInRange(ctx, center.X, center.Y, c.SpawnRadius)
 	if err != nil {
-		c.reschedule(ctx, job.BaseID)
-		return nil
+		return c.reschedule(ctx, job.BaseID)
 	}
 
 	if resourceCount >= c.MaxResourcefulNearby && dangerousCount >= c.MaxDangerousNearby {
-		c.reschedule(ctx, job.BaseID)
-		return nil
+		return c.reschedule(ctx, job.BaseID)
 	}
 
 	storageProtos, err := c.StoragePrototypes.FindAllPrototypes(ctx)
 	if err != nil {
-		c.reschedule(ctx, job.BaseID)
-		return nil
+		return c.reschedule(ctx, job.BaseID)
 	}
 	storageProtos = domain.FilterStorageItemPrototypesByCreationSource(storageProtos, domain.CreationSourceNPCLocation)
 	armyProtos, err := c.ArmyPrototypes.FindAllPrototypes(ctx)
 	if err != nil {
-		c.reschedule(ctx, job.BaseID)
-		return nil
+		return c.reschedule(ctx, job.BaseID)
 	}
 	armyProtos = domain.FilterArmyItemPrototypesByCreationSource(armyProtos, domain.CreationSourceNPCLocation)
 	buildProtos, err := c.BuildPrototypes.FindAllPrototypes(ctx)
 	if err != nil {
-		c.reschedule(ctx, job.BaseID)
-		return nil
+		return c.reschedule(ctx, job.BaseID)
 	}
 	buildProtos = domain.FilterBuildItemPrototypesByCreationSource(buildProtos, domain.CreationSourceNPCLocation)
 
@@ -171,8 +166,7 @@ func (c *WorldGenerationCommands) HandleSpawnNearbyLocationsJob(ctx context.Cont
 			break
 		}
 	}
-	c.reschedule(ctx, job.BaseID)
-	return nil
+	return c.reschedule(ctx, job.BaseID)
 }
 
 func (c *WorldGenerationCommands) HandleUserBaseCreatedEvent(ctx context.Context, ev domain.UserBaseCreatedEvent) error {
@@ -301,7 +295,7 @@ func (c *WorldGenerationCommands) HandleLocationDrainedEvent(ctx context.Context
 	})
 }
 
-func (c *WorldGenerationCommands) reschedule(ctx context.Context, baseID int) {
+func (c *WorldGenerationCommands) reschedule(ctx context.Context, baseID int) error {
 	jitter := int64(rand.Intn(300))
-	_ = c.Scheduler.Schedule(ctx, ports.SpawnNearbyLocationsJob{BaseID: baseID}, time.Now().Unix()+c.RespawnPeriodSeconds+jitter)
+	return c.Scheduler.Schedule(ctx, ports.SpawnNearbyLocationsJob{BaseID: baseID}, time.Now().Unix()+c.RespawnPeriodSeconds+jitter)
 }
