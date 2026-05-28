@@ -56,10 +56,12 @@ func (c *IntelligenceRadarCommands) HandleMilitaryOperationStartedEvent(ctx cont
 				continue
 			}
 
-			_ = c.Scheduler.Schedule(ctx, ports.IntelligenceRadarJob{
+			if err := c.Scheduler.Schedule(ctx, ports.IntelligenceRadarJob{
 				BaseID:      targetBase.ID,
 				OperationID: op.ID,
-			}, detectAt)
+			}, detectAt); err != nil {
+				return err
+			}
 		}
 	}
 

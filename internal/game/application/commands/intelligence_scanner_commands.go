@@ -51,7 +51,7 @@ func (c *IntelligenceScannerCommands) HandleBuildingProductionFinishedEvent(ctx 
 					cooldown = 3600
 				}
 				firstAt := time.Now().Unix() + cooldown
-				_ = c.Scheduler.Schedule(ctx, ports.IntelligenceScanJob{BaseID: event.BaseID, BuildingID: b.ID}, firstAt)
+				return c.Scheduler.Schedule(ctx, ports.IntelligenceScanJob{BaseID: event.BaseID, BuildingID: b.ID}, firstAt)
 			}
 			break
 		}
@@ -134,8 +134,7 @@ func (c *IntelligenceScannerCommands) HandleIntelligenceScanJob(ctx context.Cont
 	case domain.LocationTypeEmpty:
 		report = domain.NewSectorScanReportFromEmptySector(base.ID, sector, domain.ScanReportSourceScanner, &job.BuildingID)
 	default:
-		c.reschedule(ctx, job, periodSec)
-		return nil
+		return c.reschedule(ctx, job, periodSec)
 	}
 
 	err = c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
@@ -153,13 +152,12 @@ func (c *IntelligenceScannerCommands) HandleIntelligenceScanJob(ctx context.Cont
 		return err
 	}
 
-	c.reschedule(ctx, job, periodSec)
-	return nil
+	return c.reschedule(ctx, job, periodSec)
 }
 
-func (c *IntelligenceScannerCommands) reschedule(ctx context.Context, job ports.IntelligenceScanJob, periodSec int64) {
+func (c *IntelligenceScannerCommands) reschedule(ctx context.Context, job ports.IntelligenceScanJob, periodSec int64) error {
 	jitter := int64(rand.Intn(31) + 30)
-	_ = c.Scheduler.Schedule(ctx, job, time.Now().Unix()+periodSec+jitter)
+	return c.Scheduler.Schedule(ctx, job, time.Now().Unix()+periodSec+jitter)
 }
 
 func randomSectorInRange(origin domain.Vector2i, r int) domain.Vector2i {

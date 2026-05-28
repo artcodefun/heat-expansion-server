@@ -195,11 +195,10 @@ func (c *BlackMarketCommands) HandleRefreshBlackMarketOffersJob(ctx context.Cont
 		return err
 	}
 
-	c.rescheduleRefreshJob(ctx)
-	return nil
+	return c.rescheduleRefreshJob(ctx)
 }
 
-func (c *BlackMarketCommands) rescheduleRefreshJob(ctx context.Context) {
+func (c *BlackMarketCommands) rescheduleRefreshJob(ctx context.Context) error {
 	jitter := int64(rand.Intn(300))
-	_ = c.Scheduler.Schedule(ctx, ports.RefreshBlackMarketOffersJob{}, time.Now().Unix()+int64(blackMarketRefreshPeriod.Seconds())+jitter)
+	return c.Scheduler.Schedule(ctx, ports.RefreshBlackMarketOffersJob{}, time.Now().Unix()+int64(blackMarketRefreshPeriod.Seconds())+jitter)
 }
