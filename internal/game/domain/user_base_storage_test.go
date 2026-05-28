@@ -223,6 +223,52 @@ func TestStorage_AddTradeDeployedStorageItems_NormalizesBaseOwnership(t *testing
 	}
 }
 
+func TestStorage_StartDamagedItemRestoration_RefreshesStatsBeforeResourceCheck(t *testing.T) {
+	SetTestNow(t, 50_000)
+
+	base := newBaseWithDefaults(50)
+	base.Stats.Credits = 0
+	base.Stats.CalculationTimestamp = NowUnix() - 10
+	base.BuildingsPresent = append(base.BuildingsPresent,
+		BuildItemPresent{
+			Prototype: BuildItemPrototype{
+				Category:    BuildCategoryControl,
+				ControlData: &ControlBuildingData{Subtype: ControlSubtypeRepairCenter},
+			},
+		},
+		BuildItemPresent{
+			Prototype: BuildItemPrototype{
+				Category:      BuildCategoryResources,
+				ResourcesData: &ResourcesBuildingData{CreditsProduction: 10},
+			},
+		},
+	)
+	base.recalculateStats()
+	base.Stats.Credits = 0
+	base.Stats.CalculationTimestamp = NowUnix() - 10
+
+	itemID := base.AddStorageItem(StorageItemPrototype{
+		ID: 910,
+		DamagedData: &DamagedStorageData{
+			RestorePrice:       PriceModel{Credits: 50},
+			RestorationSeconds: 60,
+			OriginalUnitID:     1,
+		},
+	}, nil)
+
+	armyProtos := []*ArmyItemPrototype{{ID: 1, Space: 1}}
+
+	if err := base.StartDamagedItemRestorationByID(itemID, armyProtos); err != nil {
+		t.Fatalf("expected restoration to succeed after stats refresh, got %v", err)
+	}
+	if base.Stats.Credits != 50 {
+		t.Fatalf("expected 50 credits after paying repair cost, got %v", base.Stats.Credits)
+	}
+	if base.StorageItemsPresent[0].ExpiresAt == nil {
+		t.Fatal("expected damaged item restoration to start")
+	}
+}
+
 func TestStorage_ActivateArtifact_RequiresArtifactLab(t *testing.T) {
 	base := newBaseWithDefaults(40)
 	artifact := StorageItemPresent{

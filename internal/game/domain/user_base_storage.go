@@ -338,6 +338,7 @@ func (ub *UserBaseModel) StartDamagedItemRestorationByID(itemID uuid.UUID, armyP
 	if !ub.hasControlSubtype(ControlSubtypeRepairCenter) {
 		return NewError("error.domain.storage.repair_center_required", nil)
 	}
+	ub.recalculateStats()
 	defer ub.recalculateStats()
 	now := NowUnix()
 
