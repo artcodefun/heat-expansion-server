@@ -49,8 +49,8 @@ func (r *RadarThreatRepo) FindByID(ctx context.Context, id uuid.UUID) (*domain.R
 	return mappers.RadarThreatFromModel(m), nil
 }
 
-func (r *RadarThreatRepo) FindByOperationID(ctx context.Context, opID int) (*domain.RadarThreat, error) {
-	m, err := r.q.GetRadarThreatByOperationID(ctx, int64(opID))
+func (r *RadarThreatRepo) FindByOperationIDForUpdate(ctx context.Context, opID int) (*domain.RadarThreat, error) {
+	m, err := r.q.GetRadarThreatByOperationIDForUpdate(ctx, int64(opID))
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, ports.ErrNotFound

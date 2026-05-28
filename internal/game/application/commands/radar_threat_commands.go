@@ -24,7 +24,7 @@ func NewRadarThreatCommands(radarThreatRepo ports.RadarThreatRepository, outbox 
 // HandleMilitaryOperationArrivedEvent updates the radar threat status when the operation arrives at target.
 func (c *RadarThreatCommands) HandleMilitaryOperationArrivedEvent(ctx context.Context, event domain.MilitaryOperationArrivedEvent) error {
 	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
-		threat, err := c.RadarThreatRepo.Tx(tx).FindByOperationID(ctx, event.OperationID)
+		threat, err := c.RadarThreatRepo.Tx(tx).FindByOperationIDForUpdate(ctx, event.OperationID)
 		if err != nil {
 			if err == ports.ErrNotFound {
 				return nil
@@ -40,7 +40,7 @@ func (c *RadarThreatCommands) HandleMilitaryOperationArrivedEvent(ctx context.Co
 // HandleMilitaryOperationCancelledEvent updates the radar threat status when the operation is cancelled.
 func (c *RadarThreatCommands) HandleMilitaryOperationCancelledEvent(ctx context.Context, event domain.MilitaryOperationCancelledEvent) error {
 	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
-		threat, err := c.RadarThreatRepo.Tx(tx).FindByOperationID(ctx, event.OperationID)
+		threat, err := c.RadarThreatRepo.Tx(tx).FindByOperationIDForUpdate(ctx, event.OperationID)
 		if err != nil {
 			if err == ports.ErrNotFound {
 				return nil
