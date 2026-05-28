@@ -13,6 +13,7 @@ import (
 
 const (
 	blackMarketLimitedOfferMaxActivePerKind = 2
+	blackMarketLimitedOfferMaxActiveTotal   = 2
 	blackMarketRefreshPeriod                = 12 * time.Hour
 )
 
@@ -161,6 +162,7 @@ func (c *BlackMarketCommands) HandleRefreshBlackMarketOffersJob(ctx context.Cont
 		for _, offer := range activeOffers {
 			activeCountByKind[offer.Kind]++
 		}
+		activeCountTotal := len(activeOffers)
 		promotedKindsThisRun := make(map[domain.BlackMarketOfferKind]struct{})
 
 		expiredOffers, err := oRepo.ListExpiredLimitedOffers(ctx, now)
@@ -169,6 +171,9 @@ func (c *BlackMarketCommands) HandleRefreshBlackMarketOffersJob(ctx context.Cont
 		}
 
 		for _, offer := range expiredOffers {
+			if activeCountTotal >= blackMarketLimitedOfferMaxActiveTotal {
+				break
+			}
 			if activeCountByKind[offer.Kind] >= blackMarketLimitedOfferMaxActivePerKind {
 				continue
 			}
@@ -181,6 +186,7 @@ func (c *BlackMarketCommands) HandleRefreshBlackMarketOffersJob(ctx context.Cont
 				return err
 			}
 			activeCountByKind[offer.Kind]++
+			activeCountTotal++
 			promotedKindsThisRun[offer.Kind] = struct{}{}
 		}
 		return nil
