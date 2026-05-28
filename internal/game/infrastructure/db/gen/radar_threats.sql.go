@@ -42,12 +42,12 @@ func (q *Queries) GetRadarThreat(ctx context.Context, id uuid.UUID) (RadarThreat
 	return i, err
 }
 
-const getRadarThreatByOperationID = `-- name: GetRadarThreatByOperationID :one
-SELECT id, operation_id, owner_base_id, detected_at, detected_x, detected_y, source_x, source_y, target_x, target_y, estimated_arrival_at, arrival_at, type, status, attack, speed, stealth, capacity FROM game.radar_threats WHERE operation_id = $1 LIMIT 1
+const getRadarThreatByOperationIDForUpdate = `-- name: GetRadarThreatByOperationIDForUpdate :one
+SELECT id, operation_id, owner_base_id, detected_at, detected_x, detected_y, source_x, source_y, target_x, target_y, estimated_arrival_at, arrival_at, type, status, attack, speed, stealth, capacity FROM game.radar_threats WHERE operation_id = $1 LIMIT 1 FOR UPDATE
 `
 
-func (q *Queries) GetRadarThreatByOperationID(ctx context.Context, operationID int64) (RadarThreat, error) {
-	row := q.queryRow(ctx, q.getRadarThreatByOperationIDStmt, getRadarThreatByOperationID, operationID)
+func (q *Queries) GetRadarThreatByOperationIDForUpdate(ctx context.Context, operationID int64) (RadarThreat, error) {
+	row := q.queryRow(ctx, q.getRadarThreatByOperationIDForUpdateStmt, getRadarThreatByOperationIDForUpdate, operationID)
 	var i RadarThreat
 	err := row.Scan(
 		&i.ID,

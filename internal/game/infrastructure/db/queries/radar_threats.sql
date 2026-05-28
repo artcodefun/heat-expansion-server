@@ -18,8 +18,8 @@ RETURNING *;
 -- name: GetRadarThreat :one
 SELECT * FROM game.radar_threats WHERE id = $1 LIMIT 1;
 
--- name: GetRadarThreatByOperationID :one
-SELECT * FROM game.radar_threats WHERE operation_id = $1 LIMIT 1;
+-- name: GetRadarThreatByOperationIDForUpdate :one
+SELECT * FROM game.radar_threats WHERE operation_id = $1 LIMIT 1 FOR UPDATE;
 
 -- name: RadarThreatExists :one
 SELECT EXISTS (

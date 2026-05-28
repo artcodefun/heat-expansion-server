@@ -71,7 +71,7 @@ type Querier interface {
 	GetMilitaryOperationByIDForUpdate(ctx context.Context, id int64) (MilitaryOperation, error)
 	GetNextScheduledJob(ctx context.Context) (ScheduledJob, error)
 	GetRadarThreat(ctx context.Context, id uuid.UUID) (RadarThreat, error)
-	GetRadarThreatByOperationID(ctx context.Context, operationID int64) (RadarThreat, error)
+	GetRadarThreatByOperationIDForUpdate(ctx context.Context, operationID int64) (RadarThreat, error)
 	// Resource locations queries
 	GetResourceLocationByID(ctx context.Context, id int64) (ResourceLocation, error)
 	GetResourceLocationBySector(ctx context.Context, arg GetResourceLocationBySectorParams) (ResourceLocation, error)

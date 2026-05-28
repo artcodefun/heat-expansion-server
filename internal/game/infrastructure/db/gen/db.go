@@ -177,8 +177,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getRadarThreatStmt, err = db.PrepareContext(ctx, getRadarThreat); err != nil {
 		return nil, fmt.Errorf("error preparing query GetRadarThreat: %w", err)
 	}
-	if q.getRadarThreatByOperationIDStmt, err = db.PrepareContext(ctx, getRadarThreatByOperationID); err != nil {
-		return nil, fmt.Errorf("error preparing query GetRadarThreatByOperationID: %w", err)
+	if q.getRadarThreatByOperationIDForUpdateStmt, err = db.PrepareContext(ctx, getRadarThreatByOperationIDForUpdate); err != nil {
+		return nil, fmt.Errorf("error preparing query GetRadarThreatByOperationIDForUpdate: %w", err)
 	}
 	if q.getResourceLocationByIDStmt, err = db.PrepareContext(ctx, getResourceLocationByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetResourceLocationByID: %w", err)
@@ -653,9 +653,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getRadarThreatStmt: %w", cerr)
 		}
 	}
-	if q.getRadarThreatByOperationIDStmt != nil {
-		if cerr := q.getRadarThreatByOperationIDStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getRadarThreatByOperationIDStmt: %w", cerr)
+	if q.getRadarThreatByOperationIDForUpdateStmt != nil {
+		if cerr := q.getRadarThreatByOperationIDForUpdateStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getRadarThreatByOperationIDForUpdateStmt: %w", cerr)
 		}
 	}
 	if q.getResourceLocationByIDStmt != nil {
@@ -1103,7 +1103,7 @@ type Queries struct {
 	getMilitaryOperationByIDForUpdateStmt          *sql.Stmt
 	getNextScheduledJobStmt                        *sql.Stmt
 	getRadarThreatStmt                             *sql.Stmt
-	getRadarThreatByOperationIDStmt                *sql.Stmt
+	getRadarThreatByOperationIDForUpdateStmt       *sql.Stmt
 	getResourceLocationByIDStmt                    *sql.Stmt
 	getResourceLocationBySectorStmt                *sql.Stmt
 	getResourceLocationBySectorForUpdateStmt       *sql.Stmt
@@ -1232,7 +1232,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getMilitaryOperationByIDForUpdateStmt:          q.getMilitaryOperationByIDForUpdateStmt,
 		getNextScheduledJobStmt:                        q.getNextScheduledJobStmt,
 		getRadarThreatStmt:                             q.getRadarThreatStmt,
-		getRadarThreatByOperationIDStmt:                q.getRadarThreatByOperationIDStmt,
+		getRadarThreatByOperationIDForUpdateStmt:       q.getRadarThreatByOperationIDForUpdateStmt,
 		getResourceLocationByIDStmt:                    q.getResourceLocationByIDStmt,
 		getResourceLocationBySectorStmt:                q.getResourceLocationBySectorStmt,
 		getResourceLocationBySectorForUpdateStmt:       q.getResourceLocationBySectorForUpdateStmt,

@@ -179,7 +179,7 @@ type RadarThreatRepository interface {
 	Create(ctx context.Context, threat *domain.RadarThreat) error
 	Update(ctx context.Context, threat *domain.RadarThreat) error
 	FindByID(ctx context.Context, id uuid.UUID) (*domain.RadarThreat, error)
-	FindByOperationID(ctx context.Context, opID int) (*domain.RadarThreat, error)
+	FindByOperationIDForUpdate(ctx context.Context, opID int) (*domain.RadarThreat, error)
 	RadarThreatExists(ctx context.Context, ownerBaseID int, opID int) (bool, error)
 	// Tx returns a repository instance bound to the provided transaction.
 	Tx(tx Transaction) RadarThreatRepository
