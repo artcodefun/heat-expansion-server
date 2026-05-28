@@ -3,6 +3,7 @@ package bootstrap
 import (
 	"context"
 	"log/slog"
+	"sync"
 	"time"
 
 	"go.opentelemetry.io/otel"
@@ -17,6 +18,7 @@ var authTracer = otel.Tracer("heat-expansion-auth")
 type Workers struct {
 	DomainOutboxLoop      func(ctx context.Context)
 	IntegrationOutboxLoop func(ctx context.Context)
+	wg                    sync.WaitGroup
 }
 
 func NewWorkers(
@@ -76,6 +78,18 @@ func NewWorkers(
 			}
 		},
 	}
+}
+
+// Start launches the auth background worker loops.
+func (w *Workers) Start(ctx context.Context) {
+	w.wg.Add(2)
+	go func() { defer w.wg.Done(); w.DomainOutboxLoop(ctx) }()
+	go func() { defer w.wg.Done(); w.IntegrationOutboxLoop(ctx) }()
+}
+
+// Wait blocks until all auth background worker loops have exited.
+func (w *Workers) Wait() {
+	w.wg.Wait()
 }
 
 func processBatch(ctx context.Context, spanName, errMsg string, fn func(context.Context) error) {

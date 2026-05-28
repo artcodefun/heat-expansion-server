@@ -1,7 +1,7 @@
 -- Army items lifecycle queries
 
 -- name: ListArmyPrototypesByIDs :many
-SELECT p.id, p.name, p.category, p.faction, p.unlock_technology_id, p.short_description, p.full_description, p.price, p.production_time, p.space, p.image_url, p.attack, p.defence, p.capacity, p.stealth, p.speed
+SELECT *
 FROM game.army_item_prototypes p
 WHERE p.id = ANY($1::bigint[])
 ORDER BY p.id;

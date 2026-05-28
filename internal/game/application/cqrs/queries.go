@@ -4,12 +4,18 @@ import (
 	"context"
 
 	readmodels "github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 	"github.com/google/uuid"
 )
 
 // UserQueries: user profile & ownership context.
 type UserQueries interface {
 	GetUserProfile(ctx context.Context, actor Actor, userID uuid.UUID) (*readmodels.User, error)
+}
+
+type BlackMarketQueries interface {
+	ListResourceRates(ctx context.Context, actor Actor, baseID int) ([]*readmodels.BlackMarketResourceRate, error)
+	ListActiveOffers(ctx context.Context, actor Actor, baseID int, kind *domain.BlackMarketOfferKind, limited *bool) ([]*readmodels.BlackMarketOffer, error)
 }
 
 // BaseQueries: high-level base stats.

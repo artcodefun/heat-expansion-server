@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 
+	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 	"github.com/google/uuid"
 	"github.com/sqlc-dev/pqtype"
 )
@@ -28,6 +29,15 @@ func unmarshalIfValid[T any](raw pqtype.NullRawMessage, out *T) {
 		return
 	}
 	_ = json.Unmarshal(raw.RawMessage, out)
+}
+
+func creationSourcesFromJSON(raw []byte) []domain.CreationSource {
+	if len(raw) == 0 {
+		return nil
+	}
+	var sources []domain.CreationSource
+	_ = json.Unmarshal(raw, &sources)
+	return sources
 }
 
 // toNullRawMessage serializes a pointer to JSONB, treating a nil pointer as SQL NULL.

@@ -11,10 +11,7 @@ import (
 
 const listArmyPrototypes = `-- name: ListArmyPrototypes :many
 
-SELECT id, name, category, faction, unlock_technology_id, short_description, full_description,
-       price,
-       production_time, space, image_url,
-       attack, defence, capacity, stealth, speed
+SELECT id, name, category, faction, unlock_technology_id, short_description, full_description, price, production_time, space, image_url, attack, defence, capacity, stealth, speed, creation_sources
 FROM game.army_item_prototypes
 ORDER BY id
 `
@@ -46,6 +43,7 @@ func (q *Queries) ListArmyPrototypes(ctx context.Context) ([]ArmyItemPrototype, 
 			&i.Capacity,
 			&i.Stealth,
 			&i.Speed,
+			&i.CreationSources,
 		); err != nil {
 			return nil, err
 		}
@@ -61,10 +59,7 @@ func (q *Queries) ListArmyPrototypes(ctx context.Context) ([]ArmyItemPrototype, 
 }
 
 const listBuildPrototypes = `-- name: ListBuildPrototypes :many
-SELECT id, name, category, faction, unlock_technology_id, short_description, full_description,
-       price,
-       production_time, space, image_url,
-       control_data, resources_data, defense_data, military_data, intelligence_data
+SELECT id, name, category, faction, unlock_technology_id, short_description, full_description, price, production_time, space, image_url, control_data, resources_data, defense_data, military_data, intelligence_data, creation_sources
 FROM game.build_item_prototypes
 ORDER BY id
 `
@@ -95,6 +90,7 @@ func (q *Queries) ListBuildPrototypes(ctx context.Context) ([]BuildItemPrototype
 			&i.DefenseData,
 			&i.MilitaryData,
 			&i.IntelligenceData,
+			&i.CreationSources,
 		); err != nil {
 			return nil, err
 		}
@@ -110,8 +106,7 @@ func (q *Queries) ListBuildPrototypes(ctx context.Context) ([]BuildItemPrototype
 }
 
 const listStoragePrototypes = `-- name: ListStoragePrototypes :many
-SELECT id, name, category, estimated_worth, short_description, full_description, image_url,
-       buff_data, intel_data, damaged_data, artifact_data, consumable_data
+SELECT id, name, category, estimated_worth, short_description, full_description, image_url, buff_data, intel_data, damaged_data, artifact_data, consumable_data, creation_sources
 FROM game.storage_item_prototypes
 ORDER BY id
 `
@@ -138,6 +133,7 @@ func (q *Queries) ListStoragePrototypes(ctx context.Context) ([]StorageItemProto
 			&i.DamagedData,
 			&i.ArtifactData,
 			&i.ConsumableData,
+			&i.CreationSources,
 		); err != nil {
 			return nil, err
 		}

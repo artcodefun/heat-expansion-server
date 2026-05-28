@@ -79,6 +79,9 @@ type IntelligenceRadarJob struct {
 	OperationID int
 }
 
+// RefreshBlackMarketOffersJob asks the system to refresh limited Black Market offers.
+type RefreshBlackMarketOffersJob struct{}
+
 // SchadulableJob represents a generic job that can be scheduled for execution.
 // This type can be used to define any job or task that needs to be managed by a scheduler.
 type SchadulableJob any

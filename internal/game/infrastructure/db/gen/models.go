@@ -54,6 +54,7 @@ type ArmyItemPrototype struct {
 	Capacity           int32           `json:"capacity"`
 	Stealth            int32           `json:"stealth"`
 	Speed              int32           `json:"speed"`
+	CreationSources    json.RawMessage `json:"creation_sources"`
 }
 
 type BaseArmyItem struct {
@@ -100,6 +101,16 @@ type BaseTechItem struct {
 	CreatedAt      int64                 `json:"created_at"`
 }
 
+type BlackMarketOffer struct {
+	ID              int64         `json:"id"`
+	Kind            string        `json:"kind"`
+	PrototypeID     int64         `json:"prototype_id"`
+	PriceInCrystals int64         `json:"price_in_crystals"`
+	EndsAt          sql.NullInt64 `json:"ends_at"`
+	IsLimited       bool          `json:"is_limited"`
+	Priority        int64         `json:"priority"`
+}
+
 type BuildItemPrototype struct {
 	ID                 int64                 `json:"id"`
 	Name               string                `json:"name"`
@@ -117,6 +128,7 @@ type BuildItemPrototype struct {
 	DefenseData        pqtype.NullRawMessage `json:"defense_data"`
 	MilitaryData       pqtype.NullRawMessage `json:"military_data"`
 	IntelligenceData   pqtype.NullRawMessage `json:"intelligence_data"`
+	CreationSources    json.RawMessage       `json:"creation_sources"`
 }
 
 type DangerousLocation struct {
@@ -292,6 +304,7 @@ type StorageItemPrototype struct {
 	DamagedData      pqtype.NullRawMessage `json:"damaged_data"`
 	ArtifactData     pqtype.NullRawMessage `json:"artifact_data"`
 	ConsumableData   pqtype.NullRawMessage `json:"consumable_data"`
+	CreationSources  json.RawMessage       `json:"creation_sources"`
 }
 
 type TechItemPrototype struct {

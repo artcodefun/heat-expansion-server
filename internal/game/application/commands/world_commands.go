@@ -94,16 +94,19 @@ func (c *WorldGenerationCommands) HandleSpawnNearbyLocationsJob(ctx context.Cont
 		c.reschedule(ctx, job.BaseID)
 		return nil
 	}
+	storageProtos = domain.FilterStorageItemPrototypesByCreationSource(storageProtos, domain.CreationSourceNPCLocation)
 	armyProtos, err := c.ArmyPrototypes.FindAllPrototypes(ctx)
 	if err != nil {
 		c.reschedule(ctx, job.BaseID)
 		return nil
 	}
+	armyProtos = domain.FilterArmyItemPrototypesByCreationSource(armyProtos, domain.CreationSourceNPCLocation)
 	buildProtos, err := c.BuildPrototypes.FindAllPrototypes(ctx)
 	if err != nil {
 		c.reschedule(ctx, job.BaseID)
 		return nil
 	}
+	buildProtos = domain.FilterBuildItemPrototypesByCreationSource(buildProtos, domain.CreationSourceNPCLocation)
 
 	r2 := c.SpawnRadius * c.SpawnRadius
 	for i := 0; i < c.SpawnAttemptsPerJob; i++ {
@@ -186,10 +189,12 @@ func (c *WorldGenerationCommands) spawnInitialLocations(ctx context.Context, bas
 	if err != nil {
 		return err
 	}
+	armyProtos = domain.FilterArmyItemPrototypesByCreationSource(armyProtos, domain.CreationSourceNPCLocation)
 	buildProtos, err := c.BuildPrototypes.FindAllPrototypes(ctx)
 	if err != nil {
 		return err
 	}
+	buildProtos = domain.FilterBuildItemPrototypesByCreationSource(buildProtos, domain.CreationSourceNPCLocation)
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	center := base.Coordinates

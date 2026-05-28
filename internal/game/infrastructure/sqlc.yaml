@@ -20,6 +20,7 @@ sql:
           game_base_build_item: BaseBuildItem
           game_base_storage_item: BaseStorageItem
           game_base_tech_item: BaseTechItem
+          game_black_market_offer: BlackMarketOffer
           game_build_item_prototype: BuildItemPrototype
           game_dangerous_location: DangerousLocation
           game_domain_event: DomainEvent
@@ -57,6 +58,7 @@ sql:
           game_base_build_item: BaseBuildItem
           game_base_storage_item: BaseStorageItem
           game_base_tech_item: BaseTechItem
+          game_black_market_offer: BlackMarketOffer
           game_build_item_prototype: BuildItemPrototype
           game_dangerous_location: DangerousLocation
           game_domain_event: DomainEvent

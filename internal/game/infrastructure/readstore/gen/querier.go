@@ -34,6 +34,10 @@ type Querier interface {
 	GetTradeOperation(ctx context.Context, id int64) (TradeOperation, error)
 	// Readstore user profile queries
 	GetUserProfile(ctx context.Context, id uuid.UUID) (User, error)
+	ListActiveBlackMarketArmyOffers(ctx context.Context, arg ListActiveBlackMarketArmyOffersParams) ([]ListActiveBlackMarketArmyOffersRow, error)
+	// Black Market offer queries
+	ListActiveBlackMarketBuildingOffers(ctx context.Context, arg ListActiveBlackMarketBuildingOffersParams) ([]ListActiveBlackMarketBuildingOffersRow, error)
+	ListActiveBlackMarketStorageOffers(ctx context.Context, arg ListActiveBlackMarketStorageOffersParams) ([]ListActiveBlackMarketStorageOffersRow, error)
 	ListActiveOperations(ctx context.Context, sourceBaseID int64) ([]MilitaryOperation, error)
 	ListActiveTradeOperations(ctx context.Context, senderBaseID int64) ([]TradeOperation, error)
 	ListAlertsByUser(ctx context.Context, arg ListAlertsByUserParams) ([]Alert, error)

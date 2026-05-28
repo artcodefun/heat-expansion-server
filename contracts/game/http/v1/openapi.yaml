@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Heat Expansion Game API
-  version: 0.1.0
+  version: 0.2.0
   description: |
     Core gameplay service for Heat Expansion.
     This API exposes player-facing game capabilities such as base management, production, operations, storage, radar, diplomacy, trade, alerts, and activity history.
@@ -10,6 +10,7 @@ servers:
 tags:
   - name: Public
   - name: User
+  - name: Black Market
   - name: Bases
   - name: Buildings
   - name: Army
@@ -51,6 +52,112 @@ paths:
                 $ref: '#/components/schemas/UserCrystalBalanceResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/black-market/resources:
+    get:
+      tags: [Black Market]
+      summary: List Black Market resource rates for a base
+      operationId: listBlackMarketResourceRates
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+      responses:
+        '200':
+          description: Resource exchange rates returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BlackMarketResourceRateDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/black-market/resources/purchase:
+    post:
+      tags: [Black Market]
+      summary: Spend crystals to buy resources for a base
+      operationId: purchaseBlackMarketResources
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlackMarketResourcePurchaseRequest'
+      responses:
+        '200':
+          description: Resource purchase completed
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/black-market/offers:
+    get:
+      tags: [Black Market]
+      summary: List active Black Market offers for a base
+      operationId: listBlackMarketOffers
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/BlackMarketOfferKindQuery'
+        - $ref: '#/components/parameters/BlackMarketOfferLimitedQuery'
+      responses:
+        '200':
+          description: Active Black Market offers returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BlackMarketOfferDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /bases/{baseId}/black-market/offers/{offerId}/purchase:
+    post:
+      tags: [Black Market]
+      summary: Purchase a Black Market offer for a base
+      operationId: purchaseBlackMarketOffer
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BaseId'
+        - $ref: '#/components/parameters/OfferId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [quantity]
+              properties:
+                quantity:
+                  type: integer
+                  minimum: 1
+      responses:
+        '200':
+          description: Offer purchase completed
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
         default:
           $ref: '#/components/responses/ErrorResponse'
   /bases:
@@ -1860,6 +1967,13 @@ components:
       schema:
         type: integer
         minimum: 1
+    OfferId:
+      name: offerId
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
     ItemIdUuid:
       name: itemId
       in: path
@@ -1922,6 +2036,18 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/StorageCategory'
+    BlackMarketOfferKindQuery:
+      name: kind
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/BlackMarketOfferKind'
+    BlackMarketOfferLimitedQuery:
+      name: limited
+      in: query
+      required: false
+      schema:
+        type: boolean
   responses:
     BadRequestError:
       description: Request binding or validation failed
@@ -1986,6 +2112,58 @@ components:
       properties:
         crystals:
           type: integer
+    BlackMarketResourceType:
+      type: string
+      enum: [CREDITS, IRON, TITANIUM, ANTIMATTER]
+    BlackMarketResourceRateDTO:
+      type: object
+      required: [resource_type, crystals_cost, resource_amount]
+      properties:
+        resource_type:
+          $ref: '#/components/schemas/BlackMarketResourceType'
+        crystals_cost:
+          type: integer
+          minimum: 1
+        resource_amount:
+          type: integer
+          minimum: 1
+    BlackMarketResourcePurchaseRequest:
+      type: object
+      required: [resource_type, crystals]
+      properties:
+        resource_type:
+          $ref: '#/components/schemas/BlackMarketResourceType'
+        crystals:
+          type: integer
+          minimum: 1
+    BlackMarketOfferKind:
+      type: string
+      enum: [BUILDING, ARMY, STORAGE]
+    BlackMarketOfferDTO:
+      type: object
+      required: [id, kind, prototype_id, price_in_crystals, is_limited, priority]
+      properties:
+        id:
+          type: integer
+        kind:
+          $ref: '#/components/schemas/BlackMarketOfferKind'
+        prototype_id:
+          type: integer
+        price_in_crystals:
+          type: integer
+          minimum: 1
+        ends_at:
+          type: integer
+        is_limited:
+          type: boolean
+        priority:
+          type: integer
+        building:
+          $ref: '#/components/schemas/BuildItemPrototypeDTO'
+        army:
+          $ref: '#/components/schemas/ArmyItemPrototypeDTO'
+        storage:
+          $ref: '#/components/schemas/StorageItemPrototypeDTO'
     Vector2iDTO:
       type: object
       required: [x, y]

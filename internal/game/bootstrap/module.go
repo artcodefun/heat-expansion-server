@@ -7,7 +7,6 @@ import (
 	"log"
 	"log/slog"
 	"os"
-	"sync"
 	"time"
 
 	"github.com/XSAM/otelsql"
@@ -79,31 +78,33 @@ func NewModule() *Module {
 	workers := NewWorkers(dbURL, services.Outbox, adapters.Scheduler, consumer)
 
 	httpCommands := httpapi.Commands{
-		User:      commands.User,
-		Base:      commands.Base,
-		Building:  commands.Building,
-		Army:      commands.Army,
-		Tech:      commands.Tech,
-		Storage:   commands.Storage,
-		Operation: commands.Operation,
-		Trade:     commands.Trade,
-		Alert:     commands.Alert,
-		Diplomacy: commands.Diplomacy,
+		User:        commands.User,
+		BlackMarket: commands.BlackMarket,
+		Base:        commands.Base,
+		Building:    commands.Building,
+		Army:        commands.Army,
+		Tech:        commands.Tech,
+		Storage:     commands.Storage,
+		Operation:   commands.Operation,
+		Trade:       commands.Trade,
+		Alert:       commands.Alert,
+		Diplomacy:   commands.Diplomacy,
 	}
 	httpQueries := httpapi.Queries{
-		User:      queries.User,
-		Base:      queries.Base,
-		Building:  queries.Building,
-		Army:      queries.Army,
-		Tech:      queries.Tech,
-		Storage:   queries.Storage,
-		Trade:     queries.Trade,
-		Sector:    queries.Sector,
-		Radar:     queries.Radar,
-		Operation: queries.Operation,
-		Activity:  queries.Activity,
-		Alert:     queries.Alert,
-		Diplomacy: queries.Diplomacy,
+		User:        queries.User,
+		BlackMarket: queries.BlackMarket,
+		Base:        queries.Base,
+		Building:    queries.Building,
+		Army:        queries.Army,
+		Tech:        queries.Tech,
+		Storage:     queries.Storage,
+		Trade:       queries.Trade,
+		Sector:      queries.Sector,
+		Radar:       queries.Radar,
+		Operation:   queries.Operation,
+		Activity:    queries.Activity,
+		Alert:       queries.Alert,
+		Diplomacy:   queries.Diplomacy,
 	}
 	addr := fmt.Sprintf(":%s", port)
 	router := httpapi.NewRouter(httpCommands, httpQueries, adapters.Tokens, adapters.Translator)
@@ -130,11 +131,11 @@ func NewModule() *Module {
 func (m *Module) Run(ctx context.Context) {
 	slog.Info("starting game service", "port", m.Port)
 
-	var wg sync.WaitGroup
-	wg.Add(3)
-	go func() { defer wg.Done(); m.Workers.SchedulerLoop(ctx) }()
-	go func() { defer wg.Done(); m.Workers.IntegrationEvtLoop(ctx) }()
-	go func() { defer wg.Done(); m.Workers.OutboxLoop(ctx) }()
+	if err := seedPeriodicJobs(ctx, m.DB); err != nil {
+		log.Fatal("Failed to seed periodic jobs:", err)
+	}
+
+	m.Workers.Start(ctx)
 
 	go func() {
 		if err := m.HTTPServer.Start(); err != nil {
@@ -151,6 +152,6 @@ func (m *Module) Run(ctx context.Context) {
 		slog.Error("game http server shutdown error", "error", err)
 	}
 
-	wg.Wait()
+	m.Workers.Wait()
 	slog.Info("game module: stopped")
 }

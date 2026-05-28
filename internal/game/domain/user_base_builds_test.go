@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -9,13 +10,14 @@ func TestBuilding_MoveAndSpeedUpProduction_EmitsEvents(t *testing.T) {
 	base := newBaseWithDefaults(1)
 
 	proto := &BuildItemPrototype{
-		ID:             1,
-		Name:           "Mine",
-		Category:       BuildCategoryResources,
-		Faction:        FactionExoCoalition,
-		Price:          PriceModel{Credits: 100, Iron: 50, Titanium: 10, Antimatter: 1},
-		ProductionTime: 120,
-		Space:          2,
+		ID:              1,
+		Name:            "Mine",
+		Category:        BuildCategoryResources,
+		CreationSources: []CreationSource{CreationSourcePlayerBase},
+		Faction:         FactionExoCoalition,
+		Price:           PriceModel{Credits: 100, Iron: 50, Titanium: 10, Antimatter: 1},
+		ProductionTime:  120,
+		Space:           2,
 	}
 
 	// queue -> should start production immediately via MoveBuildQueue in AddToBuildQueue
@@ -115,6 +117,78 @@ func TestBuilding_MoveAndSpeedUpProduction_EmitsEvents(t *testing.T) {
 	}
 }
 
+func TestBuilding_AvailableBuildings_RequiresPlayerBaseOrigin(t *testing.T) {
+	base := newBaseWithDefaults(11)
+	protos := []*BuildItemPrototype{
+		{
+			ID:              1,
+			Name:            "Factory",
+			Category:        BuildCategoryMilitary,
+			CreationSources: []CreationSource{CreationSourceBlackMarket},
+			Faction:         FactionExoCoalition,
+		},
+		{
+			ID:              2,
+			Name:            "Mine",
+			Category:        BuildCategoryResources,
+			CreationSources: []CreationSource{CreationSourcePlayerBase},
+			Faction:         FactionExoCoalition,
+		},
+	}
+
+	available := base.AvailableBuildings(protos)
+	if len(available) != 1 {
+		t.Fatalf("expected 1 available building, got %d", len(available))
+	}
+	if available[0].ID != 2 {
+		t.Fatalf("expected PLAYER_BASE building to be available, got prototype %d", available[0].ID)
+	}
+}
+
+func TestBuilding_ReceiveBuilding_AddsPresentBuilding(t *testing.T) {
+	base := newBaseWithDefaults(12)
+	proto := BuildItemPrototype{
+		ID:              21,
+		Category:        BuildCategoryResources,
+		CreationSources: []CreationSource{CreationSourcePlayerBase},
+		Faction:         FactionExoCoalition,
+		Space:           1,
+	}
+
+	if err := base.ReceiveBuilding(proto); err != nil {
+		t.Fatalf("ReceiveBuilding error: %v", err)
+	}
+	if len(base.BuildingsPresent) != 1 {
+		t.Fatalf("expected one building present, got %+v", base.BuildingsPresent)
+	}
+}
+
+func TestBuilding_ReceiveBuilding_RespectsSpace(t *testing.T) {
+	base := newBaseWithDefaults(13)
+	base.BuildingsPresent = []BuildItemPresent{{
+		BaseOwnedItem: NewBaseOwnedItem(base.ID),
+		Prototype:     BuildItemPrototype{ID: 90, Space: 100},
+	}}
+	proto := BuildItemPrototype{
+		ID:              22,
+		Category:        BuildCategoryResources,
+		CreationSources: []CreationSource{CreationSourceBlackMarket},
+		Faction:         FactionExoCoalition,
+		Space:           2,
+	}
+
+	err := base.ReceiveBuilding(proto)
+	if err == nil {
+		t.Fatal("expected not enough space error")
+	}
+	if !strings.HasPrefix(err.Error(), "error.domain.building.not_enough_space") {
+		t.Fatalf("expected not enough space error, got %v", err)
+	}
+	if len(base.BuildingsPresent) != 1 {
+		t.Fatalf("expected existing buildings to remain unchanged after space failure, got %+v", base.BuildingsPresent)
+	}
+}
+
 func TestBuilding_AddToBuildQueue_NotEnoughSpace(t *testing.T) {
 	SetTestNow(t, 2_000)
 	base := newBaseWithDefaults(10)
@@ -122,13 +196,14 @@ func TestBuilding_AddToBuildQueue_NotEnoughSpace(t *testing.T) {
 	base.Stats.MaxSpace = 1
 
 	proto := &BuildItemPrototype{
-		ID:             2,
-		Name:           "Big Tower",
-		Category:       BuildCategoryResources,
-		Faction:        FactionExoCoalition,
-		Price:          PriceModel{Credits: 100, Iron: 50, Titanium: 30, Antimatter: 20},
-		ProductionTime: 60,
-		Space:          2, // exceeds capacity
+		ID:              2,
+		Name:            "Big Tower",
+		Category:        BuildCategoryResources,
+		CreationSources: []CreationSource{CreationSourcePlayerBase},
+		Faction:         FactionExoCoalition,
+		Price:           PriceModel{Credits: 100, Iron: 50, Titanium: 30, Antimatter: 20},
+		ProductionTime:  60,
+		Space:           2, // exceeds capacity
 	}
 
 	if err := base.AddToBuildQueue(proto); err == nil {
@@ -147,9 +222,9 @@ func TestApplyRemainingDefensiveStructures_KeepsNonDefensiveAndAppliesCounts(t *
 	base := newBaseWithDefaults(41)
 
 	// One non-defensive building, and three defensive turrets (same prototype ID)
-	defProto := BuildItemPrototype{ID: 400, Category: BuildCategoryDefense, Faction: FactionExoCoalition, DefenseData: &DefenseBuildingData{DefenceBonus: 5}}
+	defProto := BuildItemPrototype{ID: 400, Category: BuildCategoryDefense, CreationSources: []CreationSource{CreationSourcePlayerBase}, Faction: FactionExoCoalition, DefenseData: &DefenseBuildingData{DefenceBonus: 5}}
 	base.BuildingsPresent = []BuildItemPresent{
-		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: BuildItemPrototype{ID: 399, Category: BuildCategoryResources, Faction: FactionExoCoalition}},
+		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: BuildItemPrototype{ID: 399, Category: BuildCategoryResources, CreationSources: []CreationSource{CreationSourcePlayerBase}, Faction: FactionExoCoalition}},
 		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: defProto},
 		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: defProto},
 		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: defProto},
@@ -179,9 +254,10 @@ func TestUserBase_TotalRadarStealthStrength(t *testing.T) {
 	}
 
 	radarProto := &BuildItemPrototype{
-		ID:       10,
-		Category: BuildCategoryIntelligence,
-		Faction:  FactionExoCoalition,
+		ID:              10,
+		Category:        BuildCategoryIntelligence,
+		CreationSources: []CreationSource{CreationSourcePlayerBase},
+		Faction:         FactionExoCoalition,
 		IntelligenceData: &IntelligenceBuildingData{
 			Subtype:         IntelligenceSubtypeRadar,
 			StealthStrength: 50,

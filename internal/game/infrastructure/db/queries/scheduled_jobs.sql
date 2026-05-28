@@ -30,3 +30,20 @@ WHERE dispatched = FALSE
 ORDER BY execute_at ASC, id ASC
 LIMIT 1;
 
+-- name: InsertScheduledJobIfNotExists :one
+WITH acquired AS (
+  SELECT pg_advisory_xact_lock(hashtext(@kind)::bigint)
+)
+INSERT INTO game.scheduled_jobs (
+  kind, payload, execute_at, created_at, dispatched
+) SELECT
+  @kind, @payload, @execute_at, @created_at, FALSE
+FROM acquired
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM game.scheduled_jobs
+  WHERE kind = @kind
+    AND dispatched = FALSE
+)
+RETURNING id;
+

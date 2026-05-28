@@ -11,10 +11,7 @@ import (
 
 const getArmyPrototypeByID = `-- name: GetArmyPrototypeByID :one
 
-SELECT id, name, category, faction, unlock_technology_id, short_description, full_description,
-       price,
-       production_time, space, image_url,
-       attack, defence, capacity, stealth, speed
+SELECT id, name, category, faction, unlock_technology_id, short_description, full_description, price, production_time, space, image_url, attack, defence, capacity, stealth, speed, creation_sources
 FROM game.army_item_prototypes
 WHERE id = $1
 `
@@ -40,15 +37,13 @@ func (q *Queries) GetArmyPrototypeByID(ctx context.Context, id int64) (ArmyItemP
 		&i.Capacity,
 		&i.Stealth,
 		&i.Speed,
+		&i.CreationSources,
 	)
 	return i, err
 }
 
 const listArmyPrototypes = `-- name: ListArmyPrototypes :many
-SELECT id, name, category, faction, unlock_technology_id, short_description, full_description,
-       price,
-       production_time, space, image_url,
-       attack, defence, capacity, stealth, speed
+SELECT id, name, category, faction, unlock_technology_id, short_description, full_description, price, production_time, space, image_url, attack, defence, capacity, stealth, speed, creation_sources
 FROM game.army_item_prototypes
 ORDER BY id
 `
@@ -79,6 +74,7 @@ func (q *Queries) ListArmyPrototypes(ctx context.Context) ([]ArmyItemPrototype, 
 			&i.Capacity,
 			&i.Stealth,
 			&i.Speed,
+			&i.CreationSources,
 		); err != nil {
 			return nil, err
 		}

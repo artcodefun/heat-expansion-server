@@ -241,6 +241,43 @@ func (ub *UserBaseModel) CreditLoot(loot PriceModel) {
 	}
 }
 
+// ReceiveResource adds a single resource type to the base if it fits its capacity.
+// It returns a domain error when the resource type is invalid or the capacity would be exceeded.
+func (ub *UserBaseModel) ReceiveResource(resourceType ResourceType, amount int) error {
+	if amount <= 0 {
+		return NewError("error.domain.base.invalid_resource_amount", H{"amount": amount})
+	}
+	value := float64(amount)
+	switch resourceType {
+	case ResourceTypeCredits:
+		if ub.Stats.Credits+value > float64(ub.Stats.CreditsCapacity) {
+			return NewError("error.domain.base.resource_capacity_reached", H{"resource": resourceType, "capacity": ub.Stats.CreditsCapacity})
+		}
+		ub.Stats.Credits += value
+		return nil
+	case ResourceTypeIron:
+		if ub.Stats.Iron+value > float64(ub.Stats.IronCapacity) {
+			return NewError("error.domain.base.resource_capacity_reached", H{"resource": resourceType, "capacity": ub.Stats.IronCapacity})
+		}
+		ub.Stats.Iron += value
+		return nil
+	case ResourceTypeTitanium:
+		if ub.Stats.Titanium+value > float64(ub.Stats.TitaniumCapacity) {
+			return NewError("error.domain.base.resource_capacity_reached", H{"resource": resourceType, "capacity": ub.Stats.TitaniumCapacity})
+		}
+		ub.Stats.Titanium += value
+		return nil
+	case ResourceTypeAntimatter:
+		if ub.Stats.Antimatter+value > float64(ub.Stats.AntimatterCapacity) {
+			return NewError("error.domain.base.resource_capacity_reached", H{"resource": resourceType, "capacity": ub.Stats.AntimatterCapacity})
+		}
+		ub.Stats.Antimatter += value
+		return nil
+	default:
+		return NewError("error.domain.base.invalid_resource_type", H{"resource": resourceType})
+	}
+}
+
 // FillStarterResources sets Credits and Iron to their current maximum capacity.
 func (ub *UserBaseModel) FillStarterResources() {
 	ub.Stats.Credits = float64(ub.Stats.CreditsCapacity)

@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"slices"
+
 	"github.com/google/uuid"
 )
 
@@ -8,6 +10,9 @@ import (
 func (ub *UserBaseModel) AvailableBuildings(allPrototypes []*BuildItemPrototype) []*BuildItemPrototype {
 	available := []*BuildItemPrototype{}
 	for _, proto := range allPrototypes {
+		if !slices.Contains(proto.CreationSources, CreationSourcePlayerBase) {
+			continue
+		}
 		// Players can only build EXO_COALITION buildings
 		if proto.Faction != FactionExoCoalition {
 			continue
@@ -67,6 +72,24 @@ func (ub *UserBaseModel) AddToBuildQueue(proto *BuildItemPrototype) error {
 	// Immediately process the queue
 	ub.MoveBuildQueue()
 
+	return nil
+}
+
+// ReceiveBuilding instantly adds a completed building to the base.
+func (ub *UserBaseModel) ReceiveBuilding(proto BuildItemPrototype) error {
+	ub.recalculateStats()
+	defer ub.recalculateStats()
+
+	totalSpace := ub.Stats.Space + proto.Space
+	if totalSpace > ub.Stats.MaxSpace {
+		return NewError("error.domain.building.not_enough_space", H{"required": totalSpace, "available": ub.Stats.MaxSpace})
+	}
+
+	ub.BuildingsPresent = append(ub.BuildingsPresent, BuildItemPresent{
+		BaseOwnedItem: NewBaseOwnedItem(ub.ID),
+		Prototype:     proto,
+		Refund:        proto.Price.Divide(10),
+	})
 	return nil
 }
 

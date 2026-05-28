@@ -10,6 +10,9 @@ import (
 func (ub *UserBaseModel) AvailableArmies(allPrototypes []*ArmyItemPrototype) []*ArmyItemPrototype {
 	available := []*ArmyItemPrototype{}
 	for _, proto := range allPrototypes {
+		if !slices.Contains(proto.CreationSources, CreationSourcePlayerBase) {
+			continue
+		}
 		// Players can only build EXO_COALITION units
 		if proto.Faction != FactionExoCoalition {
 			continue
@@ -74,6 +77,37 @@ func (ub *UserBaseModel) QueueArmy(proto *ArmyItemPrototype, count int) error {
 		ub.ArmiesPending = append(ub.ArmiesPending, pending)
 	}
 	ub.MoveArmyQueue()
+	return nil
+}
+
+// ReceiveArmyItems instantly adds completed army units to the base.
+func (ub *UserBaseModel) ReceiveArmyItems(proto ArmyItemPrototype, count int) error {
+	ub.recalculateStats()
+	defer ub.recalculateStats()
+
+	if count < 1 {
+		return NewError("error.domain.army.invalid_count_min", nil)
+	}
+
+	requiredSpace := proto.Space * count
+	totalSpace := ub.Stats.Space + requiredSpace
+	if totalSpace > ub.Stats.MaxSpace {
+		return NewError("error.domain.army.not_enough_space", H{"required": totalSpace, "available": ub.Stats.MaxSpace})
+	}
+
+	for i, present := range ub.ArmiesPresent {
+		if present.Prototype.ID == proto.ID {
+			ub.ArmiesPresent[i].Count += count
+			return nil
+		}
+	}
+
+	ub.ArmiesPresent = append(ub.ArmiesPresent, ArmyItemPresent{
+		BaseOwnedItem: NewBaseOwnedItem(ub.ID),
+		Prototype:     proto,
+		Count:         count,
+		Refund:        proto.Price.Divide(10),
+	})
 	return nil
 }
 

@@ -175,6 +175,22 @@ func TestStorage_DeleteStorageItemByID(t *testing.T) {
 	}
 }
 
+func TestStorage_ReceiveStorageItem_AddsItem(t *testing.T) {
+	base := newBaseWithDefaults(2)
+	proto := StorageItemPrototype{
+		ID:              200,
+		CreationSources: []CreationSource{CreationSourcePlayerBase},
+		Category:        StorageCategoryBuff,
+	}
+
+	if err := base.ReceiveStorageItem(proto); err != nil {
+		t.Fatalf("ReceiveStorageItem error: %v", err)
+	}
+	if len(base.StorageItemsPresent) != 1 {
+		t.Fatalf("expected one storage item, got %+v", base.StorageItemsPresent)
+	}
+}
+
 func TestStorage_AddTradeDeployedStorageItems_NormalizesBaseOwnership(t *testing.T) {
 	base := newBaseWithDefaults(42)
 	otherBaseID := base.ID + 1000

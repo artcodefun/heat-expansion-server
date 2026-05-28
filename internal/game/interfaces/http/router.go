@@ -19,33 +19,35 @@ import (
 
 // Commands groups CQRS command interfaces needed by HTTP handlers.
 type Commands struct {
-	User      cqrs.UserCommands
-	Base      cqrs.BaseCommands
-	Building  cqrs.BuildingCommands
-	Army      cqrs.ArmyCommands
-	Tech      cqrs.TechCommands
-	Storage   cqrs.StorageCommands
-	Operation cqrs.OperationCommands
-	Trade     cqrs.TradeCommands
-	Alert     cqrs.AlertCommands
-	Diplomacy cqrs.DiplomacyCommands
+	User        cqrs.UserCommands
+	BlackMarket cqrs.BlackMarketCommands
+	Base        cqrs.BaseCommands
+	Building    cqrs.BuildingCommands
+	Army        cqrs.ArmyCommands
+	Tech        cqrs.TechCommands
+	Storage     cqrs.StorageCommands
+	Operation   cqrs.OperationCommands
+	Trade       cqrs.TradeCommands
+	Alert       cqrs.AlertCommands
+	Diplomacy   cqrs.DiplomacyCommands
 }
 
 // Queries groups CQRS query interfaces needed by HTTP handlers.
 type Queries struct {
-	User      cqrs.UserQueries
-	Base      cqrs.BaseQueries
-	Building  cqrs.BuildingQueries
-	Army      cqrs.ArmyQueries
-	Tech      cqrs.TechQueries
-	Storage   cqrs.StorageQueries
-	Trade     cqrs.TradeQueries
-	Sector    cqrs.SectorQueries
-	Radar     cqrs.RadarQueries
-	Operation cqrs.OperationQueries
-	Activity  cqrs.ActivityQueries
-	Alert     cqrs.AlertQueries
-	Diplomacy cqrs.DiplomacyQueries
+	User        cqrs.UserQueries
+	BlackMarket cqrs.BlackMarketQueries
+	Base        cqrs.BaseQueries
+	Building    cqrs.BuildingQueries
+	Army        cqrs.ArmyQueries
+	Tech        cqrs.TechQueries
+	Storage     cqrs.StorageQueries
+	Trade       cqrs.TradeQueries
+	Sector      cqrs.SectorQueries
+	Radar       cqrs.RadarQueries
+	Operation   cqrs.OperationQueries
+	Activity    cqrs.ActivityQueries
+	Alert       cqrs.AlertQueries
+	Diplomacy   cqrs.DiplomacyQueries
 }
 
 // NewRouter constructs the Gin engine, registers middleware and routes.
@@ -56,6 +58,7 @@ func NewRouter(cmd Commands, qry Queries, tokenValidator ports.TokenValidator, t
 
 	// Initialize handlers at the top for consistency
 	userHandler := handlers.NewUserHandler(cmd.User, qry.User, tr)
+	blackMarketHandler := handlers.NewBlackMarketHandler(cmd.BlackMarket, qry.BlackMarket, tr)
 	baseHandler := handlers.NewBaseHandler(qry.Base, cmd.Base, tr)
 	buildingHandler := handlers.NewBuildingHandler(qry.Building, cmd.Building, tr)
 	armyHandler := handlers.NewArmyHandler(qry.Army, cmd.Army, tr)
@@ -90,6 +93,15 @@ func NewRouter(cmd Commands, qry Queries, tokenValidator ports.TokenValidator, t
 	{
 		// User
 		api.GET("/user/balance", userHandler.GetCrystalBalance)
+
+		// Black Market
+		blackMarket := api.Group("/bases/:baseId/black-market")
+		{
+			blackMarket.GET("/resources", blackMarketHandler.ListResourceRates)
+			blackMarket.POST("/resources/purchase", blackMarketHandler.PurchaseResources)
+			blackMarket.GET("/offers", blackMarketHandler.ListOffers)
+			blackMarket.POST("/offers/:offerId/purchase", blackMarketHandler.PurchaseOffer)
+		}
 
 		// Base
 		api.GET("/bases", baseHandler.ListUserBases)
@@ -263,6 +275,12 @@ func registerCustomValidators() {
 		})
 		_ = validatorEngine.RegisterValidation("storage_category", func(fl validator.FieldLevel) bool {
 			return dtos.IsValidStorageCategory(fl.Field().String())
+		})
+		_ = validatorEngine.RegisterValidation("resource_type", func(fl validator.FieldLevel) bool {
+			return dtos.IsValidResourceType(fl.Field().String())
+		})
+		_ = validatorEngine.RegisterValidation("black_market_offer_kind", func(fl validator.FieldLevel) bool {
+			return dtos.IsValidBlackMarketOfferKind(fl.Field().String())
 		})
 	}
 }

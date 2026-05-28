@@ -207,6 +207,17 @@ type TradeOperationRepository interface {
 	Tx(tx Transaction) TradeOperationRepository
 }
 
+// BlackMarketOfferRepository defines persistence for black market offers.
+type BlackMarketOfferRepository interface {
+	Create(ctx context.Context, offer *domain.BlackMarketOffer) error
+	Update(ctx context.Context, offer *domain.BlackMarketOffer) error
+	FindByID(ctx context.Context, id int64) (*domain.BlackMarketOffer, error)
+	FindByIDForUpdate(ctx context.Context, id int64) (*domain.BlackMarketOffer, error)
+	ListActiveLimitedOffers(ctx context.Context, now int64) ([]*domain.BlackMarketOffer, error)
+	ListExpiredLimitedOffers(ctx context.Context, now int64) ([]*domain.BlackMarketOffer, error)
+	Tx(tx Transaction) BlackMarketOfferRepository
+}
+
 // ActivityRepository defines persistence for activity items (append-only feed).
 type ActivityRepository interface {
 	Create(ctx context.Context, item *domain.ActivityItem) error

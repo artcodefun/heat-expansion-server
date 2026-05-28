@@ -72,6 +72,15 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getUserProfileStmt, err = db.PrepareContext(ctx, getUserProfile); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserProfile: %w", err)
 	}
+	if q.listActiveBlackMarketArmyOffersStmt, err = db.PrepareContext(ctx, listActiveBlackMarketArmyOffers); err != nil {
+		return nil, fmt.Errorf("error preparing query ListActiveBlackMarketArmyOffers: %w", err)
+	}
+	if q.listActiveBlackMarketBuildingOffersStmt, err = db.PrepareContext(ctx, listActiveBlackMarketBuildingOffers); err != nil {
+		return nil, fmt.Errorf("error preparing query ListActiveBlackMarketBuildingOffers: %w", err)
+	}
+	if q.listActiveBlackMarketStorageOffersStmt, err = db.PrepareContext(ctx, listActiveBlackMarketStorageOffers); err != nil {
+		return nil, fmt.Errorf("error preparing query ListActiveBlackMarketStorageOffers: %w", err)
+	}
 	if q.listActiveOperationsStmt, err = db.PrepareContext(ctx, listActiveOperations); err != nil {
 		return nil, fmt.Errorf("error preparing query ListActiveOperations: %w", err)
 	}
@@ -272,6 +281,21 @@ func (q *Queries) Close() error {
 	if q.getUserProfileStmt != nil {
 		if cerr := q.getUserProfileStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getUserProfileStmt: %w", cerr)
+		}
+	}
+	if q.listActiveBlackMarketArmyOffersStmt != nil {
+		if cerr := q.listActiveBlackMarketArmyOffersStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listActiveBlackMarketArmyOffersStmt: %w", cerr)
+		}
+	}
+	if q.listActiveBlackMarketBuildingOffersStmt != nil {
+		if cerr := q.listActiveBlackMarketBuildingOffersStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listActiveBlackMarketBuildingOffersStmt: %w", cerr)
+		}
+	}
+	if q.listActiveBlackMarketStorageOffersStmt != nil {
+		if cerr := q.listActiveBlackMarketStorageOffersStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listActiveBlackMarketStorageOffersStmt: %w", cerr)
 		}
 	}
 	if q.listActiveOperationsStmt != nil {
@@ -524,6 +548,9 @@ type Queries struct {
 	getScansNearStmt                        *sql.Stmt
 	getTradeOperationStmt                   *sql.Stmt
 	getUserProfileStmt                      *sql.Stmt
+	listActiveBlackMarketArmyOffersStmt     *sql.Stmt
+	listActiveBlackMarketBuildingOffersStmt *sql.Stmt
+	listActiveBlackMarketStorageOffersStmt  *sql.Stmt
 	listActiveOperationsStmt                *sql.Stmt
 	listActiveTradeOperationsStmt           *sql.Stmt
 	listAlertsByUserStmt                    *sql.Stmt
@@ -585,6 +612,9 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getScansNearStmt:                        q.getScansNearStmt,
 		getTradeOperationStmt:                   q.getTradeOperationStmt,
 		getUserProfileStmt:                      q.getUserProfileStmt,
+		listActiveBlackMarketArmyOffersStmt:     q.listActiveBlackMarketArmyOffersStmt,
+		listActiveBlackMarketBuildingOffersStmt: q.listActiveBlackMarketBuildingOffersStmt,
+		listActiveBlackMarketStorageOffersStmt:  q.listActiveBlackMarketStorageOffersStmt,
 		listActiveOperationsStmt:                q.listActiveOperationsStmt,
 		listActiveTradeOperationsStmt:           q.listActiveTradeOperationsStmt,
 		listAlertsByUserStmt:                    q.listAlertsByUserStmt,

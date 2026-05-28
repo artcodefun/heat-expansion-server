@@ -20,6 +20,11 @@ type UserReadRepository interface {
 	GetUserProfile(ctx context.Context, userID uuid.UUID) (*readmodels.User, error)
 }
 
+// BlackMarketReadRepository exposes active offer projections.
+type BlackMarketReadRepository interface {
+	ListActiveOffers(ctx context.Context, kind *readmodels.BlackMarketOfferKind, limited *bool) ([]*readmodels.BlackMarketOffer, error)
+}
+
 // ActivityReadRepository provides activity feed projections.
 type ActivityReadRepository interface {
 	ListOffenseActivities(ctx context.Context, baseID int, subtype readmodels.OffenseActivitySubtype, limit int) ([]*readmodels.ActivityItem, error)

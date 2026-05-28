@@ -199,6 +199,8 @@ func WireCommandSchedulerHandler(c *Commands, sch ports.Scheduler) {
 				return c.Storage.HandleRestoreDamagedItemJob(ctx, job)
 			case ports.SpawnNearbyLocationsJob:
 				return c.World.HandleSpawnNearbyLocationsJob(ctx, job)
+			case ports.RefreshBlackMarketOffersJob:
+				return c.BlackMarket.HandleRefreshBlackMarketOffersJob(ctx, job)
 			}
 			return nil
 		}()

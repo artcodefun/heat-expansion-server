@@ -14,5 +14,5 @@ func NewGlobalHandler() *GlobalHandler {
 
 // GetMinClientVersion handles GET /min-client-version.
 func (h *GlobalHandler) GetMinClientVersion(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"version": "0.2.0"})
+	c.JSON(http.StatusOK, gin.H{"version": "0.4.0"})
 }
