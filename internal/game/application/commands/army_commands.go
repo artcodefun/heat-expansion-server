@@ -142,7 +142,7 @@ func (c *ArmyCommands) HandleProductionStartedEvent(ctx context.Context, event d
 func (c *ArmyCommands) HandleMoveArmyQueueJob(ctx context.Context, cmd ports.MoveArmyQueueJob) error {
 	err := c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		bRepo := c.BaseRepo.Tx(tx)
-		base, err := bRepo.FindByID(ctx, cmd.BaseID)
+		base, err := bRepo.FindByIDForUpdate(ctx, cmd.BaseID)
 		if err != nil {
 			return err
 		}
