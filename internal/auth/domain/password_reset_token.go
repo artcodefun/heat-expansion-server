@@ -17,7 +17,7 @@ type PasswordResetToken struct {
 }
 
 func NewPasswordResetToken(accountID uuid.UUID, tokenHash string) *PasswordResetToken {
-	id, _ := uuid.NewV7()
+	id := uuid.Must(uuid.NewV7())
 	return &PasswordResetToken{
 		ID:        id,
 		AccountID: accountID,

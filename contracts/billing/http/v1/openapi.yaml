@@ -1,0 +1,211 @@
+openapi: 3.0.3
+info:
+  title: Heat Expansion Billing API
+  version: 0.1.0
+  description: |
+    Crystal package purchases and payment processing for Heat Expansion.
+    This API covers listing crystal packages, creating orders via YooKassa,
+    checking order status, and receiving payment webhook notifications.
+servers:
+  - url: .
+tags:
+  - name: Packages
+  - name: Orders
+  - name: Webhooks
+paths:
+  /packages:
+    get:
+      tags: [Packages]
+      summary: List available crystal packages
+      operationId: listPackages
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of active crystal packages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CrystalPackage'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /orders:
+    post:
+      tags: [Orders]
+      summary: Create a new purchase order
+      operationId: createOrder
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+      responses:
+        '201':
+          description: Order created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateOrderResponse'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /orders/{id}:
+    get:
+      tags: [Orders]
+      summary: Get order status
+      operationId: getOrder
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Order details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrder'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '403':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /webhooks/yookassa:
+    post:
+      tags: [Webhooks]
+      summary: YooKassa payment webhook
+      operationId: yookassaWebhook
+      requestBody:
+        required: true
+        description: >
+          YooKassa payment notification. The schema is defined and owned by YooKassa;
+          only `object.id` is consumed (to re-query the canonical payment state).
+          The full body is intentionally not trusted.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                event:
+                  type: string
+                  example: payment.succeeded
+                object:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: Provider payment ID, used to re-query YooKassa.
+      responses:
+        '200':
+          description: Webhook processed successfully
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    ErrorResponse:
+      description: Request failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    CrystalPackage:
+      type: object
+      required: [id, name, crystals, price_minor_units, currency, image_url]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        crystals:
+          type: integer
+        price_minor_units:
+          type: integer
+          format: int64
+        currency:
+          type: string
+        image_url:
+          type: string
+
+    PurchaseOrder:
+      type: object
+      required: [id, package_id, crystals, amount_minor_units, currency, provider, status, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        package_id:
+          type: string
+          format: uuid
+        crystals:
+          type: integer
+        amount_minor_units:
+          type: integer
+          format: int64
+        currency:
+          type: string
+        provider:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, PAID, FAILED]
+        confirmation_url:
+          type: string
+        created_at:
+          type: integer
+          format: int64
+
+    CreateOrderRequest:
+      type: object
+      required: [package_id, return_url]
+      properties:
+        package_id:
+          type: string
+          format: uuid
+        return_url:
+          type: string
+
+    CreateOrderResponse:
+      type: object
+      required: [order_id, confirmation_url]
+      properties:
+        order_id:
+          type: string
+          format: uuid
+        confirmation_url:
+          type: string

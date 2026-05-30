@@ -7,6 +7,7 @@
     "error.application.black_market.offer_kind_invalid": "Black Market offer kind is invalid",
     "error.application.internal_server_error": "Internal server error",
     "error.domain.user.invalid_crystal_spend_amount": "Invalid crystal spend amount: {amount}",
+    "error.domain.user.invalid_crystal_add_amount": "Invalid crystal add amount: {amount}",
     "error.domain.user.not_enough_crystals": "Not enough crystals",
     "error.domain.black_market.rate_not_available": "Black Market rate not available for {resource}",
     "error.domain.black_market.invalid_crystal_amount": "Black Market purchase for {resource} must use a crystal cost of {crystals_cost}",

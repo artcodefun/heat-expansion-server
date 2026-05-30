@@ -7,6 +7,7 @@
     "error.application.black_market.offer_kind_invalid": "Недопустимый тип предложения черного рынка",
     "error.application.internal_server_error": "Внутренняя ошибка сервера",
     "error.domain.user.invalid_crystal_spend_amount": "Недопустимое количество кристаллов для траты: {amount}",
+    "error.domain.user.invalid_crystal_add_amount": "Недопустимое количество кристаллов для зачисления: {amount}",
     "error.domain.user.not_enough_crystals": "Недостаточно кристаллов",
     "error.domain.black_market.rate_not_available": "Курс черного рынка недоступен для {resource}",
     "error.domain.black_market.invalid_crystal_amount": "Покупка на черном рынке для {resource} должна иметь стоимость {crystals_cost} кристаллов",

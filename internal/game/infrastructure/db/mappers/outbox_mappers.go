@@ -397,6 +397,7 @@ func DecodeEvent(kind string, payload []byte) (domain.DomainEvent, error) {
 			return nil, err
 		}
 		return dtos.UserBaseCreatedEventFromDTO(dto), nil
+
 	case evKindDiplomaticRequestCreated:
 		var dto dtos.DiplomaticRequestCreatedEventDTO
 		if err := json.Unmarshal(payload, &dto); err != nil {

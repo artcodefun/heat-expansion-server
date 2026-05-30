@@ -1,9 +1,9 @@
 package ports
 
 import (
-"context"
-"github.com/google/uuid"
-"github.com/artcodefun/heat-expansion-server/internal/auth/domain"
+	"context"
+	"github.com/artcodefun/heat-expansion-server/internal/auth/domain"
+	"github.com/google/uuid"
 )
 
 type AccountRepository interface {

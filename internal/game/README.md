@@ -45,6 +45,10 @@ This service uses Hexagonal Architecture (Ports and Adapters), DDD (Domain-drive
 - **Bootstrap / Wiring**: `internal/game/bootstrap`
   - Dependency injection and wiring of concrete infrastructure adapters to application ports.
 
+## HTTP API
+
+Full OpenAPI spec: [`contracts/game/http/v1/openapi.yaml`](../../contracts/game/http/v1/openapi.yaml)
+
 ## Development
 
 From repo root:

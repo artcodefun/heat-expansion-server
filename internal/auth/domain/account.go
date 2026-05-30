@@ -16,7 +16,7 @@ type Account struct {
 // RegisterAccount is a factory function that creates a new Account
 // and emits an AccountRegisteredEvent.
 func RegisterAccount(name, email, passwordHash string) *Account {
-	id, _ := uuid.NewV7()
+	id := uuid.Must(uuid.NewV7())
 	a := &Account{
 		ID:           id,
 		Name:         name,

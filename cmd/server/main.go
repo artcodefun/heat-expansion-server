@@ -10,6 +10,7 @@ import (
 	"time"
 
 	authBootstrap "github.com/artcodefun/heat-expansion-server/internal/auth/bootstrap"
+	billingBootstrap "github.com/artcodefun/heat-expansion-server/internal/billing/bootstrap"
 	gameBootstrap "github.com/artcodefun/heat-expansion-server/internal/game/bootstrap"
 )
 
@@ -24,23 +25,10 @@ func main() {
 	}
 
 	authModule := authBootstrap.NewModule()
+	billingModule := billingBootstrap.NewModule()
 	gameModule := gameBootstrap.NewModule()
 
-	var wg sync.WaitGroup
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		authModule.Run(ctx)
-	}()
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		gameModule.Run(ctx)
-	}()
-
-	wg.Wait()
+	runModules(ctx, authModule, billingModule, gameModule)
 	slog.Info("server stopped cleanly")
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -48,4 +36,16 @@ func main() {
 	if err := otelShutdown(shutdownCtx); err != nil {
 		slog.Error("OpenTelemetry shutdown error", "error", err)
 	}
+}
+
+type Module interface {
+	Run(ctx context.Context)
+}
+
+func runModules(ctx context.Context, modules ...Module) {
+	var wg sync.WaitGroup
+	for _, m := range modules {
+		wg.Go(func() { m.Run(ctx) })
+	}
+	wg.Wait()
 }
