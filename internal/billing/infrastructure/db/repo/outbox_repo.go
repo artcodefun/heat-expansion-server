@@ -12,30 +12,38 @@ import (
 )
 
 type OutboxEventRepo struct {
-	db *gen.Queries
+	q *gen.Queries
 }
 
 func NewOutboxEventRepo(q *gen.Queries) *OutboxEventRepo {
-	return &OutboxEventRepo{db: q}
+	return &OutboxEventRepo{q: q}
 }
 
 func (r *OutboxEventRepo) Tx(tx ports.Transaction) ports.OutboxEventRepository {
 	if sqlTx, ok := tx.(*sql.Tx); ok {
 		return &OutboxEventRepo{
-			db: r.db.WithTx(sqlTx),
+			q: r.q.WithTx(sqlTx),
 		}
 	}
 	return r
 }
 
 func (r *OutboxEventRepo) Save(ctx context.Context, events []domain.DomainEvent) error {
+	if len(events) == 0 {
+		return nil
+	}
+
 	for _, evt := range events {
+		if evt == nil {
+			continue
+		}
+
 		kind, payload, err := mappers.EncodeDomainEvent(evt)
 		if err != nil {
 			return err
 		}
 
-		err = r.db.SaveOutboxEvent(ctx, gen.SaveOutboxEventParams{
+		err = r.q.SaveOutboxEvent(ctx, gen.SaveOutboxEventParams{
 			ID:        evt.ID(),
 			Kind:      kind,
 			Payload:   payload,
@@ -45,11 +53,15 @@ func (r *OutboxEventRepo) Save(ctx context.Context, events []domain.DomainEvent)
 			return err
 		}
 	}
-	return r.db.NotifyOutboxEvent(ctx)
+	return r.q.NotifyOutboxEvent(ctx)
 }
 
 func (r *OutboxEventRepo) ClaimUnpublished(ctx context.Context, limit int) ([]domain.DomainEvent, error) {
-	rows, err := r.db.ClaimUnpublishedEvents(ctx, int32(limit))
+	if limit <= 0 {
+		limit = 100
+	}
+
+	rows, err := r.q.ClaimUnpublishedEvents(ctx, int32(limit))
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +70,9 @@ func (r *OutboxEventRepo) ClaimUnpublished(ctx context.Context, limit int) ([]do
 	for _, row := range rows {
 		evt, err := mappers.DecodeDomainEvent(row.Kind, row.Payload)
 		if err != nil {
-			return nil, err
+			// Skip malformed rows but continue processing others so a single
+			// bad row cannot stall the publisher.
+			continue
 		}
 
 		events = append(events, evt)
@@ -68,7 +82,7 @@ func (r *OutboxEventRepo) ClaimUnpublished(ctx context.Context, limit int) ([]do
 }
 
 func (r *OutboxEventRepo) MarkPublished(ctx context.Context, id uuid.UUID, publishedAt int64) error {
-	return r.db.MarkEventPublished(ctx, gen.MarkEventPublishedParams{
+	return r.q.MarkEventPublished(ctx, gen.MarkEventPublishedParams{
 		ID: id,
 		PublishedAt: sql.NullInt64{
 			Int64: publishedAt,

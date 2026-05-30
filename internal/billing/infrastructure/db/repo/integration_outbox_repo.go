@@ -12,17 +12,17 @@ import (
 )
 
 type IntegrationOutboxRepo struct {
-	db *gen.Queries
+	q *gen.Queries
 }
 
 func NewIntegrationOutboxRepo(q *gen.Queries) *IntegrationOutboxRepo {
-	return &IntegrationOutboxRepo{db: q}
+	return &IntegrationOutboxRepo{q: q}
 }
 
 func (r *IntegrationOutboxRepo) Tx(tx ports.Transaction) ports.IntegrationOutboxRepository {
 	if sqlTx, ok := tx.(*sql.Tx); ok {
 		return &IntegrationOutboxRepo{
-			db: r.db.WithTx(sqlTx),
+			q: r.q.WithTx(sqlTx),
 		}
 	}
 	return r
@@ -34,7 +34,7 @@ func (r *IntegrationOutboxRepo) Save(ctx context.Context, event billingevents.In
 		return err
 	}
 
-	err = r.db.SaveIntegrationEvent(ctx, gen.SaveIntegrationEventParams{
+	err = r.q.SaveIntegrationEvent(ctx, gen.SaveIntegrationEventParams{
 		ID:        event.ID,
 		Kind:      kind,
 		Payload:   payload,
@@ -47,11 +47,11 @@ func (r *IntegrationOutboxRepo) Save(ctx context.Context, event billingevents.In
 	if err != nil {
 		return err
 	}
-	return r.db.NotifyIntegrationOutboxEvent(ctx)
+	return r.q.NotifyIntegrationOutboxEvent(ctx)
 }
 
 func (r *IntegrationOutboxRepo) Exists(ctx context.Context, originID uuid.UUID, eventType string) (bool, error) {
-	return r.db.IntegrationEventExists(ctx, gen.IntegrationEventExistsParams{
+	return r.q.IntegrationEventExists(ctx, gen.IntegrationEventExistsParams{
 		OriginID: uuid.NullUUID{
 			UUID:  originID,
 			Valid: originID != uuid.Nil,
@@ -61,7 +61,7 @@ func (r *IntegrationOutboxRepo) Exists(ctx context.Context, originID uuid.UUID, 
 }
 
 func (r *IntegrationOutboxRepo) ClaimUnpublished(ctx context.Context, limit int) ([]billingevents.IntegrationEvent, error) {
-	rows, err := r.db.ClaimUnpublishedIntegrationEvents(ctx, int32(limit))
+	rows, err := r.q.ClaimUnpublishedIntegrationEvents(ctx, int32(limit))
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,9 @@ func (r *IntegrationOutboxRepo) ClaimUnpublished(ctx context.Context, limit int)
 	for _, row := range rows {
 		evt, err := mappers.DecodeIntegrationEvent(row.Kind, row.Payload)
 		if err != nil {
-			return nil, err
+			// Skip malformed rows but continue processing others so a single
+			// bad row cannot stall the publisher.
+			continue
 		}
 
 		events = append(events, evt)
@@ -80,7 +82,7 @@ func (r *IntegrationOutboxRepo) ClaimUnpublished(ctx context.Context, limit int)
 }
 
 func (r *IntegrationOutboxRepo) MarkPublished(ctx context.Context, id uuid.UUID, publishedAt int64) error {
-	return r.db.MarkIntegrationEventPublished(ctx, gen.MarkIntegrationEventPublishedParams{
+	return r.q.MarkIntegrationEventPublished(ctx, gen.MarkIntegrationEventPublishedParams{
 		ID: id,
 		PublishedAt: sql.NullInt64{
 			Int64: publishedAt,

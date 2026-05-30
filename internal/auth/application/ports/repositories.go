@@ -2,9 +2,16 @@ package ports
 
 import (
 	"context"
+	"errors"
+
 	"github.com/artcodefun/heat-expansion-server/internal/auth/domain"
 	"github.com/google/uuid"
 )
+
+// ErrNotFound is returned by repositories when a requested record does not
+// exist. Callers should branch on it with errors.Is rather than relying on a
+// nil result.
+var ErrNotFound = errors.New("not found")
 
 type AccountRepository interface {
 	Create(ctx context.Context, account *domain.Account) error

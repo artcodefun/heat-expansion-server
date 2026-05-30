@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -61,13 +62,13 @@ func (c *AccountCommands) RegisterAccount(ctx context.Context, actor cqrs.Actor,
 		outbox := c.outbox.Tx(tx)
 
 		// Check if email already exists
-		existing, err := repo.FindByEmail(ctx, email)
-		if err != nil {
-			return err
-		}
-		if existing != nil {
+		_, err := repo.FindByEmail(ctx, email)
+		if err == nil {
 			slog.WarnContext(ctx, "registration rejected; email already in use", "email_fingerprint", emailFingerprint(email))
 			return cqrs.ErrEmailAlreadyInUse
+		}
+		if !errors.Is(err, ports.ErrNotFound) {
+			return err
 		}
 
 		if err := repo.Create(ctx, acc); err != nil {
@@ -89,11 +90,11 @@ func (c *AccountCommands) Login(ctx context.Context, actor cqrs.Actor, email, pa
 
 	acc, err := c.repo.FindByEmail(ctx, email)
 	if err != nil {
+		if errors.Is(err, ports.ErrNotFound) {
+			slog.WarnContext(ctx, "login rejected; account not found", "email_fingerprint", emailFingerprint(email))
+			return "", cqrs.ErrInvalidCredentials
+		}
 		return "", err
-	}
-	if acc == nil {
-		slog.WarnContext(ctx, "login rejected; account not found", "email_fingerprint", emailFingerprint(email))
-		return "", cqrs.ErrInvalidCredentials
 	}
 
 	if !c.hasher.Verify(password, acc.PasswordHash) {
@@ -115,11 +116,11 @@ func (c *AccountCommands) RequestPasswordReset(ctx context.Context, actor cqrs.A
 
 	acc, err := c.repo.FindByEmail(ctx, email)
 	if err != nil {
+		if errors.Is(err, ports.ErrNotFound) {
+			slog.WarnContext(ctx, "password reset request rejected; account not found", "email_fingerprint", emailFingerprint(email))
+			return cqrs.ErrAccountNotFound
+		}
 		return err
-	}
-	if acc == nil {
-		slog.WarnContext(ctx, "password reset request rejected; account not found", "email_fingerprint", emailFingerprint(email))
-		return cqrs.ErrAccountNotFound
 	}
 
 	now := time.Now().Unix()
@@ -152,20 +153,24 @@ func (c *AccountCommands) ResetPassword(ctx context.Context, actor cqrs.Actor, e
 
 	acc, err := c.repo.FindByEmail(ctx, email)
 	if err != nil {
+		if errors.Is(err, ports.ErrNotFound) {
+			slog.WarnContext(ctx, "password reset rejected; account not found", "email_fingerprint", emailFingerprint(email))
+			return cqrs.ErrAccountNotFound
+		}
 		return err
-	}
-	if acc == nil {
-		slog.WarnContext(ctx, "password reset rejected; account not found", "email_fingerprint", emailFingerprint(email))
-		return cqrs.ErrAccountNotFound
 	}
 
 	tokenHash := hashToken(rawToken)
 
 	resetToken, err := c.resetRepo.FindByAccountAndTokenHash(ctx, acc.ID, tokenHash)
 	if err != nil {
+		if errors.Is(err, ports.ErrNotFound) {
+			slog.WarnContext(ctx, "password reset rejected; invalid token", "account_id", acc.ID.String())
+			return cqrs.ErrInvalidResetToken
+		}
 		return err
 	}
-	if resetToken == nil || resetToken.IsExpired() || resetToken.IsUsed() {
+	if resetToken.IsExpired() || resetToken.IsUsed() {
 		slog.WarnContext(ctx, "password reset rejected; invalid token", "account_id", acc.ID.String())
 		return cqrs.ErrInvalidResetToken
 	}
