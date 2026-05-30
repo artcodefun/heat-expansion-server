@@ -194,6 +194,13 @@ type DomainEvent struct {
 	PublishedAt sql.NullInt64   `json:"published_at"`
 }
 
+type GameCrystalCredit struct {
+	OrderID    uuid.UUID `json:"order_id"`
+	UserID     uuid.UUID `json:"user_id"`
+	Crystals   int32     `json:"crystals"`
+	CreditedAt int64     `json:"credited_at"`
+}
+
 type MilitaryOperation struct {
 	ID                int64                 `json:"id"`
 	Type              string                `json:"type"`

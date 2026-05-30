@@ -41,3 +41,13 @@ func (u *User) SpendCrystals(amount int) error {
 	u.Crystals -= amount
 	return nil
 }
+
+// AddCrystals credits the given amount to the user's crystal balance.
+// It returns an error if amount is non-positive.
+func (u *User) AddCrystals(amount int) error {
+	if amount <= 0 {
+		return NewError("error.domain.user.invalid_crystal_add_amount", H{"amount": amount})
+	}
+	u.Crystals += amount
+	return nil
+}

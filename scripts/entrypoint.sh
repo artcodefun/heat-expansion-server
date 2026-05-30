@@ -23,5 +23,16 @@ if [ -n "$AUTH_DB_URL" ]; then
   /usr/local/bin/migrate -path /app/migrations/auth -database "${AUTH_DB_URL}${separator}x-migrations-table=${migrations_table}" up
 fi
 
+# Run billing migrations if BILLING_DB_URL is set
+if [ -n "$BILLING_DB_URL" ]; then
+  echo "Running billing migrations..."
+  migrations_table="${BILLING_MIGRATIONS_TABLE:-billing_schema_migrations}"
+  separator='&'
+  if [[ "$BILLING_DB_URL" != *"?"* ]]; then
+    separator='?'
+  fi
+  /usr/local/bin/migrate -path /app/migrations/billing -database "${BILLING_DB_URL}${separator}x-migrations-table=${migrations_table}" up
+fi
+
 echo "Starting application..."
 exec "$@"

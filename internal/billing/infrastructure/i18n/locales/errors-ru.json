@@ -1,0 +1,12 @@
+{
+    "error.application.not_found": "Ресурс не найден",
+    "error.application.forbidden": "Доступ запрещён",
+    "error.application.internal_server_error": "Внутренняя ошибка сервера",
+    "error.application.billing.package_not_found": "Пакет кристаллов не найден",
+    "error.application.billing.order_not_found": "Заказ не найден",
+    "error.application.billing.order_already_paid": "Заказ уже оплачен",
+    "error.application.billing.payment_gateway_failed": "Ошибка платёжного шлюза, попробуйте ещё раз",
+    "error.application.billing.invalid_webhook_payload": "Недопустимое тело вебхука",
+    "error.application.billing.payments_unavailable": "Платежи временно недоступны, пожалуйста, попробуйте позже",
+    "error.domain.order.invalid_status_transition": "Невозможно изменить заказ в статусе {status}"
+}

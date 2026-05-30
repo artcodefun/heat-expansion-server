@@ -3,6 +3,7 @@ package repo
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/artcodefun/heat-expansion-server/internal/auth/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/domain"
@@ -11,24 +12,22 @@ import (
 )
 
 type AccountRepository struct {
-	db *gen.Queries
+	q *gen.Queries
 }
 
-func NewAccountRepository(db *sql.DB) *AccountRepository {
-	return &AccountRepository{
-		db: gen.New(db),
-	}
+func NewAccountRepository(q *gen.Queries) *AccountRepository {
+	return &AccountRepository{q: q}
 }
 
 func (r *AccountRepository) Tx(tx ports.Transaction) ports.AccountRepository {
 	if sqlTx, ok := tx.(*sql.Tx); ok {
-		return &AccountRepository{db: r.db.WithTx(sqlTx)}
+		return &AccountRepository{q: r.q.WithTx(sqlTx)}
 	}
 	return r
 }
 
 func (r *AccountRepository) Create(ctx context.Context, acc *domain.Account) error {
-	row, err := r.db.CreateAccount(ctx, gen.CreateAccountParams{
+	row, err := r.q.CreateAccount(ctx, gen.CreateAccountParams{
 		ID:           acc.ID,
 		Name:         acc.Name,
 		Email:        acc.Email,
@@ -42,10 +41,10 @@ func (r *AccountRepository) Create(ctx context.Context, acc *domain.Account) err
 }
 
 func (r *AccountRepository) FindByEmail(ctx context.Context, email string) (*domain.Account, error) {
-	row, err := r.db.GetAccountByEmail(ctx, email)
+	row, err := r.q.GetAccountByEmail(ctx, email)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ports.ErrNotFound
 		}
 		return nil, err
 	}
@@ -58,10 +57,10 @@ func (r *AccountRepository) FindByEmail(ctx context.Context, email string) (*dom
 }
 
 func (r *AccountRepository) FindByID(ctx context.Context, id uuid.UUID) (*domain.Account, error) {
-	row, err := r.db.GetAccountByID(ctx, id)
+	row, err := r.q.GetAccountByID(ctx, id)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ports.ErrNotFound
 		}
 		return nil, err
 	}
@@ -74,7 +73,7 @@ func (r *AccountRepository) FindByID(ctx context.Context, id uuid.UUID) (*domain
 }
 
 func (r *AccountRepository) UpdatePassword(ctx context.Context, id uuid.UUID, newHash string) error {
-	return r.db.UpdateAccountPasswordHash(ctx, gen.UpdateAccountPasswordHashParams{
+	return r.q.UpdateAccountPasswordHash(ctx, gen.UpdateAccountPasswordHashParams{
 		ID:           id,
 		PasswordHash: newHash,
 	})

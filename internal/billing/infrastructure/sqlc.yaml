@@ -1,0 +1,34 @@
+version: "2"
+sql:
+  - schema: "db/migrations"
+    queries: "db/queries"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "gen"
+        out: "db/gen"
+        emit_json_tags: true
+        emit_prepared_queries: true
+        emit_interface: true
+        emit_exact_table_names: false
+        emit_empty_slices: true
+        rename:
+          billing_crystal_package: CrystalPackage
+          billing_purchase_order: PurchaseOrder
+          billing_domain_event: DomainEvent
+          billing_integration_event: IntegrationEvent
+  - schema: "db/migrations"
+    queries: "readstore/queries"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "gen"
+        out: "readstore/gen"
+        emit_json_tags: true
+        emit_prepared_queries: true
+        emit_interface: true
+        emit_exact_table_names: false
+        emit_empty_slices: true
+        rename:
+          billing_crystal_package: CrystalPackage
+          billing_purchase_order: PurchaseOrder

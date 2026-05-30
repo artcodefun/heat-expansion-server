@@ -50,6 +50,22 @@ func (c *RabbitMQConsumer) Start(ctx context.Context) error {
 		go c.consumeLoop(ctx, sub)
 	}
 
+	// Tear down the connection once the context is cancelled. The consume and
+	// reconnect goroutines already stop on ctx.Done(); closing the connection
+	// here releases it so the broker can reclaim resources promptly instead of
+	// waiting for a heartbeat timeout. This keeps the consumer's entire
+	// lifecycle governed by the context it was started with.
+	go func() {
+		<-ctx.Done()
+		c.mu.Lock()
+		defer c.mu.Unlock()
+		if c.conn != nil {
+			if err := c.conn.Close(); err != nil {
+				slog.WarnContext(ctx, "failed to close rabbitmq consumer connection", "error", err.Error())
+			}
+		}
+	}()
+
 	return nil
 }
 

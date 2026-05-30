@@ -9,7 +9,9 @@ import (
 	"go.opentelemetry.io/otel/codes"
 
 	authevents "github.com/artcodefun/heat-expansion-server/contracts/auth/events"
-	v1 "github.com/artcodefun/heat-expansion-server/contracts/auth/events/v1"
+	authv1 "github.com/artcodefun/heat-expansion-server/contracts/auth/events/v1"
+	billingevents "github.com/artcodefun/heat-expansion-server/contracts/billing/events"
+	billingv1 "github.com/artcodefun/heat-expansion-server/contracts/billing/events/v1"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 	infraevents "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/events"
@@ -20,7 +22,7 @@ import (
 var gameTracer = otel.Tracer("heat-expansion-game")
 
 // WireCommandIntegrationEvents wires external integration events to command handlers.
-func WireCommandIntegrationEvents(c *Commands, consumer *infraevents.RabbitMQConsumer, authExchange, authQueue string) {
+func WireCommandIntegrationEvents(c *Commands, consumer *infraevents.RabbitMQConsumer, authExchange, authQueue, billingExchange, billingQueue string) {
 	consumer.Subscribe(authExchange, authQueue, "auth.#", func(ctx context.Context, d amqp.Delivery) error {
 		ctx, span := gameTracer.Start(ctx, "game.integration."+d.RoutingKey)
 		defer span.End()
@@ -32,10 +34,36 @@ func WireCommandIntegrationEvents(c *Commands, consumer *infraevents.RabbitMQCon
 			}
 
 			switch ev := envelope.Payload.(type) {
-			case *v1.AccountRegisteredV1:
+			case *authv1.AccountRegisteredV1:
 				return c.User.HandleAccountRegisteredV1Event(ctx, *ev)
 			default:
 				slog.WarnContext(ctx, "received unknown identity integration event type", "type", fmt.Sprintf("%T", ev))
+			}
+			return nil
+		}()
+
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+		}
+		return err
+	})
+
+	consumer.Subscribe(billingExchange, billingQueue, "billing.#", func(ctx context.Context, d amqp.Delivery) error {
+		ctx, span := gameTracer.Start(ctx, "game.integration."+d.RoutingKey)
+		defer span.End()
+
+		err := func() error {
+			envelope, err := billingevents.Unmarshal(d.Body)
+			if err != nil {
+				return err
+			}
+
+			switch ev := envelope.Payload.(type) {
+			case *billingv1.CrystalsPurchasedV1:
+				return c.User.HandleCrystalsPurchasedV1Event(ctx, *ev)
+			default:
+				slog.WarnContext(ctx, "received unknown billing integration event type", "type", fmt.Sprintf("%T", ev))
 			}
 			return nil
 		}()

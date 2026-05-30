@@ -18,13 +18,14 @@ import (
 )
 
 type Module struct {
-	Port          string
-	DBURL         string
-	JWTSecret     string
-	LogLevel      string
-	StaticBaseURL string
-	RabbitURL     string
-	AuthExchange  string
+	Port            string
+	DBURL           string
+	JWTSecret       string
+	LogLevel        string
+	StaticBaseURL   string
+	RabbitURL       string
+	AuthExchange    string
+	BillingExchange string
 
 	DB         *sql.DB
 	Adapters   *Adapters
@@ -44,8 +45,9 @@ func NewModule() *Module {
 	i18nPath := os.Getenv("GAME_I18N_PATH")
 	rabbitURL := os.Getenv("RABBITMQ_URL")
 	authExchange := os.Getenv("AUTH_INTEGRATION_EXCHANGE")
+	billingExchange := os.Getenv("BILLING_INTEGRATION_EXCHANGE")
 
-	if port == "" || dbURL == "" || jwtSecret == "" || staticBaseURL == "" || rabbitURL == "" || authExchange == "" {
+	if port == "" || dbURL == "" || jwtSecret == "" || staticBaseURL == "" || rabbitURL == "" || authExchange == "" || billingExchange == "" {
 		log.Fatal("Missing required environment variables. Please check your .env file.")
 	}
 
@@ -74,7 +76,7 @@ func NewModule() *Module {
 	WireCommandSchedulerHandler(commands, adapters.Scheduler)
 
 	consumer := events.NewRabbitMQConsumer(rabbitURL)
-	WireCommandIntegrationEvents(commands, consumer, authExchange, "game.auth.integration.events")
+	WireCommandIntegrationEvents(commands, consumer, authExchange, "game.auth.integration.events", billingExchange, "game.billing.integration.events")
 	workers := NewWorkers(dbURL, services.Outbox, adapters.Scheduler, consumer)
 
 	httpCommands := httpapi.Commands{
@@ -111,20 +113,21 @@ func NewModule() *Module {
 	httpServer := httpapi.NewServer(router, addr)
 
 	return &Module{
-		Port:          port,
-		DBURL:         dbURL,
-		JWTSecret:     jwtSecret,
-		StaticBaseURL: staticBaseURL,
-		RabbitURL:     rabbitURL,
-		AuthExchange:  authExchange,
-		DB:            db,
-		Adapters:      adapters,
-		Services:      services,
-		Workers:       workers,
-		Commands:      commands,
-		Queries:       queries,
-		HTTPServer:    httpServer,
-		Consumer:      consumer,
+		Port:            port,
+		DBURL:           dbURL,
+		JWTSecret:       jwtSecret,
+		StaticBaseURL:   staticBaseURL,
+		RabbitURL:       rabbitURL,
+		AuthExchange:    authExchange,
+		BillingExchange: billingExchange,
+		DB:              db,
+		Adapters:        adapters,
+		Services:        services,
+		Workers:         workers,
+		Commands:        commands,
+		Queries:         queries,
+		HTTPServer:      httpServer,
+		Consumer:        consumer,
 	}
 }
 
@@ -153,5 +156,10 @@ func (m *Module) Run(ctx context.Context) {
 	}
 
 	m.Workers.Wait()
+
+	if err := m.DB.Close(); err != nil {
+		slog.Error("game database close error", "error", err)
+	}
+
 	slog.Info("game module: stopped")
 }

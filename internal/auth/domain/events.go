@@ -27,7 +27,7 @@ func (e BasicEvent) OccurredAt() int64 {
 }
 
 func NewBasicEvent() BasicEvent {
-	id, _ := uuid.NewV7()
+	id := uuid.Must(uuid.NewV7())
 	return BasicEvent{
 		EventID:   id,
 		Timestamp: time.Now().Unix(),

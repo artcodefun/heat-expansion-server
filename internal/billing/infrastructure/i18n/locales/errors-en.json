@@ -1,0 +1,12 @@
+{
+    "error.application.not_found": "Resource not found",
+    "error.application.forbidden": "Permission denied",
+    "error.application.internal_server_error": "Internal server error",
+    "error.application.billing.package_not_found": "Crystal package not found",
+    "error.application.billing.order_not_found": "Order not found",
+    "error.application.billing.order_already_paid": "Order has already been paid",
+    "error.application.billing.payment_gateway_failed": "Payment gateway error, please try again",
+    "error.application.billing.invalid_webhook_payload": "Invalid webhook payload",
+    "error.application.billing.payments_unavailable": "Payments are temporarily unavailable, please try again later",
+    "error.domain.order.invalid_status_transition": "Cannot change order in status {status}"
+}

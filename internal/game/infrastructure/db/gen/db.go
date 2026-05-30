@@ -42,6 +42,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createSectorStmt, err = db.PrepareContext(ctx, createSector); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateSector: %w", err)
 	}
+	if q.crystalCreditExistsStmt, err = db.PrepareContext(ctx, crystalCreditExists); err != nil {
+		return nil, fmt.Errorf("error preparing query CrystalCreditExists: %w", err)
+	}
 	if q.deleteActivitiesByBaseStmt, err = db.PrepareContext(ctx, deleteActivitiesByBase); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteActivitiesByBase: %w", err)
 	}
@@ -237,6 +240,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.insertBlackMarketOfferStmt, err = db.PrepareContext(ctx, insertBlackMarketOffer); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertBlackMarketOffer: %w", err)
 	}
+	if q.insertCrystalCreditStmt, err = db.PrepareContext(ctx, insertCrystalCredit); err != nil {
+		return nil, fmt.Errorf("error preparing query InsertCrystalCredit: %w", err)
+	}
 	if q.insertDangerousLocationStmt, err = db.PrepareContext(ctx, insertDangerousLocation); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertDangerousLocation: %w", err)
 	}
@@ -426,6 +432,11 @@ func (q *Queries) Close() error {
 	if q.createSectorStmt != nil {
 		if cerr := q.createSectorStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createSectorStmt: %w", cerr)
+		}
+	}
+	if q.crystalCreditExistsStmt != nil {
+		if cerr := q.crystalCreditExistsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing crystalCreditExistsStmt: %w", cerr)
 		}
 	}
 	if q.deleteActivitiesByBaseStmt != nil {
@@ -753,6 +764,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing insertBlackMarketOfferStmt: %w", cerr)
 		}
 	}
+	if q.insertCrystalCreditStmt != nil {
+		if cerr := q.insertCrystalCreditStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing insertCrystalCreditStmt: %w", cerr)
+		}
+	}
 	if q.insertDangerousLocationStmt != nil {
 		if cerr := q.insertDangerousLocationStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing insertDangerousLocationStmt: %w", cerr)
@@ -1058,6 +1074,7 @@ type Queries struct {
 	countResourcefulLocationsInRangeStmt           *sql.Stmt
 	createBaseStmt                                 *sql.Stmt
 	createSectorStmt                               *sql.Stmt
+	crystalCreditExistsStmt                        *sql.Stmt
 	deleteActivitiesByBaseStmt                     *sql.Stmt
 	deleteBaseStmt                                 *sql.Stmt
 	deleteBaseArmyItemsByBaseStmt                  *sql.Stmt
@@ -1123,6 +1140,7 @@ type Queries struct {
 	insertBaseStorageItemStmt                      *sql.Stmt
 	insertBaseTechItemStmt                         *sql.Stmt
 	insertBlackMarketOfferStmt                     *sql.Stmt
+	insertCrystalCreditStmt                        *sql.Stmt
 	insertDangerousLocationStmt                    *sql.Stmt
 	insertDiplomaticMessageStmt                    *sql.Stmt
 	insertDiplomaticRelationshipStmt               *sql.Stmt
@@ -1187,6 +1205,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		countResourcefulLocationsInRangeStmt:           q.countResourcefulLocationsInRangeStmt,
 		createBaseStmt:                                 q.createBaseStmt,
 		createSectorStmt:                               q.createSectorStmt,
+		crystalCreditExistsStmt:                        q.crystalCreditExistsStmt,
 		deleteActivitiesByBaseStmt:                     q.deleteActivitiesByBaseStmt,
 		deleteBaseStmt:                                 q.deleteBaseStmt,
 		deleteBaseArmyItemsByBaseStmt:                  q.deleteBaseArmyItemsByBaseStmt,
@@ -1252,6 +1271,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		insertBaseStorageItemStmt:                      q.insertBaseStorageItemStmt,
 		insertBaseTechItemStmt:                         q.insertBaseTechItemStmt,
 		insertBlackMarketOfferStmt:                     q.insertBlackMarketOfferStmt,
+		insertCrystalCreditStmt:                        q.insertCrystalCreditStmt,
 		insertDangerousLocationStmt:                    q.insertDangerousLocationStmt,
 		insertDiplomaticMessageStmt:                    q.insertDiplomaticMessageStmt,
 		insertDiplomaticRelationshipStmt:               q.insertDiplomaticRelationshipStmt,

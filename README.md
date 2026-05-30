@@ -14,14 +14,16 @@ This repository is structured as a **modular monolith**: multiple services live 
 - **Auth**: identity and access management, JWT issuance, integration events.
   - Docs: [internal/auth/README.md](internal/auth/README.md)
 
-- **Billing**: billing/subscription-related code (in progress).
-  - Location: `internal/billing`
+- **Billing**: crystal package purchases and YooKassa payment processing.
+  - Docs: [internal/billing/README.md](internal/billing/README.md)
 
 ## API Contracts
 
 - Auth HTTP contract: `contracts/auth/http/v1/openapi.yaml`
 - Game HTTP contract: `contracts/game/http/v1/openapi.yaml`
+- Billing HTTP contract: `contracts/billing/http/v1/openapi.yaml`
 - Auth integration events: `contracts/auth/events/`
+- Billing integration events: `contracts/billing/events/`
 - Swagger UI is served by each service at `/api/v1/docs`, backed by the versioned OpenAPI document at `/api/v1/openapi.yaml`.
 
 ## Getting started
@@ -37,7 +39,7 @@ Alternatively, use Docker Compose:
 docker-compose up --build
 ```
 
-The Game Server listens on `GAME_PORT` (default `8080`) and the Auth Server on `AUTH_PORT` (default `8081`).
+The Game Server listens on `GAME_PORT` (default `8080`), the Auth Server on `AUTH_PORT` (default `8081`), and the Billing Server on `BILLING_PORT` (default `8082`).
 
 ## Observability
 

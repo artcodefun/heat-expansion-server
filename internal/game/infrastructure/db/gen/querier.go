@@ -20,6 +20,7 @@ type Querier interface {
 	CreateBase(ctx context.Context, arg CreateBaseParams) (UserBase, error)
 	// Sector queries
 	CreateSector(ctx context.Context, arg CreateSectorParams) (Sector, error)
+	CrystalCreditExists(ctx context.Context, orderID uuid.UUID) (bool, error)
 	DeleteActivitiesByBase(ctx context.Context, baseID int64) error
 	// Note: above RETURNING still lists sector_id; fix below to sector_x, sector_y
 	DeleteBase(ctx context.Context, id int64) error
@@ -96,6 +97,8 @@ type Querier interface {
 	InsertBaseStorageItem(ctx context.Context, arg InsertBaseStorageItemParams) (uuid.UUID, error)
 	InsertBaseTechItem(ctx context.Context, arg InsertBaseTechItemParams) (uuid.UUID, error)
 	InsertBlackMarketOffer(ctx context.Context, arg InsertBlackMarketOfferParams) (BlackMarketOffer, error)
+	// Crystal credits queries
+	InsertCrystalCredit(ctx context.Context, arg InsertCrystalCreditParams) error
 	InsertDangerousLocation(ctx context.Context, arg InsertDangerousLocationParams) (int64, error)
 	InsertDiplomaticMessage(ctx context.Context, arg InsertDiplomaticMessageParams) error
 	InsertDiplomaticRelationship(ctx context.Context, arg InsertDiplomaticRelationshipParams) error

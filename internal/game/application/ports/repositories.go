@@ -253,6 +253,13 @@ type DiplomaticRequestRepository interface {
 	Tx(tx Transaction) DiplomaticRequestRepository
 }
 
+// CrystalCreditsRepository tracks credited crystal purchases for idempotency.
+type CrystalCreditsRepository interface {
+	Insert(ctx context.Context, orderID uuid.UUID, userID uuid.UUID, crystals int, creditedAt int64) error
+	Exists(ctx context.Context, orderID uuid.UUID) (bool, error)
+	Tx(tx Transaction) CrystalCreditsRepository
+}
+
 // AlertRepository defines persistence for high-priority notifications.
 type AlertRepository interface {
 	Create(ctx context.Context, alert *domain.Alert) error

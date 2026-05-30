@@ -36,6 +36,7 @@ type Adapters struct {
 	RadarThreats            ports.RadarThreatRepository
 	OutboxEvents            ports.OutboxEventRepository
 	Alerts                  ports.AlertRepository
+	CrystalCredits          ports.CrystalCreditsRepository
 	DiplomaticRelationships ports.DiplomaticRelationshipRepository
 	DiplomaticMessages      ports.DiplomaticMessageRepository
 	DiplomaticRequests      ports.DiplomaticRequestRepository
@@ -118,6 +119,7 @@ func NewAdapters(db *sql.DB, staticBaseURL string, jwtSecret string, i18nPath st
 		RadarThreats:            repo.NewRadarThreatRepo(q),
 		OutboxEvents:            repo.NewOutboxEventRepo(q),
 		Alerts:                  repo.NewAlertRepo(q),
+		CrystalCredits:          repo.NewCrystalCreditsRepo(q),
 		DiplomaticRelationships: repo.NewDiplomaticRelationshipRepo(q),
 		DiplomaticMessages:      repo.NewDiplomaticMessageRepo(q),
 		DiplomaticRequests:      repo.NewDiplomaticRequestRepo(q),

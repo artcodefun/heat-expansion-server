@@ -34,6 +34,10 @@ This service uses Hexagonal Architecture (Ports and Adapters), DDD (Domain-drive
 - **Bootstrap / Wiring**: `internal/auth/bootstrap`
   - Dependency injection and wiring of concrete infrastructure adapters to application ports.
 
+## HTTP API
+
+Full OpenAPI spec: [`contracts/auth/http/v1/openapi.yaml`](../../../contracts/auth/http/v1/openapi.yaml)
+
 ## Development
 
 From repo root:
