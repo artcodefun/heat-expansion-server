@@ -51,7 +51,7 @@ func (c *UserCommands) HandleCrystalsPurchasedV1Event(ctx context.Context, ev bi
 			return err
 		}
 
-		return creditsRepo.Insert(ctx, ev.OrderID, ev.UserID, ev.Crystals, time.Now().UnixMilli())
+		return creditsRepo.Insert(ctx, ev.OrderID, ev.UserID, ev.Crystals, time.Now().Unix())
 	})
 }
 

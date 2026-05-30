@@ -2,21 +2,20 @@ package security
 
 import (
 	"errors"
-	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
 
-// SimpleTokenValidator validates JWT tokens (HS256).
+// SimpleTokenValidator validates JWT tokens (HS256). Token expiry is enforced
+// by the JWT `exp` claim set by the issuing service.
 type SimpleTokenValidator struct {
 	secret string
-	ttl    time.Duration
 }
 
-// NewSimpleTokenValidator creates a validator with default TTL of 1h.
+// NewSimpleTokenValidator creates a validator for HS256 tokens signed with secret.
 func NewSimpleTokenValidator(secret string) *SimpleTokenValidator {
-	return &SimpleTokenValidator{secret: secret, ttl: time.Hour}
+	return &SimpleTokenValidator{secret: secret}
 }
 
 // Validate verifies signature and expiry and returns the subject userID.

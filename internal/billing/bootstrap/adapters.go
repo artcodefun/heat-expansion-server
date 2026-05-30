@@ -31,14 +31,9 @@ type Adapters struct {
 	Translator        ports.Translator
 }
 
-func NewAdapters(db *sql.DB, jwtSecret, rabbitURL, intExchange, yookassaShopID, yookassaSecretKey string) (*Adapters, error) {
+func NewAdapters(db *sql.DB, jwtSecret string, intPublisher ports.IntegrationEventPublisher, yookassaShopID, yookassaSecretKey string) (*Adapters, error) {
 	q := dbgen.New(db)
 	rq := readstoregen.New(db)
-
-	intPublisher, err := infraevents.NewRabbitMQPublisher(rabbitURL, intExchange)
-	if err != nil {
-		return nil, fmt.Errorf("billing: failed to initialize RabbitMQ publisher: %w", err)
-	}
 
 	translator := i18n.NewJSONTranslator()
 	if err := translator.LoadFromFS(locales.Files, "."); err != nil {

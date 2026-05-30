@@ -17,12 +17,16 @@ type RabbitMQPublisher struct {
 
 	mu   sync.RWMutex
 	conn *amqp.Connection
+
+	done      chan struct{}
+	closeOnce sync.Once
 }
 
 func NewRabbitMQPublisher(url string, exchange string) (*RabbitMQPublisher, error) {
 	p := &RabbitMQPublisher{
 		url:      url,
 		exchange: exchange,
+		done:     make(chan struct{}),
 	}
 
 	if err := p.connect(); err != nil {
@@ -65,14 +69,23 @@ func (p *RabbitMQPublisher) connect() error {
 
 	p.conn = conn
 
-	// Reconnection goroutine
+	// Reconnection goroutine. Exits when the publisher is closed so it cannot
+	// leak or resurrect the connection after shutdown.
 	go func() {
 		closeChan := conn.NotifyClose(make(chan *amqp.Error))
-		<-closeChan
+		select {
+		case <-p.done:
+			return
+		case <-closeChan:
+		}
 
-		// Connection closed, try to reconnect until successful
+		// Connection closed, try to reconnect until successful or shutdown.
 		for {
-			time.Sleep(5 * time.Second)
+			select {
+			case <-p.done:
+				return
+			case <-time.After(5 * time.Second):
+			}
 			if err := p.connect(); err == nil {
 				return
 			}
@@ -141,6 +154,8 @@ func (p *RabbitMQPublisher) Publish(ctx context.Context, event billingevents.Int
 }
 
 func (p *RabbitMQPublisher) Close() error {
+	p.closeOnce.Do(func() { close(p.done) })
+
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	if p.conn != nil {

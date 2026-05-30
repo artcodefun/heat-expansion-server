@@ -56,9 +56,13 @@ func (c *OrderCommands) CreateOrder(ctx context.Context, actor cqrs.Actor, packa
 		domain.PaymentProviderYooKassa,
 	)
 
-	// Persist the pending order before calling the gateway so a webhook that
-	// arrives before this returns can still match the order. The two writes
-	// don't need to be atomic, so no transaction is used.
+	// Persist the pending order before calling the gateway so it durably exists
+	// with the ID we pass to YooKassa as the idempotence key and metadata
+	// order_id, even if the process crashes during or right after CreatePayment.
+	// Webhook matching is keyed on provider_order_id, which is only stored by the
+	// Update below; a webhook racing this method therefore relies on YooKassa's
+	// delivery retries rather than on this initial save. The two writes need not
+	// be atomic, so no transaction is used.
 	if err := c.OrderRepo.Save(ctx, order); err != nil {
 		return uuid.Nil, "", err
 	}

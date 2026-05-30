@@ -13,6 +13,7 @@ import (
 	_ "github.com/lib/pq"
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 
+	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/events"
 	httpapi "github.com/artcodefun/heat-expansion-server/internal/auth/interfaces/http"
 )
 
@@ -27,6 +28,10 @@ type Module struct {
 	Commands   *Commands
 	Queries    *Queries
 	HTTPServer *httpapi.Server
+	// IntegrationPublisher is the one adapter that starts background work (a
+	// broker connection and reconnect goroutine) the moment it is built, so the
+	// module constructs and owns it explicitly rather than hiding it in Adapters.
+	IntegrationPublisher *events.RabbitMQPublisher
 }
 
 func NewModule() *Module {
@@ -62,7 +67,12 @@ func NewModule() *Module {
 	}
 	slog.Info("connected to auth database")
 
-	adapters, err := NewAdapters(db, jwtSecret, rabbitURL, intExchange, smtpCfg)
+	intPublisher, err := events.NewRabbitMQPublisher(rabbitURL, intExchange)
+	if err != nil {
+		log.Fatal("Failed to initialize auth RabbitMQ publisher:", err)
+	}
+
+	adapters, err := NewAdapters(db, jwtSecret, intPublisher, smtpCfg)
 	if err != nil {
 		log.Fatal("Failed to initialize auth adapters:", err)
 	}
@@ -92,6 +102,8 @@ func NewModule() *Module {
 		Commands:   commands,
 		Queries:    queries,
 		HTTPServer: server,
+
+		IntegrationPublisher: intPublisher,
 	}
 }
 
@@ -116,5 +128,16 @@ func (m *Module) Run(ctx context.Context) {
 	}
 
 	m.Workers.Wait()
+
+	// Workers have drained, so no goroutine is still publishing or querying.
+	// Release infrastructure connections so the broker and DB can reclaim
+	// resources promptly instead of waiting for timeouts.
+	if err := m.IntegrationPublisher.Close(); err != nil {
+		slog.Error("auth integration publisher close error", "error", err)
+	}
+	if err := m.DB.Close(); err != nil {
+		slog.Error("auth database close error", "error", err)
+	}
+
 	slog.Info("auth module: stopped")
 }

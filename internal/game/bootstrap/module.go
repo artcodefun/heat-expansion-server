@@ -156,5 +156,10 @@ func (m *Module) Run(ctx context.Context) {
 	}
 
 	m.Workers.Wait()
+
+	if err := m.DB.Close(); err != nil {
+		slog.Error("game database close error", "error", err)
+	}
+
 	slog.Info("game module: stopped")
 }

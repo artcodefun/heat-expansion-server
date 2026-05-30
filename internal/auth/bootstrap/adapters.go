@@ -35,12 +35,7 @@ type SMTPConfig struct {
 	From     string
 }
 
-func NewAdapters(db *sql.DB, jwtSecret string, rabbitURL string, integrationExchange string, smtpCfg SMTPConfig) (*Adapters, error) {
-	intPublisher, err := events.NewRabbitMQPublisher(rabbitURL, integrationExchange)
-	if err != nil {
-		return nil, fmt.Errorf("failed to initialize RabbitMQ publisher: %w", err)
-	}
-
+func NewAdapters(db *sql.DB, jwtSecret string, intPublisher ports.IntegrationEventPublisher, smtpCfg SMTPConfig) (*Adapters, error) {
 	translator := i18n.NewJSONTranslator()
 	if err := translator.LoadFromFS(locales.Files, "."); err != nil {
 		return nil, fmt.Errorf("failed to load translations: %w", err)

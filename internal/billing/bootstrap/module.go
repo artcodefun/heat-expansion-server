@@ -13,6 +13,7 @@ import (
 	_ "github.com/lib/pq"
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 
+	infraevents "github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/events"
 	httpapi "github.com/artcodefun/heat-expansion-server/internal/billing/interfaces/http"
 )
 
@@ -27,6 +28,10 @@ type Module struct {
 	Commands   *Commands
 	Queries    *Queries
 	HTTPServer *httpapi.Server
+	// IntegrationPublisher is the one adapter that starts background work (a
+	// broker connection and reconnect goroutine) the moment it is built, so the
+	// module constructs and owns it explicitly rather than hiding it in Adapters.
+	IntegrationPublisher *infraevents.RabbitMQPublisher
 }
 
 func NewModule() *Module {
@@ -57,7 +62,12 @@ func NewModule() *Module {
 	}
 	slog.Info("connected to billing database")
 
-	adapters, err := NewAdapters(db, jwtSecret, rabbitURL, intExchange, yookassaShopID, yookassaSecretKey)
+	intPublisher, err := infraevents.NewRabbitMQPublisher(rabbitURL, intExchange)
+	if err != nil {
+		log.Fatal("Failed to initialize billing RabbitMQ publisher:", err)
+	}
+
+	adapters, err := NewAdapters(db, jwtSecret, intPublisher, yookassaShopID, yookassaSecretKey)
 	if err != nil {
 		log.Fatal("Failed to initialize billing adapters:", err)
 	}
@@ -88,6 +98,8 @@ func NewModule() *Module {
 		Commands:   commands,
 		Queries:    queries,
 		HTTPServer: server,
+
+		IntegrationPublisher: intPublisher,
 	}
 }
 
@@ -112,5 +124,16 @@ func (m *Module) Run(ctx context.Context) {
 	}
 
 	m.Workers.Wait()
+
+	// Workers have drained, so no goroutine is still publishing or querying.
+	// Release infrastructure connections so the broker and DB can reclaim
+	// resources promptly instead of waiting for timeouts.
+	if err := m.IntegrationPublisher.Close(); err != nil {
+		slog.Error("billing integration publisher close error", "error", err)
+	}
+	if err := m.DB.Close(); err != nil {
+		slog.Error("billing database close error", "error", err)
+	}
+
 	slog.Info("billing module: stopped")
 }
