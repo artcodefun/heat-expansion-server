@@ -12,6 +12,7 @@ const (
 	KindForbidden
 	KindConflict
 	KindInvalidInput
+	KindUnavailable
 )
 
 type AppError struct {
@@ -40,4 +41,8 @@ var (
 	ErrOrderNotFound           = NewAppError(KindNotFound, "error.application.billing.order_not_found")
 	ErrPaymentGatewayFailed    = NewAppError(KindInternal, "error.application.billing.payment_gateway_failed")
 	ErrInvalidWebhookPayload   = NewAppError(KindInvalidInput, "error.application.billing.invalid_webhook_payload")
+	// ErrPaymentsUnavailable is returned while the payment provider account is
+	// pending moderation. Remove it (and its call site in CreateOrder) once
+	// payments are live.
+	ErrPaymentsUnavailable     = NewAppError(KindUnavailable, "error.application.billing.payments_unavailable")
 )

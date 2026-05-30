@@ -35,7 +35,18 @@ func NewOrderCommands(
 	}
 }
 
+// paymentsEnabled gates order creation. It is temporarily false while the
+// YooKassa account is pending moderation; flip it to true (and remove
+// cqrs.ErrPaymentsUnavailable) once payments go live.
+var paymentsEnabled = false
+
 func (c *OrderCommands) CreateOrder(ctx context.Context, actor cqrs.Actor, packageID uuid.UUID, returnURL string) (uuid.UUID, string, error) {
+	if !paymentsEnabled {
+		// Reject up front: no order is persisted and the gateway is never
+		// called. Package listing is unaffected.
+		return uuid.Nil, "", cqrs.ErrPaymentsUnavailable
+	}
+
 	pkg, err := c.PackageRepo.FindByID(ctx, packageID)
 	if err != nil {
 		if errors.Is(err, ports.ErrNotFound) {

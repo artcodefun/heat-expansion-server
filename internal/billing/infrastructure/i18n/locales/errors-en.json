@@ -7,5 +7,6 @@
     "error.application.billing.order_already_paid": "Order has already been paid",
     "error.application.billing.payment_gateway_failed": "Payment gateway error, please try again",
     "error.application.billing.invalid_webhook_payload": "Invalid webhook payload",
+    "error.application.billing.payments_unavailable": "Payments are temporarily unavailable, please try again later",
     "error.domain.order.invalid_status_transition": "Cannot change order in status {status}"
 }

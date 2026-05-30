@@ -47,6 +47,8 @@ func handleCoreErr(c *gin.Context, tr ports.Translator, err error) bool {
 			status = http.StatusConflict
 		case cqrs.KindInvalidInput:
 			status = http.StatusUnprocessableEntity
+		case cqrs.KindUnavailable:
+			status = http.StatusServiceUnavailable
 		}
 		c.JSON(status, gin.H{"error": tr.T(locale, appErr.Code, appErr.Params)})
 		return true
