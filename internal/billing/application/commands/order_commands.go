@@ -119,6 +119,16 @@ func (c *OrderCommands) CreateOrder(ctx context.Context, actor cqrs.Actor, packa
 		return uuid.Nil, "", err
 	}
 
+	slog.InfoContext(ctx, "order created and payment initiated",
+		"order_id", order.ID.String(),
+		"user_id", actor.UserID.String(),
+		"package_id", pkg.ID.String(),
+		"crystals", pkg.Crystals,
+		"amount_minor_units", pkg.PriceMinorUnits,
+		"currency", pkg.Currency,
+		"provider_order_id", providerOrderID,
+	)
+
 	return order.ID, confirmationURL, nil
 }
 
@@ -134,7 +144,8 @@ func (c *OrderCommands) ConfirmPayment(ctx context.Context, rawBody []byte) erro
 		return cqrs.ErrPaymentGatewayFailed
 	}
 
-	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
+	var confirmed *domain.PurchaseOrder
+	if err := c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		oRepo := c.OrderRepo.Tx(tx)
 
 		order, err := oRepo.FindByProviderOrderIDForUpdate(ctx, providerOrderID)
@@ -159,6 +170,24 @@ func (c *OrderCommands) ConfirmPayment(ctx context.Context, rawBody []byte) erro
 			return err
 		}
 
-		return c.Outbox.Tx(tx).Save(ctx, order.EventProducer.PullEvents())
-	})
+		if err := c.Outbox.Tx(tx).Save(ctx, order.EventProducer.PullEvents()); err != nil {
+			return err
+		}
+		confirmed = order
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	if confirmed != nil {
+		slog.InfoContext(ctx, "payment webhook processed",
+			"order_id", confirmed.ID.String(),
+			"user_id", confirmed.UserID.String(),
+			"crystals", confirmed.Crystals,
+			"provider_order_id", providerOrderID,
+			"paid", paid,
+		)
+	}
+
+	return nil
 }
