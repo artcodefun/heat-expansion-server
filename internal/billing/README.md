@@ -8,6 +8,7 @@ This directory contains the **billing** service inside the Heat Expansion modula
 - **Purchase Orders**: The core aggregate `PurchaseOrder` tracks the full lifecycle of a payment — `PENDING` on creation, `PAID` on successful webhook confirmation, `FAILED` on rejection. Each order is tied to a user ID (from JWT), a package, and a YooKassa payment.
 - **YooKassa Integration**: Payments are created via the YooKassa REST API using the order ID as the idempotency key. Confirmation arrives via webhook, which transitions the order to `PAID` or `FAILED`.
 - **Events**: On `PAID`, emits a `CrystalsPurchasedV1` integration event that the Game service consumes to credit crystals to the player's balance.
+- **Users**: A lightweight model holding just an ID and email, where the email is needed to issue payment receipts.
 
 ## Architecture
 
@@ -50,4 +51,4 @@ From repo root:
 
 ## Database Schema
 
-All tables live in the `billing` schema: `billing.crystal_packages`, `billing.purchase_orders`, `billing.domain_events`, `billing.integration_events`.
+All tables live in the `billing` schema: `billing.crystal_packages`, `billing.purchase_orders`, `billing.users`, `billing.domain_events`, `billing.integration_events`.
