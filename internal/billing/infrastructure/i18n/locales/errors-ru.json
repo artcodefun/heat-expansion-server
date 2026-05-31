@@ -8,5 +8,6 @@
     "error.application.billing.payment_gateway_failed": "Ошибка платёжного шлюза, попробуйте ещё раз",
     "error.application.billing.invalid_webhook_payload": "Недопустимое тело вебхука",
     "error.application.billing.payments_unavailable": "Платежи временно недоступны, пожалуйста, попробуйте позже",
+    "error.application.billing.customer_email_unavailable": "Ваш аккаунт ещё настраивается, пожалуйста, повторите попытку через мгновение",
     "error.domain.order.invalid_status_transition": "Невозможно изменить заказ в статусе {status}"
 }

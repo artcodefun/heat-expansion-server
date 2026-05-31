@@ -17,6 +17,7 @@ type Querier interface {
 	GetOrderByProviderOrderID(ctx context.Context, providerOrderID string) (PurchaseOrder, error)
 	GetOrderByProviderOrderIDForUpdate(ctx context.Context, providerOrderID string) (PurchaseOrder, error)
 	GetPackageByID(ctx context.Context, id uuid.UUID) (CrystalPackage, error)
+	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
 	InsertOrder(ctx context.Context, arg InsertOrderParams) error
 	IntegrationEventExists(ctx context.Context, arg IntegrationEventExistsParams) (bool, error)
 	MarkEventPublished(ctx context.Context, arg MarkEventPublishedParams) error
@@ -26,6 +27,7 @@ type Querier interface {
 	SaveIntegrationEvent(ctx context.Context, arg SaveIntegrationEventParams) error
 	SaveOutboxEvent(ctx context.Context, arg SaveOutboxEventParams) error
 	UpdateOrder(ctx context.Context, arg UpdateOrderParams) error
+	UpsertUser(ctx context.Context, arg UpsertUserParams) error
 }
 
 var _ Querier = (*Queries)(nil)

@@ -7,7 +7,6 @@ import (
 
 type CrystalPackageResponse struct {
 	ID              uuid.UUID `json:"id"`
-	Name            string    `json:"name"`
 	Crystals        int       `json:"crystals"`
 	PriceMinorUnits int64     `json:"price_minor_units"`
 	Currency        string    `json:"currency"`
@@ -17,7 +16,6 @@ type CrystalPackageResponse struct {
 func CrystalPackageResponseFromReadModel(p readmodels.CrystalPackage) CrystalPackageResponse {
 	return CrystalPackageResponse{
 		ID:              p.ID,
-		Name:            p.Name,
 		Crystals:        p.Crystals,
 		PriceMinorUnits: p.PriceMinorUnits,
 		Currency:        p.Currency,

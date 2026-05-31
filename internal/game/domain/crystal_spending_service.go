@@ -39,7 +39,7 @@ func (s *CrystalSpendingService) SpeedUpBuildingProduction(user *User, base *Use
 
 	item := base.BuildingsInProduction[idx]
 
-	if err := user.SpendCrystals(remainingCrystals(item.StartDate, item.CompletionDate, item.CrystalsSkipPrice)); err != nil {
+	if err := user.SpendCrystals(remainingCrystals(item.StartDate, item.CompletionDate, item.CrystalsSkipPrice), CrystalSpendReasonSpeedupBuilding, buildingItemID.String()); err != nil {
 		return err
 	}
 	if err := base.SpeedUpBuildingProduction(buildingItemID); err != nil {
@@ -64,7 +64,7 @@ func (s *CrystalSpendingService) SpeedUpArmyProduction(user *User, base *UserBas
 
 	item := base.ArmiesInProduction[idx]
 
-	if err := user.SpendCrystals(remainingCrystals(item.StartDate, item.CompletionDate, item.CrystalsSkipPrice)); err != nil {
+	if err := user.SpendCrystals(remainingCrystals(item.StartDate, item.CompletionDate, item.CrystalsSkipPrice), CrystalSpendReasonSpeedupArmy, armyItemID.String()); err != nil {
 		return err
 	}
 	if err := base.SpeedUpArmyProduction(armyItemID); err != nil {
@@ -89,7 +89,7 @@ func (s *CrystalSpendingService) SpeedUpTechResearch(user *User, base *UserBaseM
 
 	item := base.TechnologiesInProgress[idx]
 
-	if err := user.SpendCrystals(remainingCrystals(item.StartDate, item.CompletionDate, item.CrystalsSkipPrice)); err != nil {
+	if err := user.SpendCrystals(remainingCrystals(item.StartDate, item.CompletionDate, item.CrystalsSkipPrice), CrystalSpendReasonSpeedupTech, techItemID.String()); err != nil {
 		return err
 	}
 	if err := base.SpeedUpTechResearch(techItemID); err != nil {
@@ -132,7 +132,7 @@ func (s *CrystalSpendingService) SpeedUpTradeOperation(user *User, op *TradeOper
 	if crystals < 1 {
 		crystals = 1
 	}
-	if err := user.SpendCrystals(crystals); err != nil {
+	if err := user.SpendCrystals(crystals, CrystalSpendReasonSpeedupTrade, op.UUID.String()); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (s *CrystalSpendingService) SpeedUpOperation(user *User, op *MilitaryOperat
 	if crystals < 1 {
 		crystals = 1 // Minimum price
 	}
-	if err := user.SpendCrystals(crystals); err != nil {
+	if err := user.SpendCrystals(crystals, CrystalSpendReasonSpeedupMilitary, op.UUID.String()); err != nil {
 		return err
 	}
 

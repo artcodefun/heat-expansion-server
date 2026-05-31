@@ -17,6 +17,7 @@ sql:
           billing_purchase_order: PurchaseOrder
           billing_domain_event: DomainEvent
           billing_integration_event: IntegrationEvent
+          billing_user: User
   - schema: "db/migrations"
     queries: "readstore/queries"
     engine: "postgresql"
@@ -32,3 +33,4 @@ sql:
         rename:
           billing_crystal_package: CrystalPackage
           billing_purchase_order: PurchaseOrder
+          billing_user: User

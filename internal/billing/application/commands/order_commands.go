@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"os"
+	"strings"
 
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/cqrs"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/ports"
@@ -14,6 +16,7 @@ import (
 type OrderCommands struct {
 	OrderRepo   ports.PurchaseOrderRepository
 	PackageRepo ports.CrystalPackageRepository
+	UserRepo    ports.UserRepository
 	Gateway     ports.PaymentGateway
 	Outbox      ports.OutboxEventRepository
 	TxMgr       ports.TransactionManager
@@ -22,6 +25,7 @@ type OrderCommands struct {
 func NewOrderCommands(
 	orderRepo ports.PurchaseOrderRepository,
 	packageRepo ports.CrystalPackageRepository,
+	userRepo ports.UserRepository,
 	gateway ports.PaymentGateway,
 	outbox ports.OutboxEventRepository,
 	txMgr ports.TransactionManager,
@@ -29,19 +33,28 @@ func NewOrderCommands(
 	return &OrderCommands{
 		OrderRepo:   orderRepo,
 		PackageRepo: packageRepo,
+		UserRepo:    userRepo,
 		Gateway:     gateway,
 		Outbox:      outbox,
 		TxMgr:       txMgr,
 	}
 }
 
-// paymentsEnabled gates order creation. It is temporarily false while the
-// YooKassa account is pending moderation; flip it to true (and remove
-// cqrs.ErrPaymentsUnavailable) once payments go live.
-var paymentsEnabled = false
+// paymentsTestUserIDEnv names the env var holding the single user ID allowed to
+// create real orders during YooKassa test-shop validation. While it is unset,
+// payments are disabled for everyone; when set, only that user passes and
+// everyone else gets cqrs.ErrPaymentsUnavailable.
+//
+// TEMPORARY & deliberately dirty: this reads the environment straight from the
+// handler, bypassing bootstrap/config and the project's architecture. It exists
+// only to let a single tester exercise the live flow before launch, and is
+// slated for removal (along with cqrs.ErrPaymentsUnavailable) once payments go
+// live for all users.
+const paymentsTestUserIDEnv = "BILLING_PAYMENTS_TEST_USER_ID"
 
 func (c *OrderCommands) CreateOrder(ctx context.Context, actor cqrs.Actor, packageID uuid.UUID, returnURL string) (uuid.UUID, string, error) {
-	if !paymentsEnabled {
+	testUserID := strings.TrimSpace(os.Getenv(paymentsTestUserIDEnv))
+	if testUserID == "" || actor.UserID.String() != testUserID {
 		// Reject up front: no order is persisted and the gateway is never
 		// called. Package listing is unaffected.
 		return uuid.Nil, "", cqrs.ErrPaymentsUnavailable
@@ -56,6 +69,22 @@ func (c *OrderCommands) CreateOrder(ctx context.Context, actor cqrs.Actor, packa
 	}
 	if !pkg.IsActive {
 		return uuid.Nil, "", cqrs.ErrPackageNotFound
+	}
+
+	// The fiscal receipt (54-FZ) must be issued to the buyer's email, which we
+	// project locally from auth registration events. Resolve it before
+	// persisting anything so we fail fast if the projection has not caught up.
+	user, err := c.UserRepo.FindByID(ctx, actor.UserID)
+	if err != nil {
+		if errors.Is(err, ports.ErrNotFound) {
+			slog.WarnContext(ctx, "cannot create order: buyer email not yet projected", "user_id", actor.UserID.String())
+			return uuid.Nil, "", cqrs.ErrCustomerEmailUnavailable
+		}
+		return uuid.Nil, "", err
+	}
+	if user.Email == "" {
+		slog.WarnContext(ctx, "cannot create order: buyer email is empty", "user_id", actor.UserID.String())
+		return uuid.Nil, "", cqrs.ErrCustomerEmailUnavailable
 	}
 
 	order := domain.NewPendingOrder(
@@ -78,7 +107,7 @@ func (c *OrderCommands) CreateOrder(ctx context.Context, actor cqrs.Actor, packa
 		return uuid.Nil, "", err
 	}
 
-	providerOrderID, confirmationURL, err := c.Gateway.CreatePayment(ctx, order, pkg, returnURL)
+	providerOrderID, confirmationURL, err := c.Gateway.CreatePayment(ctx, order, pkg, user.Email, returnURL)
 	if err != nil {
 		slog.ErrorContext(ctx, "payment gateway failed to create payment", "error", err)
 		return uuid.Nil, "", cqrs.ErrPaymentGatewayFailed
@@ -89,6 +118,16 @@ func (c *OrderCommands) CreateOrder(ctx context.Context, actor cqrs.Actor, packa
 	if err := c.OrderRepo.Update(ctx, order); err != nil {
 		return uuid.Nil, "", err
 	}
+
+	slog.InfoContext(ctx, "order created and payment initiated",
+		"order_id", order.ID.String(),
+		"user_id", actor.UserID.String(),
+		"package_id", pkg.ID.String(),
+		"crystals", pkg.Crystals,
+		"amount_minor_units", pkg.PriceMinorUnits,
+		"currency", pkg.Currency,
+		"provider_order_id", providerOrderID,
+	)
 
 	return order.ID, confirmationURL, nil
 }
@@ -105,7 +144,8 @@ func (c *OrderCommands) ConfirmPayment(ctx context.Context, rawBody []byte) erro
 		return cqrs.ErrPaymentGatewayFailed
 	}
 
-	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
+	var confirmed *domain.PurchaseOrder
+	if err := c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		oRepo := c.OrderRepo.Tx(tx)
 
 		order, err := oRepo.FindByProviderOrderIDForUpdate(ctx, providerOrderID)
@@ -130,6 +170,24 @@ func (c *OrderCommands) ConfirmPayment(ctx context.Context, rawBody []byte) erro
 			return err
 		}
 
-		return c.Outbox.Tx(tx).Save(ctx, order.EventProducer.PullEvents())
-	})
+		if err := c.Outbox.Tx(tx).Save(ctx, order.EventProducer.PullEvents()); err != nil {
+			return err
+		}
+		confirmed = order
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	if confirmed != nil {
+		slog.InfoContext(ctx, "payment webhook processed",
+			"order_id", confirmed.ID.String(),
+			"user_id", confirmed.UserID.String(),
+			"crystals", confirmed.Crystals,
+			"provider_order_id", providerOrderID,
+			"paid", paid,
+		)
+	}
+
+	return nil
 }

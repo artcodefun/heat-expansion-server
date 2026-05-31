@@ -16,7 +16,8 @@ var ErrMalformedWebhook = errors.New("malformed webhook payload")
 // PaymentGateway abstracts a payment provider (YooKassa, etc.)
 type PaymentGateway interface {
 	// CreatePayment creates a payment and returns the provider order ID and redirect URL.
-	CreatePayment(ctx context.Context, order *domain.PurchaseOrder, pkg *domain.CrystalPackage, returnURL string) (providerOrderID, confirmationURL string, err error)
+	// customerEmail is the address the fiscal receipt (54-FZ) is issued to.
+	CreatePayment(ctx context.Context, order *domain.PurchaseOrder, pkg *domain.CrystalPackage, customerEmail, returnURL string) (providerOrderID, confirmationURL string, err error)
 	// VerifyWebhook validates an incoming webhook notification by re-querying
 	// the provider for the canonical payment state.
 	// Returns the providerOrderID and whether the payment succeeded.

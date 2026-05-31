@@ -42,6 +42,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getPackageByIDStmt, err = db.PrepareContext(ctx, getPackageByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetPackageByID: %w", err)
 	}
+	if q.getUserByIDStmt, err = db.PrepareContext(ctx, getUserByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUserByID: %w", err)
+	}
 	if q.insertOrderStmt, err = db.PrepareContext(ctx, insertOrder); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertOrder: %w", err)
 	}
@@ -68,6 +71,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.updateOrderStmt, err = db.PrepareContext(ctx, updateOrder); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateOrder: %w", err)
+	}
+	if q.upsertUserStmt, err = db.PrepareContext(ctx, upsertUser); err != nil {
+		return nil, fmt.Errorf("error preparing query UpsertUser: %w", err)
 	}
 	return &q, nil
 }
@@ -102,6 +108,11 @@ func (q *Queries) Close() error {
 	if q.getPackageByIDStmt != nil {
 		if cerr := q.getPackageByIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getPackageByIDStmt: %w", cerr)
+		}
+	}
+	if q.getUserByIDStmt != nil {
+		if cerr := q.getUserByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUserByIDStmt: %w", cerr)
 		}
 	}
 	if q.insertOrderStmt != nil {
@@ -149,6 +160,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateOrderStmt: %w", cerr)
 		}
 	}
+	if q.upsertUserStmt != nil {
+		if cerr := q.upsertUserStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing upsertUserStmt: %w", cerr)
+		}
+	}
 	return err
 }
 
@@ -194,6 +210,7 @@ type Queries struct {
 	getOrderByProviderOrderIDStmt          *sql.Stmt
 	getOrderByProviderOrderIDForUpdateStmt *sql.Stmt
 	getPackageByIDStmt                     *sql.Stmt
+	getUserByIDStmt                        *sql.Stmt
 	insertOrderStmt                        *sql.Stmt
 	integrationEventExistsStmt             *sql.Stmt
 	markEventPublishedStmt                 *sql.Stmt
@@ -203,6 +220,7 @@ type Queries struct {
 	saveIntegrationEventStmt               *sql.Stmt
 	saveOutboxEventStmt                    *sql.Stmt
 	updateOrderStmt                        *sql.Stmt
+	upsertUserStmt                         *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
@@ -215,6 +233,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getOrderByProviderOrderIDStmt:          q.getOrderByProviderOrderIDStmt,
 		getOrderByProviderOrderIDForUpdateStmt: q.getOrderByProviderOrderIDForUpdateStmt,
 		getPackageByIDStmt:                     q.getPackageByIDStmt,
+		getUserByIDStmt:                        q.getUserByIDStmt,
 		insertOrderStmt:                        q.insertOrderStmt,
 		integrationEventExistsStmt:             q.integrationEventExistsStmt,
 		markEventPublishedStmt:                 q.markEventPublishedStmt,
@@ -224,5 +243,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		saveIntegrationEventStmt:               q.saveIntegrationEventStmt,
 		saveOutboxEventStmt:                    q.saveOutboxEventStmt,
 		updateOrderStmt:                        q.updateOrderStmt,
+		upsertUserStmt:                         q.upsertUserStmt,
 	}
 }

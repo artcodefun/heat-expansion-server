@@ -3,6 +3,7 @@ package commands
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"time"
 
 	authv1 "github.com/artcodefun/heat-expansion-server/contracts/auth/events/v1"
@@ -39,7 +40,7 @@ func (c *UserCommands) HandleCrystalsPurchasedV1Event(ctx context.Context, ev bi
 			return err
 		}
 
-		if err := user.AddCrystals(ev.Crystals); err != nil {
+		if err := user.AddCrystals(ev.Crystals, domain.CrystalCreditReasonPackPurchase, ev.OrderID.String()); err != nil {
 			return err
 		}
 
@@ -51,7 +52,17 @@ func (c *UserCommands) HandleCrystalsPurchasedV1Event(ctx context.Context, ev bi
 			return err
 		}
 
-		return creditsRepo.Insert(ctx, ev.OrderID, ev.UserID, ev.Crystals, time.Now().Unix())
+		if err := creditsRepo.Insert(ctx, ev.OrderID, ev.UserID, ev.Crystals, time.Now().Unix()); err != nil {
+			return err
+		}
+
+		slog.InfoContext(ctx, "crystals credited from purchase",
+			"order_id", ev.OrderID.String(),
+			"user_id", ev.UserID.String(),
+			"crystals", ev.Crystals,
+			"balance_after", user.Crystals,
+		)
+		return nil
 	})
 }
 

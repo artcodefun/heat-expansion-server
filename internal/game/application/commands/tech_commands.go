@@ -78,6 +78,9 @@ func (c *TechCommands) SpeedUpTechResearchWithCrystals(ctx context.Context, acto
 		if err := bRepo.Update(ctx, base); err != nil {
 			return err
 		}
+		if err := c.Outbox.Tx(tx).Save(ctx, user.EventProducer.PullEvents()); err != nil {
+			return err
+		}
 		if err := c.Outbox.Tx(tx).Save(ctx, base.EventProducer.PullEvents()); err != nil {
 			return err
 		}

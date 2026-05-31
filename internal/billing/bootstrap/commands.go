@@ -8,11 +8,13 @@ import (
 // Commands aggregates all command handlers.
 type Commands struct {
 	Order cqrs.OrderCommands
+	User  cqrs.UserCommands
 }
 
 // NewCommands constructs all command handlers using the provided secondary adapters.
 func NewCommands(a *Adapters) *Commands {
 	return &Commands{
-		Order: appcommands.NewOrderCommands(a.Orders, a.Packages, a.Gateway, a.Outbox, a.TxMgr),
+		Order: appcommands.NewOrderCommands(a.Orders, a.Packages, a.Users, a.Gateway, a.Outbox, a.TxMgr),
+		User:  appcommands.NewUserCommands(a.Users),
 	}
 }
