@@ -24,6 +24,7 @@ type BlackMarketCommands struct {
 	BuildPrototypes  ports.BuildPrototypeRepository
 	ArmyPrototypes   ports.ArmyPrototypeRepository
 	StoragePrototype ports.StoragePrototypeRepository
+	Outbox           ports.OutboxEventRepository
 	Scheduler        ports.Scheduler
 	TxMgr            ports.TransactionManager
 	Access           *services.AccessControlService
@@ -37,6 +38,7 @@ func NewBlackMarketCommands(
 	buildPrototypes ports.BuildPrototypeRepository,
 	armyPrototypes ports.ArmyPrototypeRepository,
 	storagePrototypes ports.StoragePrototypeRepository,
+	outbox ports.OutboxEventRepository,
 	scheduler ports.Scheduler,
 	txMgr ports.TransactionManager,
 	access *services.AccessControlService,
@@ -48,6 +50,7 @@ func NewBlackMarketCommands(
 		BuildPrototypes:  buildPrototypes,
 		ArmyPrototypes:   armyPrototypes,
 		StoragePrototype: storagePrototypes,
+		Outbox:           outbox,
 		Scheduler:        scheduler,
 		TxMgr:            txMgr,
 		Access:           access,
@@ -80,6 +83,9 @@ func (c *BlackMarketCommands) PurchaseResources(ctx context.Context, actor cqrs.
 			return repoErr(err)
 		}
 		if err := bRepo.Update(ctx, base); err != nil {
+			return repoErr(err)
+		}
+		if err := c.Outbox.Tx(tx).Save(ctx, user.EventProducer.PullEvents()); err != nil {
 			return repoErr(err)
 		}
 		return nil
@@ -142,6 +148,9 @@ func (c *BlackMarketCommands) PurchaseOffer(ctx context.Context, actor cqrs.Acto
 			return repoErr(err)
 		}
 		if err := bRepo.Update(ctx, base); err != nil {
+			return repoErr(err)
+		}
+		if err := c.Outbox.Tx(tx).Save(ctx, user.EventProducer.PullEvents()); err != nil {
 			return repoErr(err)
 		}
 		return nil

@@ -176,6 +176,8 @@ func DecodeJob(kind string, payload []byte) (ports.SchadulableJob, error) {
 // detail of the DB outbox; core code only sees typed events.
 const (
 	evKindUserAccountCreated             = "USER_ACCOUNT_CREATED"
+	evKindCrystalsCredited               = "CRYSTALS_CREDITED"
+	evKindCrystalsSpent                  = "CRYSTALS_SPENT"
 	evKindUserBaseCreated                = "USER_BASE_CREATED"
 	evKindBuildingProductionStarted      = "BUILDING_PRODUCTION_STARTED"
 	evKindBuildingProductionFinished     = "BUILDING_PRODUCTION_FINISHED"
@@ -230,6 +232,13 @@ func EncodeEvent(ev domain.DomainEvent) (kind string, payload []byte, err error)
 	case domain.UserAccountCreatedEvent:
 		payload, err = json.Marshal(dtos.UserAccountCreatedEventDTOFromDomain(e))
 		return evKindUserAccountCreated, payload, err
+
+	case domain.CrystalsCreditedEvent:
+		payload, err = json.Marshal(dtos.CrystalsCreditedEventDTOFromDomain(e))
+		return evKindCrystalsCredited, payload, err
+	case domain.CrystalsSpentEvent:
+		payload, err = json.Marshal(dtos.CrystalsSpentEventDTOFromDomain(e))
+		return evKindCrystalsSpent, payload, err
 
 	case domain.UserBaseCreatedEvent:
 		payload, err = json.Marshal(dtos.UserBaseCreatedEventDTOFromDomain(e))
@@ -390,6 +399,20 @@ func DecodeEvent(kind string, payload []byte) (domain.DomainEvent, error) {
 			return nil, err
 		}
 		return dtos.UserAccountCreatedEventFromDTO(dto), nil
+
+	case evKindCrystalsCredited:
+		var dto dtos.CrystalsCreditedEventDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.CrystalsCreditedEventFromDTO(dto), nil
+
+	case evKindCrystalsSpent:
+		var dto dtos.CrystalsSpentEventDTO
+		if err := json.Unmarshal(payload, &dto); err != nil {
+			return nil, err
+		}
+		return dtos.CrystalsSpentEventFromDTO(dto), nil
 
 	case evKindUserBaseCreated:
 		var dto dtos.UserBaseCreatedEventDTO

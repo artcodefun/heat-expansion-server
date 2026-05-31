@@ -163,6 +163,9 @@ func (c *OperationCommands) SpeedUpOperationWithCrystals(ctx context.Context, ac
 		if err := oRepo.Update(ctx, op); err != nil {
 			return err
 		}
+		if err := c.Outbox.Tx(tx).Save(ctx, user.EventProducer.PullEvents()); err != nil {
+			return err
+		}
 		if err := c.Outbox.Tx(tx).Save(ctx, op.EventProducer.PullEvents()); err != nil {
 			return err
 		}

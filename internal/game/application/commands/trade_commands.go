@@ -408,6 +408,9 @@ func (c *TradeCommands) SpeedUpTradeOperationWithCrystals(ctx context.Context, a
 		if err := tRepo.Update(ctx, op); err != nil {
 			return repoErr(err)
 		}
+		if err := c.Outbox.Tx(tx).Save(ctx, user.EventProducer.PullEvents()); err != nil {
+			return repoErr(err)
+		}
 		if err := c.Outbox.Tx(tx).Save(ctx, op.EventProducer.PullEvents()); err != nil {
 			return repoErr(err)
 		}

@@ -49,6 +49,49 @@ func NewUserAccountCreatedEvent(userID uuid.UUID) UserAccountCreatedEvent {
 	}
 }
 
+// CrystalsCreditedEvent is emitted when crystals are added to a user's balance.
+// Reference optionally identifies the source (e.g. order ID).
+type CrystalsCreditedEvent struct {
+	BasicEvent
+	UserID       uuid.UUID
+	Amount       int
+	Reason       CrystalCreditReason
+	Reference    string
+	BalanceAfter int
+}
+
+func NewCrystalsCreditedEvent(userID uuid.UUID, amount int, reason CrystalCreditReason, reference string, balanceAfter int) CrystalsCreditedEvent {
+	return CrystalsCreditedEvent{
+		BasicEvent:   NewBasicEvent(),
+		UserID:       userID,
+		Amount:       amount,
+		Reason:       reason,
+		Reference:    reference,
+		BalanceAfter: balanceAfter,
+	}
+}
+
+// CrystalsSpentEvent is emitted when crystals are deducted from a user's balance.
+type CrystalsSpentEvent struct {
+	BasicEvent
+	UserID       uuid.UUID
+	Amount       int
+	Reason       CrystalSpendReason
+	Reference    string
+	BalanceAfter int
+}
+
+func NewCrystalsSpentEvent(userID uuid.UUID, amount int, reason CrystalSpendReason, reference string, balanceAfter int) CrystalsSpentEvent {
+	return CrystalsSpentEvent{
+		BasicEvent:   NewBasicEvent(),
+		UserID:       userID,
+		Amount:       amount,
+		Reason:       reason,
+		Reference:    reference,
+		BalanceAfter: balanceAfter,
+	}
+}
+
 // User base creation event
 type UserBaseCreatedEvent struct {
 	BasicEvent

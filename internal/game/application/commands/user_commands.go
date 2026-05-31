@@ -39,7 +39,7 @@ func (c *UserCommands) HandleCrystalsPurchasedV1Event(ctx context.Context, ev bi
 			return err
 		}
 
-		if err := user.AddCrystals(ev.Crystals); err != nil {
+		if err := user.AddCrystals(ev.Crystals, domain.CrystalCreditReasonPackPurchase, ev.OrderID.String()); err != nil {
 			return err
 		}
 

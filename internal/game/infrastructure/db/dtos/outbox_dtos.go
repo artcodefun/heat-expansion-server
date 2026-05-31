@@ -202,6 +202,54 @@ func UserAccountCreatedEventFromDTO(d UserAccountCreatedEventDTO) domain.UserAcc
 	return domain.NewUserAccountCreatedEvent(d.UserID)
 }
 
+type CrystalsCreditedEventDTO struct {
+	OccurredAt   int64                      `json:"occurred_at"`
+	UserID       uuid.UUID                  `json:"user_id"`
+	Amount       int                        `json:"amount"`
+	Reason       domain.CrystalCreditReason `json:"reason"`
+	Reference    string                     `json:"reference"`
+	BalanceAfter int                        `json:"balance_after"`
+}
+
+func CrystalsCreditedEventDTOFromDomain(e domain.CrystalsCreditedEvent) CrystalsCreditedEventDTO {
+	return CrystalsCreditedEventDTO{
+		OccurredAt:   e.OccurredAt(),
+		UserID:       e.UserID,
+		Amount:       e.Amount,
+		Reason:       e.Reason,
+		Reference:    e.Reference,
+		BalanceAfter: e.BalanceAfter,
+	}
+}
+
+func CrystalsCreditedEventFromDTO(d CrystalsCreditedEventDTO) domain.CrystalsCreditedEvent {
+	return domain.NewCrystalsCreditedEvent(d.UserID, d.Amount, d.Reason, d.Reference, d.BalanceAfter)
+}
+
+type CrystalsSpentEventDTO struct {
+	OccurredAt   int64                     `json:"occurred_at"`
+	UserID       uuid.UUID                 `json:"user_id"`
+	Amount       int                       `json:"amount"`
+	Reason       domain.CrystalSpendReason `json:"reason"`
+	Reference    string                    `json:"reference"`
+	BalanceAfter int                       `json:"balance_after"`
+}
+
+func CrystalsSpentEventDTOFromDomain(e domain.CrystalsSpentEvent) CrystalsSpentEventDTO {
+	return CrystalsSpentEventDTO{
+		OccurredAt:   e.OccurredAt(),
+		UserID:       e.UserID,
+		Amount:       e.Amount,
+		Reason:       e.Reason,
+		Reference:    e.Reference,
+		BalanceAfter: e.BalanceAfter,
+	}
+}
+
+func CrystalsSpentEventFromDTO(d CrystalsSpentEventDTO) domain.CrystalsSpentEvent {
+	return domain.NewCrystalsSpentEvent(d.UserID, d.Amount, d.Reason, d.Reference, d.BalanceAfter)
+}
+
 type UserBaseCreatedEventDTO struct {
 	OccurredAt int64     `json:"occurred_at"`
 	BaseID     int       `json:"base_id"`

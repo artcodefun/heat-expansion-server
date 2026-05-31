@@ -1,6 +1,9 @@
 package domain
 
-import "slices"
+import (
+	"slices"
+	"strconv"
+)
 
 // BlackMarketService handles purchasing resources from the Black Market.
 type BlackMarketService struct{}
@@ -21,7 +24,7 @@ func (s *BlackMarketService) PurchaseResources(user *User, base *UserBaseModel, 
 		return err
 	}
 
-	if err := user.SpendCrystals(crystals); err != nil {
+	if err := user.SpendCrystals(crystals, CrystalSpendReasonBlackMarketResource, string(resourceType)); err != nil {
 		return err
 	}
 	if err := base.ReceiveResource(resourceType, resourceAmount); err != nil {
@@ -38,7 +41,7 @@ func (s *BlackMarketService) PurchaseBuildingOffer(user *User, base *UserBaseMod
 	if err := validateBlackMarketBuildPrototype(proto); err != nil {
 		return err
 	}
-	if err := user.SpendCrystals(offer.PriceInCrystals); err != nil {
+	if err := user.SpendCrystals(offer.PriceInCrystals, CrystalSpendReasonBlackMarketBuilding, strconv.FormatInt(offer.ID, 10)); err != nil {
 		return err
 	}
 	if err := base.ReceiveBuilding(*proto); err != nil {
@@ -54,7 +57,7 @@ func (s *BlackMarketService) PurchaseArmyOffer(user *User, base *UserBaseModel, 
 	if err := validateBlackMarketArmyPrototype(proto); err != nil {
 		return err
 	}
-	if err := user.SpendCrystals(offer.PriceInCrystals * quantity); err != nil {
+	if err := user.SpendCrystals(offer.PriceInCrystals*quantity, CrystalSpendReasonBlackMarketArmy, strconv.FormatInt(offer.ID, 10)); err != nil {
 		return err
 	}
 	if err := base.ReceiveArmyItems(*proto, quantity); err != nil {
@@ -70,7 +73,7 @@ func (s *BlackMarketService) PurchaseStorageOffer(user *User, base *UserBaseMode
 	if err := validateBlackMarketStoragePrototype(proto); err != nil {
 		return err
 	}
-	if err := user.SpendCrystals(offer.PriceInCrystals); err != nil {
+	if err := user.SpendCrystals(offer.PriceInCrystals, CrystalSpendReasonBlackMarketStorage, strconv.FormatInt(offer.ID, 10)); err != nil {
 		return err
 	}
 	if err := base.ReceiveStorageItem(*proto); err != nil {
