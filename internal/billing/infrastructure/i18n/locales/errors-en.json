@@ -8,5 +8,6 @@
     "error.application.billing.payment_gateway_failed": "Payment gateway error, please try again",
     "error.application.billing.invalid_webhook_payload": "Invalid webhook payload",
     "error.application.billing.payments_unavailable": "Payments are temporarily unavailable, please try again later",
+    "error.application.billing.customer_email_unavailable": "Your account is still being set up, please try again in a moment",
     "error.domain.order.invalid_status_transition": "Cannot change order in status {status}"
 }

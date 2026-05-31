@@ -32,6 +32,10 @@ type Module struct {
 	// broker connection and reconnect goroutine) the moment it is built, so the
 	// module constructs and owns it explicitly rather than hiding it in Adapters.
 	IntegrationPublisher *infraevents.RabbitMQPublisher
+	// Consumer projects inbound auth integration events into billing's local
+	// users table. Unlike the publisher it dials lazily in Start(ctx) and tears
+	// itself down on ctx cancellation, so the module owns it but does not close it.
+	Consumer *infraevents.RabbitMQConsumer
 }
 
 func NewModule() *Module {
@@ -39,12 +43,13 @@ func NewModule() *Module {
 	dbURL := os.Getenv("BILLING_DB_URL")
 	jwtSecret := os.Getenv("BILLING_JWT_SECRET")
 	intExchange := os.Getenv("BILLING_INTEGRATION_EXCHANGE")
+	authIntExchange := os.Getenv("AUTH_INTEGRATION_EXCHANGE")
 	rabbitURL := os.Getenv("RABBITMQ_URL")
 	yookassaShopID := os.Getenv("YOOKASSA_SHOP_ID")
 	yookassaSecretKey := os.Getenv("YOOKASSA_SECRET_KEY")
 
-	if port == "" || dbURL == "" || jwtSecret == "" || intExchange == "" || rabbitURL == "" {
-		log.Fatal("Missing required billing environment variables (BILLING_PORT, BILLING_DB_URL, BILLING_JWT_SECRET, BILLING_INTEGRATION_EXCHANGE, RABBITMQ_URL)")
+	if port == "" || dbURL == "" || jwtSecret == "" || intExchange == "" || authIntExchange == "" || rabbitURL == "" {
+		log.Fatal("Missing required billing environment variables (BILLING_PORT, BILLING_DB_URL, BILLING_JWT_SECRET, BILLING_INTEGRATION_EXCHANGE, AUTH_INTEGRATION_EXCHANGE, RABBITMQ_URL)")
 	}
 	if yookassaShopID == "" || yookassaSecretKey == "" {
 		log.Fatal("Missing required YooKassa environment variables (YOOKASSA_SHOP_ID, YOOKASSA_SECRET_KEY)")
@@ -72,12 +77,15 @@ func NewModule() *Module {
 		log.Fatal("Failed to initialize billing adapters:", err)
 	}
 
+	consumer := infraevents.NewRabbitMQConsumer(rabbitURL)
+
 	appServices := NewAppServices(adapters)
-	workers := NewWorkers(dbURL, appServices.Outbox, appServices.IntegrationOutbox)
+	workers := NewWorkers(dbURL, appServices.Outbox, appServices.IntegrationOutbox, consumer)
 	commands := NewCommands(adapters)
 	queries := NewQueries(adapters)
 
 	WireIntegrationEvents(appServices, adapters.Events)
+	WireConsumerIntegrationEvents(commands, consumer, authIntExchange, "billing.auth.integration.events")
 
 	addr := fmt.Sprintf(":%s", port)
 	router := httpapi.NewRouter(
@@ -100,6 +108,7 @@ func NewModule() *Module {
 		HTTPServer: server,
 
 		IntegrationPublisher: intPublisher,
+		Consumer:             consumer,
 	}
 }
 

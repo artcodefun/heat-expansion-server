@@ -22,3 +22,11 @@ type PurchaseOrderRepository interface {
 type CrystalPackageRepository interface {
 	FindByID(ctx context.Context, id uuid.UUID) (*domain.CrystalPackage, error)
 }
+
+// UserRepository persists the local projection of auth accounts. Upsert is
+// idempotent on the user ID so replayed registration events are safe.
+type UserRepository interface {
+	Upsert(ctx context.Context, user *domain.User) error
+	FindByID(ctx context.Context, id uuid.UUID) (*domain.User, error)
+	Tx(tx Transaction) UserRepository
+}

@@ -10,11 +10,13 @@ import (
 
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/services"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/db/repo"
+	"github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/events"
 )
 
 type Workers struct {
 	DomainOutboxLoop      func(ctx context.Context)
 	IntegrationOutboxLoop func(ctx context.Context)
+	IntegrationEvtLoop    func(ctx context.Context)
 	wg                    sync.WaitGroup
 }
 
@@ -22,6 +24,7 @@ func NewWorkers(
 	dbURL string,
 	outbox *services.OutboxService,
 	intOutbox *services.IntegrationOutboxService,
+	consumer *events.RabbitMQConsumer,
 ) *Workers {
 	return &Workers{
 		DomainOutboxLoop: func(ctx context.Context) {
@@ -74,14 +77,26 @@ func NewWorkers(
 				}
 			}
 		},
+		IntegrationEvtLoop: func(ctx context.Context) {
+			slog.InfoContext(ctx, "billing integration consumer started")
+			defer slog.InfoContext(ctx, "billing integration consumer stopped")
+
+			if err := consumer.Start(ctx); err != nil {
+				slog.WarnContext(ctx, "failed to start billing integration consumer", "error", err.Error())
+				return
+			}
+
+			<-ctx.Done()
+		},
 	}
 }
 
 // Start launches the billing background worker loops.
 func (w *Workers) Start(ctx context.Context) {
-	w.wg.Add(2)
+	w.wg.Add(3)
 	go func() { defer w.wg.Done(); w.DomainOutboxLoop(ctx) }()
 	go func() { defer w.wg.Done(); w.IntegrationOutboxLoop(ctx) }()
+	go func() { defer w.wg.Done(); w.IntegrationEvtLoop(ctx) }()
 }
 
 // Wait blocks until all billing background worker loops have exited.

@@ -7,18 +7,19 @@ import (
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/ports"
 	dbgen "github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/db/gen"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/db/repo"
-	readstoregen "github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/readstore/gen"
-	readrepo "github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/readstore/repo"
 	infraevents "github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/events"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/i18n"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/i18n/locales"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/payment"
+	readstoregen "github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/readstore/gen"
+	readrepo "github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/readstore/repo"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/security"
 )
 
 type Adapters struct {
 	Orders            ports.PurchaseOrderRepository
 	Packages          ports.CrystalPackageRepository
+	Users             ports.UserRepository
 	PackageRead       ports.PackageReadRepository
 	OrderRead         ports.OrderReadRepository
 	Gateway           ports.PaymentGateway
@@ -43,6 +44,7 @@ func NewAdapters(db *sql.DB, jwtSecret string, intPublisher ports.IntegrationEve
 	return &Adapters{
 		Orders:            repo.NewOrderRepo(q),
 		Packages:          repo.NewPackageRepo(q),
+		Users:             repo.NewUserRepo(q),
 		PackageRead:       readrepo.NewPackageReadRepo(rq),
 		OrderRead:         readrepo.NewOrderReadRepo(rq),
 		Gateway:           payment.NewYooKassaGateway(yookassaShopID, yookassaSecretKey),

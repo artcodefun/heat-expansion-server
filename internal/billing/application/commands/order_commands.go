@@ -14,6 +14,7 @@ import (
 type OrderCommands struct {
 	OrderRepo   ports.PurchaseOrderRepository
 	PackageRepo ports.CrystalPackageRepository
+	UserRepo    ports.UserRepository
 	Gateway     ports.PaymentGateway
 	Outbox      ports.OutboxEventRepository
 	TxMgr       ports.TransactionManager
@@ -22,6 +23,7 @@ type OrderCommands struct {
 func NewOrderCommands(
 	orderRepo ports.PurchaseOrderRepository,
 	packageRepo ports.CrystalPackageRepository,
+	userRepo ports.UserRepository,
 	gateway ports.PaymentGateway,
 	outbox ports.OutboxEventRepository,
 	txMgr ports.TransactionManager,
@@ -29,6 +31,7 @@ func NewOrderCommands(
 	return &OrderCommands{
 		OrderRepo:   orderRepo,
 		PackageRepo: packageRepo,
+		UserRepo:    userRepo,
 		Gateway:     gateway,
 		Outbox:      outbox,
 		TxMgr:       txMgr,
@@ -58,6 +61,22 @@ func (c *OrderCommands) CreateOrder(ctx context.Context, actor cqrs.Actor, packa
 		return uuid.Nil, "", cqrs.ErrPackageNotFound
 	}
 
+	// The fiscal receipt (54-FZ) must be issued to the buyer's email, which we
+	// project locally from auth registration events. Resolve it before
+	// persisting anything so we fail fast if the projection has not caught up.
+	user, err := c.UserRepo.FindByID(ctx, actor.UserID)
+	if err != nil {
+		if errors.Is(err, ports.ErrNotFound) {
+			slog.WarnContext(ctx, "cannot create order: buyer email not yet projected", "user_id", actor.UserID.String())
+			return uuid.Nil, "", cqrs.ErrCustomerEmailUnavailable
+		}
+		return uuid.Nil, "", err
+	}
+	if user.Email == "" {
+		slog.WarnContext(ctx, "cannot create order: buyer email is empty", "user_id", actor.UserID.String())
+		return uuid.Nil, "", cqrs.ErrCustomerEmailUnavailable
+	}
+
 	order := domain.NewPendingOrder(
 		actor.UserID,
 		pkg.ID,
@@ -78,7 +97,7 @@ func (c *OrderCommands) CreateOrder(ctx context.Context, actor cqrs.Actor, packa
 		return uuid.Nil, "", err
 	}
 
-	providerOrderID, confirmationURL, err := c.Gateway.CreatePayment(ctx, order, pkg, returnURL)
+	providerOrderID, confirmationURL, err := c.Gateway.CreatePayment(ctx, order, pkg, user.Email, returnURL)
 	if err != nil {
 		slog.ErrorContext(ctx, "payment gateway failed to create payment", "error", err)
 		return uuid.Nil, "", cqrs.ErrPaymentGatewayFailed

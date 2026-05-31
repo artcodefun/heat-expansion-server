@@ -15,6 +15,18 @@ import (
 
 const yookassaBaseURL = "https://api.yookassa.ru/v3"
 
+// Fiscal receipt attributes (54-FZ). Crystals are a digital service sold with
+// full upfront payment and no VAT. These are fixed for every crystal package;
+// revisit them if the product classification or tax regime changes.
+const (
+	receiptVATCodeNoVAT          = 1              // НДС не облагается
+	receiptPaymentModeFull       = "full_payment" // paid in full at checkout
+	receiptPaymentSubjectService = "service"      // digital in-game currency
+	// measure (tag 2108) is required by "Чеки от ЮKassa" even though it is not in
+	// the API schema's required list. A package is sold as one indivisible unit.
+	receiptMeasurePiece = "piece"
+)
+
 type YooKassaGateway struct {
 	shopID    string
 	secretKey string
@@ -45,6 +57,28 @@ type yookassaCreatePaymentRequest struct {
 	Capture      bool                 `json:"capture"`
 	Description  string               `json:"description"`
 	Metadata     map[string]string    `json:"metadata"`
+	Receipt      *yookassaReceipt     `json:"receipt,omitempty"`
+}
+
+// yookassaReceipt carries the 54-FZ fiscal receipt data. YooKassa forwards it to
+// the connected online cash register / OFD when fiscalization is enabled.
+type yookassaReceipt struct {
+	Customer yookassaReceiptCustomer `json:"customer"`
+	Items    []yookassaReceiptItem   `json:"items"`
+}
+
+type yookassaReceiptCustomer struct {
+	Email string `json:"email"`
+}
+
+type yookassaReceiptItem struct {
+	Description    string         `json:"description"`
+	Quantity       float64        `json:"quantity"`
+	Measure        string         `json:"measure"`
+	Amount         yookassaAmount `json:"amount"`
+	VATCode        int            `json:"vat_code"`
+	PaymentMode    string         `json:"payment_mode"`
+	PaymentSubject string         `json:"payment_subject"`
 }
 
 type yookassaConfirmationResponse struct {
@@ -68,17 +102,15 @@ type yookassaWebhookNotification struct {
 	Object yookassaWebhookObject `json:"object"`
 }
 
-func (g *YooKassaGateway) CreatePayment(ctx context.Context, order *domain.PurchaseOrder, pkg *domain.CrystalPackage, returnURL string) (string, string, error) {
+func (g *YooKassaGateway) CreatePayment(ctx context.Context, order *domain.PurchaseOrder, pkg *domain.CrystalPackage, customerEmail, returnURL string) (string, string, error) {
 	// Format amount as decimal string (e.g. kopecks -> rubles: 9900 -> "99.00")
 	rubles := order.AmountMinorUnits / 100
 	kopecks := order.AmountMinorUnits % 100
 	amountValue := fmt.Sprintf("%d.%02d", rubles, kopecks)
+	amount := yookassaAmount{Value: amountValue, Currency: order.Currency}
 
 	reqBody := yookassaCreatePaymentRequest{
-		Amount: yookassaAmount{
-			Value:    amountValue,
-			Currency: order.Currency,
-		},
+		Amount: amount,
 		Confirmation: yookassaConfirmation{
 			Type:      "redirect",
 			ReturnURL: returnURL,
@@ -89,6 +121,22 @@ func (g *YooKassaGateway) CreatePayment(ctx context.Context, order *domain.Purch
 			"order_id":   order.ID.String(),
 			"package_id": pkg.ID.String(),
 			"user_id":    order.UserID.String(),
+		},
+		// A single order buys exactly one package, so the receipt has one line
+		// item whose amount equals the order total (quantity 1).
+		Receipt: &yookassaReceipt{
+			Customer: yookassaReceiptCustomer{Email: customerEmail},
+			Items: []yookassaReceiptItem{
+				{
+					Description:    fmt.Sprintf("%d crystals (%s)", pkg.Crystals, pkg.Name),
+					Quantity:       1,
+					Measure:        receiptMeasurePiece,
+					Amount:         amount,
+					VATCode:        receiptVATCodeNoVAT,
+					PaymentMode:    receiptPaymentModeFull,
+					PaymentSubject: receiptPaymentSubjectService,
+				},
+			},
 		},
 	}
 
