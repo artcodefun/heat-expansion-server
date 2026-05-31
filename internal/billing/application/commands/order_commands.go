@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"os"
+	"strings"
 
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/cqrs"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/ports"
@@ -38,13 +40,21 @@ func NewOrderCommands(
 	}
 }
 
-// paymentsEnabled gates order creation. It is temporarily false while the
-// YooKassa account is pending moderation; flip it to true (and remove
-// cqrs.ErrPaymentsUnavailable) once payments go live.
-var paymentsEnabled = false
+// paymentsTestUserIDEnv names the env var holding the single user ID allowed to
+// create real orders during YooKassa test-shop validation. While it is unset,
+// payments are disabled for everyone; when set, only that user passes and
+// everyone else gets cqrs.ErrPaymentsUnavailable.
+//
+// TEMPORARY & deliberately dirty: this reads the environment straight from the
+// handler, bypassing bootstrap/config and the project's architecture. It exists
+// only to let a single tester exercise the live flow before launch, and is
+// slated for removal (along with cqrs.ErrPaymentsUnavailable) once payments go
+// live for all users.
+const paymentsTestUserIDEnv = "BILLING_PAYMENTS_TEST_USER_ID"
 
 func (c *OrderCommands) CreateOrder(ctx context.Context, actor cqrs.Actor, packageID uuid.UUID, returnURL string) (uuid.UUID, string, error) {
-	if !paymentsEnabled {
+	testUserID := strings.TrimSpace(os.Getenv(paymentsTestUserIDEnv))
+	if testUserID == "" || actor.UserID.String() != testUserID {
 		// Reject up front: no order is persisted and the gateway is never
 		// called. Package listing is unaffected.
 		return uuid.Nil, "", cqrs.ErrPaymentsUnavailable
