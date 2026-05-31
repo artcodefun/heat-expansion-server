@@ -8,7 +8,6 @@ import (
 func PackageReadModelFromRow(row dbgen.ListActivePackagesRow) readmodels.CrystalPackage {
 	return readmodels.CrystalPackage{
 		ID:              row.ID,
-		Name:            row.Name,
 		Crystals:        int(row.Crystals),
 		PriceMinorUnits: row.PriceMinorUnits,
 		Currency:        row.Currency,

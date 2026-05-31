@@ -12,7 +12,7 @@ import (
 )
 
 const listActivePackages = `-- name: ListActivePackages :many
-SELECT id, name, crystals, price_minor_units, currency, image_url
+SELECT id, crystals, price_minor_units, currency, image_url
 FROM billing.crystal_packages
 WHERE is_active = TRUE
 ORDER BY price_minor_units ASC
@@ -20,7 +20,6 @@ ORDER BY price_minor_units ASC
 
 type ListActivePackagesRow struct {
 	ID              uuid.UUID `json:"id"`
-	Name            string    `json:"name"`
 	Crystals        int32     `json:"crystals"`
 	PriceMinorUnits int64     `json:"price_minor_units"`
 	Currency        string    `json:"currency"`
@@ -38,7 +37,6 @@ func (q *Queries) ListActivePackages(ctx context.Context) ([]ListActivePackagesR
 		var i ListActivePackagesRow
 		if err := rows.Scan(
 			&i.ID,
-			&i.Name,
 			&i.Crystals,
 			&i.PriceMinorUnits,
 			&i.Currency,
