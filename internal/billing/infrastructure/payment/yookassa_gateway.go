@@ -11,6 +11,7 @@ import (
 
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/domain"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 const yookassaBaseURL = "https://api.yookassa.ru/v3"
@@ -37,7 +38,13 @@ func NewYooKassaGateway(shopID, secretKey string) *YooKassaGateway {
 	return &YooKassaGateway{
 		shopID:    shopID,
 		secretKey: secretKey,
-		client:    &http.Client{Timeout: 30 * time.Second},
+		client: &http.Client{
+			Timeout: 30 * time.Second,
+			// Instrument outbound calls so each YooKassa request gets its own
+			// client span, nested under the active request/webhook span via the
+			// context already passed to http.NewRequestWithContext.
+			Transport: otelhttp.NewTransport(http.DefaultTransport),
+		},
 	}
 }
 
