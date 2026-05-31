@@ -41,10 +41,6 @@ var (
 	ErrOrderNotFound         = NewAppError(KindNotFound, "error.application.billing.order_not_found")
 	ErrPaymentGatewayFailed  = NewAppError(KindInternal, "error.application.billing.payment_gateway_failed")
 	ErrInvalidWebhookPayload = NewAppError(KindInvalidInput, "error.application.billing.invalid_webhook_payload")
-	// ErrPaymentsUnavailable is returned while the payment provider account is
-	// pending moderation. Remove it (and its call site in CreateOrder) once
-	// payments are live.
-	ErrPaymentsUnavailable = NewAppError(KindUnavailable, "error.application.billing.payments_unavailable")
 	// ErrCustomerEmailUnavailable is returned when the buyer's email is not yet
 	// in the local users projection (almost always the eventual-consistency race
 	// for a just-registered user). The fiscal receipt cannot be issued without
