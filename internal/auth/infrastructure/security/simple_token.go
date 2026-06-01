@@ -28,11 +28,8 @@ func (s *SimpleTokenProvider) Generate(accountID uuid.UUID) (string, error) {
 
 func (s *SimpleTokenProvider) Validate(tokenString string) (uuid.UUID, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodECDSA); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
 		return &s.privateKey.PublicKey, nil
-	})
+	}, jwt.WithValidMethods([]string{"ES256"}))
 
 	if err != nil {
 		return uuid.Nil, err

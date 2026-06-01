@@ -29,11 +29,8 @@ func (p *SimpleTokenValidator) Validate(tokenString string) (uuid.UUID, error) {
 	}
 	claims := &jwt.RegisteredClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
-		if _, ok := t.Method.(*jwt.SigningMethodECDSA); !ok {
-			return nil, errors.New("unexpected signing method")
-		}
 		return p.publicKey, nil
-	})
+	}, jwt.WithValidMethods([]string{"ES256"}))
 	if err != nil {
 		return uuid.Nil, err
 	}
