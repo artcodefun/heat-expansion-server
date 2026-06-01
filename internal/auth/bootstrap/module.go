@@ -2,11 +2,16 @@ package bootstrap
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"crypto/x509"
 	"database/sql"
+	"encoding/pem"
+	"errors"
 	"fmt"
 	"log"
 	"log/slog"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/XSAM/otelsql"
@@ -38,7 +43,7 @@ func NewModule() *Module {
 	rabbitURL := os.Getenv("RABBITMQ_URL")
 	port := os.Getenv("AUTH_PORT")
 	dbURL := os.Getenv("AUTH_DB_URL")
-	jwtSecret := os.Getenv("AUTH_JWT_SECRET")
+	jwtPrivateKeyPEM := os.Getenv("AUTH_JWT_PRIVATE_KEY")
 	intExchange := os.Getenv("AUTH_INTEGRATION_EXCHANGE")
 
 	smtpCfg := SMTPConfig{
@@ -48,8 +53,13 @@ func NewModule() *Module {
 		From:     os.Getenv("AUTH_SMTP_FROM"),
 	}
 
-	if port == "" || dbURL == "" || jwtSecret == "" || rabbitURL == "" || intExchange == "" {
-		log.Fatal("Missing required auth environment variables (AUTH_PORT, AUTH_DB_URL, AUTH_JWT_SECRET, RABBITMQ_URL, AUTH_INTEGRATION_EXCHANGE)")
+	if port == "" || dbURL == "" || jwtPrivateKeyPEM == "" || rabbitURL == "" || intExchange == "" {
+		log.Fatal("Missing required auth environment variables (AUTH_PORT, AUTH_DB_URL, AUTH_JWT_PRIVATE_KEY, RABBITMQ_URL, AUTH_INTEGRATION_EXCHANGE)")
+	}
+
+	jwtPrivateKey, err := parseECPrivateKey(jwtPrivateKeyPEM)
+	if err != nil {
+		log.Fatal("Failed to parse AUTH_JWT_PRIVATE_KEY:", err)
 	}
 	if smtpCfg.Host == "" || smtpCfg.User == "" || smtpCfg.Password == "" || smtpCfg.From == "" {
 		log.Fatal("Missing required SMTP environment variables (AUTH_SMTP_HOST, AUTH_SMTP_USER, AUTH_SMTP_PASSWORD, AUTH_SMTP_FROM)")
@@ -72,7 +82,7 @@ func NewModule() *Module {
 		log.Fatal("Failed to initialize auth RabbitMQ publisher:", err)
 	}
 
-	adapters, err := NewAdapters(db, jwtSecret, intPublisher, smtpCfg)
+	adapters, err := NewAdapters(db, jwtPrivateKey, intPublisher, smtpCfg)
 	if err != nil {
 		log.Fatal("Failed to initialize auth adapters:", err)
 	}
@@ -140,4 +150,13 @@ func (m *Module) Run(ctx context.Context) {
 	}
 
 	slog.Info("auth module: stopped")
+}
+
+func parseECPrivateKey(pemStr string) (*ecdsa.PrivateKey, error) {
+	pemStr = strings.ReplaceAll(pemStr, `\n`, "\n")
+	block, _ := pem.Decode([]byte(pemStr))
+	if block == nil {
+		return nil, errors.New("failed to decode PEM block for EC private key")
+	}
+	return x509.ParseECPrivateKey(block.Bytes)
 }

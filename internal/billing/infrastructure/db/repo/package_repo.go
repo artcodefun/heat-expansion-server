@@ -30,4 +30,3 @@ func (r *PackageRepo) FindByID(ctx context.Context, id uuid.UUID) (*domain.Cryst
 	}
 	return mappers.PackageFromRow(row), nil
 }
-

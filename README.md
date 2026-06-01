@@ -48,6 +48,28 @@ The server exports traces, metrics, and logs via **OTLP/gRPC** to an OpenTelemet
 Set `OTEL_EXPORTER_OTLP_ENDPOINT` to your collector's gRPC address (e.g. `localhost:4317`).  
   Leave it **empty** to run in no-op mode — telemetry is fully disabled, which is the default for local dev.
 
+## Authentication
+
+Tokens are signed by the **Auth service** using **ES256** (ECDSA P-256) and verified by the Game and Billing services using only the corresponding public key. This means only Auth can issue tokens — other services can verify them but cannot forge new ones.
+
+Tokens carry a `sub` claim (account UUID) and expire after 72 hours.
+
+**Key pair setup** — generate once and distribute via environment variables:
+
+```bash
+openssl ecparam -name prime256v1 -genkey -noout -out ec.key
+openssl ec -in ec.key -pubout -out ec.pub
+```
+
+PEM files are multi-line, but `.env` files require single-line values. Collapse each key into one line with literal `\n` between parts:
+
+```bash
+awk 'NF {printf "%s\\n",$0}' ec.key   # paste into AUTH_JWT_PRIVATE_KEY=
+awk 'NF {printf "%s\\n",$0}' ec.pub   # paste into AUTH_JWT_PUBLIC_KEY=
+```
+
+`AUTH_JWT_PRIVATE_KEY` is used only by the Auth service. `AUTH_JWT_PUBLIC_KEY` is shared with Game and Billing — they receive no access to the private key.
+
 ## Internationalization (i18n)
 
 The server supports multi-language responses based on the `Accept-Language` HTTP header. 

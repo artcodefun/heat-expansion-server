@@ -2,11 +2,16 @@ package bootstrap
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"crypto/x509"
 	"database/sql"
+	"encoding/pem"
+	"errors"
 	"fmt"
 	"log"
 	"log/slog"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/XSAM/otelsql"
@@ -20,7 +25,6 @@ import (
 type Module struct {
 	Port            string
 	DBURL           string
-	JWTSecret       string
 	LogLevel        string
 	StaticBaseURL   string
 	RabbitURL       string
@@ -40,14 +44,19 @@ type Module struct {
 func NewModule() *Module {
 	port := os.Getenv("GAME_PORT")
 	dbURL := os.Getenv("GAME_DB_URL")
-	jwtSecret := os.Getenv("GAME_JWT_SECRET")
+	jwtPublicKeyPEM := os.Getenv("AUTH_JWT_PUBLIC_KEY")
 	staticBaseURL := os.Getenv("GAME_STATIC_BASE_URL")
 	rabbitURL := os.Getenv("RABBITMQ_URL")
 	authExchange := os.Getenv("AUTH_INTEGRATION_EXCHANGE")
 	billingExchange := os.Getenv("BILLING_INTEGRATION_EXCHANGE")
 
-	if port == "" || dbURL == "" || jwtSecret == "" || staticBaseURL == "" || rabbitURL == "" || authExchange == "" || billingExchange == "" {
+	if port == "" || dbURL == "" || jwtPublicKeyPEM == "" || staticBaseURL == "" || rabbitURL == "" || authExchange == "" || billingExchange == "" {
 		log.Fatal("Missing required environment variables. Please check your .env file.")
+	}
+
+	jwtPublicKey, err := parseECPublicKey(jwtPublicKeyPEM)
+	if err != nil {
+		log.Fatal("Failed to parse AUTH_JWT_PUBLIC_KEY:", err)
 	}
 
 	db, err := otelsql.Open("postgres", dbURL,
@@ -62,7 +71,7 @@ func NewModule() *Module {
 	}
 	slog.Info("connected to game database")
 
-	adapters, err := NewAdapters(db, staticBaseURL, jwtSecret)
+	adapters, err := NewAdapters(db, staticBaseURL, jwtPublicKey)
 	if err != nil {
 		log.Fatal("Failed to initialize adapters:", err)
 	}
@@ -114,7 +123,6 @@ func NewModule() *Module {
 	return &Module{
 		Port:            port,
 		DBURL:           dbURL,
-		JWTSecret:       jwtSecret,
 		StaticBaseURL:   staticBaseURL,
 		RabbitURL:       rabbitURL,
 		AuthExchange:    authExchange,
@@ -161,4 +169,21 @@ func (m *Module) Run(ctx context.Context) {
 	}
 
 	slog.Info("game module: stopped")
+}
+
+func parseECPublicKey(pemStr string) (*ecdsa.PublicKey, error) {
+	pemStr = strings.ReplaceAll(pemStr, `\n`, "\n")
+	block, _ := pem.Decode([]byte(pemStr))
+	if block == nil {
+		return nil, errors.New("failed to decode PEM block for EC public key")
+	}
+	key, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	ecKey, ok := key.(*ecdsa.PublicKey)
+	if !ok {
+		return nil, errors.New("key is not an ECDSA public key")
+	}
+	return ecKey, nil
 }

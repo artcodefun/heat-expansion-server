@@ -1,6 +1,7 @@
 package security
 
 import (
+	"crypto/ecdsa"
 	"errors"
 
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/ports"
@@ -10,15 +11,15 @@ import (
 
 var _ ports.TokenValidator = (*SimpleTokenValidator)(nil)
 
-// SimpleTokenValidator validates JWT tokens (HS256). Token expiry is enforced
+// SimpleTokenValidator validates JWT tokens (ES256). Token expiry is enforced
 // by the JWT `exp` claim set by the issuing service.
 type SimpleTokenValidator struct {
-	secret string
+	publicKey *ecdsa.PublicKey
 }
 
-// NewSimpleTokenValidator creates a validator for HS256 tokens signed with secret.
-func NewSimpleTokenValidator(secret string) *SimpleTokenValidator {
-	return &SimpleTokenValidator{secret: secret}
+// NewSimpleTokenValidator creates a validator for ES256 tokens signed by the auth service.
+func NewSimpleTokenValidator(publicKey *ecdsa.PublicKey) *SimpleTokenValidator {
+	return &SimpleTokenValidator{publicKey: publicKey}
 }
 
 // Validate verifies signature and expiry and returns the subject userID.
@@ -28,11 +29,10 @@ func (p *SimpleTokenValidator) Validate(tokenString string) (uuid.UUID, error) {
 	}
 	claims := &jwt.RegisteredClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
-		// Enforce HS256
-		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+		if _, ok := t.Method.(*jwt.SigningMethodECDSA); !ok {
 			return nil, errors.New("unexpected signing method")
 		}
-		return []byte(p.secret), nil
+		return p.publicKey, nil
 	})
 	if err != nil {
 		return uuid.Nil, err
@@ -40,7 +40,6 @@ func (p *SimpleTokenValidator) Validate(tokenString string) (uuid.UUID, error) {
 	if !token.Valid {
 		return uuid.Nil, errors.New("invalid token")
 	}
-	// Subject must be userID
 	uid, err := uuid.Parse(claims.Subject)
 	if err != nil {
 		return uuid.Nil, errors.New("invalid subject")

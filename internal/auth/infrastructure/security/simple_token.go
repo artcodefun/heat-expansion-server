@@ -1,6 +1,7 @@
 package security
 
 import (
+	"crypto/ecdsa"
 	"fmt"
 	"time"
 
@@ -9,28 +10,28 @@ import (
 )
 
 type SimpleTokenProvider struct {
-	secret string
+	privateKey *ecdsa.PrivateKey
 }
 
-func NewSimpleTokenProvider(secret string) *SimpleTokenProvider {
-	return &SimpleTokenProvider{secret: secret}
+func NewSimpleTokenProvider(privateKey *ecdsa.PrivateKey) *SimpleTokenProvider {
+	return &SimpleTokenProvider{privateKey: privateKey}
 }
 
 func (s *SimpleTokenProvider) Generate(accountID uuid.UUID) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+	token := jwt.NewWithClaims(jwt.SigningMethodES256, jwt.MapClaims{
 		"sub": accountID.String(),
 		"exp": time.Now().Add(time.Hour * 72).Unix(),
 	})
 
-	return token.SignedString([]byte(s.secret))
+	return token.SignedString(s.privateKey)
 }
 
 func (s *SimpleTokenProvider) Validate(tokenString string) (uuid.UUID, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+		if _, ok := token.Method.(*jwt.SigningMethodECDSA); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(s.secret), nil
+		return &s.privateKey.PublicKey, nil
 	})
 
 	if err != nil {

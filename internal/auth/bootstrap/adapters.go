@@ -1,6 +1,7 @@
 package bootstrap
 
 import (
+	"crypto/ecdsa"
 	"database/sql"
 
 	"github.com/artcodefun/heat-expansion-server/internal/auth/application/ports"
@@ -33,7 +34,7 @@ type SMTPConfig struct {
 	From     string
 }
 
-func NewAdapters(db *sql.DB, jwtSecret string, intPublisher ports.IntegrationEventPublisher, smtpCfg SMTPConfig) (*Adapters, error) {
+func NewAdapters(db *sql.DB, privateKey *ecdsa.PrivateKey, intPublisher ports.IntegrationEventPublisher, smtpCfg SMTPConfig) (*Adapters, error) {
 	translator, err := i18n.NewSimpleTranslator()
 	if err != nil {
 		return nil, err
@@ -44,7 +45,7 @@ func NewAdapters(db *sql.DB, jwtSecret string, intPublisher ports.IntegrationEve
 	return &Adapters{
 		Repo:              repo.NewAccountRepository(q),
 		Hasher:            security.NewBcryptHasher(),
-		TokenProvider:     security.NewSimpleTokenProvider(jwtSecret),
+		TokenProvider:     security.NewSimpleTokenProvider(privateKey),
 		Outbox:            repo.NewOutboxEventRepo(q),
 		TxMgr:             repo.NewDBTxManager(db),
 		Events:            events.NewSimplePublisher(),
