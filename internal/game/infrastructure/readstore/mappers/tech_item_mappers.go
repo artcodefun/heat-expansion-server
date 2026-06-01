@@ -31,7 +31,13 @@ func techPrototypeFromParts(id int64, name, category string, unlock sql.NullInt6
 
 func NewTechItemFromPrototype(p gen.TechItemPrototype, currentLevel int) readmodels.TechItemNew {
 	proto := techPrototypeFromParts(p.ID, p.Name, p.Category, p.UnlockTechnologyID, p.ShortDescription, p.FullDescription, p.Price, p.ResearchTime, p.ImageUrl, p.Improvement.RawMessage)
-	return readmodels.TechItemNew{Prototype: proto, CurrentLevel: currentLevel}
+	multiplier := 1.0 + float64(currentLevel)*0.5
+	return readmodels.TechItemNew{
+		Prototype:           proto,
+		CurrentLevel:        currentLevel,
+		CurrentPrice:        proto.Price.MultiplyFloat(multiplier),
+		CurrentResearchTime: int64(float64(proto.ResearchTime) * multiplier),
+	}
 }
 
 func TechItemInProgressFromRow(r gen.ListInResearchTechItemsRow, currentLevel int) readmodels.TechItemInProgress {

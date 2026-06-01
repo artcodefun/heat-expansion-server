@@ -70,16 +70,21 @@ func (ub *UserBaseModel) StartTechResearch(proto *TechItemPrototype) error {
 		return NewError("error.domain.tech.not_available_for_research", nil)
 	}
 
+	// Scale cost and duration by 0.5× per level (level 0→1 = 1×, 1→2 = 1.5×, 2→3 = 2×, …)
+	multiplier := 1.0 + float64(ub.GetTechLevel(proto.ID))*0.5
+	effectivePrice := proto.Price.MultiplyFloat(multiplier)
+	effectiveResearchTime := int64(float64(proto.ResearchTime) * multiplier)
+
 	// Validate resources
-	if err := ub.Stats.CheckResources(proto.Price); err != nil {
+	if err := ub.Stats.CheckResources(effectivePrice); err != nil {
 		return err
 	}
 	// Subtract price
-	ub.Stats.SubtractResources(proto.Price)
+	ub.Stats.SubtractResources(effectivePrice)
 	// Add to in-progress
 	now := NowUnix()
-	completionDate := now + proto.ResearchTime
-	crystalsSkipPrice := max(1, int(proto.ResearchTime/60))
+	completionDate := now + effectiveResearchTime
+	crystalsSkipPrice := max(1, int(effectiveResearchTime/60))
 	inProgress := TechItemInProgress{
 		BaseOwnedItem:     NewBaseOwnedItem(ub.ID),
 		Prototype:         *proto,

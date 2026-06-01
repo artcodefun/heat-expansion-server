@@ -17,6 +17,15 @@ func (p PriceModel) Multiply(n int) PriceModel {
 	}
 }
 
+func (p PriceModel) MultiplyFloat(f float64) PriceModel {
+	return PriceModel{
+		Credits:    int(float64(p.Credits) * f),
+		Iron:       int(float64(p.Iron) * f),
+		Titanium:   int(float64(p.Titanium) * f),
+		Antimatter: int(float64(p.Antimatter) * f),
+	}
+}
+
 func (p PriceModel) Divide(n int) PriceModel {
 	if n <= 0 {
 		return p
