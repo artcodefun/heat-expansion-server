@@ -25,7 +25,6 @@ __debug_bin*
 
 # Runtime Resources
 /static/
-/i18n/
 
 # OS generated files
 .DS_Store
