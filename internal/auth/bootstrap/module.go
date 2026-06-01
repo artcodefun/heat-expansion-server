@@ -158,5 +158,12 @@ func parseECPrivateKey(pemStr string) (*ecdsa.PrivateKey, error) {
 	if block == nil {
 		return nil, errors.New("failed to decode PEM block for EC private key")
 	}
-	return x509.ParseECPrivateKey(block.Bytes)
+	key, err := x509.ParseECPrivateKey(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	if key.Curve == nil || key.Curve.Params().Name != "P-256" {
+		return nil, errors.New("ECDSA private key must use P-256 curve for ES256")
+	}
+	return key, nil
 }

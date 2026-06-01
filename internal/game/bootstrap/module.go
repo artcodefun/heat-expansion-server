@@ -185,5 +185,8 @@ func parseECPublicKey(pemStr string) (*ecdsa.PublicKey, error) {
 	if !ok {
 		return nil, errors.New("key is not an ECDSA public key")
 	}
+	if ecKey.Curve == nil || ecKey.Curve.Params().Name != "P-256" {
+		return nil, errors.New("ECDSA public key must use P-256 curve for ES256")
+	}
 	return ecKey, nil
 }
