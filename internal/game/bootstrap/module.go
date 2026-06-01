@@ -42,7 +42,6 @@ func NewModule() *Module {
 	dbURL := os.Getenv("GAME_DB_URL")
 	jwtSecret := os.Getenv("GAME_JWT_SECRET")
 	staticBaseURL := os.Getenv("GAME_STATIC_BASE_URL")
-	i18nPath := os.Getenv("GAME_I18N_PATH")
 	rabbitURL := os.Getenv("RABBITMQ_URL")
 	authExchange := os.Getenv("AUTH_INTEGRATION_EXCHANGE")
 	billingExchange := os.Getenv("BILLING_INTEGRATION_EXCHANGE")
@@ -63,7 +62,7 @@ func NewModule() *Module {
 	}
 	slog.Info("connected to game database")
 
-	adapters, err := NewAdapters(db, staticBaseURL, jwtSecret, i18nPath)
+	adapters, err := NewAdapters(db, staticBaseURL, jwtSecret)
 	if err != nil {
 		log.Fatal("Failed to initialize adapters:", err)
 	}

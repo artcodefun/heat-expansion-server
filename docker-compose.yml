@@ -68,7 +68,6 @@ services:
       # These overrides take precedence over .env for the container environment
       - GAME_PORT=8080
       - GAME_DB_URL=postgres://heatuser:heatpassword@db:5432/heatdb?sslmode=disable
-      - GAME_I18N_PATH=/app/i18n
       - GAME_MIGRATIONS_TABLE=game_schema_migrations
       - AUTH_PORT=8081
       - AUTH_DB_URL=postgres://heatuser:heatpassword@db:5432/heatdb?sslmode=disable
@@ -81,8 +80,5 @@ services:
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
       - OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4317
       - OTEL_SERVICE_NAME=heat-expansion
-    volumes:
-      - ./i18n/game:/app/i18n
-
 volumes:
   postgres_data:

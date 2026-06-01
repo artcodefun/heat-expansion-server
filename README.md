@@ -53,4 +53,4 @@ Set `OTEL_EXPORTER_OTLP_ENDPOINT` to your collector's gRPC address (e.g. `localh
 The server supports multi-language responses based on the `Accept-Language` HTTP header. 
 
 - **Systemic Locales**: Embedded in the binary for stability (errors, system alerts).
-- **Content Locales**: Loaded from an external directory at runtime. Point the `GAME_I18N_PATH` environment variable to your translation files.
+- **Content Locales**: Stored in the `game.translations` database table and loaded at startup via `TranslationRepo`.
