@@ -143,6 +143,73 @@ func TestTech_StartTechResearch_NotAvailableWhenAlreadyInProgress(t *testing.T) 
 	}
 }
 
+func TestTech_StartTechResearch_ScalesPriceAndTimeByHalfPerLevel(t *testing.T) {
+	proto := &TechItemPrototype{
+		ID:           999,
+		Category:     TechCategoryBase,
+		Price:        PriceModel{Credits: 1000, Iron: 200, Titanium: 40, Antimatter: 2},
+		ResearchTime: 900,
+		Improvement:  &TechImprovement{Type: ImprovementTypeSpaceCapacity, Value: 50},
+	}
+
+	cases := []struct {
+		level            int
+		wantCredits      float64
+		wantIron         float64
+		wantTitanium     float64
+		wantAntimatter   float64
+		wantResearchTime int64
+	}{
+		// level 0→1: multiplier 1.0
+		{0, 1000, 200, 40, 2, 900},
+		// level 1→2: multiplier 1.5 (floor truncation)
+		{1, 1500, 300, 60, 3, 1350},
+		// level 2→3: multiplier 2.0
+		{2, 2000, 400, 80, 4, 1800},
+	}
+
+	for _, tc := range cases {
+		SetTestNow(t, 10_000)
+		base := newBaseWithDefaults(1)
+		base.Stats.Credits = 10_000
+		base.Stats.Iron = 10_000
+		base.Stats.Titanium = 10_000
+		base.Stats.Antimatter = 10
+		if tc.level > 0 {
+			base.TechnologiesDone = []TechItemDone{{
+				BaseOwnedItem: NewBaseOwnedItem(base.ID),
+				Prototype:     *proto,
+				Level:         tc.level,
+			}}
+		}
+
+		creditsBefore := base.Stats.Credits
+		ironBefore := base.Stats.Iron
+		titaniumBefore := base.Stats.Titanium
+		antimatterBefore := base.Stats.Antimatter
+
+		if err := base.StartTechResearch(proto); err != nil {
+			t.Fatalf("level %d: StartTechResearch error: %v", tc.level, err)
+		}
+
+		if got := creditsBefore - base.Stats.Credits; got != tc.wantCredits {
+			t.Errorf("level %d: credits deducted = %.0f, want %.0f", tc.level, got, tc.wantCredits)
+		}
+		if got := ironBefore - base.Stats.Iron; got != tc.wantIron {
+			t.Errorf("level %d: iron deducted = %.0f, want %.0f", tc.level, got, tc.wantIron)
+		}
+		if got := titaniumBefore - base.Stats.Titanium; got != tc.wantTitanium {
+			t.Errorf("level %d: titanium deducted = %.0f, want %.0f", tc.level, got, tc.wantTitanium)
+		}
+		if got := antimatterBefore - base.Stats.Antimatter; got != tc.wantAntimatter {
+			t.Errorf("level %d: antimatter deducted = %.0f, want %.0f", tc.level, got, tc.wantAntimatter)
+		}
+		if got := base.TechnologiesInProgress[0].CompletionDate - base.TechnologiesInProgress[0].StartDate; got != tc.wantResearchTime {
+			t.Errorf("level %d: research time = %d, want %d", tc.level, got, tc.wantResearchTime)
+		}
+	}
+}
+
 func TestTech_StartTechResearch_NotAvailableWhenAlreadyDone(t *testing.T) {
 	SetTestNow(t, 11_000)
 	base := newBaseWithDefaults(5)

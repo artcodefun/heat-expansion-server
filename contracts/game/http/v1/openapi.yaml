@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Heat Expansion Game API
-  version: 0.2.0
+  version: 0.2.1
   description: |
     Core gameplay service for Heat Expansion.
     This API exposes player-facing game capabilities such as base management, production, operations, storage, radar, diplomacy, trade, alerts, and activity history.
@@ -2505,7 +2505,7 @@ components:
           $ref: '#/components/schemas/TechImprovementDTO'
     TechItemNewDTO:
       type: object
-      required: [id, name, category, short_description, full_description, price, image_url, research_time, current_level]
+      required: [id, name, category, short_description, full_description, price, image_url, research_time, current_level, current_price, current_research_time]
       properties:
         id:
           type: integer
@@ -2526,6 +2526,10 @@ components:
         improvement:
           $ref: '#/components/schemas/TechImprovementDTO'
         current_level:
+          type: integer
+        current_price:
+          $ref: '#/components/schemas/PriceModelDTO'
+        current_research_time:
           type: integer
     TechItemInProgressDTO:
       type: object

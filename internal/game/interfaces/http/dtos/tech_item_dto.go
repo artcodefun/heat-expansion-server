@@ -58,7 +58,9 @@ type TechItemPrototypeDTO struct {
 
 type TechItemNewDTO struct {
 	TechItemPrototypeDTO
-	CurrentLevel int `json:"current_level"`
+	CurrentLevel        int          `json:"current_level"`
+	CurrentPrice        PriceModelDTO `json:"current_price"`
+	CurrentResearchTime int          `json:"current_research_time"`
 }
 
 type TechItemInProgressDTO struct {
@@ -114,6 +116,8 @@ func TechItemsNewFromReadModels(items []*readmodels.TechItemNew, tr ports.Transl
 		out = append(out, TechItemNewDTO{
 			TechItemPrototypeDTO: mapTechPrototype(item.Prototype, tr, locale),
 			CurrentLevel:         item.CurrentLevel,
+			CurrentPrice:         PriceModelFromReadModel(item.CurrentPrice),
+			CurrentResearchTime:  int(item.CurrentResearchTime),
 		})
 	}
 	return out
