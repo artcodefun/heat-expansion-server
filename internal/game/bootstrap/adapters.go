@@ -2,7 +2,6 @@ package bootstrap
 
 import (
 	"context"
-	"crypto/ecdsa"
 	"database/sql"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
@@ -67,7 +66,7 @@ type Adapters struct {
 	Translator ports.Translator
 }
 
-func NewAdapters(db *sql.DB, staticBaseURL string, jwtPublicKey *ecdsa.PublicKey) (*Adapters, error) {
+func NewAdapters(db *sql.DB, staticBaseURL string, jwtPublicKeyPEM string) (*Adapters, error) {
 	q := dbgen.New(db)
 	rq := readgen.New(db)
 
@@ -77,7 +76,10 @@ func NewAdapters(db *sql.DB, staticBaseURL string, jwtPublicKey *ecdsa.PublicKey
 	scheduler := jobs.NewDBScheduler(txMgr, schedulerRepo)
 
 	generator := contentgen.NewSimpleGenerator(staticBaseURL)
-	tokens := security.NewSimpleTokenValidator(jwtPublicKey)
+	tokens, err := security.NewSimpleTokenValidator(jwtPublicKeyPEM)
+	if err != nil {
+		return nil, err
+	}
 
 	translationRepo := repo.NewTranslationRepo(q)
 	translator, err := i18n.NewSimpleTranslator(translationRepo)

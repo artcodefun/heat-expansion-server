@@ -2,7 +2,10 @@ package security
 
 import (
 	"crypto/ecdsa"
+	"crypto/x509"
+	"encoding/pem"
 	"errors"
+	"strings"
 
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/ports"
 	"github.com/golang-jwt/jwt/v5"
@@ -17,9 +20,25 @@ type SimpleTokenValidator struct {
 	publicKey *ecdsa.PublicKey
 }
 
-// NewSimpleTokenValidator creates a validator for ES256 tokens signed by the auth service.
-func NewSimpleTokenValidator(publicKey *ecdsa.PublicKey) *SimpleTokenValidator {
-	return &SimpleTokenValidator{publicKey: publicKey}
+// NewSimpleTokenValidator parses a PEM-encoded ES256 public key and returns a validator.
+func NewSimpleTokenValidator(publicKeyPEM string) (*SimpleTokenValidator, error) {
+	publicKeyPEM = strings.ReplaceAll(publicKeyPEM, `\n`, "\n")
+	block, _ := pem.Decode([]byte(publicKeyPEM))
+	if block == nil {
+		return nil, errors.New("failed to decode PEM block for EC public key")
+	}
+	key, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	ecKey, ok := key.(*ecdsa.PublicKey)
+	if !ok {
+		return nil, errors.New("key is not an ECDSA public key")
+	}
+	if ecKey.Curve == nil || ecKey.Curve.Params().Name != "P-256" {
+		return nil, errors.New("ECDSA public key must use P-256 curve for ES256")
+	}
+	return &SimpleTokenValidator{publicKey: ecKey}, nil
 }
 
 // Validate verifies signature and expiry and returns the subject userID.

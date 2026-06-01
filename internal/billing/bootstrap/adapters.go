@@ -1,7 +1,6 @@
 package bootstrap
 
 import (
-	"crypto/ecdsa"
 	"database/sql"
 
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/ports"
@@ -31,11 +30,16 @@ type Adapters struct {
 	Translator        ports.Translator
 }
 
-func NewAdapters(db *sql.DB, jwtPublicKey *ecdsa.PublicKey, intPublisher ports.IntegrationEventPublisher, yookassaShopID, yookassaSecretKey string) (*Adapters, error) {
+func NewAdapters(db *sql.DB, jwtPublicKeyPEM string, intPublisher ports.IntegrationEventPublisher, yookassaShopID, yookassaSecretKey string) (*Adapters, error) {
 	q := dbgen.New(db)
 	rq := readstoregen.New(db)
 
 	translator, err := i18n.NewSimpleTranslator()
+	if err != nil {
+		return nil, err
+	}
+
+	tokens, err := security.NewSimpleTokenValidator(jwtPublicKeyPEM)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +56,7 @@ func NewAdapters(db *sql.DB, jwtPublicKey *ecdsa.PublicKey, intPublisher ports.I
 		TxMgr:             repo.NewDBTxManager(db),
 		Events:            infraevents.NewSimplePublisher(),
 		IntegrationEvents: intPublisher,
-		Tokens:            security.NewSimpleTokenValidator(jwtPublicKey),
+		Tokens:            tokens,
 		Translator:        translator,
 	}, nil
 }

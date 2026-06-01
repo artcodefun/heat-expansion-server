@@ -2,16 +2,11 @@ package bootstrap
 
 import (
 	"context"
-	"crypto/ecdsa"
-	"crypto/x509"
 	"database/sql"
-	"encoding/pem"
-	"errors"
 	"fmt"
 	"log"
 	"log/slog"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/XSAM/otelsql"
@@ -57,10 +52,6 @@ func NewModule() *Module {
 		log.Fatal("Missing required billing environment variables (BILLING_PORT, BILLING_DB_URL, AUTH_JWT_PUBLIC_KEY, BILLING_INTEGRATION_EXCHANGE, AUTH_INTEGRATION_EXCHANGE, RABBITMQ_URL)")
 	}
 
-	jwtPublicKey, err := parseECPublicKey(jwtPublicKeyPEM)
-	if err != nil {
-		log.Fatal("Failed to parse AUTH_JWT_PUBLIC_KEY:", err)
-	}
 	if yookassaShopID == "" || yookassaSecretKey == "" {
 		log.Fatal("Missing required YooKassa environment variables (YOOKASSA_SHOP_ID, YOOKASSA_SECRET_KEY)")
 	}
@@ -82,7 +73,7 @@ func NewModule() *Module {
 		log.Fatal("Failed to initialize billing RabbitMQ publisher:", err)
 	}
 
-	adapters, err := NewAdapters(db, jwtPublicKey, intPublisher, yookassaShopID, yookassaSecretKey)
+	adapters, err := NewAdapters(db, jwtPublicKeyPEM, intPublisher, yookassaShopID, yookassaSecretKey)
 	if err != nil {
 		log.Fatal("Failed to initialize billing adapters:", err)
 	}
@@ -155,24 +146,4 @@ func (m *Module) Run(ctx context.Context) {
 	}
 
 	slog.Info("billing module: stopped")
-}
-
-func parseECPublicKey(pemStr string) (*ecdsa.PublicKey, error) {
-	pemStr = strings.ReplaceAll(pemStr, `\n`, "\n")
-	block, _ := pem.Decode([]byte(pemStr))
-	if block == nil {
-		return nil, errors.New("failed to decode PEM block for EC public key")
-	}
-	key, err := x509.ParsePKIXPublicKey(block.Bytes)
-	if err != nil {
-		return nil, err
-	}
-	ecKey, ok := key.(*ecdsa.PublicKey)
-	if !ok {
-		return nil, errors.New("key is not an ECDSA public key")
-	}
-	if ecKey.Curve == nil || ecKey.Curve.Params().Name != "P-256" {
-		return nil, errors.New("ECDSA public key must use P-256 curve for ES256")
-	}
-	return ecKey, nil
 }

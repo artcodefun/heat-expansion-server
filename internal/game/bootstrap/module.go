@@ -2,16 +2,11 @@ package bootstrap
 
 import (
 	"context"
-	"crypto/ecdsa"
-	"crypto/x509"
 	"database/sql"
-	"encoding/pem"
-	"errors"
 	"fmt"
 	"log"
 	"log/slog"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/XSAM/otelsql"
@@ -54,11 +49,6 @@ func NewModule() *Module {
 		log.Fatal("Missing required environment variables. Please check your .env file.")
 	}
 
-	jwtPublicKey, err := parseECPublicKey(jwtPublicKeyPEM)
-	if err != nil {
-		log.Fatal("Failed to parse AUTH_JWT_PUBLIC_KEY:", err)
-	}
-
 	db, err := otelsql.Open("postgres", dbURL,
 		otelsql.WithAttributes(semconv.DBSystemPostgreSQL),
 		otelsql.WithSpanOptions(otelsql.SpanOptions{Ping: false}),
@@ -71,7 +61,7 @@ func NewModule() *Module {
 	}
 	slog.Info("connected to game database")
 
-	adapters, err := NewAdapters(db, staticBaseURL, jwtPublicKey)
+	adapters, err := NewAdapters(db, staticBaseURL, jwtPublicKeyPEM)
 	if err != nil {
 		log.Fatal("Failed to initialize adapters:", err)
 	}
@@ -169,24 +159,4 @@ func (m *Module) Run(ctx context.Context) {
 	}
 
 	slog.Info("game module: stopped")
-}
-
-func parseECPublicKey(pemStr string) (*ecdsa.PublicKey, error) {
-	pemStr = strings.ReplaceAll(pemStr, `\n`, "\n")
-	block, _ := pem.Decode([]byte(pemStr))
-	if block == nil {
-		return nil, errors.New("failed to decode PEM block for EC public key")
-	}
-	key, err := x509.ParsePKIXPublicKey(block.Bytes)
-	if err != nil {
-		return nil, err
-	}
-	ecKey, ok := key.(*ecdsa.PublicKey)
-	if !ok {
-		return nil, errors.New("key is not an ECDSA public key")
-	}
-	if ecKey.Curve == nil || ecKey.Curve.Params().Name != "P-256" {
-		return nil, errors.New("ECDSA public key must use P-256 curve for ES256")
-	}
-	return ecKey, nil
 }

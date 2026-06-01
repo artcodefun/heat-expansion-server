@@ -2,7 +2,11 @@ package security
 
 import (
 	"crypto/ecdsa"
+	"crypto/x509"
+	"encoding/pem"
+	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -13,8 +17,20 @@ type SimpleTokenProvider struct {
 	privateKey *ecdsa.PrivateKey
 }
 
-func NewSimpleTokenProvider(privateKey *ecdsa.PrivateKey) *SimpleTokenProvider {
-	return &SimpleTokenProvider{privateKey: privateKey}
+func NewSimpleTokenProvider(privateKeyPEM string) (*SimpleTokenProvider, error) {
+	privateKeyPEM = strings.ReplaceAll(privateKeyPEM, `\n`, "\n")
+	block, _ := pem.Decode([]byte(privateKeyPEM))
+	if block == nil {
+		return nil, errors.New("failed to decode PEM block for EC private key")
+	}
+	key, err := x509.ParseECPrivateKey(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	if key.Curve == nil || key.Curve.Params().Name != "P-256" {
+		return nil, errors.New("ECDSA private key must use P-256 curve for ES256")
+	}
+	return &SimpleTokenProvider{privateKey: key}, nil
 }
 
 func (s *SimpleTokenProvider) Generate(accountID uuid.UUID) (string, error) {
