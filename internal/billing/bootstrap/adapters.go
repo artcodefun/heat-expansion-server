@@ -2,14 +2,12 @@ package bootstrap
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/ports"
 	dbgen "github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/db/gen"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/db/repo"
 	infraevents "github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/events"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/i18n"
-	"github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/i18n/locales"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/payment"
 	readstoregen "github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/readstore/gen"
 	readrepo "github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/readstore/repo"
@@ -36,9 +34,9 @@ func NewAdapters(db *sql.DB, jwtSecret string, intPublisher ports.IntegrationEve
 	q := dbgen.New(db)
 	rq := readstoregen.New(db)
 
-	translator := i18n.NewJSONTranslator()
-	if err := translator.LoadFromFS(locales.Files, "."); err != nil {
-		return nil, fmt.Errorf("billing: failed to load translations: %w", err)
+	translator, err := i18n.NewSimpleTranslator()
+	if err != nil {
+		return nil, err
 	}
 
 	return &Adapters{

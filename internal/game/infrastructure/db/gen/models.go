@@ -356,6 +356,12 @@ type TradeOperation struct {
 	CrystalsSkipPrice int64           `json:"crystals_skip_price"`
 }
 
+type Translation struct {
+	Key    string `json:"key"`
+	Locale string `json:"locale"`
+	Value  string `json:"value"`
+}
+
 type User struct {
 	ID       uuid.UUID `json:"id"`
 	Name     string    `json:"name"`

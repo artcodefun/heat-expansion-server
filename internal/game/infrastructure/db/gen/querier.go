@@ -44,6 +44,7 @@ type Querier interface {
 	FindClosestBase(ctx context.Context, arg FindClosestBaseParams) (UserBase, error)
 	FindClosestDangerousLocation(ctx context.Context, arg FindClosestDangerousLocationParams) (DangerousLocation, error)
 	FindClosestResourceLocation(ctx context.Context, arg FindClosestResourceLocationParams) (ResourceLocation, error)
+	GetAllTranslations(ctx context.Context) ([]Translation, error)
 	// Army prototypes queries
 	GetArmyPrototypeByID(ctx context.Context, id int64) (ArmyItemPrototype, error)
 	GetBaseByCoordinates(ctx context.Context, arg GetBaseByCoordinatesParams) (UserBase, error)

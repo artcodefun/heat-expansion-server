@@ -1,6 +1,7 @@
 package bootstrap
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
@@ -9,7 +10,6 @@ import (
 	repo "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/repo"
 	events "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/events"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/i18n"
-	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/i18n/locales"
 	jobs "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/jobs"
 	readgen "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/gen"
 	readrepo "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/repo"
@@ -66,7 +66,7 @@ type Adapters struct {
 	Translator ports.Translator
 }
 
-func NewAdapters(db *sql.DB, staticBaseURL string, jwtSecret string, i18nPath string) (*Adapters, error) {
+func NewAdapters(db *sql.DB, staticBaseURL string, jwtSecret string) (*Adapters, error) {
 	q := dbgen.New(db)
 	rq := readgen.New(db)
 
@@ -78,17 +78,13 @@ func NewAdapters(db *sql.DB, staticBaseURL string, jwtSecret string, i18nPath st
 	generator := contentgen.NewSimpleGenerator(staticBaseURL)
 	tokens := security.NewSimpleTokenValidator(jwtSecret)
 
-	translator := i18n.NewJSONTranslator()
-	// 1. Load systemic locales (Embedded in binary)
-	if err := translator.LoadFromFS(locales.Files, "."); err != nil {
+	translationRepo := repo.NewTranslationRepo(q)
+	translator, err := i18n.NewSimpleTranslator(translationRepo)
+	if err != nil {
 		return nil, err
 	}
-
-	// 2. Load content locales (External directory provided via bootstrap)
-	if i18nPath != "" {
-		if err := translator.LoadFromDir(i18nPath); err != nil {
-			return nil, err
-		}
+	if err := translator.LoadFromRepo(context.Background()); err != nil {
+		return nil, err
 	}
 
 	baseRead := readrepo.NewBaseReadRepo(rq)

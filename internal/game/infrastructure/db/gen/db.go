@@ -111,6 +111,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.findClosestResourceLocationStmt, err = db.PrepareContext(ctx, findClosestResourceLocation); err != nil {
 		return nil, fmt.Errorf("error preparing query FindClosestResourceLocation: %w", err)
 	}
+	if q.getAllTranslationsStmt, err = db.PrepareContext(ctx, getAllTranslations); err != nil {
+		return nil, fmt.Errorf("error preparing query GetAllTranslations: %w", err)
+	}
 	if q.getArmyPrototypeByIDStmt, err = db.PrepareContext(ctx, getArmyPrototypeByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetArmyPrototypeByID: %w", err)
 	}
@@ -547,6 +550,11 @@ func (q *Queries) Close() error {
 	if q.findClosestResourceLocationStmt != nil {
 		if cerr := q.findClosestResourceLocationStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing findClosestResourceLocationStmt: %w", cerr)
+		}
+	}
+	if q.getAllTranslationsStmt != nil {
+		if cerr := q.getAllTranslationsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getAllTranslationsStmt: %w", cerr)
 		}
 	}
 	if q.getArmyPrototypeByIDStmt != nil {
@@ -1097,6 +1105,7 @@ type Queries struct {
 	findClosestBaseStmt                            *sql.Stmt
 	findClosestDangerousLocationStmt               *sql.Stmt
 	findClosestResourceLocationStmt                *sql.Stmt
+	getAllTranslationsStmt                         *sql.Stmt
 	getArmyPrototypeByIDStmt                       *sql.Stmt
 	getBaseByCoordinatesStmt                       *sql.Stmt
 	getBaseByCoordinatesForUpdateStmt              *sql.Stmt
@@ -1228,6 +1237,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		findClosestBaseStmt:                            q.findClosestBaseStmt,
 		findClosestDangerousLocationStmt:               q.findClosestDangerousLocationStmt,
 		findClosestResourceLocationStmt:                q.findClosestResourceLocationStmt,
+		getAllTranslationsStmt:                         q.getAllTranslationsStmt,
 		getArmyPrototypeByIDStmt:                       q.getArmyPrototypeByIDStmt,
 		getBaseByCoordinatesStmt:                       q.getBaseByCoordinatesStmt,
 		getBaseByCoordinatesForUpdateStmt:              q.getBaseByCoordinatesForUpdateStmt,

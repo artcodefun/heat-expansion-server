@@ -2,7 +2,6 @@ package bootstrap
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/artcodefun/heat-expansion-server/internal/auth/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/db/gen"
@@ -10,7 +9,6 @@ import (
 	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/email"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/events"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/i18n"
-	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/i18n/locales"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/security"
 )
 
@@ -36,9 +34,9 @@ type SMTPConfig struct {
 }
 
 func NewAdapters(db *sql.DB, jwtSecret string, intPublisher ports.IntegrationEventPublisher, smtpCfg SMTPConfig) (*Adapters, error) {
-	translator := i18n.NewJSONTranslator()
-	if err := translator.LoadFromFS(locales.Files, "."); err != nil {
-		return nil, fmt.Errorf("failed to load translations: %w", err)
+	translator, err := i18n.NewSimpleTranslator()
+	if err != nil {
+		return nil, err
 	}
 
 	q := gen.New(db)
