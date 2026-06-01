@@ -38,7 +38,7 @@ func NewModule() *Module {
 	rabbitURL := os.Getenv("RABBITMQ_URL")
 	port := os.Getenv("AUTH_PORT")
 	dbURL := os.Getenv("AUTH_DB_URL")
-	jwtSecret := os.Getenv("AUTH_JWT_SECRET")
+	jwtPrivateKeyPEM := os.Getenv("AUTH_JWT_PRIVATE_KEY")
 	intExchange := os.Getenv("AUTH_INTEGRATION_EXCHANGE")
 
 	smtpCfg := SMTPConfig{
@@ -48,9 +48,10 @@ func NewModule() *Module {
 		From:     os.Getenv("AUTH_SMTP_FROM"),
 	}
 
-	if port == "" || dbURL == "" || jwtSecret == "" || rabbitURL == "" || intExchange == "" {
-		log.Fatal("Missing required auth environment variables (AUTH_PORT, AUTH_DB_URL, AUTH_JWT_SECRET, RABBITMQ_URL, AUTH_INTEGRATION_EXCHANGE)")
+	if port == "" || dbURL == "" || jwtPrivateKeyPEM == "" || rabbitURL == "" || intExchange == "" {
+		log.Fatal("Missing required auth environment variables (AUTH_PORT, AUTH_DB_URL, AUTH_JWT_PRIVATE_KEY, RABBITMQ_URL, AUTH_INTEGRATION_EXCHANGE)")
 	}
+
 	if smtpCfg.Host == "" || smtpCfg.User == "" || smtpCfg.Password == "" || smtpCfg.From == "" {
 		log.Fatal("Missing required SMTP environment variables (AUTH_SMTP_HOST, AUTH_SMTP_USER, AUTH_SMTP_PASSWORD, AUTH_SMTP_FROM)")
 	}
@@ -72,7 +73,7 @@ func NewModule() *Module {
 		log.Fatal("Failed to initialize auth RabbitMQ publisher:", err)
 	}
 
-	adapters, err := NewAdapters(db, jwtSecret, intPublisher, smtpCfg)
+	adapters, err := NewAdapters(db, jwtPrivateKeyPEM, intPublisher, smtpCfg)
 	if err != nil {
 		log.Fatal("Failed to initialize auth adapters:", err)
 	}

@@ -66,7 +66,7 @@ type Adapters struct {
 	Translator ports.Translator
 }
 
-func NewAdapters(db *sql.DB, staticBaseURL string, jwtSecret string) (*Adapters, error) {
+func NewAdapters(db *sql.DB, staticBaseURL string, jwtPublicKeyPEM string) (*Adapters, error) {
 	q := dbgen.New(db)
 	rq := readgen.New(db)
 
@@ -76,7 +76,10 @@ func NewAdapters(db *sql.DB, staticBaseURL string, jwtSecret string) (*Adapters,
 	scheduler := jobs.NewDBScheduler(txMgr, schedulerRepo)
 
 	generator := contentgen.NewSimpleGenerator(staticBaseURL)
-	tokens := security.NewSimpleTokenValidator(jwtSecret)
+	tokens, err := security.NewSimpleTokenValidator(jwtPublicKeyPEM)
+	if err != nil {
+		return nil, err
+	}
 
 	translationRepo := repo.NewTranslationRepo(q)
 	translator, err := i18n.NewSimpleTranslator(translationRepo)

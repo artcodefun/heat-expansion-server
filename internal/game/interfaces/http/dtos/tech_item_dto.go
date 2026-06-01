@@ -58,9 +58,9 @@ type TechItemPrototypeDTO struct {
 
 type TechItemNewDTO struct {
 	TechItemPrototypeDTO
-	CurrentLevel        int          `json:"current_level"`
+	CurrentLevel        int           `json:"current_level"`
 	CurrentPrice        PriceModelDTO `json:"current_price"`
-	CurrentResearchTime int          `json:"current_research_time"`
+	CurrentResearchTime int           `json:"current_research_time"`
 }
 
 type TechItemInProgressDTO struct {

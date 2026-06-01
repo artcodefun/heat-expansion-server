@@ -20,7 +20,6 @@ import (
 type Module struct {
 	Port            string
 	DBURL           string
-	JWTSecret       string
 	LogLevel        string
 	StaticBaseURL   string
 	RabbitURL       string
@@ -40,13 +39,13 @@ type Module struct {
 func NewModule() *Module {
 	port := os.Getenv("GAME_PORT")
 	dbURL := os.Getenv("GAME_DB_URL")
-	jwtSecret := os.Getenv("GAME_JWT_SECRET")
+	jwtPublicKeyPEM := os.Getenv("AUTH_JWT_PUBLIC_KEY")
 	staticBaseURL := os.Getenv("GAME_STATIC_BASE_URL")
 	rabbitURL := os.Getenv("RABBITMQ_URL")
 	authExchange := os.Getenv("AUTH_INTEGRATION_EXCHANGE")
 	billingExchange := os.Getenv("BILLING_INTEGRATION_EXCHANGE")
 
-	if port == "" || dbURL == "" || jwtSecret == "" || staticBaseURL == "" || rabbitURL == "" || authExchange == "" || billingExchange == "" {
+	if port == "" || dbURL == "" || jwtPublicKeyPEM == "" || staticBaseURL == "" || rabbitURL == "" || authExchange == "" || billingExchange == "" {
 		log.Fatal("Missing required environment variables. Please check your .env file.")
 	}
 
@@ -62,7 +61,7 @@ func NewModule() *Module {
 	}
 	slog.Info("connected to game database")
 
-	adapters, err := NewAdapters(db, staticBaseURL, jwtSecret)
+	adapters, err := NewAdapters(db, staticBaseURL, jwtPublicKeyPEM)
 	if err != nil {
 		log.Fatal("Failed to initialize adapters:", err)
 	}
@@ -114,7 +113,6 @@ func NewModule() *Module {
 	return &Module{
 		Port:            port,
 		DBURL:           dbURL,
-		JWTSecret:       jwtSecret,
 		StaticBaseURL:   staticBaseURL,
 		RabbitURL:       rabbitURL,
 		AuthExchange:    authExchange,

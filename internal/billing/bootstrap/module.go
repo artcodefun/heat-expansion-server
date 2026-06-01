@@ -41,16 +41,17 @@ type Module struct {
 func NewModule() *Module {
 	port := os.Getenv("BILLING_PORT")
 	dbURL := os.Getenv("BILLING_DB_URL")
-	jwtSecret := os.Getenv("BILLING_JWT_SECRET")
+	jwtPublicKeyPEM := os.Getenv("AUTH_JWT_PUBLIC_KEY")
 	intExchange := os.Getenv("BILLING_INTEGRATION_EXCHANGE")
 	authIntExchange := os.Getenv("AUTH_INTEGRATION_EXCHANGE")
 	rabbitURL := os.Getenv("RABBITMQ_URL")
 	yookassaShopID := os.Getenv("YOOKASSA_SHOP_ID")
 	yookassaSecretKey := os.Getenv("YOOKASSA_SECRET_KEY")
 
-	if port == "" || dbURL == "" || jwtSecret == "" || intExchange == "" || authIntExchange == "" || rabbitURL == "" {
-		log.Fatal("Missing required billing environment variables (BILLING_PORT, BILLING_DB_URL, BILLING_JWT_SECRET, BILLING_INTEGRATION_EXCHANGE, AUTH_INTEGRATION_EXCHANGE, RABBITMQ_URL)")
+	if port == "" || dbURL == "" || jwtPublicKeyPEM == "" || intExchange == "" || authIntExchange == "" || rabbitURL == "" {
+		log.Fatal("Missing required billing environment variables (BILLING_PORT, BILLING_DB_URL, AUTH_JWT_PUBLIC_KEY, BILLING_INTEGRATION_EXCHANGE, AUTH_INTEGRATION_EXCHANGE, RABBITMQ_URL)")
 	}
+
 	if yookassaShopID == "" || yookassaSecretKey == "" {
 		log.Fatal("Missing required YooKassa environment variables (YOOKASSA_SHOP_ID, YOOKASSA_SECRET_KEY)")
 	}
@@ -72,7 +73,7 @@ func NewModule() *Module {
 		log.Fatal("Failed to initialize billing RabbitMQ publisher:", err)
 	}
 
-	adapters, err := NewAdapters(db, jwtSecret, intPublisher, yookassaShopID, yookassaSecretKey)
+	adapters, err := NewAdapters(db, jwtPublicKeyPEM, intPublisher, yookassaShopID, yookassaSecretKey)
 	if err != nil {
 		log.Fatal("Failed to initialize billing adapters:", err)
 	}

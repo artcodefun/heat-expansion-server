@@ -30,11 +30,16 @@ type Adapters struct {
 	Translator        ports.Translator
 }
 
-func NewAdapters(db *sql.DB, jwtSecret string, intPublisher ports.IntegrationEventPublisher, yookassaShopID, yookassaSecretKey string) (*Adapters, error) {
+func NewAdapters(db *sql.DB, jwtPublicKeyPEM string, intPublisher ports.IntegrationEventPublisher, yookassaShopID, yookassaSecretKey string) (*Adapters, error) {
 	q := dbgen.New(db)
 	rq := readstoregen.New(db)
 
 	translator, err := i18n.NewSimpleTranslator()
+	if err != nil {
+		return nil, err
+	}
+
+	tokens, err := security.NewSimpleTokenValidator(jwtPublicKeyPEM)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +56,7 @@ func NewAdapters(db *sql.DB, jwtSecret string, intPublisher ports.IntegrationEve
 		TxMgr:             repo.NewDBTxManager(db),
 		Events:            infraevents.NewSimplePublisher(),
 		IntegrationEvents: intPublisher,
-		Tokens:            security.NewSimpleTokenValidator(jwtSecret),
+		Tokens:            tokens,
 		Translator:        translator,
 	}, nil
 }

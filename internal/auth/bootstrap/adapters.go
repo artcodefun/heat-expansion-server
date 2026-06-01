@@ -33,8 +33,13 @@ type SMTPConfig struct {
 	From     string
 }
 
-func NewAdapters(db *sql.DB, jwtSecret string, intPublisher ports.IntegrationEventPublisher, smtpCfg SMTPConfig) (*Adapters, error) {
+func NewAdapters(db *sql.DB, jwtPrivateKeyPEM string, intPublisher ports.IntegrationEventPublisher, smtpCfg SMTPConfig) (*Adapters, error) {
 	translator, err := i18n.NewSimpleTranslator()
+	if err != nil {
+		return nil, err
+	}
+
+	tokenProvider, err := security.NewSimpleTokenProvider(jwtPrivateKeyPEM)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +49,7 @@ func NewAdapters(db *sql.DB, jwtSecret string, intPublisher ports.IntegrationEve
 	return &Adapters{
 		Repo:              repo.NewAccountRepository(q),
 		Hasher:            security.NewBcryptHasher(),
-		TokenProvider:     security.NewSimpleTokenProvider(jwtSecret),
+		TokenProvider:     tokenProvider,
 		Outbox:            repo.NewOutboxEventRepo(q),
 		TxMgr:             repo.NewDBTxManager(db),
 		Events:            events.NewSimplePublisher(),
