@@ -80,3 +80,9 @@ The server supports multi-language responses based on the `Accept-Language` HTTP
 
 - **Systemic Locales**: Embedded in the binary for stability (errors, system alerts).
 - **Content Locales**: Service-specific content (e.g. prototype names, descriptions) is stored in the database and loaded at startup.
+
+## License
+
+This project is licensed under the GNU Affero General Public License v3.0.
+
+See the LICENSE file for details.
