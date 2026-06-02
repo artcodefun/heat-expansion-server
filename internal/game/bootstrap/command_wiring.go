@@ -2,16 +2,16 @@ package bootstrap
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/codes"
 
-	authevents "github.com/artcodefun/heat-expansion-server/contracts/auth/events"
 	authv1 "github.com/artcodefun/heat-expansion-server/contracts/auth/events/v1"
-	billingevents "github.com/artcodefun/heat-expansion-server/contracts/billing/events"
 	billingv1 "github.com/artcodefun/heat-expansion-server/contracts/billing/events/v1"
+	"github.com/artcodefun/heat-expansion-server/contracts/events"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 	infraevents "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/events"
@@ -28,16 +28,20 @@ func WireCommandIntegrationEvents(c *Commands, consumer *infraevents.RabbitMQCon
 		defer span.End()
 
 		err := func() error {
-			envelope, err := authevents.Unmarshal(d.Body)
-			if err != nil {
+			var envelope events.IntegrationEvent
+			if err := json.Unmarshal(d.Body, &envelope); err != nil {
 				return err
 			}
 
-			switch ev := envelope.Payload.(type) {
-			case *authv1.AccountRegisteredV1:
-				return c.User.HandleAccountRegisteredV1Event(ctx, *ev)
+			switch envelope.Type {
+			case authv1.EventAccountRegisteredV1:
+				var p authv1.AccountRegisteredV1
+				if err := json.Unmarshal(envelope.Payload, &p); err != nil {
+					return err
+				}
+				return c.User.HandleAccountRegisteredV1Event(ctx, p)
 			default:
-				slog.WarnContext(ctx, "received unknown identity integration event type", "type", fmt.Sprintf("%T", ev))
+				slog.WarnContext(ctx, "received unknown identity integration event type", "type", envelope.Type)
 			}
 			return nil
 		}()
@@ -54,16 +58,20 @@ func WireCommandIntegrationEvents(c *Commands, consumer *infraevents.RabbitMQCon
 		defer span.End()
 
 		err := func() error {
-			envelope, err := billingevents.Unmarshal(d.Body)
-			if err != nil {
+			var envelope events.IntegrationEvent
+			if err := json.Unmarshal(d.Body, &envelope); err != nil {
 				return err
 			}
 
-			switch ev := envelope.Payload.(type) {
-			case *billingv1.CrystalsPurchasedV1:
-				return c.User.HandleCrystalsPurchasedV1Event(ctx, *ev)
+			switch envelope.Type {
+			case billingv1.EventCrystalsPurchasedV1:
+				var p billingv1.CrystalsPurchasedV1
+				if err := json.Unmarshal(envelope.Payload, &p); err != nil {
+					return err
+				}
+				return c.User.HandleCrystalsPurchasedV1Event(ctx, p)
 			default:
-				slog.WarnContext(ctx, "received unknown billing integration event type", "type", fmt.Sprintf("%T", ev))
+				slog.WarnContext(ctx, "received unknown billing integration event type", "type", envelope.Type)
 			}
 			return nil
 		}()

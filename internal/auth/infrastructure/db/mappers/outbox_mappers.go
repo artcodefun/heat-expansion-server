@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	authevents "github.com/artcodefun/heat-expansion-server/contracts/auth/events"
+	"github.com/artcodefun/heat-expansion-server/contracts/events"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/domain"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/db/dtos"
 )
@@ -41,13 +41,17 @@ func DecodeDomainEvent(kind string, payload []byte) (domain.DomainEvent, error) 
 	}
 }
 
-// EncodeIntegrationEvent converts a typed IntegrationEvent into a kind label and JSON payload.
-func EncodeIntegrationEvent(ev authevents.IntegrationEvent) (kind string, payload []byte, err error) {
-	payload, err = authevents.Marshal(ev)
+// EncodeIntegrationEvent converts an IntegrationEvent into a kind label and JSON payload.
+func EncodeIntegrationEvent(ev events.IntegrationEvent) (kind string, payload []byte, err error) {
+	payload, err = json.Marshal(ev)
 	return ev.Type, payload, err
 }
 
-// DecodeIntegrationEvent reconstructs an IntegrationEvent from its kind label and JSON payload.
-func DecodeIntegrationEvent(kind string, payload []byte) (authevents.IntegrationEvent, error) {
-	return authevents.Unmarshal(payload)
+// DecodeIntegrationEvent reconstructs an IntegrationEvent from its JSON payload.
+func DecodeIntegrationEvent(_ string, payload []byte) (events.IntegrationEvent, error) {
+	var ev events.IntegrationEvent
+	if err := json.Unmarshal(payload, &ev); err != nil {
+		return events.IntegrationEvent{}, err
+	}
+	return ev, nil
 }

@@ -22,8 +22,9 @@ This repository is structured as a **modular monolith**: multiple services live 
 - Auth HTTP contract: `contracts/auth/http/v1/openapi.yaml`
 - Game HTTP contract: `contracts/game/http/v1/openapi.yaml`
 - Billing HTTP contract: `contracts/billing/http/v1/openapi.yaml`
-- Auth integration events: `contracts/auth/events/`
-- Billing integration events: `contracts/billing/events/`
+- Integration event envelope: `contracts/events/envelope.go`
+- Auth event payloads: `contracts/auth/events/v1/`
+- Billing event payloads: `contracts/billing/events/v1/`
 - Swagger UI is served by each service at `/api/v1/docs`, backed by the versioned OpenAPI document at `/api/v1/openapi.yaml`.
 
 ## Getting started

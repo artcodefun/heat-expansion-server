@@ -2,9 +2,10 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 
-	authevents "github.com/artcodefun/heat-expansion-server/contracts/auth/events"
 	v1 "github.com/artcodefun/heat-expansion-server/contracts/auth/events/v1"
+	"github.com/artcodefun/heat-expansion-server/contracts/events"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/domain"
 )
@@ -34,15 +35,15 @@ func (s *IntegrationProducerService) HandleAccountRegistered(ctx context.Context
 			return nil
 		}
 
-		integrationEvent := authevents.NewIntegrationEvent(
-			originID,
-			ev.OccurredAt(),
-			v1.AccountRegisteredV1{
-				UserID: ev.AccountID,
-				Name:   ev.Name,
-				Email:  ev.Email,
-			},
-		)
+		payload, err := json.Marshal(v1.AccountRegisteredV1{
+			UserID: ev.AccountID,
+			Name:   ev.Name,
+			Email:  ev.Email,
+		})
+		if err != nil {
+			return err
+		}
+		integrationEvent := events.NewIntegrationEvent(originID, ev.OccurredAt(), v1.EventAccountRegisteredV1, payload)
 		return outbox.Save(ctx, integrationEvent)
 	})
 }

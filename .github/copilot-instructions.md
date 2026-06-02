@@ -55,10 +55,11 @@ The patterns and conventions below apply to the **Game** service (`internal/game
   - HTTP contracts live under `contracts/<service>/http/vN/openapi.yaml`. Whenever an HTTP route, request DTO, response DTO, status code, auth requirement, or public API behavior changes, update the corresponding OpenAPI file in the same change.
 
 - **Integration Events**
-  - External events live in `contracts/`. They consist of a generic `IntegrationEvent` envelope and versioned payloads (e.g., `contracts/auth/events/v1/AccountRegisteredV1`).
-  - Use `RegisterPayload` in `init()` functions to enable polymorphic unmarshaling.
+  - The shared `IntegrationEvent` envelope lives in `contracts/events/envelope.go` and uses `json.RawMessage` for its payload field. Versioned payload structs live in `contracts/<service>/events/v1/` alongside a typed `EventXxx` string constant (e.g., `EventAccountRegisteredV1 = "auth.account.registered.v1"`).
+  - **Producers**: `json.Marshal` the payload struct, then call `events.NewIntegrationEvent(originID, occurredAt, v1.EventXxx, payload)` and pass the result to `outbox.Save`. No `init()` registration or interface implementation needed on the payload type.
+  - **Consumers** (bootstrap wiring): `json.Unmarshal(d.Body, &envelope)` to get the envelope, then `switch envelope.Type` on the typed constant, then `json.Unmarshal(envelope.Payload, &typed)` for each known case. The default branch logs a warning and acks the message.
   - Integration events are produced from domain events via an `IntegrationProducer` and stored in an `IntegrationOutbox`.
-  - Idempotency is enforced on `(origin_id, event_type)` in the integration outbox table.
+  - Idempotency is enforced on `(origin_id, kind)` in the integration outbox table.
   - Publishing is performed via RabbitMQ (using a `topic` exchange and event type as routing key) with a console fallback for local dev.
 
 - **Observability & logging**
@@ -87,7 +88,7 @@ The patterns and conventions below apply to the **Game** service (`internal/game
 - For new write-side features, add/extend ports in `internal/game/application/ports`, implement them in `internal/game/infrastructure/db/repo`, wire them in `internal/game/bootstrap/adapters.go`, and inject via `Commands`/services.
 - For new read-side endpoints, add read models and queries in `internal/game/infrastructure/readstore`, then wire new query facades in `internal/game/application/queries` and expose via HTTP handlers.
 - For new integration events:
-  1. Define the payload in `contracts/`.
-  2. Implement `IntegrationEventType() string` and register the factory.
-  3. Create/update an `IntegrationProducer` to map domain events to the new contract.
+  1. Add a payload struct and `EventXxx` string constant in `contracts/<service>/events/v1/`.
+  2. In the producer service, `json.Marshal` the payload and call `events.NewIntegrationEvent` with the typed constant, then save via `outbox.Save`.
+  3. Add a `case v1.EventXxx:` branch to the relevant consumer's type-switch in `bootstrap/` that unmarshals `envelope.Payload` and dispatches to the handler.
 - Keep serialization, DTOs, and DB schemas in infra layers (`dtos/`, `mappers/`, `queries/`), not in domain or application packages.

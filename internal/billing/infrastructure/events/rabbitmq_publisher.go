@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	billingevents "github.com/artcodefun/heat-expansion-server/contracts/billing/events"
+	contracts "github.com/artcodefun/heat-expansion-server/contracts/events"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -107,7 +107,7 @@ func dialAndSetupPublisher(url, exchange string) (*amqp.Connection, error) {
 	return conn, nil
 }
 
-func (p *RabbitMQPublisher) Publish(ctx context.Context, event billingevents.IntegrationEvent) error {
+func (p *RabbitMQPublisher) Publish(ctx context.Context, event contracts.IntegrationEvent) error {
 	p.mu.RLock()
 	conn := p.conn
 	p.mu.RUnlock()
