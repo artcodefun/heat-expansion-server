@@ -588,13 +588,14 @@ func (op *MilitaryOperation) Cancel() error {
 	op.Result = OperationResultCanceled
 	op.AddEvent(NewMilitaryOperationCancelledEvent(op.ID))
 
-	if op.Phase == OperationPhasePending {
+	switch op.Phase {
+	case OperationPhasePending:
 		// If it hasn't even started moving, it just finishes immediately.
 		op.Phase = OperationPhaseCompleted
 		op.CompletedAt = NowUnix()
 		// This event handles returning units to the base in the command handler.
 		op.AddEvent(NewMilitaryOperationReturnArrivedEvent(op.ID))
-	} else if op.Phase == OperationPhaseOutbound {
+	case OperationPhaseOutbound:
 		op.StartReturn()
 	}
 

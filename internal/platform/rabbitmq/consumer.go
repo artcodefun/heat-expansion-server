@@ -1,4 +1,4 @@
-package events
+package rabbitmq
 
 import (
 	"context"
@@ -27,9 +27,7 @@ type RabbitMQConsumer struct {
 }
 
 func NewRabbitMQConsumer(url string) *RabbitMQConsumer {
-	return &RabbitMQConsumer{
-		url: url,
-	}
+	return &RabbitMQConsumer{url: url}
 }
 
 func (c *RabbitMQConsumer) Subscribe(exchange, queue, routingKey string, handler DeliveryHandler) {
@@ -41,129 +39,101 @@ func (c *RabbitMQConsumer) Subscribe(exchange, queue, routingKey string, handler
 	})
 }
 
+// Start dials the broker, declares exchanges/queues/bindings, launches consume
+// loops, and blocks until ctx is cancelled. It reconnects automatically on
+// connection drops. On cancellation it waits for the consume loops to finish
+// their in-flight deliveries (so acks still reach the broker), closes the
+// connection so the broker can reclaim resources promptly, then returns nil.
+// Returns a non-nil error only if the initial dial fails.
 func (c *RabbitMQConsumer) Start(ctx context.Context) error {
-	if err := c.connect(ctx); err != nil {
+	conn, err := dialAndSetupConsumer(c.url, c.subscriptions)
+	if err != nil {
 		return err
 	}
 
-	for _, sub := range c.subscriptions {
-		go c.consumeLoop(ctx, sub)
-	}
-
-	// Tear down the connection once the context is cancelled. The consume and
-	// reconnect goroutines already stop on ctx.Done(); closing the connection
-	// here releases it so the broker can reclaim resources promptly instead of
-	// waiting for a heartbeat timeout. This keeps the consumer's entire
-	// lifecycle governed by the context it was started with.
-	go func() {
-		<-ctx.Done()
-		c.mu.Lock()
-		defer c.mu.Unlock()
-		if c.conn != nil {
-			if err := c.conn.Close(); err != nil {
-				slog.WarnContext(ctx, "failed to close rabbitmq consumer connection", "error", err.Error())
-			}
-		}
-	}()
-
-	return nil
-}
-
-func (c *RabbitMQConsumer) connect(ctx context.Context) error {
 	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	conn, err := amqp.Dial(c.url)
-	if err != nil {
-		return err
-	}
-
-	ch, err := conn.Channel()
-	if err != nil {
-		conn.Close()
-		return err
-	}
-	defer ch.Close()
-
-	for _, sub := range c.subscriptions {
-		// Declare exchange
-		err = ch.ExchangeDeclare(
-			sub.Exchange,
-			"topic",
-			true,
-			false,
-			false,
-			false,
-			nil,
-		)
-		if err != nil {
-			conn.Close()
-			return err
-		}
-
-		// Declare queue
-		_, err = ch.QueueDeclare(
-			sub.Queue,
-			true,
-			false,
-			false,
-			false,
-			nil,
-		)
-		if err != nil {
-			conn.Close()
-			return err
-		}
-
-		// Bind queue
-		err = ch.QueueBind(
-			sub.Queue,
-			sub.RoutingKey,
-			sub.Exchange,
-			false,
-			nil,
-		)
-		if err != nil {
-			conn.Close()
-			return err
-		}
-	}
-
 	c.conn = conn
+	c.mu.Unlock()
 
-	// Reconnection
-	go func(ctx context.Context) {
-		closeChan := conn.NotifyClose(make(chan *amqp.Error))
+	var loops sync.WaitGroup
+	for _, sub := range c.subscriptions {
+		loops.Go(func() { c.consumeLoop(ctx, sub) })
+	}
+
+	drain := func() {
+		loops.Wait()
+		c.mu.Lock()
+		if c.conn != nil {
+			c.conn.Close()
+			c.conn = nil
+		}
+		c.mu.Unlock()
+	}
+
+	current := conn
+	for {
+		closeChan := current.NotifyClose(make(chan *amqp.Error, 1))
 		select {
 		case <-ctx.Done():
-			return
-		case err := <-closeChan:
-			if err == nil {
-				return
+			drain()
+			return nil
+		case amqpErr := <-closeChan:
+			if amqpErr != nil {
+				slog.WarnContext(ctx, "rabbitmq consumer connection lost; reconnecting", "error", amqpErr.Error())
 			}
-
-			slog.WarnContext(ctx, "rabbitmq connection closed; reconnecting",
-				"error", err.Error(),
-			)
 		}
 
 		for {
 			select {
 			case <-ctx.Done():
-				return
+				drain()
+				return nil
 			case <-time.After(5 * time.Second):
 			}
-
-			if err := c.connect(ctx); err == nil {
-				slog.InfoContext(ctx, "rabbitmq reconnected")
-				return
-			} else {
-				slog.WarnContext(ctx, "rabbitmq reconnect attempt failed", "error", err.Error())
+			newConn, err := dialAndSetupConsumer(c.url, c.subscriptions)
+			if err != nil {
+				slog.WarnContext(ctx, "rabbitmq consumer reconnect attempt failed", "error", err.Error())
+				continue
 			}
+			c.mu.Lock()
+			c.conn = newConn
+			c.mu.Unlock()
+			current = newConn
+			slog.InfoContext(ctx, "rabbitmq consumer reconnected")
+			break
 		}
-	}(ctx)
+	}
+}
 
-	return nil
+func dialAndSetupConsumer(url string, subscriptions []Subscription) (*amqp.Connection, error) {
+	conn, err := amqp.Dial(url)
+	if err != nil {
+		return nil, err
+	}
+
+	ch, err := conn.Channel()
+	if err != nil {
+		conn.Close()
+		return nil, err
+	}
+	defer ch.Close()
+
+	for _, sub := range subscriptions {
+		if err := ch.ExchangeDeclare(sub.Exchange, "topic", true, false, false, false, nil); err != nil {
+			conn.Close()
+			return nil, err
+		}
+		if _, err := ch.QueueDeclare(sub.Queue, true, false, false, false, nil); err != nil {
+			conn.Close()
+			return nil, err
+		}
+		if err := ch.QueueBind(sub.Queue, sub.RoutingKey, sub.Exchange, false, nil); err != nil {
+			conn.Close()
+			return nil, err
+		}
+	}
+
+	return conn, nil
 }
 
 func (c *RabbitMQConsumer) consumeLoop(ctx context.Context, sub Subscription) {
@@ -173,7 +143,11 @@ func (c *RabbitMQConsumer) consumeLoop(ctx context.Context, sub Subscription) {
 		c.mu.RUnlock()
 
 		if conn == nil || conn.IsClosed() {
-			time.Sleep(1 * time.Second)
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(1 * time.Second):
+			}
 			continue
 		}
 
@@ -185,19 +159,15 @@ func (c *RabbitMQConsumer) consumeLoop(ctx context.Context, sub Subscription) {
 				"routing_key", sub.RoutingKey,
 				"error", err.Error(),
 			)
-			time.Sleep(5 * time.Second)
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(5 * time.Second):
+			}
 			continue
 		}
 
-		msgs, err := ch.Consume(
-			sub.Queue,
-			"",
-			false, // manual ack
-			false,
-			false,
-			false,
-			nil,
-		)
+		msgs, err := ch.Consume(sub.Queue, "", false, false, false, false, nil)
 		if err != nil {
 			ch.Close()
 			slog.WarnContext(ctx, "failed to register rabbitmq consumer",
@@ -206,7 +176,11 @@ func (c *RabbitMQConsumer) consumeLoop(ctx context.Context, sub Subscription) {
 				"routing_key", sub.RoutingKey,
 				"error", err.Error(),
 			)
-			time.Sleep(5 * time.Second)
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(5 * time.Second):
+			}
 			continue
 		}
 

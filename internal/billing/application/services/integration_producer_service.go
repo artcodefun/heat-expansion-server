@@ -2,9 +2,10 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 
-	billingevents "github.com/artcodefun/heat-expansion-server/contracts/billing/events"
 	v1 "github.com/artcodefun/heat-expansion-server/contracts/billing/events/v1"
+	"github.com/artcodefun/heat-expansion-server/contracts/events"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/domain"
 )
@@ -33,16 +34,16 @@ func (s *IntegrationProducerService) HandleOrderPaid(ctx context.Context, ev dom
 			return nil
 		}
 
-		integrationEvent := billingevents.NewIntegrationEvent(
-			originID,
-			ev.OccurredAt(),
-			v1.CrystalsPurchasedV1{
-				UserID:    ev.UserID,
-				OrderID:   ev.OrderID,
-				PackageID: ev.PackageID,
-				Crystals:  ev.Crystals,
-			},
-		)
+		payload, err := json.Marshal(v1.CrystalsPurchasedV1{
+			UserID:    ev.UserID,
+			OrderID:   ev.OrderID,
+			PackageID: ev.PackageID,
+			Crystals:  ev.Crystals,
+		})
+		if err != nil {
+			return err
+		}
+		integrationEvent := events.NewIntegrationEvent(originID, ev.OccurredAt(), v1.EventCrystalsPurchasedV1, payload)
 		return outbox.Save(ctx, integrationEvent)
 	})
 }

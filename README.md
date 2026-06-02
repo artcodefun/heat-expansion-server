@@ -17,13 +17,17 @@ This repository is structured as a **modular monolith**: multiple services live 
 - **Billing**: crystal package purchases and YooKassa payment processing.
   - Docs: [internal/billing/README.md](internal/billing/README.md)
 
+- **Platform** (`internal/platform/`): shared infrastructure adapters used across services.
+  - Docs: [internal/platform/README.md](internal/platform/README.md)
+
 ## API Contracts
 
 - Auth HTTP contract: `contracts/auth/http/v1/openapi.yaml`
 - Game HTTP contract: `contracts/game/http/v1/openapi.yaml`
 - Billing HTTP contract: `contracts/billing/http/v1/openapi.yaml`
-- Auth integration events: `contracts/auth/events/`
-- Billing integration events: `contracts/billing/events/`
+- Integration event envelope: `contracts/events/envelope.go`
+- Auth event payloads: `contracts/auth/events/v1/`
+- Billing event payloads: `contracts/billing/events/v1/`
 - Swagger UI is served by each service at `/api/v1/docs`, backed by the versioned OpenAPI document at `/api/v1/openapi.yaml`.
 
 ## Getting started
@@ -75,4 +79,10 @@ awk 'NF {printf "%s\\n",$0}' ec.pub   # paste into AUTH_JWT_PUBLIC_KEY=
 The server supports multi-language responses based on the `Accept-Language` HTTP header. 
 
 - **Systemic Locales**: Embedded in the binary for stability (errors, system alerts).
-- **Content Locales**: Stored in the `game.translations` database table and loaded at startup via `TranslationRepo`.
+- **Content Locales**: Service-specific content (e.g. prototype names, descriptions) is stored in the database and loaded at startup.
+
+## License
+
+This project is licensed under the GNU Affero General Public License v3.0.
+
+See the LICENSE file for details.

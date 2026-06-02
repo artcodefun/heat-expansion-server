@@ -13,8 +13,8 @@ import (
 	_ "github.com/lib/pq"
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/events"
 	httpapi "github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http"
+	"github.com/artcodefun/heat-expansion-server/internal/platform/rabbitmq"
 )
 
 type Module struct {
@@ -33,7 +33,6 @@ type Module struct {
 	Commands   *Commands
 	Queries    *Queries
 	HTTPServer *httpapi.Server
-	Consumer   *events.RabbitMQConsumer
 }
 
 func NewModule() *Module {
@@ -54,10 +53,10 @@ func NewModule() *Module {
 		otelsql.WithSpanOptions(otelsql.SpanOptions{Ping: false}),
 	)
 	if err != nil {
-		log.Fatal("Failed to connect to database:", err)
+		log.Fatal("Failed to connect to game database:", err)
 	}
 	if err := db.Ping(); err != nil {
-		log.Fatal("Database is unreachable:", err)
+		log.Fatal("Game database is unreachable:", err)
 	}
 	slog.Info("connected to game database")
 
@@ -73,7 +72,7 @@ func NewModule() *Module {
 	WireCommandEvents(commands, adapters.Events)
 	WireCommandSchedulerHandler(commands, adapters.Scheduler)
 
-	consumer := events.NewRabbitMQConsumer(rabbitURL)
+	consumer := rabbitmq.NewRabbitMQConsumer(rabbitURL)
 	WireCommandIntegrationEvents(commands, consumer, authExchange, "game.auth.integration.events", billingExchange, "game.billing.integration.events")
 	workers := NewWorkers(dbURL, services.Outbox, adapters.Scheduler, consumer)
 
@@ -124,39 +123,75 @@ func NewModule() *Module {
 		Commands:        commands,
 		Queries:         queries,
 		HTTPServer:      httpServer,
-		Consumer:        consumer,
 	}
 }
 
-func (m *Module) Run(ctx context.Context) {
-	slog.Info("starting game service", "port", m.Port)
+// Run connects the module's infrastructure, serves until the context is
+// cancelled or a fatal error occurs, then drains and releases resources.
+// Construction does no I/O; everything cancelable happens here.
+func (m *Module) Run(ctx context.Context) error {
+	slog.InfoContext(ctx, "starting game service", "port", m.Port)
+
+	// Module-local cancel: a fatal HTTP error must stop the workers (and a
+	// fatal worker error must stop the HTTP server), otherwise the drain
+	// below would block forever.
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	if err := m.Adapters.Setup(ctx); err != nil {
+		return fmt.Errorf("game adapters setup failed: %w", err)
+	}
 
 	if err := seedPeriodicJobs(ctx, m.DB); err != nil {
-		log.Fatal("Failed to seed periodic jobs:", err)
+		return fmt.Errorf("failed to seed periodic jobs: %w", err)
 	}
 
 	m.Workers.Start(ctx)
 
+	// Workers only fail on startup (e.g. the broker is unreachable); surface
+	// that like an HTTP serve failure so the module drains and reports it.
+	workerErr := make(chan error, 1)
 	go func() {
-		if err := m.HTTPServer.Start(); err != nil {
-			slog.Error("game http server stopped", "error", err)
+		if err := m.Workers.Wait(); err != nil {
+			workerErr <- err
 		}
 	}()
 
-	<-ctx.Done()
-	slog.Info("game module: shutdown signal received, draining...")
+	httpErr := make(chan error, 1)
+	go func() {
+		if err := m.HTTPServer.Start(); err != nil {
+			httpErr <- err
+		}
+	}()
 
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	defer cancel()
-	if err := m.HTTPServer.Shutdown(shutdownCtx); err != nil {
-		slog.Error("game http server shutdown error", "error", err)
+	var runErr error
+	select {
+	case <-ctx.Done():
+		slog.InfoContext(ctx, "game module: shutdown signal received, draining...")
+	case err := <-httpErr:
+		runErr = fmt.Errorf("game http server failed: %w", err)
+		slog.ErrorContext(ctx, "game module: http server failed, draining...", "error", err)
+		cancel()
+	case err := <-workerErr:
+		runErr = fmt.Errorf("game workers failed: %w", err)
+		slog.ErrorContext(ctx, "game module: worker failed, draining...", "error", err)
+		cancel()
 	}
 
-	m.Workers.Wait()
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer shutdownCancel()
+	if err := m.HTTPServer.Shutdown(shutdownCtx); err != nil {
+		slog.ErrorContext(ctx, "game http server shutdown error", "error", err)
+	}
+
+	if err := m.Workers.Wait(); err != nil && runErr == nil {
+		runErr = fmt.Errorf("game workers failed: %w", err)
+	}
 
 	if err := m.DB.Close(); err != nil {
-		slog.Error("game database close error", "error", err)
+		slog.ErrorContext(ctx, "game database close error", "error", err)
 	}
 
-	slog.Info("game module: stopped")
+	slog.InfoContext(ctx, "game module: stopped")
+	return runErr
 }

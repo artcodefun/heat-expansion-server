@@ -13,8 +13,8 @@ import (
 	_ "github.com/lib/pq"
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 
-	infraevents "github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/events"
 	httpapi "github.com/artcodefun/heat-expansion-server/internal/billing/interfaces/http"
+	"github.com/artcodefun/heat-expansion-server/internal/platform/rabbitmq"
 )
 
 type Module struct {
@@ -28,14 +28,6 @@ type Module struct {
 	Commands   *Commands
 	Queries    *Queries
 	HTTPServer *httpapi.Server
-	// IntegrationPublisher is the one adapter that starts background work (a
-	// broker connection and reconnect goroutine) the moment it is built, so the
-	// module constructs and owns it explicitly rather than hiding it in Adapters.
-	IntegrationPublisher *infraevents.RabbitMQPublisher
-	// Consumer projects inbound auth integration events into billing's local
-	// users table. Unlike the publisher it dials lazily in Start(ctx) and tears
-	// itself down on ctx cancellation, so the module owns it but does not close it.
-	Consumer *infraevents.RabbitMQConsumer
 }
 
 func NewModule() *Module {
@@ -68,20 +60,17 @@ func NewModule() *Module {
 	}
 	slog.Info("connected to billing database")
 
-	intPublisher, err := infraevents.NewRabbitMQPublisher(rabbitURL, intExchange)
-	if err != nil {
-		log.Fatal("Failed to initialize billing RabbitMQ publisher:", err)
-	}
+	intPublisher := rabbitmq.NewRabbitMQPublisher(rabbitURL, intExchange)
 
 	adapters, err := NewAdapters(db, jwtPublicKeyPEM, intPublisher, yookassaShopID, yookassaSecretKey)
 	if err != nil {
 		log.Fatal("Failed to initialize billing adapters:", err)
 	}
 
-	consumer := infraevents.NewRabbitMQConsumer(rabbitURL)
+	consumer := rabbitmq.NewRabbitMQConsumer(rabbitURL)
 
 	appServices := NewAppServices(adapters)
-	workers := NewWorkers(dbURL, appServices.Outbox, appServices.IntegrationOutbox, consumer)
+	workers := NewWorkers(dbURL, appServices.Outbox, appServices.IntegrationOutbox, consumer, intPublisher)
 	commands := NewCommands(adapters)
 	queries := NewQueries(adapters)
 
@@ -107,43 +96,67 @@ func NewModule() *Module {
 		Commands:   commands,
 		Queries:    queries,
 		HTTPServer: server,
-
-		IntegrationPublisher: intPublisher,
-		Consumer:             consumer,
 	}
 }
 
-func (m *Module) Run(ctx context.Context) {
-	slog.Info("starting billing service", "port", m.Port)
+// Run connects the module's infrastructure, serves until the context is
+// cancelled or a fatal error occurs, then drains and releases resources.
+// Construction does no I/O; everything cancelable happens here.
+func (m *Module) Run(ctx context.Context) error {
+	slog.InfoContext(ctx, "starting billing service", "port", m.Port)
+
+	// Module-local cancel: a fatal HTTP error must stop the workers (and a
+	// fatal worker error must stop the HTTP server), otherwise the drain
+	// below would block forever.
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 
 	m.Workers.Start(ctx)
 
+	// Workers only fail on startup (e.g. the broker is unreachable); surface
+	// that like an HTTP serve failure so the module drains and reports it.
+	workerErr := make(chan error, 1)
 	go func() {
-		if err := m.HTTPServer.Start(); err != nil {
-			slog.Error("billing http server stopped", "error", err)
+		if err := m.Workers.Wait(); err != nil {
+			workerErr <- err
 		}
 	}()
 
-	<-ctx.Done()
-	slog.Info("billing module: shutdown signal received, draining...")
+	httpErr := make(chan error, 1)
+	go func() {
+		if err := m.HTTPServer.Start(); err != nil {
+			httpErr <- err
+		}
+	}()
 
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	defer cancel()
+	var runErr error
+	select {
+	case <-ctx.Done():
+		slog.InfoContext(ctx, "billing module: shutdown signal received, draining...")
+	case err := <-httpErr:
+		runErr = fmt.Errorf("billing http server failed: %w", err)
+		slog.ErrorContext(ctx, "billing module: http server failed, draining...", "error", err)
+		cancel()
+	case err := <-workerErr:
+		runErr = fmt.Errorf("billing workers failed: %w", err)
+		slog.ErrorContext(ctx, "billing module: worker failed, draining...", "error", err)
+		cancel()
+	}
+
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer shutdownCancel()
 	if err := m.HTTPServer.Shutdown(shutdownCtx); err != nil {
-		slog.Error("billing http server shutdown error", "error", err)
+		slog.ErrorContext(ctx, "billing http server shutdown error", "error", err)
 	}
 
-	m.Workers.Wait()
-
-	// Workers have drained, so no goroutine is still publishing or querying.
-	// Release infrastructure connections so the broker and DB can reclaim
-	// resources promptly instead of waiting for timeouts.
-	if err := m.IntegrationPublisher.Close(); err != nil {
-		slog.Error("billing integration publisher close error", "error", err)
+	if err := m.Workers.Wait(); err != nil && runErr == nil {
+		runErr = fmt.Errorf("billing workers failed: %w", err)
 	}
+
 	if err := m.DB.Close(); err != nil {
-		slog.Error("billing database close error", "error", err)
+		slog.ErrorContext(ctx, "billing database close error", "error", err)
 	}
 
-	slog.Info("billing module: stopped")
+	slog.InfoContext(ctx, "billing module: stopped")
+	return runErr
 }

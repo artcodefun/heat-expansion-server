@@ -27,8 +27,6 @@ This service uses Hexagonal Architecture (Ports and Adapters), DDD, and CQRS —
 - **Infrastructure**: `internal/billing/infrastructure`
   - `db/`: Persistence using sqlc (`migrations/`, `queries/`, `gen/`, `repo/`, `dtos/`, `mappers/`).
   - `payment/`: YooKassa gateway adapter.
-  - `events/`: In-process publisher and RabbitMQ publisher.
-  - `security/`: HS256 JWT validator.
   - `i18n/`: JSON translator and embedded locale files.
 - **Interfaces**: `internal/billing/interfaces/http`
   - Primary adapters (HTTP handlers, DTOs, router, auth middleware).

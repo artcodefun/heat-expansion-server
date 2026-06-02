@@ -2,42 +2,47 @@ package bootstrap
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/codes"
 
-	authevents "github.com/artcodefun/heat-expansion-server/contracts/auth/events"
 	authv1 "github.com/artcodefun/heat-expansion-server/contracts/auth/events/v1"
-	billingevents "github.com/artcodefun/heat-expansion-server/contracts/billing/events"
 	billingv1 "github.com/artcodefun/heat-expansion-server/contracts/billing/events/v1"
+	contractevents "github.com/artcodefun/heat-expansion-server/contracts/events"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
-	infraevents "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/events"
 	infrajobs "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/jobs"
+	platformevents "github.com/artcodefun/heat-expansion-server/internal/platform/events"
+	"github.com/artcodefun/heat-expansion-server/internal/platform/rabbitmq"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 var gameTracer = otel.Tracer("heat-expansion-game")
 
 // WireCommandIntegrationEvents wires external integration events to command handlers.
-func WireCommandIntegrationEvents(c *Commands, consumer *infraevents.RabbitMQConsumer, authExchange, authQueue, billingExchange, billingQueue string) {
+func WireCommandIntegrationEvents(c *Commands, consumer *rabbitmq.RabbitMQConsumer, authExchange, authQueue, billingExchange, billingQueue string) {
 	consumer.Subscribe(authExchange, authQueue, "auth.#", func(ctx context.Context, d amqp.Delivery) error {
 		ctx, span := gameTracer.Start(ctx, "game.integration."+d.RoutingKey)
 		defer span.End()
 
 		err := func() error {
-			envelope, err := authevents.Unmarshal(d.Body)
-			if err != nil {
+			var envelope contractevents.IntegrationEvent
+			if err := json.Unmarshal(d.Body, &envelope); err != nil {
 				return err
 			}
 
-			switch ev := envelope.Payload.(type) {
-			case *authv1.AccountRegisteredV1:
-				return c.User.HandleAccountRegisteredV1Event(ctx, *ev)
+			switch envelope.Type {
+			case authv1.EventAccountRegisteredV1:
+				var p authv1.AccountRegisteredV1
+				if err := json.Unmarshal(envelope.Payload, &p); err != nil {
+					return err
+				}
+				return c.User.HandleAccountRegisteredV1Event(ctx, p)
 			default:
-				slog.WarnContext(ctx, "received unknown identity integration event type", "type", fmt.Sprintf("%T", ev))
+				slog.WarnContext(ctx, "received unknown identity integration event type", "type", envelope.Type)
 			}
 			return nil
 		}()
@@ -54,16 +59,20 @@ func WireCommandIntegrationEvents(c *Commands, consumer *infraevents.RabbitMQCon
 		defer span.End()
 
 		err := func() error {
-			envelope, err := billingevents.Unmarshal(d.Body)
-			if err != nil {
+			var envelope contractevents.IntegrationEvent
+			if err := json.Unmarshal(d.Body, &envelope); err != nil {
 				return err
 			}
 
-			switch ev := envelope.Payload.(type) {
-			case *billingv1.CrystalsPurchasedV1:
-				return c.User.HandleCrystalsPurchasedV1Event(ctx, *ev)
+			switch envelope.Type {
+			case billingv1.EventCrystalsPurchasedV1:
+				var p billingv1.CrystalsPurchasedV1
+				if err := json.Unmarshal(envelope.Payload, &p); err != nil {
+					return err
+				}
+				return c.User.HandleCrystalsPurchasedV1Event(ctx, p)
 			default:
-				slog.WarnContext(ctx, "received unknown billing integration event type", "type", fmt.Sprintf("%T", ev))
+				slog.WarnContext(ctx, "received unknown billing integration event type", "type", envelope.Type)
 			}
 			return nil
 		}()
@@ -79,7 +88,7 @@ func WireCommandIntegrationEvents(c *Commands, consumer *infraevents.RabbitMQCon
 // WireCommandEvents subscribes command-side handlers to domain events on the in-memory publisher.
 // It no-ops if the provided publisher does not support subscriptions.
 func WireCommandEvents(c *Commands, pub ports.EventPublisher) {
-	p, ok := pub.(*infraevents.SimplePublisher)
+	p, ok := pub.(*platformevents.SimplePublisher[domain.DomainEvent])
 	if !ok {
 		return
 	}

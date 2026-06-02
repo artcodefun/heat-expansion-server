@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	billingevents "github.com/artcodefun/heat-expansion-server/contracts/billing/events"
+	"github.com/artcodefun/heat-expansion-server/contracts/events"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/domain"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/db/dtos"
 )
@@ -46,11 +46,15 @@ func DecodeDomainEvent(kind string, payload []byte) (domain.DomainEvent, error) 
 	}
 }
 
-func EncodeIntegrationEvent(ev billingevents.IntegrationEvent) (kind string, payload []byte, err error) {
-	payload, err = billingevents.Marshal(ev)
+func EncodeIntegrationEvent(ev events.IntegrationEvent) (kind string, payload []byte, err error) {
+	payload, err = json.Marshal(ev)
 	return ev.Type, payload, err
 }
 
-func DecodeIntegrationEvent(kind string, payload []byte) (billingevents.IntegrationEvent, error) {
-	return billingevents.Unmarshal(payload)
+func DecodeIntegrationEvent(_ string, payload []byte) (events.IntegrationEvent, error) {
+	var ev events.IntegrationEvent
+	if err := json.Unmarshal(payload, &ev); err != nil {
+		return events.IntegrationEvent{}, err
+	}
+	return ev, nil
 }

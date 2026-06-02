@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 
-	billingevents "github.com/artcodefun/heat-expansion-server/contracts/billing/events"
+	"github.com/artcodefun/heat-expansion-server/contracts/events"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/db/gen"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/db/mappers"
@@ -28,7 +28,7 @@ func (r *IntegrationOutboxRepo) Tx(tx ports.Transaction) ports.IntegrationOutbox
 	return r
 }
 
-func (r *IntegrationOutboxRepo) Save(ctx context.Context, event billingevents.IntegrationEvent) error {
+func (r *IntegrationOutboxRepo) Save(ctx context.Context, event events.IntegrationEvent) error {
 	kind, payload, err := mappers.EncodeIntegrationEvent(event)
 	if err != nil {
 		return err
@@ -60,13 +60,13 @@ func (r *IntegrationOutboxRepo) Exists(ctx context.Context, originID uuid.UUID, 
 	})
 }
 
-func (r *IntegrationOutboxRepo) ClaimUnpublished(ctx context.Context, limit int) ([]billingevents.IntegrationEvent, error) {
+func (r *IntegrationOutboxRepo) ClaimUnpublished(ctx context.Context, limit int) ([]events.IntegrationEvent, error) {
 	rows, err := r.q.ClaimUnpublishedIntegrationEvents(ctx, int32(limit))
 	if err != nil {
 		return nil, err
 	}
 
-	events := make([]billingevents.IntegrationEvent, 0, len(rows))
+	evts := make([]events.IntegrationEvent, 0, len(rows))
 	for _, row := range rows {
 		evt, err := mappers.DecodeIntegrationEvent(row.Kind, row.Payload)
 		if err != nil {
@@ -75,10 +75,10 @@ func (r *IntegrationOutboxRepo) ClaimUnpublished(ctx context.Context, limit int)
 			continue
 		}
 
-		events = append(events, evt)
+		evts = append(evts, evt)
 	}
 
-	return events, nil
+	return evts, nil
 }
 
 func (r *IntegrationOutboxRepo) MarkPublished(ctx context.Context, id uuid.UUID, publishedAt int64) error {
