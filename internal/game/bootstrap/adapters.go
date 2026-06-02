@@ -64,6 +64,21 @@ type Adapters struct {
 	Scheduler  ports.Scheduler
 	Content    ports.ContentGenerator
 	Translator ports.Translator
+
+	// translator keeps the concrete type so Setup can run its startup I/O.
+	translator *i18n.SimpleTranslator
+}
+
+// Setup performs the adapters' one-time startup I/O (loading content
+// translations from the database). Unlike Start(ctx) on the broker adapters it
+// is not long-running: it returns once the load completes. It must complete
+// before the HTTP server starts serving requests, so handlers never observe a
+// partially loaded translator.
+func (a *Adapters) Setup(ctx context.Context) error {
+	if err := a.translator.LoadFromRepo(ctx); err != nil {
+		return err
+	}
+	return nil
 }
 
 func NewAdapters(db *sql.DB, staticBaseURL string, jwtPublicKeyPEM string) (*Adapters, error) {
@@ -84,9 +99,6 @@ func NewAdapters(db *sql.DB, staticBaseURL string, jwtPublicKeyPEM string) (*Ada
 	translationRepo := repo.NewTranslationRepo(q)
 	translator, err := i18n.NewSimpleTranslator(translationRepo)
 	if err != nil {
-		return nil, err
-	}
-	if err := translator.LoadFromRepo(context.Background()); err != nil {
 		return nil, err
 	}
 
@@ -146,5 +158,6 @@ func NewAdapters(db *sql.DB, staticBaseURL string, jwtPublicKeyPEM string) (*Ada
 		Scheduler:  scheduler,
 		Content:    generator,
 		Translator: translator,
+		translator: translator,
 	}, nil
 }

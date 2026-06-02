@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"sync"
 	"time"
 
 	"go.opentelemetry.io/otel/codes"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
@@ -17,10 +17,10 @@ import (
 )
 
 type Workers struct {
-	OutboxLoop         func(ctx context.Context)
-	SchedulerLoop      func(ctx context.Context)
-	IntegrationEvtLoop func(ctx context.Context)
-	wg                 sync.WaitGroup
+	OutboxLoop         func(ctx context.Context) error
+	SchedulerLoop      func(ctx context.Context) error
+	IntegrationEvtLoop func(ctx context.Context) error
+	g                  *errgroup.Group
 }
 
 func NewWorkers(
@@ -35,7 +35,7 @@ func NewWorkers(
 	}
 
 	return &Workers{
-		OutboxLoop: func(ctx context.Context) {
+		OutboxLoop: func(ctx context.Context) error {
 			slog.InfoContext(ctx, "game outbox worker started")
 			defer slog.InfoContext(ctx, "game outbox worker stopped")
 
@@ -48,7 +48,7 @@ func NewWorkers(
 			for {
 				select {
 				case <-ctx.Done():
-					return
+					return nil
 				case <-ticker.C:
 					processBatch(ctx, "game.outbox.process_batch", "game outbox dispatch failed", func(batchCtx context.Context) error {
 						return outbox.ProcessBatch(batchCtx, 100)
@@ -60,36 +60,38 @@ func NewWorkers(
 				}
 			}
 		},
-		SchedulerLoop: func(ctx context.Context) {
+		SchedulerLoop: func(ctx context.Context) error {
 			slog.InfoContext(ctx, "game scheduler worker started")
 			defer slog.InfoContext(ctx, "game scheduler worker stopped")
 			runner.Run(ctx)
+			return nil
 		},
-		IntegrationEvtLoop: func(ctx context.Context) {
+		IntegrationEvtLoop: func(ctx context.Context) error {
 			slog.InfoContext(ctx, "game integration consumer started")
 			defer slog.InfoContext(ctx, "game integration consumer stopped")
 
 			if err := consumer.Start(ctx); err != nil {
-				slog.WarnContext(ctx, "failed to start game integration consumer", "error", err.Error())
-				return
+				return fmt.Errorf("game integration consumer: %w", err)
 			}
-
-			<-ctx.Done()
+			return nil
 		},
 	}
 }
 
-// Start launches all background worker loops.
+// Start launches all background worker loops. A loop failure cancels the
+// group context so the sibling loops stop; Wait reports the first error.
 func (w *Workers) Start(ctx context.Context) {
-	w.wg.Add(3)
-	go func() { defer w.wg.Done(); w.SchedulerLoop(ctx) }()
-	go func() { defer w.wg.Done(); w.IntegrationEvtLoop(ctx) }()
-	go func() { defer w.wg.Done(); w.OutboxLoop(ctx) }()
+	g, ctx := errgroup.WithContext(ctx)
+	w.g = g
+	g.Go(func() error { return w.SchedulerLoop(ctx) })
+	g.Go(func() error { return w.IntegrationEvtLoop(ctx) })
+	g.Go(func() error { return w.OutboxLoop(ctx) })
 }
 
-// Wait blocks until all background worker loops have exited.
-func (w *Workers) Wait() {
-	w.wg.Wait()
+// Wait blocks until all background worker loops have exited and returns the
+// first loop failure, if any.
+func (w *Workers) Wait() error {
+	return w.g.Wait()
 }
 
 func processBatch(ctx context.Context, spanName, errMsg string, fn func(context.Context) error) {

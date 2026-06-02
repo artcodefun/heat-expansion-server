@@ -28,10 +28,6 @@ type Module struct {
 	Commands   *Commands
 	Queries    *Queries
 	HTTPServer *httpapi.Server
-	// IntegrationPublisher is the one adapter that starts background work (a
-	// broker connection and reconnect goroutine) the moment it is built, so the
-	// module constructs and owns it explicitly rather than hiding it in Adapters.
-	IntegrationPublisher *events.RabbitMQPublisher
 }
 
 func NewModule() *Module {
@@ -68,10 +64,7 @@ func NewModule() *Module {
 	}
 	slog.Info("connected to auth database")
 
-	intPublisher, err := events.NewRabbitMQPublisher(rabbitURL, intExchange)
-	if err != nil {
-		log.Fatal("Failed to initialize auth RabbitMQ publisher:", err)
-	}
+	intPublisher := events.NewRabbitMQPublisher(rabbitURL, intExchange)
 
 	adapters, err := NewAdapters(db, jwtPrivateKeyPEM, intPublisher, smtpCfg)
 	if err != nil {
@@ -79,7 +72,7 @@ func NewModule() *Module {
 	}
 
 	services := NewAppServices(adapters)
-	workers := NewWorkers(dbURL, services.Outbox, services.IntegrationOutbox)
+	workers := NewWorkers(dbURL, services.Outbox, services.IntegrationOutbox, intPublisher)
 	commands := NewCommands(adapters)
 	queries := NewQueries(adapters)
 
@@ -103,42 +96,67 @@ func NewModule() *Module {
 		Commands:   commands,
 		Queries:    queries,
 		HTTPServer: server,
-
-		IntegrationPublisher: intPublisher,
 	}
 }
 
-func (m *Module) Run(ctx context.Context) {
-	slog.Info("starting auth service", "port", m.Port)
+// Run connects the module's infrastructure, serves until the context is
+// cancelled or a fatal error occurs, then drains and releases resources.
+// Construction does no I/O; everything cancelable happens here.
+func (m *Module) Run(ctx context.Context) error {
+	slog.InfoContext(ctx, "starting auth service", "port", m.Port)
+
+	// Module-local cancel: a fatal HTTP error must stop the workers (and a
+	// fatal worker error must stop the HTTP server), otherwise the drain
+	// below would block forever.
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 
 	m.Workers.Start(ctx)
 
+	// Workers only fail on startup (e.g. the broker is unreachable); surface
+	// that like an HTTP serve failure so the module drains and reports it.
+	workerErr := make(chan error, 1)
 	go func() {
-		if err := m.HTTPServer.Start(); err != nil {
-			slog.Error("auth http server stopped", "error", err)
+		if err := m.Workers.Wait(); err != nil {
+			workerErr <- err
 		}
 	}()
 
-	<-ctx.Done()
-	slog.Info("auth module: shutdown signal received, draining...")
+	httpErr := make(chan error, 1)
+	go func() {
+		if err := m.HTTPServer.Start(); err != nil {
+			httpErr <- err
+		}
+	}()
 
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	defer cancel()
+	var runErr error
+	select {
+	case <-ctx.Done():
+		slog.InfoContext(ctx, "auth module: shutdown signal received, draining...")
+	case err := <-httpErr:
+		runErr = fmt.Errorf("auth http server failed: %w", err)
+		slog.ErrorContext(ctx, "auth module: http server failed, draining...", "error", err)
+		cancel()
+	case err := <-workerErr:
+		runErr = fmt.Errorf("auth workers failed: %w", err)
+		slog.ErrorContext(ctx, "auth module: worker failed, draining...", "error", err)
+		cancel()
+	}
+
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer shutdownCancel()
 	if err := m.HTTPServer.Shutdown(shutdownCtx); err != nil {
-		slog.Error("auth http server shutdown error", "error", err)
+		slog.ErrorContext(ctx, "auth http server shutdown error", "error", err)
 	}
 
-	m.Workers.Wait()
-
-	// Workers have drained, so no goroutine is still publishing or querying.
-	// Release infrastructure connections so the broker and DB can reclaim
-	// resources promptly instead of waiting for timeouts.
-	if err := m.IntegrationPublisher.Close(); err != nil {
-		slog.Error("auth integration publisher close error", "error", err)
+	if err := m.Workers.Wait(); err != nil && runErr == nil {
+		runErr = fmt.Errorf("auth workers failed: %w", err)
 	}
+
 	if err := m.DB.Close(); err != nil {
-		slog.Error("auth database close error", "error", err)
+		slog.ErrorContext(ctx, "auth database close error", "error", err)
 	}
 
-	slog.Info("auth module: stopped")
+	slog.InfoContext(ctx, "auth module: stopped")
+	return runErr
 }

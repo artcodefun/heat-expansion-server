@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"sync"
 	"time"
 
@@ -17,82 +18,93 @@ type RabbitMQPublisher struct {
 
 	mu   sync.RWMutex
 	conn *amqp.Connection
-
-	done      chan struct{}
-	closeOnce sync.Once
 }
 
-func NewRabbitMQPublisher(url string, exchange string) (*RabbitMQPublisher, error) {
-	p := &RabbitMQPublisher{
+func NewRabbitMQPublisher(url string, exchange string) *RabbitMQPublisher {
+	return &RabbitMQPublisher{
 		url:      url,
 		exchange: exchange,
-		done:     make(chan struct{}),
+	}
+}
+
+// Start dials the broker, declares the exchange, and blocks until ctx is
+// cancelled. It reconnects automatically on connection drops. On cancellation
+// it closes the connection so the broker can reclaim resources promptly, then
+// returns nil. Returns a non-nil error only if the initial dial fails.
+func (p *RabbitMQPublisher) Start(ctx context.Context) error {
+	conn, err := dialAndSetupPublisher(p.url, p.exchange)
+	if err != nil {
+		return err
 	}
 
-	if err := p.connect(); err != nil {
+	p.mu.Lock()
+	p.conn = conn
+	p.mu.Unlock()
+
+	current := conn
+	for {
+		closeChan := current.NotifyClose(make(chan *amqp.Error, 1))
+		select {
+		case <-ctx.Done():
+			p.mu.Lock()
+			p.conn.Close()
+			p.conn = nil
+			p.mu.Unlock()
+			return nil
+		case amqpErr := <-closeChan:
+			if amqpErr != nil {
+				slog.WarnContext(ctx, "rabbitmq publisher connection lost; reconnecting", "error", amqpErr.Error())
+			}
+		}
+
+		for {
+			select {
+			case <-ctx.Done():
+				return nil
+			case <-time.After(5 * time.Second):
+			}
+			newConn, err := dialAndSetupPublisher(p.url, p.exchange)
+			if err != nil {
+				slog.WarnContext(ctx, "rabbitmq publisher reconnect attempt failed", "error", err.Error())
+				continue
+			}
+			p.mu.Lock()
+			p.conn = newConn
+			p.mu.Unlock()
+			current = newConn
+			slog.InfoContext(ctx, "rabbitmq publisher reconnected")
+			break
+		}
+	}
+}
+
+func dialAndSetupPublisher(url, exchange string) (*amqp.Connection, error) {
+	conn, err := amqp.Dial(url)
+	if err != nil {
 		return nil, err
 	}
 
-	return p, nil
-}
-
-func (p *RabbitMQPublisher) connect() error {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-
-	conn, err := amqp.Dial(p.url)
-	if err != nil {
-		return err
-	}
-
-	// Ensure exchange exists
 	ch, err := conn.Channel()
 	if err != nil {
 		conn.Close()
-		return err
+		return nil, err
 	}
 	defer ch.Close()
 
-	err = ch.ExchangeDeclare(
-		p.exchange,
+	if err := ch.ExchangeDeclare(
+		exchange,
 		"topic",
 		true,  // durable
 		false, // auto-deleted
 		false, // internal
 		false, // no-wait
-		nil,   // arguments
-	)
-	if err != nil {
+		nil,
+	); err != nil {
 		conn.Close()
-		return err
+		return nil, err
 	}
 
-	p.conn = conn
-
-	// Reconnection goroutine. Exits when the publisher is closed so it cannot
-	// leak or resurrect the connection after shutdown.
-	go func() {
-		closeChan := conn.NotifyClose(make(chan *amqp.Error))
-		select {
-		case <-p.done:
-			return
-		case <-closeChan:
-		}
-
-		// Connection closed, try to reconnect until successful or shutdown.
-		for {
-			select {
-			case <-p.done:
-				return
-			case <-time.After(5 * time.Second):
-			}
-			if err := p.connect(); err == nil {
-				return
-			}
-		}
-	}()
-
-	return nil
+	return conn, nil
 }
 
 func (p *RabbitMQPublisher) Publish(ctx context.Context, event authevents.IntegrationEvent) error {
@@ -110,7 +122,6 @@ func (p *RabbitMQPublisher) Publish(ctx context.Context, event authevents.Integr
 	}
 	defer ch.Close()
 
-	// Enable publisher confirms
 	if err := ch.Confirm(false); err != nil {
 		return fmt.Errorf("failed to enable publisher confirms: %w", err)
 	}
@@ -125,11 +136,11 @@ func (p *RabbitMQPublisher) Publish(ctx context.Context, event authevents.Integr
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	err = ch.PublishWithContext(ctx,
-		p.exchange, // exchange
-		event.Type, // routing key
-		false,      // mandatory
-		false,      // immediate
+	if err := ch.PublishWithContext(ctx,
+		p.exchange,
+		event.Type,
+		false,
+		false,
 		amqp.Publishing{
 			ContentType:  "application/json",
 			DeliveryMode: amqp.Persistent,
@@ -137,8 +148,7 @@ func (p *RabbitMQPublisher) Publish(ctx context.Context, event authevents.Integr
 			MessageId:    event.ID.String(),
 			Timestamp:    time.Unix(event.OccurredAt, 0),
 		},
-	)
-	if err != nil {
+	); err != nil {
 		return fmt.Errorf("failed to publish: %w", err)
 	}
 
@@ -151,15 +161,4 @@ func (p *RabbitMQPublisher) Publish(ctx context.Context, event authevents.Integr
 	case <-ctx.Done():
 		return fmt.Errorf("publisher confirm timeout: %w", ctx.Err())
 	}
-}
-
-func (p *RabbitMQPublisher) Close() error {
-	p.closeOnce.Do(func() { close(p.done) })
-
-	p.mu.Lock()
-	defer p.mu.Unlock()
-	if p.conn != nil {
-		return p.conn.Close()
-	}
-	return nil
 }

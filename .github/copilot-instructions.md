@@ -38,6 +38,11 @@ The patterns and conventions below apply to the **Game** service (`internal/game
   - **Every job handler must be idempotent.** Use domain state guards so a duplicate invocation is a no-op.
   - Jobs are never created directly in command handlers or outside of event handlers.
   - Self-rescheduling jobs must use **positive-only jitter** when computing the next `executeAt`. Never subtract from the period — firing early can cause legitimate runs to be silently skipped by time-based idempotency checks.
+- **Module lifecycle: constructors may compute, only Run may connect**
+  - `bootstrap.NewModule()` is pure wiring: env validation, PEM parsing, struct construction. It must not start goroutines. `db.Open` and `db.Ping` are the one accepted exception — they are cheap, context-free, and a bad DB URL or unreachable host should abort the process immediately before anything else starts.
+  - All other infrastructure I/O happens inside `Module.Run(ctx)` in a startup phase before the HTTP server starts serving: one-shot setup like `Adapters.Setup(ctx)` (e.g. game's translation load) and job seeding runs first, then broker connections are dialed by worker loops. This keeps startup cancelable by the signal context.
+  - Adapters that own connections (e.g. `RabbitMQPublisher`, `RabbitMQConsumer`) expose a blocking `Start(ctx) error`: it dials, reconnects on drops, and releases the connection when ctx is cancelled. They run as worker loops and never connect in their constructors. A failed initial dial is returned as an error and fails the module (fail fast).
+  - `Run(ctx) error` returns startup/serve failures instead of calling `log.Fatal`. `cmd/server` runs modules in an `errgroup`: one module's failure cancels the shared context so the others drain gracefully, and the process exits non-zero.
 - **Dependencies are never optional**
    - Command handlers, query handlers, and services treat their constructor dependencies as required. Do **not** add `nil` checks (e.g. `if c.Outbox != nil`) around injected ports/services.
    - If something can be `nil`, fix the wiring in `internal/bootstrap` (adapters/services/commands/queries) instead of guarding at the use site.
