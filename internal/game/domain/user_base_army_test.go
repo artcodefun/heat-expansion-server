@@ -48,11 +48,15 @@ func TestArmy_MoveAndSpeedUp_EmitsEvents(t *testing.T) {
 	if len(base.ArmiesInProduction) != 1 {
 		t.Fatalf("expected 1 army in production after MoveArmyQueue start")
 	}
+	inProdID := base.ArmiesInProduction[0].ID
 	// started event expected
 	events := base.PullEvents()
 	hasStarted := false
 	for _, e := range events {
-		if _, ok := e.(ArmyProductionStartedEvent); ok {
+		if ev, ok := e.(ArmyProductionStartedEvent); ok {
+			if ev.ItemID != inProdID {
+				t.Fatalf("expected ArmyProductionStartedEvent item ID %s, got %s", inProdID, ev.ItemID)
+			}
 			hasStarted = true
 		}
 	}
@@ -61,7 +65,7 @@ func TestArmy_MoveAndSpeedUp_EmitsEvents(t *testing.T) {
 	}
 
 	// speed up and expect finished + speedup
-	inProdID := base.ArmiesInProduction[0].ID
+	inProdID = base.ArmiesInProduction[0].ID
 	base.PullEvents()
 	if err := base.SpeedUpArmyProduction(inProdID); err != nil {
 		t.Fatalf("SpeedUpArmyProduction error: %v", err)
