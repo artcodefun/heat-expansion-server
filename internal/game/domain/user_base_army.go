@@ -161,8 +161,7 @@ func (ub *UserBaseModel) MoveArmyQueue() {
 	for _, pending := range ub.ArmiesPending {
 		cat := pending.Prototype.Category
 		slots := categorySlots[cat]
-		inProd := inProductionCount[cat]
-		if inProd < slots {
+		for inProductionCount[cat] < slots && pending.Count > 0 {
 			startDate := now
 			completionDate := startDate + pending.Prototype.ProductionTime
 			crystalsSkipPrice := max(1, int(pending.Prototype.ProductionTime/60))
@@ -177,11 +176,13 @@ func (ub *UserBaseModel) MoveArmyQueue() {
 			inProductionCount[cat]++
 			if pending.Count > 1 {
 				pending.Count--
-				newPending = append(newPending, pending)
+			} else {
+				pending.Count = 0
 			}
 			// Record event for army production started
 			ub.AddEvent(NewArmyProductionStartedEvent(ub.ID, pending.ID, completionDate))
-		} else {
+		}
+		if pending.Count > 0 {
 			newPending = append(newPending, pending)
 		}
 	}

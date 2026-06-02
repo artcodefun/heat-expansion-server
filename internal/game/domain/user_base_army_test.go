@@ -284,6 +284,115 @@ func TestArmy_MoveArmyQueue_RespectsCategorySlots(t *testing.T) {
 	}
 }
 
+func TestArmy_QueueArmy_FillsAllAvailableSlots(t *testing.T) {
+	SetTestNow(t, 7_050)
+	base := newBaseWithDefaults(24)
+
+	infantryBarracks := BuildItemPrototype{
+		ID:              30,
+		Name:            "Barracks",
+		CreationSources: []CreationSource{CreationSourcePlayerBase},
+		Category:        BuildCategoryMilitary,
+		Faction:         FactionExoCoalition,
+		MilitaryData: &MilitaryBuildingData{
+			UnlockArmyCategory: ArmyCategoryInfantry,
+		},
+	}
+	base.BuildingsPresent = []BuildItemPresent{
+		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: infantryBarracks},
+		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: infantryBarracks},
+		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: infantryBarracks},
+	}
+
+	armyProto := &ArmyItemPrototype{
+		ID:              104,
+		Name:            "Infantry",
+		CreationSources: []CreationSource{CreationSourcePlayerBase},
+		Category:        ArmyCategoryInfantry,
+		Faction:         FactionExoCoalition,
+		Price:           PriceModel{Credits: 10},
+		ProductionTime:  120,
+		Space:           1,
+	}
+
+	if err := base.QueueArmy(armyProto, 3); err != nil {
+		t.Fatalf("QueueArmy error: %v", err)
+	}
+
+	if len(base.ArmiesPending) != 0 {
+		t.Fatalf("expected no pending armies after filling all slots, got %+v", base.ArmiesPending)
+	}
+	if len(base.ArmiesInProduction) != 3 {
+		t.Fatalf("expected 3 armies in production after queueing 3 units with 3 slots, got %d", len(base.ArmiesInProduction))
+	}
+
+	started := 0
+	for _, e := range base.PullEvents() {
+		if _, ok := e.(ArmyProductionStartedEvent); ok {
+			started++
+		}
+	}
+	if started != 3 {
+		t.Fatalf("expected 3 ArmyProductionStartedEvent events, got %d", started)
+	}
+}
+
+func TestArmy_QueueArmy_PartiallyFillsAvailableSlots(t *testing.T) {
+	SetTestNow(t, 7_100)
+	base := newBaseWithDefaults(25)
+
+	infantryBarracks := BuildItemPrototype{
+		ID:              31,
+		Name:            "Barracks",
+		CreationSources: []CreationSource{CreationSourcePlayerBase},
+		Category:        BuildCategoryMilitary,
+		Faction:         FactionExoCoalition,
+		MilitaryData: &MilitaryBuildingData{
+			UnlockArmyCategory: ArmyCategoryInfantry,
+		},
+	}
+	base.BuildingsPresent = []BuildItemPresent{
+		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: infantryBarracks},
+		{BaseOwnedItem: NewBaseOwnedItem(base.ID), Prototype: infantryBarracks},
+	}
+
+	armyProto := &ArmyItemPrototype{
+		ID:              105,
+		Name:            "Infantry",
+		CreationSources: []CreationSource{CreationSourcePlayerBase},
+		Category:        ArmyCategoryInfantry,
+		Faction:         FactionExoCoalition,
+		Price:           PriceModel{Credits: 10},
+		ProductionTime:  120,
+		Space:           1,
+	}
+
+	base.ArmiesPending = []ArmyItemPending{{
+		BaseOwnedItem: NewBaseOwnedItem(base.ID),
+		Prototype:     *armyProto,
+		Count:         3,
+	}}
+	base.PullEvents()
+	base.MoveArmyQueue()
+
+	if len(base.ArmiesInProduction) != 2 {
+		t.Fatalf("expected 2 armies in production after starting with 3 queued units and 2 slots, got %d", len(base.ArmiesInProduction))
+	}
+	if len(base.ArmiesPending) != 1 || base.ArmiesPending[0].Count != 1 {
+		t.Fatalf("expected 1 unit left pending after partial fill, got %+v", base.ArmiesPending)
+	}
+
+	started := 0
+	for _, e := range base.PullEvents() {
+		if _, ok := e.(ArmyProductionStartedEvent); ok {
+			started++
+		}
+	}
+	if started != 2 {
+		t.Fatalf("expected 2 ArmyProductionStartedEvent events, got %d", started)
+	}
+}
+
 func TestArmy_AvailableArmies_RequiresPlayerBaseOrigin(t *testing.T) {
 	base := newBaseWithDefaults(12)
 	base.BuildingsPresent = append(base.BuildingsPresent, BuildItemPresent{
