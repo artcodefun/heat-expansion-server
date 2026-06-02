@@ -13,7 +13,8 @@ import (
 	"github.com/artcodefun/heat-expansion-server/contracts/events"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/domain"
-	infraevents "github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/events"
+	"github.com/artcodefun/heat-expansion-server/internal/platform/rabbitmq"
+	platformevents "github.com/artcodefun/heat-expansion-server/internal/platform/events"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -22,7 +23,7 @@ var billingTracer = otel.Tracer("heat-expansion-billing")
 // WireConsumerIntegrationEvents binds inbound auth integration events to command
 // handlers. Billing maintains a local users projection from these events so it
 // can attach a customer email to payment receipts.
-func WireConsumerIntegrationEvents(c *Commands, consumer *infraevents.RabbitMQConsumer, authExchange, authQueue string) {
+func WireConsumerIntegrationEvents(c *Commands, consumer *rabbitmq.RabbitMQConsumer, authExchange, authQueue string) {
 	consumer.Subscribe(authExchange, authQueue, "auth.#", func(ctx context.Context, d amqp.Delivery) error {
 		ctx, span := billingTracer.Start(ctx, "billing.integration."+d.RoutingKey)
 		defer span.End()
@@ -56,7 +57,7 @@ func WireConsumerIntegrationEvents(c *Commands, consumer *infraevents.RabbitMQCo
 
 // WireIntegrationEvents subscribes integration producer handlers to domain events.
 func WireIntegrationEvents(s *AppServices, pub ports.EventPublisher) {
-	p, ok := pub.(*infraevents.SimplePublisher)
+	p, ok := pub.(*platformevents.SimplePublisher[domain.DomainEvent])
 	if !ok {
 		return
 	}

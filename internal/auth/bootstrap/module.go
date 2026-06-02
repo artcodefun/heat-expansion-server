@@ -13,8 +13,8 @@ import (
 	_ "github.com/lib/pq"
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 
-	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/events"
 	httpapi "github.com/artcodefun/heat-expansion-server/internal/auth/interfaces/http"
+	"github.com/artcodefun/heat-expansion-server/internal/platform/rabbitmq"
 )
 
 type Module struct {
@@ -64,7 +64,7 @@ func NewModule() *Module {
 	}
 	slog.Info("connected to auth database")
 
-	intPublisher := events.NewRabbitMQPublisher(rabbitURL, intExchange)
+	intPublisher := rabbitmq.NewRabbitMQPublisher(rabbitURL, intExchange)
 
 	adapters, err := NewAdapters(db, jwtPrivateKeyPEM, intPublisher, smtpCfg)
 	if err != nil {

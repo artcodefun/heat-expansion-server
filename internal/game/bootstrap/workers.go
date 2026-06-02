@@ -12,7 +12,7 @@ import (
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/repo"
-	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/events"
+	"github.com/artcodefun/heat-expansion-server/internal/platform/rabbitmq"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/jobs"
 )
 
@@ -27,7 +27,7 @@ func NewWorkers(
 	dbURL string,
 	outbox *services.OutboxService,
 	scheduler ports.Scheduler,
-	consumer *events.RabbitMQConsumer,
+	consumer *rabbitmq.RabbitMQConsumer,
 ) *Workers {
 	runner, ok := scheduler.(*jobs.DBScheduler)
 	if !ok {

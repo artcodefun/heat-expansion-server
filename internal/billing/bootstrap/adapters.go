@@ -6,12 +6,13 @@ import (
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/ports"
 	dbgen "github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/db/gen"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/db/repo"
-	infraevents "github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/events"
+	"github.com/artcodefun/heat-expansion-server/internal/billing/domain"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/i18n"
+	platformevents "github.com/artcodefun/heat-expansion-server/internal/platform/events"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/payment"
 	readstoregen "github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/readstore/gen"
 	readrepo "github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/readstore/repo"
-	"github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/security"
+	"github.com/artcodefun/heat-expansion-server/internal/platform/security"
 )
 
 type Adapters struct {
@@ -54,7 +55,7 @@ func NewAdapters(db *sql.DB, jwtPublicKeyPEM string, intPublisher ports.Integrat
 		Outbox:            repo.NewOutboxEventRepo(q),
 		IntegrationOutbox: repo.NewIntegrationOutboxRepo(q),
 		TxMgr:             repo.NewDBTxManager(db),
-		Events:            infraevents.NewSimplePublisher(),
+		Events:            platformevents.NewSimplePublisher[domain.DomainEvent](),
 		IntegrationEvents: intPublisher,
 		Tokens:            tokens,
 		Translator:        translator,

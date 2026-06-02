@@ -18,6 +18,7 @@ This repo is a Go backend for the Heat Expansion strategy game. It uses Hexagona
 - **Auth service**: `internal/auth` (IAM, JWT, Integration producers)
 - **Billing service**: `internal/billing` — crystal-package purchases via YooKassa. The webhook handler never trusts the request body; it re-queries YooKassa for canonical payment state. On success it emits `CrystalsPurchasedV1`, which the game service consumes to credit crystals (idempotent on `order_id`).
 - **Shared contracts**: `contracts/` (Versioned integration event schemas and HTTP OpenAPI contracts)
+- **Shared platform**: `internal/platform/` — infrastructure adapters reused across services (RabbitMQ publisher/consumer, JWT token validator, in-process event publisher, i18n translator core). When an adapter is needed by more than one service, it lives here rather than being duplicated.
 
 ## Key Patterns & Conventions
 The patterns and conventions below apply to the **Game** service (`internal/game`) unless stated otherwise.

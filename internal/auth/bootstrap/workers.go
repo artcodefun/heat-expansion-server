@@ -12,7 +12,7 @@ import (
 
 	"github.com/artcodefun/heat-expansion-server/internal/auth/application/services"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/db/repo"
-	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/events"
+	"github.com/artcodefun/heat-expansion-server/internal/platform/rabbitmq"
 )
 
 var authTracer = otel.Tracer("heat-expansion-auth")
@@ -28,7 +28,7 @@ func NewWorkers(
 	dbURL string,
 	outbox *services.OutboxService,
 	intOutbox *services.IntegrationOutboxService,
-	publisher *events.RabbitMQPublisher,
+	publisher *rabbitmq.RabbitMQPublisher,
 ) *Workers {
 	return &Workers{
 		DomainOutboxLoop: func(ctx context.Context) error {

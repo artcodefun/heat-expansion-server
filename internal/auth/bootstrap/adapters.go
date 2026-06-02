@@ -4,12 +4,13 @@ import (
 	"database/sql"
 
 	"github.com/artcodefun/heat-expansion-server/internal/auth/application/ports"
+	"github.com/artcodefun/heat-expansion-server/internal/auth/domain"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/db/gen"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/db/repo"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/email"
-	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/events"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/i18n"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/security"
+	platformevents "github.com/artcodefun/heat-expansion-server/internal/platform/events"
 )
 
 type Adapters struct {
@@ -52,7 +53,7 @@ func NewAdapters(db *sql.DB, jwtPrivateKeyPEM string, intPublisher ports.Integra
 		TokenProvider:     tokenProvider,
 		Outbox:            repo.NewOutboxEventRepo(q),
 		TxMgr:             repo.NewDBTxManager(db),
-		Events:            events.NewSimplePublisher(),
+		Events:            platformevents.NewSimplePublisher[domain.DomainEvent](),
 		IntegrationOutbox: repo.NewIntegrationOutboxRepo(q),
 		IntegrationEvents: intPublisher,
 		Translator:        translator,

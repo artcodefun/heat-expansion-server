@@ -13,8 +13,8 @@ import (
 	_ "github.com/lib/pq"
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/events"
 	httpapi "github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http"
+	"github.com/artcodefun/heat-expansion-server/internal/platform/rabbitmq"
 )
 
 type Module struct {
@@ -72,7 +72,7 @@ func NewModule() *Module {
 	WireCommandEvents(commands, adapters.Events)
 	WireCommandSchedulerHandler(commands, adapters.Scheduler)
 
-	consumer := events.NewRabbitMQConsumer(rabbitURL)
+	consumer := rabbitmq.NewRabbitMQConsumer(rabbitURL)
 	WireCommandIntegrationEvents(commands, consumer, authExchange, "game.auth.integration.events", billingExchange, "game.billing.integration.events")
 	workers := NewWorkers(dbURL, services.Outbox, adapters.Scheduler, consumer)
 

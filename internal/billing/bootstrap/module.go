@@ -13,8 +13,8 @@ import (
 	_ "github.com/lib/pq"
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 
-	infraevents "github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/events"
 	httpapi "github.com/artcodefun/heat-expansion-server/internal/billing/interfaces/http"
+	"github.com/artcodefun/heat-expansion-server/internal/platform/rabbitmq"
 )
 
 type Module struct {
@@ -60,14 +60,14 @@ func NewModule() *Module {
 	}
 	slog.Info("connected to billing database")
 
-	intPublisher := infraevents.NewRabbitMQPublisher(rabbitURL, intExchange)
+	intPublisher := rabbitmq.NewRabbitMQPublisher(rabbitURL, intExchange)
 
 	adapters, err := NewAdapters(db, jwtPublicKeyPEM, intPublisher, yookassaShopID, yookassaSecretKey)
 	if err != nil {
 		log.Fatal("Failed to initialize billing adapters:", err)
 	}
 
-	consumer := infraevents.NewRabbitMQConsumer(rabbitURL)
+	consumer := rabbitmq.NewRabbitMQConsumer(rabbitURL)
 
 	appServices := NewAppServices(adapters)
 	workers := NewWorkers(dbURL, appServices.Outbox, appServices.IntegrationOutbox, consumer, intPublisher)

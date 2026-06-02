@@ -8,12 +8,12 @@ import (
 
 	"github.com/artcodefun/heat-expansion-server/internal/auth/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/domain"
-	infraevents "github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/events"
+	platformevents "github.com/artcodefun/heat-expansion-server/internal/platform/events"
 )
 
 // WireIntegrationEvents subscribes integration producer handlers to domain events.
 func WireIntegrationEvents(s *AppServices, pub ports.EventPublisher) {
-	p, ok := pub.(*infraevents.SimplePublisher)
+	p, ok := pub.(*platformevents.SimplePublisher[domain.DomainEvent])
 	if !ok {
 		return
 	}

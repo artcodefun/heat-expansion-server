@@ -11,24 +11,25 @@ import (
 
 	authv1 "github.com/artcodefun/heat-expansion-server/contracts/auth/events/v1"
 	billingv1 "github.com/artcodefun/heat-expansion-server/contracts/billing/events/v1"
-	"github.com/artcodefun/heat-expansion-server/contracts/events"
+	contractevents "github.com/artcodefun/heat-expansion-server/contracts/events"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
-	infraevents "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/events"
 	infrajobs "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/jobs"
+	platformevents "github.com/artcodefun/heat-expansion-server/internal/platform/events"
+	"github.com/artcodefun/heat-expansion-server/internal/platform/rabbitmq"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 var gameTracer = otel.Tracer("heat-expansion-game")
 
 // WireCommandIntegrationEvents wires external integration events to command handlers.
-func WireCommandIntegrationEvents(c *Commands, consumer *infraevents.RabbitMQConsumer, authExchange, authQueue, billingExchange, billingQueue string) {
+func WireCommandIntegrationEvents(c *Commands, consumer *rabbitmq.RabbitMQConsumer, authExchange, authQueue, billingExchange, billingQueue string) {
 	consumer.Subscribe(authExchange, authQueue, "auth.#", func(ctx context.Context, d amqp.Delivery) error {
 		ctx, span := gameTracer.Start(ctx, "game.integration."+d.RoutingKey)
 		defer span.End()
 
 		err := func() error {
-			var envelope events.IntegrationEvent
+			var envelope contractevents.IntegrationEvent
 			if err := json.Unmarshal(d.Body, &envelope); err != nil {
 				return err
 			}
@@ -58,7 +59,7 @@ func WireCommandIntegrationEvents(c *Commands, consumer *infraevents.RabbitMQCon
 		defer span.End()
 
 		err := func() error {
-			var envelope events.IntegrationEvent
+			var envelope contractevents.IntegrationEvent
 			if err := json.Unmarshal(d.Body, &envelope); err != nil {
 				return err
 			}
@@ -87,7 +88,7 @@ func WireCommandIntegrationEvents(c *Commands, consumer *infraevents.RabbitMQCon
 // WireCommandEvents subscribes command-side handlers to domain events on the in-memory publisher.
 // It no-ops if the provided publisher does not support subscriptions.
 func WireCommandEvents(c *Commands, pub ports.EventPublisher) {
-	p, ok := pub.(*infraevents.SimplePublisher)
+	p, ok := pub.(*platformevents.SimplePublisher[domain.DomainEvent])
 	if !ok {
 		return
 	}

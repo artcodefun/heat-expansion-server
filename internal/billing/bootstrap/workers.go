@@ -11,7 +11,7 @@ import (
 
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/services"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/db/repo"
-	"github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/events"
+	"github.com/artcodefun/heat-expansion-server/internal/platform/rabbitmq"
 )
 
 type Workers struct {
@@ -26,8 +26,8 @@ func NewWorkers(
 	dbURL string,
 	outbox *services.OutboxService,
 	intOutbox *services.IntegrationOutboxService,
-	consumer *events.RabbitMQConsumer,
-	publisher *events.RabbitMQPublisher,
+	consumer *rabbitmq.RabbitMQConsumer,
+	publisher *rabbitmq.RabbitMQPublisher,
 ) *Workers {
 	return &Workers{
 		DomainOutboxLoop: func(ctx context.Context) error {

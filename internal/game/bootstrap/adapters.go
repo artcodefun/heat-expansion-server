@@ -8,12 +8,13 @@ import (
 	contentgen "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/content"
 	dbgen "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/gen"
 	repo "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/repo"
-	events "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/events"
+	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
+	platformevents "github.com/artcodefun/heat-expansion-server/internal/platform/events"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/i18n"
 	jobs "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/jobs"
 	readgen "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/gen"
 	readrepo "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/repo"
-	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/security"
+	"github.com/artcodefun/heat-expansion-server/internal/platform/security"
 )
 
 // Adapters wires secondary adapters (repositories, tx manager) implementing core ports.
@@ -85,7 +86,7 @@ func NewAdapters(db *sql.DB, staticBaseURL string, jwtPublicKeyPEM string) (*Ada
 	q := dbgen.New(db)
 	rq := readgen.New(db)
 
-	publisher := events.NewSimplePublisher()
+	publisher := platformevents.NewSimplePublisher[domain.DomainEvent]()
 	txMgr := repo.NewDBTxManager(db)
 	schedulerRepo := repo.NewScheduledJobRepo(q)
 	scheduler := jobs.NewDBScheduler(txMgr, schedulerRepo)
