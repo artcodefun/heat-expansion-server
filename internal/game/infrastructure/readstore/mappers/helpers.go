@@ -16,13 +16,6 @@ func priceFromJSON(b []byte) readmodels.PriceModel {
 	return readmodels.PriceModel{Credits: pd.Credits, Iron: pd.Iron, Titanium: pd.Titanium, Antimatter: pd.Antimatter}
 }
 
-func nullInt64(n sql.NullInt64) int {
-	if n.Valid {
-		return int(n.Int64)
-	}
-	return 0
-}
-
 func nullString(s sql.NullString) string {
 	if s.Valid {
 		return s.String
