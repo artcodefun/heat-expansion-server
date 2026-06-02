@@ -76,4 +76,4 @@ awk 'NF {printf "%s\\n",$0}' ec.pub   # paste into AUTH_JWT_PUBLIC_KEY=
 The server supports multi-language responses based on the `Accept-Language` HTTP header. 
 
 - **Systemic Locales**: Embedded in the binary for stability (errors, system alerts).
-- **Content Locales**: Stored in the `game.translations` database table and loaded at startup via `TranslationRepo`.
+- **Content Locales**: Service-specific content (e.g. prototype names, descriptions) is stored in the database and loaded at startup.

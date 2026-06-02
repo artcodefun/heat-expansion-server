@@ -69,7 +69,7 @@ The patterns and conventions below apply to the **Game** service (`internal/game
 - **Internationalization (i18n)**
   - All user-facing strings (errors, notifications, prototype names) must be translatable.
   - **Systemic locales**: Errors, alerts, and world generation text are stored in `internal/game/infrastructure/i18n/locales/*.json` and embedded into the binary via `go:embed`.
-  - **Content locales**: Prototype-specific data (army names, descriptions) is stored in the `game.translations` table and loaded at startup via `TranslationRepo`.
+  - **Content locales**: Service-specific content (e.g. prototype names, descriptions) is stored in the database and loaded at startup.
   - **Key parity requirement**: Whenever a new translation key is introduced, add its translations immediately in both English and Russian locale files in the same change.
   - **Domain Errors**: Use `domain.NewError(key, params)` in domain logic. Never use `fmt.Errorf` with hardcoded English strings.
   - **Application Errors**: Use `cqrs.NewAppError(kind, key)` or `cqrs.NewAppErrorWithParams` for high-level application failures.
