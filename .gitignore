@@ -23,15 +23,9 @@ __debug_bin*
 # Environment files
 .env
 
-# Runtime Resources
-/static/
-
 # OS generated files
 .DS_Store
 Thumbs.db
 
 # Logs
 *.log
-
-# Copilot shares
-.copilot/
