@@ -174,11 +174,7 @@ func (ub *UserBaseModel) MoveArmyQueue() {
 			}
 			ub.ArmiesInProduction = append(ub.ArmiesInProduction, newProd)
 			inProductionCount[cat]++
-			if pending.Count > 1 {
-				pending.Count--
-			} else {
-				pending.Count = 0
-			}
+			pending.Count--
 			// Record event for army production started
 			ub.AddEvent(NewArmyProductionStartedEvent(ub.ID, pending.ID, completionDate))
 		}
