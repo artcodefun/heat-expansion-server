@@ -17,7 +17,8 @@ This repository is structured as a **modular monolith**: multiple services live 
 - **Billing**: crystal package purchases and YooKassa payment processing.
   - Docs: [internal/billing/README.md](internal/billing/README.md)
 
-- **Platform** (`internal/platform/`): shared infrastructure adapters used across services — RabbitMQ publisher/consumer, JWT token validator, in-process event publisher, and i18n translator core.
+- **Platform** (`internal/platform/`): shared infrastructure adapters used across services.
+  - Docs: [internal/platform/README.md](internal/platform/README.md)
 
 ## API Contracts
 
