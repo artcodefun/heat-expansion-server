@@ -1,20 +1,17 @@
 package bootstrap
 
-import (
-	"github.com/artcodefun/heat-expansion-server/internal/billing/application/cqrs"
-	appqueries "github.com/artcodefun/heat-expansion-server/internal/billing/application/queries"
-)
+import "github.com/artcodefun/heat-expansion-server/internal/billing/application/queries"
 
 // Queries aggregates all query handlers.
 type Queries struct {
-	Package cqrs.PackageQueries
-	Order   cqrs.OrderQueries
+	Package *queries.PackageQueries
+	Order   *queries.OrderQueries
 }
 
 // NewQueries constructs all query handlers using the provided secondary adapters.
 func NewQueries(a *Adapters) *Queries {
 	return &Queries{
-		Package: appqueries.NewPackageQueries(a.PackageRead),
-		Order:   appqueries.NewOrderQueries(a.OrderRead),
+		Package: queries.NewPackageQueries(a.PackageRead),
+		Order:   queries.NewOrderQueries(a.OrderRead),
 	}
 }

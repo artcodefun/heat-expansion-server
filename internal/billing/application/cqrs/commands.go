@@ -3,7 +3,6 @@ package cqrs
 import (
 	"context"
 
-	authv1 "github.com/artcodefun/heat-expansion-server/contracts/auth/events/v1"
 	"github.com/google/uuid"
 )
 
@@ -13,5 +12,5 @@ type OrderCommands interface {
 }
 
 type UserCommands interface {
-	HandleAccountRegisteredV1Event(ctx context.Context, ev authv1.AccountRegisteredV1) error
+	// Add commands as needed
 }

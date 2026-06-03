@@ -15,6 +15,6 @@ func NewPackageQueries(packages ports.PackageReadRepository) *PackageQueries {
 	return &PackageQueries{Packages: packages}
 }
 
-func (q *PackageQueries) ListPackages(ctx context.Context) ([]readmodels.CrystalPackage, error) {
+func (q *PackageQueries) ListPackages(ctx context.Context) ([]*readmodels.CrystalPackage, error) {
 	return q.Packages.ListActive(ctx)
 }

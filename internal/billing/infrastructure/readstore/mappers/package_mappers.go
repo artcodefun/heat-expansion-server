@@ -5,8 +5,8 @@ import (
 	dbgen "github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/readstore/gen"
 )
 
-func PackageReadModelFromRow(row dbgen.ListActivePackagesRow) readmodels.CrystalPackage {
-	return readmodels.CrystalPackage{
+func PackageReadModelFromRow(row dbgen.ListActivePackagesRow) *readmodels.CrystalPackage {
+	return &readmodels.CrystalPackage{
 		ID:              row.ID,
 		Crystals:        int(row.Crystals),
 		PriceMinorUnits: row.PriceMinorUnits,
@@ -15,8 +15,8 @@ func PackageReadModelFromRow(row dbgen.ListActivePackagesRow) readmodels.Crystal
 	}
 }
 
-func PackageReadModelsFromRows(rows []dbgen.ListActivePackagesRow) []readmodels.CrystalPackage {
-	out := make([]readmodels.CrystalPackage, len(rows))
+func PackageReadModelsFromRows(rows []dbgen.ListActivePackagesRow) []*readmodels.CrystalPackage {
+	out := make([]*readmodels.CrystalPackage, len(rows))
 	for i, row := range rows {
 		out[i] = PackageReadModelFromRow(row)
 	}

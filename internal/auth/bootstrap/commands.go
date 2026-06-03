@@ -1,17 +1,14 @@
 package bootstrap
 
-import (
-	application "github.com/artcodefun/heat-expansion-server/internal/auth/application/commands"
-	"github.com/artcodefun/heat-expansion-server/internal/auth/application/cqrs"
-)
+import "github.com/artcodefun/heat-expansion-server/internal/auth/application/commands"
 
 type Commands struct {
-	Account cqrs.AccountCommands
+	Account *commands.AccountCommands
 }
 
 func NewCommands(adapters *Adapters) *Commands {
 	return &Commands{
-		Account: application.NewAccountCommands(
+		Account: commands.NewAccountCommands(
 			adapters.Repo,
 			adapters.Hasher,
 			adapters.TokenProvider,

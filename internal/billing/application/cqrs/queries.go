@@ -8,7 +8,7 @@ import (
 )
 
 type PackageQueries interface {
-	ListPackages(ctx context.Context) ([]readmodels.CrystalPackage, error)
+	ListPackages(ctx context.Context) ([]*readmodels.CrystalPackage, error)
 }
 
 type OrderQueries interface {
