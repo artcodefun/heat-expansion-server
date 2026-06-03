@@ -8,7 +8,7 @@ import (
 )
 
 type PackageReadRepository interface {
-	ListActive(ctx context.Context) ([]readmodels.CrystalPackage, error)
+	ListActive(ctx context.Context) ([]*readmodels.CrystalPackage, error)
 }
 
 type OrderReadRepository interface {

@@ -29,6 +29,7 @@ The patterns and conventions below apply to the **Game** service (`internal/game
 - **Repositories & transactions**
   - Repositories are declared as ports (e.g. `UserBaseRepository`, `SectorRepository`) and implemented in `internal/game/infrastructure/db/repo` using sqlc-generated `gen` packages.
   - Use `Tx(tx)` on repositories and outbox interfaces when working inside a transaction; do not create new DB connections directly in core or handlers.
+  - Repository lookups return `*domain.X` / `[]*domain.X`, never values — a zero-value struct on the error path is a plausible-but-invalid object that can leak into the core, whereas `nil` cannot. On a non-nil error the pointer is `nil` (missing rows return `nil, ErrNotFound`); callers check the error first and never dereference on the error path.
 - **Domain events & outbox**
   - Aggregates emit domain events via `EventProducer` in `internal/game/domain`.
   - Command handlers do **not** publish directly; they call `OutboxEventRepository.Save(events)` inside the transaction.

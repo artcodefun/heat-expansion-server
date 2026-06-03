@@ -16,7 +16,7 @@ func NewPackageReadRepo(q *dbgen.Queries) *PackageReadRepo {
 	return &PackageReadRepo{q: q}
 }
 
-func (r *PackageReadRepo) ListActive(ctx context.Context) ([]readmodels.CrystalPackage, error) {
+func (r *PackageReadRepo) ListActive(ctx context.Context) ([]*readmodels.CrystalPackage, error) {
 	rows, err := r.q.ListActivePackages(ctx)
 	if err != nil {
 		return nil, err

@@ -13,7 +13,7 @@ type CrystalPackageResponse struct {
 	ImageURL        string    `json:"image_url"`
 }
 
-func CrystalPackageResponseFromReadModel(p readmodels.CrystalPackage) CrystalPackageResponse {
+func CrystalPackageResponseFromReadModel(p *readmodels.CrystalPackage) CrystalPackageResponse {
 	return CrystalPackageResponse{
 		ID:              p.ID,
 		Crystals:        p.Crystals,
@@ -23,7 +23,7 @@ func CrystalPackageResponseFromReadModel(p readmodels.CrystalPackage) CrystalPac
 	}
 }
 
-func CrystalPackageResponsesFromReadModels(pkgs []readmodels.CrystalPackage) []CrystalPackageResponse {
+func CrystalPackageResponsesFromReadModels(pkgs []*readmodels.CrystalPackage) []CrystalPackageResponse {
 	out := make([]CrystalPackageResponse, len(pkgs))
 	for i, p := range pkgs {
 		out[i] = CrystalPackageResponseFromReadModel(p)
