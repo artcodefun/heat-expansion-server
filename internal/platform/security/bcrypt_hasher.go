@@ -2,7 +2,8 @@ package security
 
 import "golang.org/x/crypto/bcrypt"
 
-// BcryptHasher is a dev-friendly PasswordHasher using bcrypt.
+// BcryptHasher hashes and verifies passwords using the bcrypt algorithm at the
+// library's default cost.
 type BcryptHasher struct{}
 
 func NewBcryptHasher() *BcryptHasher { return &BcryptHasher{} }

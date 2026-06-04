@@ -1,0 +1,32 @@
+version: "2"
+sql:
+  - schema: "db/migrations"
+    queries: "db/queries"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "gen"
+        out: "db/gen"
+        emit_json_tags: true
+        emit_prepared_queries: true
+        emit_interface: true
+        emit_exact_table_names: false
+        emit_empty_slices: true
+        rename:
+          admin_admin: Admin
+          admin_session: AdminSession
+  - schema: "db/migrations"
+    queries: "readstore/queries"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "gen"
+        out: "readstore/gen"
+        emit_json_tags: true
+        emit_prepared_queries: true
+        emit_interface: true
+        emit_exact_table_names: false
+        emit_empty_slices: true
+        rename:
+          admin_admin: Admin
+          admin_session: AdminSession

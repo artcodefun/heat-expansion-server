@@ -11,6 +11,7 @@ import (
 	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/i18n"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/infrastructure/security"
 	platformevents "github.com/artcodefun/heat-expansion-server/internal/platform/events"
+	platformsecurity "github.com/artcodefun/heat-expansion-server/internal/platform/security"
 )
 
 type Adapters struct {
@@ -49,7 +50,7 @@ func NewAdapters(db *sql.DB, jwtPrivateKeyPEM string, intPublisher ports.Integra
 
 	return &Adapters{
 		Repo:              repo.NewAccountRepository(q),
-		Hasher:            security.NewBcryptHasher(),
+		Hasher:            platformsecurity.NewBcryptHasher(),
 		TokenProvider:     tokenProvider,
 		Outbox:            repo.NewOutboxEventRepo(q),
 		TxMgr:             repo.NewDBTxManager(db),

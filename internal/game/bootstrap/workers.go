@@ -12,8 +12,8 @@ import (
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/repo"
-	"github.com/artcodefun/heat-expansion-server/internal/platform/rabbitmq"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/jobs"
+	"github.com/artcodefun/heat-expansion-server/internal/platform/rabbitmq"
 )
 
 type Workers struct {

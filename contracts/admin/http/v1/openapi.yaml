@@ -1,0 +1,153 @@
+openapi: 3.0.3
+info:
+  title: Heat Expansion Admin API
+  version: 0.1.0
+  description: |
+    Administration service for Heat Expansion.
+    This API covers admin identity and session management (invite-based registration,
+    login, logout, current admin). Module-administration endpoints (game prototypes,
+    content translations, billing crystal packages) will be added under /api/v1
+    alongside the auth group in future revisions.
+servers:
+  - url: .
+tags:
+  - name: Auth
+    description: Admin identity and session management.
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Complete invite-based registration and start a session
+      description: |
+        Completes first-time setup for a seeded admin using a one-time invite token,
+        sets the password, and immediately issues a session token.
+      operationId: registerAdmin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, invite_token, password]
+              properties:
+                username:
+                  type: string
+                invite_token:
+                  type: string
+                password:
+                  type: string
+                  minLength: 8
+      responses:
+        '200':
+          description: Registration succeeded; session issued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '403':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Authenticate an admin and start a session
+      operationId: loginAdmin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login succeeded; session issued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Revoke the current session
+      operationId: logoutAdmin
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Session revoked
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get the current admin profile
+      operationId: getCurrentAdmin
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current admin profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Opaque session token returned by /auth/login or /auth/register.
+  responses:
+    ErrorResponse:
+      description: Request failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+    SessionResponse:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+    ProfileResponse:
+      type: object
+      required: [id, username, active, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        active:
+          type: boolean
+        created_at:
+          type: integer
+          format: int64
+          description: Creation time as unix seconds.

@@ -62,6 +62,7 @@ services:
       - "127.0.0.1:8080:8080"
       - "127.0.0.1:8081:8081"
       - "127.0.0.1:8082:8082"
+      - "127.0.0.1:8083:8083"
     env_file:
       - .env
     environment:
@@ -77,6 +78,9 @@ services:
       - BILLING_DB_URL=postgres://heatuser:heatpassword@db:5432/heatdb?sslmode=disable
       - BILLING_MIGRATIONS_TABLE=billing_schema_migrations
       - BILLING_INTEGRATION_EXCHANGE=billing.integration
+      - ADMIN_PORT=8083
+      - ADMIN_DB_URL=postgres://heatuser:heatpassword@db:5432/heatdb?sslmode=disable
+      - ADMIN_MIGRATIONS_TABLE=admin_schema_migrations
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
       - OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4317
       - OTEL_SERVICE_NAME=heat-expansion

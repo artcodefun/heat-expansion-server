@@ -13,8 +13,8 @@ import (
 	"github.com/artcodefun/heat-expansion-server/contracts/events"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/domain"
-	"github.com/artcodefun/heat-expansion-server/internal/platform/rabbitmq"
 	platformevents "github.com/artcodefun/heat-expansion-server/internal/platform/events"
+	"github.com/artcodefun/heat-expansion-server/internal/platform/rabbitmq"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 

@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS admin.sessions;
+DROP TABLE IF EXISTS admin.admins;
+DROP SCHEMA IF EXISTS admin;

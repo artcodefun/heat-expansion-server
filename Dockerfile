@@ -37,13 +37,14 @@ COPY --from=builder /usr/local/bin/migrate /usr/local/bin/migrate
 COPY internal/game/infrastructure/db/migrations /app/migrations/game
 COPY internal/auth/infrastructure/db/migrations /app/migrations/auth
 COPY internal/billing/infrastructure/db/migrations /app/migrations/billing
+COPY internal/admin/infrastructure/db/migrations /app/migrations/admin
 
 # Copy entrypoint script
 COPY scripts/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
 # Expose ports
-EXPOSE 8080 8081 8082
+EXPOSE 8080 8081 8082 8083
 
 ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["./heat-expansion-server"]
