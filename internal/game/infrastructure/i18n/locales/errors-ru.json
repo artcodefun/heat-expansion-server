@@ -1,9 +1,9 @@
 {
     "error.application.forbidden": "Доступ запрещен",
     "error.application.not_found": "Не найдено",
-    "error.application.invalid_diplomatic_message_kind": "Недопустимый тип дипломатического сообщения",
-    "error.application.invalid_diplomatic_request_kind": "Недопустимый тип дипломатического запроса",
-    "error.application.invalid_diplomatic_receiver_target": "База получателя не принадлежит указанному пользователю получателя",
+    "error.application.diplomacy.invalid_message_kind": "Недопустимый тип дипломатического сообщения",
+    "error.application.diplomacy.invalid_request_kind": "Недопустимый тип дипломатического запроса",
+    "error.application.diplomacy.invalid_receiver_target": "База получателя не принадлежит указанному пользователю получателя",
     "error.application.black_market.offer_kind_invalid": "Недопустимый тип предложения черного рынка",
     "error.application.internal_server_error": "Внутренняя ошибка сервера",
     "error.domain.user.invalid_crystal_spend_amount": "Недопустимое количество кристаллов для траты: {amount}",
