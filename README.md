@@ -1,6 +1,6 @@
 # Heat Expansion Server
 
-Heat Expansion is a Go backend for a multiplayer 4X strategy game.
+Heat Expansion Server is a Go backend for a multiplayer 4X strategy game.
 
 This repository is structured as a **modular monolith**: multiple services live under `internal/`, with low coupling so that services can be extracted into separate deployables later.
 
