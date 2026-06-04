@@ -61,7 +61,7 @@ func (c *DiplomacyCommands) SendInformationalMessage(ctx context.Context, actor 
 		return nil, err
 	}
 	if !domain.IsUserSendableDiplomaticMessageContent(content) {
-		return nil, cqrs.NewAppError(cqrs.KindInvalidInput, "error.application.invalid_diplomatic_message_kind")
+		return nil, cqrs.NewAppError(cqrs.KindInvalidInput, "error.application.diplomacy.invalid_message_kind")
 	}
 
 	var messageID *uuid.UUID
@@ -122,7 +122,7 @@ func (c *DiplomacyCommands) SendRequest(ctx context.Context, actor cqrs.Actor, s
 		return nil, err
 	}
 	if !domain.IsDiplomaticRequestKind(kind) {
-		return nil, cqrs.NewAppError(cqrs.KindInvalidInput, "error.application.invalid_diplomatic_request_kind")
+		return nil, cqrs.NewAppError(cqrs.KindInvalidInput, "error.application.diplomacy.invalid_request_kind")
 	}
 
 	var requestID *uuid.UUID
@@ -364,7 +364,7 @@ func (c *DiplomacyCommands) HandleDiplomaticRequestCreatedEvent(ctx context.Cont
 		expiresAt = request.ExpiresAt
 		messageContent := request.MessageContent()
 		if messageContent == "" {
-			return cqrs.NewAppError(cqrs.KindInvalidInput, "error.application.invalid_diplomatic_request_kind")
+			return cqrs.NewAppError(cqrs.KindInvalidInput, "error.application.diplomacy.invalid_request_kind")
 		}
 		exists, err := msgRepo.ExistsByRequestAndContent(ctx, request.ID, messageContent)
 		if err != nil {
@@ -504,7 +504,7 @@ func (c *DiplomacyCommands) validateReceiverTarget(ctx context.Context, receiver
 		return repoErr(err)
 	}
 	if ownerID != receiverUserID {
-		return cqrs.NewAppError(cqrs.KindInvalidInput, "error.application.invalid_diplomatic_receiver_target")
+		return cqrs.NewAppError(cqrs.KindInvalidInput, "error.application.diplomacy.invalid_receiver_target")
 	}
 	return nil
 }
