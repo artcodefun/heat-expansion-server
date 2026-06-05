@@ -516,17 +516,17 @@ func (c *DiplomacyCommands) HandleDiplomaticRelationshipCreatedEvent(ctx context
 		sectorRepo := c.Sectors.Tx(tx)
 		outbox := c.Outbox.Tx(tx)
 
-		if err := c.createMissingRevealReports(ctx, scanRepo, baseRepo, sectorRepo, outbox, ev.RelationshipID, ev.UserAID, ev.UserBID); err != nil {
+		if err := c.createRevealReports(ctx, scanRepo, baseRepo, sectorRepo, outbox, ev.RelationshipID, ev.UserAID, ev.UserBID); err != nil {
 			return err
 		}
-		if err := c.createMissingRevealReports(ctx, scanRepo, baseRepo, sectorRepo, outbox, ev.RelationshipID, ev.UserBID, ev.UserAID); err != nil {
+		if err := c.createRevealReports(ctx, scanRepo, baseRepo, sectorRepo, outbox, ev.RelationshipID, ev.UserBID, ev.UserAID); err != nil {
 			return err
 		}
 		return nil
 	})
 }
 
-func (c *DiplomacyCommands) createMissingRevealReports(ctx context.Context, scanRepo ports.ScanReportRepository, baseRepo ports.UserBaseRepository, sectorRepo ports.SectorRepository, outbox ports.OutboxEventRepository, relationshipID, viewerUserID, targetUserID uuid.UUID) error {
+func (c *DiplomacyCommands) createRevealReports(ctx context.Context, scanRepo ports.ScanReportRepository, baseRepo ports.UserBaseRepository, sectorRepo ports.SectorRepository, outbox ports.OutboxEventRepository, relationshipID, viewerUserID, targetUserID uuid.UUID) error {
 	viewerBases, err := baseRepo.FindByUserID(ctx, viewerUserID)
 	if err != nil {
 		if errors.Is(err, ports.ErrNotFound) {
@@ -543,13 +543,6 @@ func (c *DiplomacyCommands) createMissingRevealReports(ctx context.Context, scan
 	}
 	for _, viewerBase := range viewerBases {
 		for _, targetBase := range targetBases {
-			existing, err := scanRepo.FindByBaseAndCoordinates(ctx, viewerBase.ID, targetBase.Coordinates.X, targetBase.Coordinates.Y)
-			if err != nil {
-				return err
-			}
-			if len(existing) > 0 {
-				continue
-			}
 			sector, err := sectorRepo.FindByCoordinates(ctx, targetBase.Coordinates.X, targetBase.Coordinates.Y)
 			if err != nil {
 				return err

@@ -22,51 +22,6 @@ func (q *Queries) DeleteScanReport(ctx context.Context, id int64) error {
 	return err
 }
 
-const getLatestScanReportsByBase = `-- name: GetLatestScanReportsByBase :many
-SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked, name, description, image_url, info, source_type, source_id
-FROM game.scan_reports
-WHERE base_id = $1
-ORDER BY created_at DESC
-LIMIT 50
-`
-
-func (q *Queries) GetLatestScanReportsByBase(ctx context.Context, baseID int64) ([]ScanReport, error) {
-	rows, err := q.query(ctx, q.getLatestScanReportsByBaseStmt, getLatestScanReportsByBase, baseID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []ScanReport{}
-	for rows.Next() {
-		var i ScanReport
-		if err := rows.Scan(
-			&i.ID,
-			&i.BaseID,
-			&i.SectorX,
-			&i.SectorY,
-			&i.CreatedAt,
-			&i.Type,
-			&i.IsCloaked,
-			&i.Name,
-			&i.Description,
-			&i.ImageUrl,
-			&i.Info,
-			&i.SourceType,
-			&i.SourceID,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getScanReportByID = `-- name: GetScanReportByID :one
 SELECT id, base_id, sector_x, sector_y, created_at, type, is_cloaked, name, description, image_url, info, source_type, source_id
 FROM game.scan_reports
@@ -159,70 +114,6 @@ type ListScanReportsByBaseAndCoordinatesParams struct {
 
 func (q *Queries) ListScanReportsByBaseAndCoordinates(ctx context.Context, arg ListScanReportsByBaseAndCoordinatesParams) ([]ScanReport, error) {
 	rows, err := q.query(ctx, q.listScanReportsByBaseAndCoordinatesStmt, listScanReportsByBaseAndCoordinates, arg.BaseID, arg.SectorX, arg.SectorY)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []ScanReport{}
-	for rows.Next() {
-		var i ScanReport
-		if err := rows.Scan(
-			&i.ID,
-			&i.BaseID,
-			&i.SectorX,
-			&i.SectorY,
-			&i.CreatedAt,
-			&i.Type,
-			&i.IsCloaked,
-			&i.Name,
-			&i.Description,
-			&i.ImageUrl,
-			&i.Info,
-			&i.SourceType,
-			&i.SourceID,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listScanReportsByBaseWithinArea = `-- name: ListScanReportsByBaseWithinArea :many
-WITH params AS (
-    SELECT $1::bigint AS base_id,
-           $2::int AS cx,
-           $3::int AS cy,
-           $4::int AS r
-)
-SELECT sr.id, sr.base_id, sr.sector_x, sr.sector_y, sr.created_at, sr.type, sr.is_cloaked, sr.name, sr.description, sr.image_url, sr.info, sr.source_type, sr.source_id
-FROM game.scan_reports AS sr
-JOIN game.sectors AS s ON s.x = sr.sector_x AND s.y = sr.sector_y
-JOIN params p ON p.base_id = sr.base_id
-WHERE ((s.x - p.cx) * (s.x - p.cx) + (s.y - p.cy) * (s.y - p.cy)) <= (p.r * p.r)
-ORDER BY sr.created_at DESC
-`
-
-type ListScanReportsByBaseWithinAreaParams struct {
-	BaseID  int64 `json:"base_id"`
-	CenterX int32 `json:"center_x"`
-	CenterY int32 `json:"center_y"`
-	Radius  int32 `json:"radius"`
-}
-
-func (q *Queries) ListScanReportsByBaseWithinArea(ctx context.Context, arg ListScanReportsByBaseWithinAreaParams) ([]ScanReport, error) {
-	rows, err := q.query(ctx, q.listScanReportsByBaseWithinAreaStmt, listScanReportsByBaseWithinArea,
-		arg.BaseID,
-		arg.CenterX,
-		arg.CenterY,
-		arg.Radius,
-	)
 	if err != nil {
 		return nil, err
 	}

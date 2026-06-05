@@ -21,7 +21,7 @@ WHERE base_id = $1
   AND sector_x = $2
   AND sector_y = $3
   AND created_at <= $4
-ORDER BY created_at DESC
+ORDER BY is_cloaked ASC, created_at DESC
 LIMIT 1;
 
 -- name: GetScanReportByOperationUUID :one

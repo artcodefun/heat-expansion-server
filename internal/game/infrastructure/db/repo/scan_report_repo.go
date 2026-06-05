@@ -66,40 +66,7 @@ func (r *ScanReportRepo) FindByBaseAndCoordinates(ctx context.Context, baseID in
 	return out, nil
 }
 
-func (r *ScanReportRepo) GetLatestScansByBase(ctx context.Context, baseID int) ([]*domain.SectorScanReport, error) {
-	rows, err := r.q.GetLatestScanReportsByBase(ctx, int64(baseID))
-	if err != nil {
-		return nil, err
-	}
-	out := make([]*domain.SectorScanReport, 0, len(rows))
-	for _, row := range rows {
-		out = append(out, mappers.ScanReportFromDB(row))
-	}
-	return out, nil
-}
-
 func (r *ScanReportRepo) Delete(ctx context.Context, id int) error {
 	return r.q.DeleteScanReport(ctx, int64(id))
 }
 
-// FindByBaseWithinArea provides a naive in-memory filtering implementation over the latest scans.
-// For production efficiency, add a dedicated SQL query joining sectors with coordinate filtering.
-func (r *ScanReportRepo) FindByBaseWithinArea(ctx context.Context, baseID int, centerX int, centerY int, radius int) ([]*domain.SectorScanReport, error) {
-	if radius < 0 {
-		return nil, errors.New("radius must be non-negative")
-	}
-	rows, err := r.q.ListScanReportsByBaseWithinArea(ctx, gen.ListScanReportsByBaseWithinAreaParams{
-		BaseID:  int64(baseID),
-		CenterX: int32(centerX),
-		CenterY: int32(centerY),
-		Radius:  int32(radius),
-	})
-	if err != nil {
-		return nil, err
-	}
-	out := make([]*domain.SectorScanReport, 0, len(rows))
-	for _, row := range rows {
-		out = append(out, mappers.ScanReportFromDB(row))
-	}
-	return out, nil
-}

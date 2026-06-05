@@ -48,15 +48,8 @@ type ScanReportRepository interface {
 	Create(ctx context.Context, report *domain.SectorScanReport) error
 	FindByID(ctx context.Context, id int) (*domain.SectorScanReport, error)
 	FindByBaseAndCoordinates(ctx context.Context, baseID int, x int, y int) ([]*domain.SectorScanReport, error)
-	// GetLatestScansByBase returns the latest scan reports for the base, ordered by CreatedAt desc.
-	// Implementations may choose an internal cap; expose pagination later if needed.
-	GetLatestScansByBase(ctx context.Context, baseID int) ([]*domain.SectorScanReport, error)
 	// RecentReportExistsByScanner checks if a report was produced by a specific building within the last 'since' seconds.
 	RecentReportExistsByScanner(ctx context.Context, scannerID uuid.UUID, since int64) (bool, error)
-	// FindByBaseWithinArea returns all scan reports for a base whose sector coordinates fall within
-	// the inclusive radius (Euclidean) of the provided center. This may be implemented efficiently
-	// with a join against sectors; a naive implementation can load latest scans and filter in memory.
-	FindByBaseWithinArea(ctx context.Context, baseID int, centerX int, centerY int, radius int) ([]*domain.SectorScanReport, error)
 	Delete(ctx context.Context, id int) error
 	// Tx returns a repository instance bound to the provided transaction.
 	Tx(tx Transaction) ScanReportRepository
