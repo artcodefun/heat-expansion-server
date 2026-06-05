@@ -165,9 +165,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getDiplomaticRequestForUpdateStmt, err = db.PrepareContext(ctx, getDiplomaticRequestForUpdate); err != nil {
 		return nil, fmt.Errorf("error preparing query GetDiplomaticRequestForUpdate: %w", err)
 	}
-	if q.getLatestScanReportsByBaseStmt, err = db.PrepareContext(ctx, getLatestScanReportsByBase); err != nil {
-		return nil, fmt.Errorf("error preparing query GetLatestScanReportsByBase: %w", err)
-	}
 	if q.getLocationTypeByCoordinatesStmt, err = db.PrepareContext(ctx, getLocationTypeByCoordinates); err != nil {
 		return nil, fmt.Errorf("error preparing query GetLocationTypeByCoordinates: %w", err)
 	}
@@ -332,9 +329,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.listScanReportsByBaseAndCoordinatesStmt, err = db.PrepareContext(ctx, listScanReportsByBaseAndCoordinates); err != nil {
 		return nil, fmt.Errorf("error preparing query ListScanReportsByBaseAndCoordinates: %w", err)
-	}
-	if q.listScanReportsByBaseWithinAreaStmt, err = db.PrepareContext(ctx, listScanReportsByBaseWithinArea); err != nil {
-		return nil, fmt.Errorf("error preparing query ListScanReportsByBaseWithinArea: %w", err)
 	}
 	if q.listSectorsStmt, err = db.PrepareContext(ctx, listSectors); err != nil {
 		return nil, fmt.Errorf("error preparing query ListSectors: %w", err)
@@ -642,11 +636,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getDiplomaticRequestForUpdateStmt: %w", cerr)
 		}
 	}
-	if q.getLatestScanReportsByBaseStmt != nil {
-		if cerr := q.getLatestScanReportsByBaseStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getLatestScanReportsByBaseStmt: %w", cerr)
-		}
-	}
 	if q.getLocationTypeByCoordinatesStmt != nil {
 		if cerr := q.getLocationTypeByCoordinatesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getLocationTypeByCoordinatesStmt: %w", cerr)
@@ -922,11 +911,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listScanReportsByBaseAndCoordinatesStmt: %w", cerr)
 		}
 	}
-	if q.listScanReportsByBaseWithinAreaStmt != nil {
-		if cerr := q.listScanReportsByBaseWithinAreaStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listScanReportsByBaseWithinAreaStmt: %w", cerr)
-		}
-	}
 	if q.listSectorsStmt != nil {
 		if cerr := q.listSectorsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listSectorsStmt: %w", cerr)
@@ -1123,7 +1107,6 @@ type Queries struct {
 	getDiplomaticRelationshipForUpdateStmt         *sql.Stmt
 	getDiplomaticRequestStmt                       *sql.Stmt
 	getDiplomaticRequestForUpdateStmt              *sql.Stmt
-	getLatestScanReportsByBaseStmt                 *sql.Stmt
 	getLocationTypeByCoordinatesStmt               *sql.Stmt
 	getMilitaryOperationByIDStmt                   *sql.Stmt
 	getMilitaryOperationByIDForUpdateStmt          *sql.Stmt
@@ -1179,7 +1162,6 @@ type Queries struct {
 	listOpsBySourceBaseStmt                        *sql.Stmt
 	listOpsByTargetCoordinatesStmt                 *sql.Stmt
 	listScanReportsByBaseAndCoordinatesStmt        *sql.Stmt
-	listScanReportsByBaseWithinAreaStmt            *sql.Stmt
 	listSectorsStmt                                *sql.Stmt
 	listStoragePrototypesStmt                      *sql.Stmt
 	listTechPrototypesStmt                         *sql.Stmt
@@ -1255,7 +1237,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getDiplomaticRelationshipForUpdateStmt:         q.getDiplomaticRelationshipForUpdateStmt,
 		getDiplomaticRequestStmt:                       q.getDiplomaticRequestStmt,
 		getDiplomaticRequestForUpdateStmt:              q.getDiplomaticRequestForUpdateStmt,
-		getLatestScanReportsByBaseStmt:                 q.getLatestScanReportsByBaseStmt,
 		getLocationTypeByCoordinatesStmt:               q.getLocationTypeByCoordinatesStmt,
 		getMilitaryOperationByIDStmt:                   q.getMilitaryOperationByIDStmt,
 		getMilitaryOperationByIDForUpdateStmt:          q.getMilitaryOperationByIDForUpdateStmt,
@@ -1311,7 +1292,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listOpsBySourceBaseStmt:                        q.listOpsBySourceBaseStmt,
 		listOpsByTargetCoordinatesStmt:                 q.listOpsByTargetCoordinatesStmt,
 		listScanReportsByBaseAndCoordinatesStmt:        q.listScanReportsByBaseAndCoordinatesStmt,
-		listScanReportsByBaseWithinAreaStmt:            q.listScanReportsByBaseWithinAreaStmt,
 		listSectorsStmt:                                q.listSectorsStmt,
 		listStoragePrototypesStmt:                      q.listStoragePrototypesStmt,
 		listTechPrototypesStmt:                         q.listTechPrototypesStmt,

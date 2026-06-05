@@ -66,7 +66,6 @@ type Querier interface {
 	GetDiplomaticRelationshipForUpdate(ctx context.Context, arg GetDiplomaticRelationshipForUpdateParams) (DiplomaticRelationship, error)
 	GetDiplomaticRequest(ctx context.Context, id uuid.UUID) (DiplomaticRequest, error)
 	GetDiplomaticRequestForUpdate(ctx context.Context, id uuid.UUID) (DiplomaticRequest, error)
-	GetLatestScanReportsByBase(ctx context.Context, baseID int64) ([]ScanReport, error)
 	GetLocationTypeByCoordinates(ctx context.Context, arg GetLocationTypeByCoordinatesParams) (string, error)
 	// Military operations queries
 	GetMilitaryOperationByID(ctx context.Context, id int64) (MilitaryOperation, error)
@@ -137,7 +136,6 @@ type Querier interface {
 	ListOpsBySourceBase(ctx context.Context, arg ListOpsBySourceBaseParams) ([]MilitaryOperation, error)
 	ListOpsByTargetCoordinates(ctx context.Context, arg ListOpsByTargetCoordinatesParams) ([]MilitaryOperation, error)
 	ListScanReportsByBaseAndCoordinates(ctx context.Context, arg ListScanReportsByBaseAndCoordinatesParams) ([]ScanReport, error)
-	ListScanReportsByBaseWithinArea(ctx context.Context, arg ListScanReportsByBaseWithinAreaParams) ([]ScanReport, error)
 	ListSectors(ctx context.Context) ([]Sector, error)
 	ListStoragePrototypes(ctx context.Context) ([]StorageItemPrototype, error)
 	ListTechPrototypes(ctx context.Context) ([]TechItemPrototype, error)
