@@ -1,0 +1,36 @@
+package repo
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/gen"
+	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/mappers"
+)
+
+type PrototypeReadRepo struct{ q *gen.Queries }
+
+func NewPrototypeReadRepo(q *gen.Queries) *PrototypeReadRepo { return &PrototypeReadRepo{q: q} }
+
+func (r *PrototypeReadRepo) ListArmyPrototypes(ctx context.Context) ([]*readmodels.ArmyItemPrototype, error) {
+	rows, err := r.q.ListArmyPrototypes(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return mappers.ArmyPrototypesFromModels(rows), nil
+}
+
+func (r *PrototypeReadRepo) GetArmyPrototype(ctx context.Context, id int) (*readmodels.ArmyItemPrototype, error) {
+	row, err := r.q.GetArmyPrototypeByID(ctx, int64(id))
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ports.ErrNotFound
+		}
+		return nil, err
+	}
+	v := mappers.ArmyPrototypeFromModel(row)
+	return &v, nil
+}

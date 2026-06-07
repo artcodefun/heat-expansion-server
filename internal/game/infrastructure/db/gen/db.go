@@ -36,6 +36,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.countResourcefulLocationsInRangeStmt, err = db.PrepareContext(ctx, countResourcefulLocationsInRange); err != nil {
 		return nil, fmt.Errorf("error preparing query CountResourcefulLocationsInRange: %w", err)
 	}
+	if q.createArmyPrototypeStmt, err = db.PrepareContext(ctx, createArmyPrototype); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateArmyPrototype: %w", err)
+	}
 	if q.createBaseStmt, err = db.PrepareContext(ctx, createBase); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateBase: %w", err)
 	}
@@ -369,6 +372,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.recentReportExistsByScannerStmt, err = db.PrepareContext(ctx, recentReportExistsByScanner); err != nil {
 		return nil, fmt.Errorf("error preparing query RecentReportExistsByScanner: %w", err)
 	}
+	if q.updateArmyPrototypeStmt, err = db.PrepareContext(ctx, updateArmyPrototype); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateArmyPrototype: %w", err)
+	}
 	if q.updateBaseStmt, err = db.PrepareContext(ctx, updateBase); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateBase: %w", err)
 	}
@@ -425,6 +431,11 @@ func (q *Queries) Close() error {
 	if q.countResourcefulLocationsInRangeStmt != nil {
 		if cerr := q.countResourcefulLocationsInRangeStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing countResourcefulLocationsInRangeStmt: %w", cerr)
+		}
+	}
+	if q.createArmyPrototypeStmt != nil {
+		if cerr := q.createArmyPrototypeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createArmyPrototypeStmt: %w", cerr)
 		}
 	}
 	if q.createBaseStmt != nil {
@@ -982,6 +993,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing recentReportExistsByScannerStmt: %w", cerr)
 		}
 	}
+	if q.updateArmyPrototypeStmt != nil {
+		if cerr := q.updateArmyPrototypeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateArmyPrototypeStmt: %w", cerr)
+		}
+	}
 	if q.updateBaseStmt != nil {
 		if cerr := q.updateBaseStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateBaseStmt: %w", cerr)
@@ -1080,6 +1096,7 @@ type Queries struct {
 	claimUnpublishedOutboxEventsStmt               *sql.Stmt
 	countDangerousLocationsInRangeStmt             *sql.Stmt
 	countResourcefulLocationsInRangeStmt           *sql.Stmt
+	createArmyPrototypeStmt                        *sql.Stmt
 	createBaseStmt                                 *sql.Stmt
 	createSectorStmt                               *sql.Stmt
 	crystalCreditExistsStmt                        *sql.Stmt
@@ -1191,6 +1208,7 @@ type Queries struct {
 	notifyOutboxEventStmt                          *sql.Stmt
 	radarThreatExistsStmt                          *sql.Stmt
 	recentReportExistsByScannerStmt                *sql.Stmt
+	updateArmyPrototypeStmt                        *sql.Stmt
 	updateBaseStmt                                 *sql.Stmt
 	updateBlackMarketOfferStmt                     *sql.Stmt
 	updateDangerousLocationStmt                    *sql.Stmt
@@ -1212,6 +1230,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		claimUnpublishedOutboxEventsStmt:               q.claimUnpublishedOutboxEventsStmt,
 		countDangerousLocationsInRangeStmt:             q.countDangerousLocationsInRangeStmt,
 		countResourcefulLocationsInRangeStmt:           q.countResourcefulLocationsInRangeStmt,
+		createArmyPrototypeStmt:                        q.createArmyPrototypeStmt,
 		createBaseStmt:                                 q.createBaseStmt,
 		createSectorStmt:                               q.createSectorStmt,
 		crystalCreditExistsStmt:                        q.crystalCreditExistsStmt,
@@ -1323,6 +1342,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		notifyOutboxEventStmt:                          q.notifyOutboxEventStmt,
 		radarThreatExistsStmt:                          q.radarThreatExistsStmt,
 		recentReportExistsByScannerStmt:                q.recentReportExistsByScannerStmt,
+		updateArmyPrototypeStmt:                        q.updateArmyPrototypeStmt,
 		updateBaseStmt:                                 q.updateBaseStmt,
 		updateBlackMarketOfferStmt:                     q.updateBlackMarketOfferStmt,
 		updateDangerousLocationStmt:                    q.updateDangerousLocationStmt,

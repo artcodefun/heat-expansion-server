@@ -43,20 +43,21 @@ type Adapters struct {
 	DiplomaticRequests      ports.DiplomaticRequestRepository
 
 	// Read Repositories (read-store / projections)
-	BaseRead           ports.BaseReadRepository
-	BuildingRead       ports.BuildingReadRepository
-	ArmyRead           ports.ArmyReadRepository
-	StorageRead        ports.StorageReadRepository
-	TechRead           ports.TechReadRepository
-	OperationRead      ports.OperationReadRepository
-	TradeOperationRead ports.TradeOperationReadRepository
-	BlackMarketRead    ports.BlackMarketReadRepository
-	ActivityRead       ports.ActivityReadRepository
-	SectorRead         ports.SectorReadRepository
-	RadarRead          ports.RadarReadRepository
-	UserRead           ports.UserReadRepository
-	AlertRead          ports.AlertReadRepository
-	DiplomacyRead      ports.DiplomacyReadRepository
+	BaseRead             ports.BaseReadRepository
+	BuildingRead         ports.BuildingReadRepository
+	ArmyRead             ports.ArmyReadRepository
+	ArmyPrototypeRead    ports.ArmyPrototypeReadRepository
+	StorageRead          ports.StorageReadRepository
+	TechRead             ports.TechReadRepository
+	OperationRead        ports.OperationReadRepository
+	TradeOperationRead   ports.TradeOperationReadRepository
+	BlackMarketRead      ports.BlackMarketReadRepository
+	ActivityRead         ports.ActivityReadRepository
+	SectorRead           ports.SectorReadRepository
+	RadarRead            ports.RadarReadRepository
+	UserRead             ports.UserReadRepository
+	AlertRead            ports.AlertReadRepository
+	DiplomacyRead        ports.DiplomacyReadRepository
 
 	// Infra
 	TxMgr      ports.TransactionManager
@@ -137,10 +138,11 @@ func NewAdapters(db *sql.DB, staticBaseURL string, jwtPublicKeyPEM string) (*Ada
 		DiplomaticRequests:      repo.NewDiplomaticRequestRepo(q),
 
 		// Read side
-		BaseRead:           baseRead,
-		BuildingRead:       readrepo.NewBuildReadRepo(rq),
-		ArmyRead:           readrepo.NewArmyReadRepo(rq),
-		StorageRead:        readrepo.NewStorageReadRepo(rq),
+		BaseRead:             baseRead,
+		BuildingRead:         readrepo.NewBuildReadRepo(rq),
+		ArmyRead:             readrepo.NewArmyReadRepo(rq),
+		ArmyPrototypeRead:    readrepo.NewPrototypeReadRepo(rq),
+		StorageRead:          readrepo.NewStorageReadRepo(rq),
 		TechRead:           readrepo.NewTechReadRepo(rq),
 		OperationRead:      opRead,
 		TradeOperationRead: tradeOpRead,

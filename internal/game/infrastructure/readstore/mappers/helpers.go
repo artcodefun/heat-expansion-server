@@ -79,3 +79,18 @@ func interfaceUUID(v interface{}) uuid.UUID {
 		panic(fmt.Sprintf("unsupported uuid source type %T", v))
 	}
 }
+
+func creationSourcesFromJSON(raw json.RawMessage) []readmodels.CreationSource {
+	if len(raw) == 0 {
+		return nil
+	}
+	var ss []string
+	if err := json.Unmarshal(raw, &ss); err != nil {
+		return nil
+	}
+	out := make([]readmodels.CreationSource, len(ss))
+	for i, s := range ss {
+		out[i] = readmodels.CreationSource(s)
+	}
+	return out
+}

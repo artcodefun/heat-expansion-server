@@ -13,6 +13,7 @@ import (
 type Querier interface {
 	CountUnreadAlertsByUser(ctx context.Context, arg CountUnreadAlertsByUserParams) (int64, error)
 	CountUnreadDiplomaticMessagesByUser(ctx context.Context, receiverUserID uuid.UUID) (int64, error)
+	GetArmyPrototypeByID(ctx context.Context, id int64) (ArmyItemPrototype, error)
 	// Base stats only (read repository no longer hydrates full overview)
 	GetBase(ctx context.Context, id int64) (GetBaseRow, error)
 	// Base owner lookup by sector coordinates

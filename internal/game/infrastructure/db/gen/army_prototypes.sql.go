@@ -7,7 +7,66 @@ package gen
 
 import (
 	"context"
+	"database/sql"
+	"encoding/json"
 )
+
+const createArmyPrototype = `-- name: CreateArmyPrototype :exec
+INSERT INTO game.army_item_prototypes (
+    id, name, category, faction, unlock_technology_id,
+    short_description, full_description, price, production_time,
+    space, image_url, attack, defence, capacity, stealth, speed,
+    creation_sources
+) VALUES (
+    $1, $2, $3, $4, $5,
+    $6, $7, $8, $9,
+    $10, $11, $12, $13, $14, $15, $16,
+    $17
+)
+`
+
+type CreateArmyPrototypeParams struct {
+	ID                 int64           `json:"id"`
+	Name               string          `json:"name"`
+	Category           string          `json:"category"`
+	Faction            string          `json:"faction"`
+	UnlockTechnologyID sql.NullInt64   `json:"unlock_technology_id"`
+	ShortDescription   sql.NullString  `json:"short_description"`
+	FullDescription    sql.NullString  `json:"full_description"`
+	Price              json.RawMessage `json:"price"`
+	ProductionTime     int64           `json:"production_time"`
+	Space              int32           `json:"space"`
+	ImageUrl           sql.NullString  `json:"image_url"`
+	Attack             int32           `json:"attack"`
+	Defence            int32           `json:"defence"`
+	Capacity           int32           `json:"capacity"`
+	Stealth            int32           `json:"stealth"`
+	Speed              int32           `json:"speed"`
+	CreationSources    json.RawMessage `json:"creation_sources"`
+}
+
+func (q *Queries) CreateArmyPrototype(ctx context.Context, arg CreateArmyPrototypeParams) error {
+	_, err := q.exec(ctx, q.createArmyPrototypeStmt, createArmyPrototype,
+		arg.ID,
+		arg.Name,
+		arg.Category,
+		arg.Faction,
+		arg.UnlockTechnologyID,
+		arg.ShortDescription,
+		arg.FullDescription,
+		arg.Price,
+		arg.ProductionTime,
+		arg.Space,
+		arg.ImageUrl,
+		arg.Attack,
+		arg.Defence,
+		arg.Capacity,
+		arg.Stealth,
+		arg.Speed,
+		arg.CreationSources,
+	)
+	return err
+}
 
 const getArmyPrototypeByID = `-- name: GetArmyPrototypeByID :one
 
@@ -87,4 +146,89 @@ func (q *Queries) ListArmyPrototypes(ctx context.Context) ([]ArmyItemPrototype, 
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateArmyPrototype = `-- name: UpdateArmyPrototype :one
+UPDATE game.army_item_prototypes
+SET name                 = $1,
+    category             = $2,
+    faction              = $3,
+    unlock_technology_id = $4,
+    short_description    = $5,
+    full_description     = $6,
+    price                = $7,
+    production_time      = $8,
+    space                = $9,
+    image_url            = $10,
+    attack               = $11,
+    defence              = $12,
+    capacity             = $13,
+    stealth              = $14,
+    speed                = $15,
+    creation_sources     = $16
+WHERE id = $17
+RETURNING id, name, category, faction, unlock_technology_id, short_description, full_description, price, production_time, space, image_url, attack, defence, capacity, stealth, speed, creation_sources
+`
+
+type UpdateArmyPrototypeParams struct {
+	Name               string          `json:"name"`
+	Category           string          `json:"category"`
+	Faction            string          `json:"faction"`
+	UnlockTechnologyID sql.NullInt64   `json:"unlock_technology_id"`
+	ShortDescription   sql.NullString  `json:"short_description"`
+	FullDescription    sql.NullString  `json:"full_description"`
+	Price              json.RawMessage `json:"price"`
+	ProductionTime     int64           `json:"production_time"`
+	Space              int32           `json:"space"`
+	ImageUrl           sql.NullString  `json:"image_url"`
+	Attack             int32           `json:"attack"`
+	Defence            int32           `json:"defence"`
+	Capacity           int32           `json:"capacity"`
+	Stealth            int32           `json:"stealth"`
+	Speed              int32           `json:"speed"`
+	CreationSources    json.RawMessage `json:"creation_sources"`
+	ID                 int64           `json:"id"`
+}
+
+func (q *Queries) UpdateArmyPrototype(ctx context.Context, arg UpdateArmyPrototypeParams) (ArmyItemPrototype, error) {
+	row := q.queryRow(ctx, q.updateArmyPrototypeStmt, updateArmyPrototype,
+		arg.Name,
+		arg.Category,
+		arg.Faction,
+		arg.UnlockTechnologyID,
+		arg.ShortDescription,
+		arg.FullDescription,
+		arg.Price,
+		arg.ProductionTime,
+		arg.Space,
+		arg.ImageUrl,
+		arg.Attack,
+		arg.Defence,
+		arg.Capacity,
+		arg.Stealth,
+		arg.Speed,
+		arg.CreationSources,
+		arg.ID,
+	)
+	var i ArmyItemPrototype
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Category,
+		&i.Faction,
+		&i.UnlockTechnologyID,
+		&i.ShortDescription,
+		&i.FullDescription,
+		&i.Price,
+		&i.ProductionTime,
+		&i.Space,
+		&i.ImageUrl,
+		&i.Attack,
+		&i.Defence,
+		&i.Capacity,
+		&i.Stealth,
+		&i.Speed,
+		&i.CreationSources,
+	)
+	return i, err
 }

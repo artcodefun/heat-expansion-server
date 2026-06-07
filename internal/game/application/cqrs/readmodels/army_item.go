@@ -28,6 +28,7 @@ type ArmyItemPrototype struct {
 	ID                 int
 	Name               domain.TranslationKey
 	Category           ArmyCategory
+	CreationSources    []CreationSource
 	Faction            Faction
 	UnlockTechnologyID *int // nil: available by default; non-nil: unlocked by this technology
 	ShortDescription   domain.TranslationKey

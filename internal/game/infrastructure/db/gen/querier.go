@@ -16,6 +16,7 @@ type Querier interface {
 	ClaimUnpublishedOutboxEvents(ctx context.Context, limit int32) ([]DomainEvent, error)
 	CountDangerousLocationsInRange(ctx context.Context, arg CountDangerousLocationsInRangeParams) (int64, error)
 	CountResourcefulLocationsInRange(ctx context.Context, arg CountResourcefulLocationsInRangeParams) (int64, error)
+	CreateArmyPrototype(ctx context.Context, arg CreateArmyPrototypeParams) error
 	// User bases queries
 	CreateBase(ctx context.Context, arg CreateBaseParams) (UserBase, error)
 	// Sector queries
@@ -149,6 +150,7 @@ type Querier interface {
 	NotifyOutboxEvent(ctx context.Context) error
 	RadarThreatExists(ctx context.Context, arg RadarThreatExistsParams) (bool, error)
 	RecentReportExistsByScanner(ctx context.Context, arg RecentReportExistsByScannerParams) (bool, error)
+	UpdateArmyPrototype(ctx context.Context, arg UpdateArmyPrototypeParams) (ArmyItemPrototype, error)
 	UpdateBase(ctx context.Context, arg UpdateBaseParams) (UserBase, error)
 	UpdateBlackMarketOffer(ctx context.Context, arg UpdateBlackMarketOfferParams) (BlackMarketOffer, error)
 	UpdateDangerousLocation(ctx context.Context, arg UpdateDangerousLocationParams) error

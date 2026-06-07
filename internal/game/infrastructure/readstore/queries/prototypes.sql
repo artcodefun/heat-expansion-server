@@ -5,6 +5,11 @@ SELECT *
 FROM game.army_item_prototypes
 ORDER BY id;
 
+-- name: GetArmyPrototypeByID :one
+SELECT *
+FROM game.army_item_prototypes
+WHERE id = $1;
+
 -- name: ListBuildPrototypes :many
 SELECT *
 FROM game.build_item_prototypes

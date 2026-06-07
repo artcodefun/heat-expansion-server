@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package game.grpc.v1;
+
+option go_package = "github.com/artcodefun/heat-expansion-server/contracts/game/grpc/v1;gamev1";
+
+// This file defines the private gRPC API exposed by the game module for the
+// internal use. It is reached over loopback and guarded by a static module key
+// in request metadata. There is one service per resource (and one handler type
+// per service): ArmyPrototypeService today; BuildPrototypeService,
+// StoragePrototypeService, TechPrototypeService and TranslationService are
+// added in later phases. RPC and message names are resource-qualified because
+// all services share this proto package and names must stay globally unique.
+
+// ============================================================================
+// Shared messages
+// ============================================================================
+
+// PriceModel mirrors domain.PriceModel: resource costs in integer minor units.
+message PriceModel {
+  int64 credits = 1;
+  int64 iron = 2;
+  int64 titanium = 3;
+  int64 antimatter = 4;
+}
+
+// ============================================================================
+// Army prototypes
+// ============================================================================
+
+service ArmyPrototypeService {
+  rpc ListArmyPrototypes(ListArmyPrototypesRequest) returns (ListArmyPrototypesResponse);
+  rpc GetArmyPrototype(GetArmyPrototypeRequest) returns (GetArmyPrototypeResponse);
+  rpc CreateArmyPrototype(CreateArmyPrototypeRequest) returns (CreateArmyPrototypeResponse);
+  rpc UpdateArmyPrototype(UpdateArmyPrototypeRequest) returns (UpdateArmyPrototypeResponse);
+}
+
+// ArmyPrototype is the wire shape of domain.ArmyItemPrototype.
+//
+// Enum-like fields (category, faction, creation_sources) are carried as strings
+// rather than proto enums: the domain stores them as free string constants and
+// the DB is the source of truth, so a parallel proto enum would be a second
+// definition that could silently drift. unlock_technology_id is optional
+// (absent = available by default).
+message ArmyPrototype {
+  int64 id = 1;
+  string name = 2;
+  string category = 3;
+  repeated string creation_sources = 4;
+  string faction = 5;
+  optional int64 unlock_technology_id = 6;
+  string short_description = 7;
+  string full_description = 8;
+  PriceModel price = 9;
+  int64 production_time = 10;
+  int32 space = 11;
+  string image_url = 12;
+  int32 attack = 13;
+  int32 defence = 14;
+  int32 capacity = 15;
+  int32 stealth = 16;
+  int32 speed = 17;
+}
+
+message ListArmyPrototypesRequest {}
+
+message ListArmyPrototypesResponse {
+  repeated ArmyPrototype prototypes = 1;
+}
+
+message GetArmyPrototypeRequest {
+  int64 id = 1;
+}
+
+message GetArmyPrototypeResponse {
+  ArmyPrototype prototype = 1;
+}
+
+// CreateArmyPrototypeRequest carries the prototype to insert. The caller MUST set
+// a positive id: prototypes are ordered and each type occupies its own id range,
+// so the id is chosen by the caller rather than assigned by the server.
+message CreateArmyPrototypeRequest {
+  ArmyPrototype prototype = 1;
+}
+
+message CreateArmyPrototypeResponse {
+  ArmyPrototype prototype = 1;
+}
+
+// UpdateArmyPrototypeRequest overwrites the prototype identified by prototype.id.
+message UpdateArmyPrototypeRequest {
+  ArmyPrototype prototype = 1;
+}
+
+message UpdateArmyPrototypeResponse {
+  ArmyPrototype prototype = 1;
+}

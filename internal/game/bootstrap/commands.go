@@ -20,6 +20,7 @@ type Commands struct {
 	World       *commands.WorldGenerationCommands
 	Alert       *commands.AlertCommands
 	Diplomacy   *commands.DiplomacyCommands
+	Prototype   *commands.PrototypeCommands
 }
 
 // NewCommands constructs all command handlers using provided secondary adapters.
@@ -42,5 +43,6 @@ func NewCommands(a *Adapters, as *AppServices) *Commands {
 		World:       commands.NewWorldGenerationCommands(a.UserBases, a.Sectors, a.ResourceLocations, a.DangerousLocations, a.StoragePrototypes, a.ArmyPrototypes, a.BuildPrototypes, a.Content, as.Provisioner, a.Scheduler, a.TxMgr),
 		Alert:       commands.NewAlertCommands(a.Alerts, a.TradeOps, a.TxMgr),
 		Diplomacy:   commands.NewDiplomacyCommands(a.DiplomaticRelationships, a.DiplomaticMessages, a.DiplomaticRequests, a.MilitaryOps, a.ScanReports, a.Users, a.UserBases, a.Sectors, a.OutboxEvents, a.Scheduler, a.TxMgr, as.Access),
+		Prototype:   commands.NewPrototypeCommands(a.ArmyPrototypes, a.TxMgr),
 	}
 }

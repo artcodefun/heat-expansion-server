@@ -9,6 +9,37 @@ import (
 	"context"
 )
 
+const getArmyPrototypeByID = `-- name: GetArmyPrototypeByID :one
+SELECT id, name, category, faction, unlock_technology_id, short_description, full_description, price, production_time, space, image_url, attack, defence, capacity, stealth, speed, creation_sources
+FROM game.army_item_prototypes
+WHERE id = $1
+`
+
+func (q *Queries) GetArmyPrototypeByID(ctx context.Context, id int64) (ArmyItemPrototype, error) {
+	row := q.queryRow(ctx, q.getArmyPrototypeByIDStmt, getArmyPrototypeByID, id)
+	var i ArmyItemPrototype
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Category,
+		&i.Faction,
+		&i.UnlockTechnologyID,
+		&i.ShortDescription,
+		&i.FullDescription,
+		&i.Price,
+		&i.ProductionTime,
+		&i.Space,
+		&i.ImageUrl,
+		&i.Attack,
+		&i.Defence,
+		&i.Capacity,
+		&i.Stealth,
+		&i.Speed,
+		&i.CreationSources,
+	)
+	return i, err
+}
+
 const listArmyPrototypes = `-- name: ListArmyPrototypes :many
 
 SELECT id, name, category, faction, unlock_technology_id, short_description, full_description, price, production_time, space, image_url, attack, defence, capacity, stealth, speed, creation_sources

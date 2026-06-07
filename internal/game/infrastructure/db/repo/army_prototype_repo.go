@@ -27,9 +27,8 @@ func (r *ArmyPrototypeRepo) Tx(tx ports.Transaction) ports.ArmyPrototypeReposito
 	return r
 }
 
-func (r *ArmyPrototypeRepo) CreatePrototype(_ context.Context, proto *domain.ArmyItemPrototype) error {
-	// Not implemented yet: write path is rarely used and requires dedicated sqlc queries
-	return errors.New("CreatePrototype not implemented for army prototypes (read-only in this service)")
+func (r *ArmyPrototypeRepo) CreatePrototype(ctx context.Context, proto *domain.ArmyItemPrototype) error {
+	return r.q.CreateArmyPrototype(ctx, mappers.ArmyPrototypeToCreateParams(proto))
 }
 
 func (r *ArmyPrototypeRepo) FindPrototypeByID(ctx context.Context, id int) (*domain.ArmyItemPrototype, error) {
@@ -51,8 +50,15 @@ func (r *ArmyPrototypeRepo) FindAllPrototypes(ctx context.Context) ([]*domain.Ar
 	return mappers.ArmyPrototypesFromDB(rows), nil
 }
 
-func (r *ArmyPrototypeRepo) UpdatePrototype(_ context.Context, proto *domain.ArmyItemPrototype) error {
-	return errors.New("UpdatePrototype not implemented for army prototypes (read-only in this service)")
+func (r *ArmyPrototypeRepo) UpdatePrototype(ctx context.Context, proto *domain.ArmyItemPrototype) error {
+	_, err := r.q.UpdateArmyPrototype(ctx, mappers.ArmyPrototypeToUpdateParams(proto))
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ports.ErrNotFound
+		}
+		return err
+	}
+	return nil
 }
 
 func (r *ArmyPrototypeRepo) DeletePrototype(_ context.Context, id int) error {

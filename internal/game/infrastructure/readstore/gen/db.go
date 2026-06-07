@@ -30,6 +30,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.countUnreadDiplomaticMessagesByUserStmt, err = db.PrepareContext(ctx, countUnreadDiplomaticMessagesByUser); err != nil {
 		return nil, fmt.Errorf("error preparing query CountUnreadDiplomaticMessagesByUser: %w", err)
 	}
+	if q.getArmyPrototypeByIDStmt, err = db.PrepareContext(ctx, getArmyPrototypeByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetArmyPrototypeByID: %w", err)
+	}
 	if q.getBaseStmt, err = db.PrepareContext(ctx, getBase); err != nil {
 		return nil, fmt.Errorf("error preparing query GetBase: %w", err)
 	}
@@ -211,6 +214,11 @@ func (q *Queries) Close() error {
 	if q.countUnreadDiplomaticMessagesByUserStmt != nil {
 		if cerr := q.countUnreadDiplomaticMessagesByUserStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing countUnreadDiplomaticMessagesByUserStmt: %w", cerr)
+		}
+	}
+	if q.getArmyPrototypeByIDStmt != nil {
+		if cerr := q.getArmyPrototypeByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getArmyPrototypeByIDStmt: %w", cerr)
 		}
 	}
 	if q.getBaseStmt != nil {
@@ -534,6 +542,7 @@ type Queries struct {
 	tx                                      *sql.Tx
 	countUnreadAlertsByUserStmt             *sql.Stmt
 	countUnreadDiplomaticMessagesByUserStmt *sql.Stmt
+	getArmyPrototypeByIDStmt                *sql.Stmt
 	getBaseStmt                             *sql.Stmt
 	getBaseOwnerByCoordinatesStmt           *sql.Stmt
 	getBaseStatsStmt                        *sql.Stmt
@@ -598,6 +607,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		tx:                                      tx,
 		countUnreadAlertsByUserStmt:             q.countUnreadAlertsByUserStmt,
 		countUnreadDiplomaticMessagesByUserStmt: q.countUnreadDiplomaticMessagesByUserStmt,
+		getArmyPrototypeByIDStmt:                q.getArmyPrototypeByIDStmt,
 		getBaseStmt:                             q.getBaseStmt,
 		getBaseOwnerByCoordinatesStmt:           q.getBaseOwnerByCoordinatesStmt,
 		getBaseStatsStmt:                        q.getBaseStatsStmt,

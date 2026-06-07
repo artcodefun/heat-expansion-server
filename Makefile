@@ -4,7 +4,7 @@ GOARCH?=amd64
 GOOS?=linux
 CGO_ENABLED?=0
 
-.PHONY: build run test sqlc clean
+.PHONY: build run test sqlc proto clean
 
 build:
 	go build -o bin/${BINARY_NAME} ./cmd/server
@@ -82,3 +82,7 @@ sqlc:
 	sqlc -f internal/auth/infrastructure/sqlc.yaml generate
 	sqlc -f internal/billing/infrastructure/sqlc.yaml generate
 	sqlc -f internal/admin/infrastructure/sqlc.yaml generate
+
+proto:
+	buf lint
+	buf generate

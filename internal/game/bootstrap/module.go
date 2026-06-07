@@ -13,6 +13,7 @@ import (
 	_ "github.com/lib/pq"
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 
+	grpcapi "github.com/artcodefun/heat-expansion-server/internal/game/interfaces/grpc"
 	httpapi "github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http"
 	"github.com/artcodefun/heat-expansion-server/internal/platform/rabbitmq"
 )
@@ -33,6 +34,7 @@ type Module struct {
 	Commands   *Commands
 	Queries    *Queries
 	HTTPServer *httpapi.Server
+	GRPCServer *grpcapi.Server
 }
 
 func NewModule() *Module {
@@ -43,8 +45,10 @@ func NewModule() *Module {
 	rabbitURL := os.Getenv("RABBITMQ_URL")
 	authExchange := os.Getenv("AUTH_INTEGRATION_EXCHANGE")
 	billingExchange := os.Getenv("BILLING_INTEGRATION_EXCHANGE")
+	grpcPort := os.Getenv("GAME_GRPC_PORT")
+	grpcKey := os.Getenv("GAME_GRPC_KEY")
 
-	if port == "" || dbURL == "" || jwtPublicKeyPEM == "" || staticBaseURL == "" || rabbitURL == "" || authExchange == "" || billingExchange == "" {
+	if port == "" || dbURL == "" || jwtPublicKeyPEM == "" || staticBaseURL == "" || rabbitURL == "" || authExchange == "" || billingExchange == "" || grpcPort == "" || grpcKey == "" {
 		log.Fatal("Missing required environment variables. Please check your .env file.")
 	}
 
@@ -109,6 +113,12 @@ func NewModule() *Module {
 	router := httpapi.NewRouter(httpCommands, httpQueries, adapters.Tokens, adapters.Translator)
 	httpServer := httpapi.NewServer(router, addr)
 
+	grpcAddr := fmt.Sprintf(":%s", grpcPort)
+	grpcCommands := grpcapi.Commands{ArmyPrototype: commands.Prototype}
+	grpcQueries := grpcapi.Queries{ArmyPrototype: queries.Prototype}
+	grpcRouter := grpcapi.NewRouter(grpcCommands, grpcQueries, grpcKey, adapters.Translator)
+	grpcServer := grpcapi.NewServer(grpcRouter, grpcAddr)
+
 	return &Module{
 		Port:            port,
 		DBURL:           dbURL,
@@ -123,6 +133,7 @@ func NewModule() *Module {
 		Commands:        commands,
 		Queries:         queries,
 		HTTPServer:      httpServer,
+		GRPCServer:      grpcServer,
 	}
 }
 
@@ -164,6 +175,13 @@ func (m *Module) Run(ctx context.Context) error {
 		}
 	}()
 
+	grpcErr := make(chan error, 1)
+	go func() {
+		if err := m.GRPCServer.Start(); err != nil {
+			grpcErr <- err
+		}
+	}()
+
 	var runErr error
 	select {
 	case <-ctx.Done():
@@ -171,6 +189,10 @@ func (m *Module) Run(ctx context.Context) error {
 	case err := <-httpErr:
 		runErr = fmt.Errorf("game http server failed: %w", err)
 		slog.ErrorContext(ctx, "game module: http server failed, draining...", "error", err)
+		cancel()
+	case err := <-grpcErr:
+		runErr = fmt.Errorf("game grpc server failed: %w", err)
+		slog.ErrorContext(ctx, "game module: grpc server failed, draining...", "error", err)
 		cancel()
 	case err := <-workerErr:
 		runErr = fmt.Errorf("game workers failed: %w", err)
@@ -182,6 +204,9 @@ func (m *Module) Run(ctx context.Context) error {
 	defer shutdownCancel()
 	if err := m.HTTPServer.Shutdown(shutdownCtx); err != nil {
 		slog.ErrorContext(ctx, "game http server shutdown error", "error", err)
+	}
+	if err := m.GRPCServer.Shutdown(shutdownCtx); err != nil {
+		slog.ErrorContext(ctx, "game grpc server shutdown error", "error", err)
 	}
 
 	if err := m.Workers.Wait(); err != nil && runErr == nil {
