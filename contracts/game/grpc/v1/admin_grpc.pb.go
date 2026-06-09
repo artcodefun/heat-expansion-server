@@ -233,3 +233,219 @@ var ArmyPrototypeService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "game/grpc/v1/admin.proto",
 }
+
+const (
+	BuildPrototypeService_ListBuildPrototypes_FullMethodName  = "/game.grpc.v1.BuildPrototypeService/ListBuildPrototypes"
+	BuildPrototypeService_GetBuildPrototype_FullMethodName    = "/game.grpc.v1.BuildPrototypeService/GetBuildPrototype"
+	BuildPrototypeService_CreateBuildPrototype_FullMethodName = "/game.grpc.v1.BuildPrototypeService/CreateBuildPrototype"
+	BuildPrototypeService_UpdateBuildPrototype_FullMethodName = "/game.grpc.v1.BuildPrototypeService/UpdateBuildPrototype"
+)
+
+// BuildPrototypeServiceClient is the client API for BuildPrototypeService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type BuildPrototypeServiceClient interface {
+	ListBuildPrototypes(ctx context.Context, in *ListBuildPrototypesRequest, opts ...grpc.CallOption) (*ListBuildPrototypesResponse, error)
+	GetBuildPrototype(ctx context.Context, in *GetBuildPrototypeRequest, opts ...grpc.CallOption) (*GetBuildPrototypeResponse, error)
+	CreateBuildPrototype(ctx context.Context, in *CreateBuildPrototypeRequest, opts ...grpc.CallOption) (*CreateBuildPrototypeResponse, error)
+	UpdateBuildPrototype(ctx context.Context, in *UpdateBuildPrototypeRequest, opts ...grpc.CallOption) (*UpdateBuildPrototypeResponse, error)
+}
+
+type buildPrototypeServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewBuildPrototypeServiceClient(cc grpc.ClientConnInterface) BuildPrototypeServiceClient {
+	return &buildPrototypeServiceClient{cc}
+}
+
+func (c *buildPrototypeServiceClient) ListBuildPrototypes(ctx context.Context, in *ListBuildPrototypesRequest, opts ...grpc.CallOption) (*ListBuildPrototypesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListBuildPrototypesResponse)
+	err := c.cc.Invoke(ctx, BuildPrototypeService_ListBuildPrototypes_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *buildPrototypeServiceClient) GetBuildPrototype(ctx context.Context, in *GetBuildPrototypeRequest, opts ...grpc.CallOption) (*GetBuildPrototypeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetBuildPrototypeResponse)
+	err := c.cc.Invoke(ctx, BuildPrototypeService_GetBuildPrototype_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *buildPrototypeServiceClient) CreateBuildPrototype(ctx context.Context, in *CreateBuildPrototypeRequest, opts ...grpc.CallOption) (*CreateBuildPrototypeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateBuildPrototypeResponse)
+	err := c.cc.Invoke(ctx, BuildPrototypeService_CreateBuildPrototype_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *buildPrototypeServiceClient) UpdateBuildPrototype(ctx context.Context, in *UpdateBuildPrototypeRequest, opts ...grpc.CallOption) (*UpdateBuildPrototypeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateBuildPrototypeResponse)
+	err := c.cc.Invoke(ctx, BuildPrototypeService_UpdateBuildPrototype_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// BuildPrototypeServiceServer is the server API for BuildPrototypeService service.
+// All implementations must embed UnimplementedBuildPrototypeServiceServer
+// for forward compatibility.
+type BuildPrototypeServiceServer interface {
+	ListBuildPrototypes(context.Context, *ListBuildPrototypesRequest) (*ListBuildPrototypesResponse, error)
+	GetBuildPrototype(context.Context, *GetBuildPrototypeRequest) (*GetBuildPrototypeResponse, error)
+	CreateBuildPrototype(context.Context, *CreateBuildPrototypeRequest) (*CreateBuildPrototypeResponse, error)
+	UpdateBuildPrototype(context.Context, *UpdateBuildPrototypeRequest) (*UpdateBuildPrototypeResponse, error)
+	mustEmbedUnimplementedBuildPrototypeServiceServer()
+}
+
+// UnimplementedBuildPrototypeServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedBuildPrototypeServiceServer struct{}
+
+func (UnimplementedBuildPrototypeServiceServer) ListBuildPrototypes(context.Context, *ListBuildPrototypesRequest) (*ListBuildPrototypesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListBuildPrototypes not implemented")
+}
+func (UnimplementedBuildPrototypeServiceServer) GetBuildPrototype(context.Context, *GetBuildPrototypeRequest) (*GetBuildPrototypeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetBuildPrototype not implemented")
+}
+func (UnimplementedBuildPrototypeServiceServer) CreateBuildPrototype(context.Context, *CreateBuildPrototypeRequest) (*CreateBuildPrototypeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateBuildPrototype not implemented")
+}
+func (UnimplementedBuildPrototypeServiceServer) UpdateBuildPrototype(context.Context, *UpdateBuildPrototypeRequest) (*UpdateBuildPrototypeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateBuildPrototype not implemented")
+}
+func (UnimplementedBuildPrototypeServiceServer) mustEmbedUnimplementedBuildPrototypeServiceServer() {}
+func (UnimplementedBuildPrototypeServiceServer) testEmbeddedByValue()                               {}
+
+// UnsafeBuildPrototypeServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to BuildPrototypeServiceServer will
+// result in compilation errors.
+type UnsafeBuildPrototypeServiceServer interface {
+	mustEmbedUnimplementedBuildPrototypeServiceServer()
+}
+
+func RegisterBuildPrototypeServiceServer(s grpc.ServiceRegistrar, srv BuildPrototypeServiceServer) {
+	// If the following call pancis, it indicates UnimplementedBuildPrototypeServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&BuildPrototypeService_ServiceDesc, srv)
+}
+
+func _BuildPrototypeService_ListBuildPrototypes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListBuildPrototypesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BuildPrototypeServiceServer).ListBuildPrototypes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BuildPrototypeService_ListBuildPrototypes_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BuildPrototypeServiceServer).ListBuildPrototypes(ctx, req.(*ListBuildPrototypesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BuildPrototypeService_GetBuildPrototype_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetBuildPrototypeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BuildPrototypeServiceServer).GetBuildPrototype(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BuildPrototypeService_GetBuildPrototype_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BuildPrototypeServiceServer).GetBuildPrototype(ctx, req.(*GetBuildPrototypeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BuildPrototypeService_CreateBuildPrototype_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateBuildPrototypeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BuildPrototypeServiceServer).CreateBuildPrototype(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BuildPrototypeService_CreateBuildPrototype_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BuildPrototypeServiceServer).CreateBuildPrototype(ctx, req.(*CreateBuildPrototypeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BuildPrototypeService_UpdateBuildPrototype_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateBuildPrototypeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BuildPrototypeServiceServer).UpdateBuildPrototype(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BuildPrototypeService_UpdateBuildPrototype_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BuildPrototypeServiceServer).UpdateBuildPrototype(ctx, req.(*UpdateBuildPrototypeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// BuildPrototypeService_ServiceDesc is the grpc.ServiceDesc for BuildPrototypeService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var BuildPrototypeService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "game.grpc.v1.BuildPrototypeService",
+	HandlerType: (*BuildPrototypeServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ListBuildPrototypes",
+			Handler:    _BuildPrototypeService_ListBuildPrototypes_Handler,
+		},
+		{
+			MethodName: "GetBuildPrototype",
+			Handler:    _BuildPrototypeService_GetBuildPrototype_Handler,
+		},
+		{
+			MethodName: "CreateBuildPrototype",
+			Handler:    _BuildPrototypeService_CreateBuildPrototype_Handler,
+		},
+		{
+			MethodName: "UpdateBuildPrototype",
+			Handler:    _BuildPrototypeService_UpdateBuildPrototype_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "game/grpc/v1/admin.proto",
+}

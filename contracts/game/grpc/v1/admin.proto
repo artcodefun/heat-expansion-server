@@ -95,3 +95,113 @@ message UpdateArmyPrototypeRequest {
 message UpdateArmyPrototypeResponse {
   ArmyPrototype prototype = 1;
 }
+
+// ============================================================================
+// Build prototypes
+// ============================================================================
+
+service BuildPrototypeService {
+  rpc ListBuildPrototypes(ListBuildPrototypesRequest) returns (ListBuildPrototypesResponse);
+  rpc GetBuildPrototype(GetBuildPrototypeRequest) returns (GetBuildPrototypeResponse);
+  rpc CreateBuildPrototype(CreateBuildPrototypeRequest) returns (CreateBuildPrototypeResponse);
+  rpc UpdateBuildPrototype(UpdateBuildPrototypeRequest) returns (UpdateBuildPrototypeResponse);
+}
+
+// Category-specific payloads. A build prototype carries exactly the data block
+// that matches its category; the others are absent. Message presence (non-nil)
+// mirrors the nullable JSONB columns / nil domain pointers.
+
+message BuildControlData {
+  string subtype = 1;
+}
+
+message BuildResourcesData {
+  double credits_production = 1;
+  double iron_production = 2;
+  double titanium_production = 3;
+  double antimatter_production = 4;
+  int32 credits_capacity = 5;
+  int32 iron_capacity = 6;
+  int32 titanium_capacity = 7;
+  int32 antimatter_capacity = 8;
+}
+
+message BuildDefenseData {
+  int32 defence_bonus = 1;
+}
+
+message BuildMilitaryData {
+  string unlock_army_category = 1;
+}
+
+message BuildIntelligenceData {
+  string subtype = 1;
+  int32 stealth_strength = 2;
+  int32 scan_range = 3;
+  int64 scan_cooldown = 4;
+}
+
+// BuildPrototype is the wire shape of domain.BuildItemPrototype. Like
+// ArmyPrototype, enum-like fields (category, faction, creation_sources, and the
+// subtype/unlock_army_category fields inside the data blocks) are carried as
+// strings because the DB is the source of truth. unlock_technology_id is
+// optional (absent = available by default).
+//
+// category_data is a oneof: exactly one block is present and it must match the
+// category string. The mutual-exclusivity constraint is encoded in the schema
+// rather than relying solely on application-layer validation.
+message BuildPrototype {
+  int64 id = 1;
+  string name = 2;
+  string category = 3;
+  repeated string creation_sources = 4;
+  string faction = 5;
+  optional int64 unlock_technology_id = 6;
+  string short_description = 7;
+  string full_description = 8;
+  PriceModel price = 9;
+  int64 production_time = 10;
+  int32 space = 11;
+  string image_url = 12;
+  oneof category_data {
+    BuildControlData control_data = 13;
+    BuildResourcesData resources_data = 14;
+    BuildDefenseData defense_data = 15;
+    BuildMilitaryData military_data = 16;
+    BuildIntelligenceData intelligence_data = 17;
+  }
+}
+
+message ListBuildPrototypesRequest {}
+
+message ListBuildPrototypesResponse {
+  repeated BuildPrototype prototypes = 1;
+}
+
+message GetBuildPrototypeRequest {
+  int64 id = 1;
+}
+
+message GetBuildPrototypeResponse {
+  BuildPrototype prototype = 1;
+}
+
+// CreateBuildPrototypeRequest carries the prototype to insert. The caller MUST set
+// a positive id: prototypes are ordered and each type occupies its own id range,
+// so the id is chosen by the caller rather than assigned by the server.
+message CreateBuildPrototypeRequest {
+  BuildPrototype prototype = 1;
+}
+
+message CreateBuildPrototypeResponse {
+  BuildPrototype prototype = 1;
+}
+
+// UpdateBuildPrototypeRequest overwrites the prototype identified by prototype.id.
+message UpdateBuildPrototypeRequest {
+  BuildPrototype prototype = 1;
+}
+
+message UpdateBuildPrototypeResponse {
+  BuildPrototype prototype = 1;
+}

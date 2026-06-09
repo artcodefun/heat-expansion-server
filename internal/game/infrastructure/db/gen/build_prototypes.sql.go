@@ -7,7 +7,68 @@ package gen
 
 import (
 	"context"
+	"database/sql"
+	"encoding/json"
+
+	"github.com/sqlc-dev/pqtype"
 )
+
+const createBuildPrototype = `-- name: CreateBuildPrototype :exec
+INSERT INTO game.build_item_prototypes (
+    id, name, category, faction, unlock_technology_id,
+    short_description, full_description, price, production_time,
+    space, image_url, control_data, resources_data, defense_data,
+    military_data, intelligence_data, creation_sources
+) VALUES (
+    $1, $2, $3, $4, $5,
+    $6, $7, $8, $9,
+    $10, $11, $12, $13, $14,
+    $15, $16, $17
+)
+`
+
+type CreateBuildPrototypeParams struct {
+	ID                 int64                 `json:"id"`
+	Name               string                `json:"name"`
+	Category           string                `json:"category"`
+	Faction            string                `json:"faction"`
+	UnlockTechnologyID sql.NullInt64         `json:"unlock_technology_id"`
+	ShortDescription   sql.NullString        `json:"short_description"`
+	FullDescription    sql.NullString        `json:"full_description"`
+	Price              json.RawMessage       `json:"price"`
+	ProductionTime     int64                 `json:"production_time"`
+	Space              int32                 `json:"space"`
+	ImageUrl           sql.NullString        `json:"image_url"`
+	ControlData        pqtype.NullRawMessage `json:"control_data"`
+	ResourcesData      pqtype.NullRawMessage `json:"resources_data"`
+	DefenseData        pqtype.NullRawMessage `json:"defense_data"`
+	MilitaryData       pqtype.NullRawMessage `json:"military_data"`
+	IntelligenceData   pqtype.NullRawMessage `json:"intelligence_data"`
+	CreationSources    json.RawMessage       `json:"creation_sources"`
+}
+
+func (q *Queries) CreateBuildPrototype(ctx context.Context, arg CreateBuildPrototypeParams) error {
+	_, err := q.exec(ctx, q.createBuildPrototypeStmt, createBuildPrototype,
+		arg.ID,
+		arg.Name,
+		arg.Category,
+		arg.Faction,
+		arg.UnlockTechnologyID,
+		arg.ShortDescription,
+		arg.FullDescription,
+		arg.Price,
+		arg.ProductionTime,
+		arg.Space,
+		arg.ImageUrl,
+		arg.ControlData,
+		arg.ResourcesData,
+		arg.DefenseData,
+		arg.MilitaryData,
+		arg.IntelligenceData,
+		arg.CreationSources,
+	)
+	return err
+}
 
 const getBuildPrototypeByID = `-- name: GetBuildPrototypeByID :one
 
@@ -87,4 +148,89 @@ func (q *Queries) ListBuildPrototypes(ctx context.Context) ([]BuildItemPrototype
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateBuildPrototype = `-- name: UpdateBuildPrototype :one
+UPDATE game.build_item_prototypes
+SET name                 = $1,
+    category             = $2,
+    faction              = $3,
+    unlock_technology_id = $4,
+    short_description    = $5,
+    full_description     = $6,
+    price                = $7,
+    production_time      = $8,
+    space                = $9,
+    image_url            = $10,
+    control_data         = $11,
+    resources_data       = $12,
+    defense_data         = $13,
+    military_data        = $14,
+    intelligence_data    = $15,
+    creation_sources     = $16
+WHERE id = $17
+RETURNING id, name, category, faction, unlock_technology_id, short_description, full_description, price, production_time, space, image_url, control_data, resources_data, defense_data, military_data, intelligence_data, creation_sources
+`
+
+type UpdateBuildPrototypeParams struct {
+	Name               string                `json:"name"`
+	Category           string                `json:"category"`
+	Faction            string                `json:"faction"`
+	UnlockTechnologyID sql.NullInt64         `json:"unlock_technology_id"`
+	ShortDescription   sql.NullString        `json:"short_description"`
+	FullDescription    sql.NullString        `json:"full_description"`
+	Price              json.RawMessage       `json:"price"`
+	ProductionTime     int64                 `json:"production_time"`
+	Space              int32                 `json:"space"`
+	ImageUrl           sql.NullString        `json:"image_url"`
+	ControlData        pqtype.NullRawMessage `json:"control_data"`
+	ResourcesData      pqtype.NullRawMessage `json:"resources_data"`
+	DefenseData        pqtype.NullRawMessage `json:"defense_data"`
+	MilitaryData       pqtype.NullRawMessage `json:"military_data"`
+	IntelligenceData   pqtype.NullRawMessage `json:"intelligence_data"`
+	CreationSources    json.RawMessage       `json:"creation_sources"`
+	ID                 int64                 `json:"id"`
+}
+
+func (q *Queries) UpdateBuildPrototype(ctx context.Context, arg UpdateBuildPrototypeParams) (BuildItemPrototype, error) {
+	row := q.queryRow(ctx, q.updateBuildPrototypeStmt, updateBuildPrototype,
+		arg.Name,
+		arg.Category,
+		arg.Faction,
+		arg.UnlockTechnologyID,
+		arg.ShortDescription,
+		arg.FullDescription,
+		arg.Price,
+		arg.ProductionTime,
+		arg.Space,
+		arg.ImageUrl,
+		arg.ControlData,
+		arg.ResourcesData,
+		arg.DefenseData,
+		arg.MilitaryData,
+		arg.IntelligenceData,
+		arg.CreationSources,
+		arg.ID,
+	)
+	var i BuildItemPrototype
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Category,
+		&i.Faction,
+		&i.UnlockTechnologyID,
+		&i.ShortDescription,
+		&i.FullDescription,
+		&i.Price,
+		&i.ProductionTime,
+		&i.Space,
+		&i.ImageUrl,
+		&i.ControlData,
+		&i.ResourcesData,
+		&i.DefenseData,
+		&i.MilitaryData,
+		&i.IntelligenceData,
+		&i.CreationSources,
+	)
+	return i, err
 }

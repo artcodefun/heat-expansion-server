@@ -71,7 +71,6 @@ services:
       - GAME_DB_URL=postgres://heatuser:heatpassword@db:5432/heatdb?sslmode=disable
       - GAME_MIGRATIONS_TABLE=game_schema_migrations
       - GAME_GRPC_PORT=9080
-      - GAME_GRPC_KEY=change-me-game-grpc-key
       - AUTH_PORT=8081
       - AUTH_DB_URL=postgres://heatuser:heatpassword@db:5432/heatdb?sslmode=disable
       - AUTH_MIGRATIONS_TABLE=auth_schema_migrations

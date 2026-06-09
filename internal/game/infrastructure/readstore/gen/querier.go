@@ -20,6 +20,7 @@ type Querier interface {
 	GetBaseOwnerByCoordinates(ctx context.Context, arg GetBaseOwnerByCoordinatesParams) (GetBaseOwnerByCoordinatesRow, error)
 	// Base stats only (read repository no longer hydrates full overview)
 	GetBaseStats(ctx context.Context, id int64) (GetBaseStatsRow, error)
+	GetBuildPrototypeByID(ctx context.Context, id int64) (BuildItemPrototype, error)
 	GetDiplomaticRelationship(ctx context.Context, arg GetDiplomaticRelationshipParams) (GetDiplomaticRelationshipRow, error)
 	GetDiplomaticRequest(ctx context.Context, id uuid.UUID) (GetDiplomaticRequestRow, error)
 	GetLatestScanBefore(ctx context.Context, arg GetLatestScanBeforeParams) (ScanReport, error)

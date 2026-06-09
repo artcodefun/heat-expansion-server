@@ -25,6 +25,17 @@ func hasNegative(vals ...int64) bool {
 	return false
 }
 
+// hasNegativeFloat is the float64 counterpart to hasNegative, used for the
+// fractional production rates on resource buildings.
+func hasNegativeFloat(vals ...float64) bool {
+	for _, v := range vals {
+		if v < 0 {
+			return true
+		}
+	}
+	return false
+}
+
 // validateFaction checks f against the known faction set. Factions are shared
 // across prototype types and locations.
 func validateFaction(f domain.Faction) error {

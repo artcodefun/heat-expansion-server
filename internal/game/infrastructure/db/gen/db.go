@@ -42,6 +42,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createBaseStmt, err = db.PrepareContext(ctx, createBase); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateBase: %w", err)
 	}
+	if q.createBuildPrototypeStmt, err = db.PrepareContext(ctx, createBuildPrototype); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateBuildPrototype: %w", err)
+	}
 	if q.createSectorStmt, err = db.PrepareContext(ctx, createSector); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateSector: %w", err)
 	}
@@ -381,6 +384,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateBlackMarketOfferStmt, err = db.PrepareContext(ctx, updateBlackMarketOffer); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateBlackMarketOffer: %w", err)
 	}
+	if q.updateBuildPrototypeStmt, err = db.PrepareContext(ctx, updateBuildPrototype); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateBuildPrototype: %w", err)
+	}
 	if q.updateDangerousLocationStmt, err = db.PrepareContext(ctx, updateDangerousLocation); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateDangerousLocation: %w", err)
 	}
@@ -441,6 +447,11 @@ func (q *Queries) Close() error {
 	if q.createBaseStmt != nil {
 		if cerr := q.createBaseStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createBaseStmt: %w", cerr)
+		}
+	}
+	if q.createBuildPrototypeStmt != nil {
+		if cerr := q.createBuildPrototypeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createBuildPrototypeStmt: %w", cerr)
 		}
 	}
 	if q.createSectorStmt != nil {
@@ -1008,6 +1019,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateBlackMarketOfferStmt: %w", cerr)
 		}
 	}
+	if q.updateBuildPrototypeStmt != nil {
+		if cerr := q.updateBuildPrototypeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateBuildPrototypeStmt: %w", cerr)
+		}
+	}
 	if q.updateDangerousLocationStmt != nil {
 		if cerr := q.updateDangerousLocationStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateDangerousLocationStmt: %w", cerr)
@@ -1098,6 +1114,7 @@ type Queries struct {
 	countResourcefulLocationsInRangeStmt           *sql.Stmt
 	createArmyPrototypeStmt                        *sql.Stmt
 	createBaseStmt                                 *sql.Stmt
+	createBuildPrototypeStmt                       *sql.Stmt
 	createSectorStmt                               *sql.Stmt
 	crystalCreditExistsStmt                        *sql.Stmt
 	deleteActivitiesByBaseStmt                     *sql.Stmt
@@ -1211,6 +1228,7 @@ type Queries struct {
 	updateArmyPrototypeStmt                        *sql.Stmt
 	updateBaseStmt                                 *sql.Stmt
 	updateBlackMarketOfferStmt                     *sql.Stmt
+	updateBuildPrototypeStmt                       *sql.Stmt
 	updateDangerousLocationStmt                    *sql.Stmt
 	updateDiplomaticRelationshipStmt               *sql.Stmt
 	updateDiplomaticRequestStmt                    *sql.Stmt
@@ -1232,6 +1250,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		countResourcefulLocationsInRangeStmt:           q.countResourcefulLocationsInRangeStmt,
 		createArmyPrototypeStmt:                        q.createArmyPrototypeStmt,
 		createBaseStmt:                                 q.createBaseStmt,
+		createBuildPrototypeStmt:                       q.createBuildPrototypeStmt,
 		createSectorStmt:                               q.createSectorStmt,
 		crystalCreditExistsStmt:                        q.crystalCreditExistsStmt,
 		deleteActivitiesByBaseStmt:                     q.deleteActivitiesByBaseStmt,
@@ -1345,6 +1364,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		updateArmyPrototypeStmt:                        q.updateArmyPrototypeStmt,
 		updateBaseStmt:                                 q.updateBaseStmt,
 		updateBlackMarketOfferStmt:                     q.updateBlackMarketOfferStmt,
+		updateBuildPrototypeStmt:                       q.updateBuildPrototypeStmt,
 		updateDangerousLocationStmt:                    q.updateDangerousLocationStmt,
 		updateDiplomaticRelationshipStmt:               q.updateDiplomaticRelationshipStmt,
 		updateDiplomaticRequestStmt:                    q.updateDiplomaticRequestStmt,

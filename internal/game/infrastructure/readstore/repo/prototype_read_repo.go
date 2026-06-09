@@ -34,3 +34,23 @@ func (r *PrototypeReadRepo) GetArmyPrototype(ctx context.Context, id int) (*read
 	v := mappers.ArmyPrototypeFromModel(row)
 	return &v, nil
 }
+
+func (r *PrototypeReadRepo) ListBuildPrototypes(ctx context.Context) ([]*readmodels.BuildItemPrototype, error) {
+	rows, err := r.q.ListBuildPrototypes(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return mappers.BuildPrototypesFromModels(rows), nil
+}
+
+func (r *PrototypeReadRepo) GetBuildPrototype(ctx context.Context, id int) (*readmodels.BuildItemPrototype, error) {
+	row, err := r.q.GetBuildPrototypeByID(ctx, int64(id))
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ports.ErrNotFound
+		}
+		return nil, err
+	}
+	v := mappers.BuildPrototypeFromModel(row)
+	return &v, nil
+}

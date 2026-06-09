@@ -114,8 +114,8 @@ func NewModule() *Module {
 	httpServer := httpapi.NewServer(router, addr)
 
 	grpcAddr := fmt.Sprintf(":%s", grpcPort)
-	grpcCommands := grpcapi.Commands{ArmyPrototype: commands.Prototype}
-	grpcQueries := grpcapi.Queries{ArmyPrototype: queries.Prototype}
+	grpcCommands := grpcapi.Commands{ArmyPrototype: commands.Prototype, BuildPrototype: commands.Prototype}
+	grpcQueries := grpcapi.Queries{ArmyPrototype: queries.Prototype, BuildPrototype: queries.Prototype}
 	grpcRouter := grpcapi.NewRouter(grpcCommands, grpcQueries, grpcKey, adapters.Translator)
 	grpcServer := grpcapi.NewServer(grpcRouter, grpcAddr)
 

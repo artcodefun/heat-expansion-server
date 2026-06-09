@@ -42,6 +42,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getBaseStatsStmt, err = db.PrepareContext(ctx, getBaseStats); err != nil {
 		return nil, fmt.Errorf("error preparing query GetBaseStats: %w", err)
 	}
+	if q.getBuildPrototypeByIDStmt, err = db.PrepareContext(ctx, getBuildPrototypeByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetBuildPrototypeByID: %w", err)
+	}
 	if q.getDiplomaticRelationshipStmt, err = db.PrepareContext(ctx, getDiplomaticRelationship); err != nil {
 		return nil, fmt.Errorf("error preparing query GetDiplomaticRelationship: %w", err)
 	}
@@ -234,6 +237,11 @@ func (q *Queries) Close() error {
 	if q.getBaseStatsStmt != nil {
 		if cerr := q.getBaseStatsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getBaseStatsStmt: %w", cerr)
+		}
+	}
+	if q.getBuildPrototypeByIDStmt != nil {
+		if cerr := q.getBuildPrototypeByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getBuildPrototypeByIDStmt: %w", cerr)
 		}
 	}
 	if q.getDiplomaticRelationshipStmt != nil {
@@ -546,6 +554,7 @@ type Queries struct {
 	getBaseStmt                             *sql.Stmt
 	getBaseOwnerByCoordinatesStmt           *sql.Stmt
 	getBaseStatsStmt                        *sql.Stmt
+	getBuildPrototypeByIDStmt               *sql.Stmt
 	getDiplomaticRelationshipStmt           *sql.Stmt
 	getDiplomaticRequestStmt                *sql.Stmt
 	getLatestScanBeforeStmt                 *sql.Stmt
@@ -611,6 +620,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getBaseStmt:                             q.getBaseStmt,
 		getBaseOwnerByCoordinatesStmt:           q.getBaseOwnerByCoordinatesStmt,
 		getBaseStatsStmt:                        q.getBaseStatsStmt,
+		getBuildPrototypeByIDStmt:               q.getBuildPrototypeByIDStmt,
 		getDiplomaticRelationshipStmt:           q.getDiplomaticRelationshipStmt,
 		getDiplomaticRequestStmt:                q.getDiplomaticRequestStmt,
 		getLatestScanBeforeStmt:                 q.getLatestScanBeforeStmt,

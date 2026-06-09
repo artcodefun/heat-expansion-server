@@ -12,12 +12,14 @@ import (
 
 // Commands groups CQRS command interfaces needed by gRPC handlers.
 type Commands struct {
-	ArmyPrototype cqrs.ArmyPrototypeCommands
+	ArmyPrototype  cqrs.ArmyPrototypeCommands
+	BuildPrototype cqrs.BuildPrototypeCommands
 }
 
 // Queries groups CQRS query interfaces needed by gRPC handlers.
 type Queries struct {
-	ArmyPrototype cqrs.ArmyPrototypeQueries
+	ArmyPrototype  cqrs.ArmyPrototypeQueries
+	BuildPrototype cqrs.BuildPrototypeQueries
 }
 
 type Router struct {
@@ -30,5 +32,6 @@ func NewRouter(cmd Commands, qry Queries, internalKey string, tr ports.Translato
 		grpc.ChainUnaryInterceptor(interceptor.KeyAuth(internalKey)),
 	)
 	gamev1.RegisterArmyPrototypeServiceServer(srv, handlers.NewArmyPrototypeHandler(cmd.ArmyPrototype, qry.ArmyPrototype, tr))
+	gamev1.RegisterBuildPrototypeServiceServer(srv, handlers.NewBuildPrototypeHandler(cmd.BuildPrototype, qry.BuildPrototype, tr))
 	return Router{srv}
 }

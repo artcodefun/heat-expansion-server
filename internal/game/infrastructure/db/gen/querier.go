@@ -19,6 +19,7 @@ type Querier interface {
 	CreateArmyPrototype(ctx context.Context, arg CreateArmyPrototypeParams) error
 	// User bases queries
 	CreateBase(ctx context.Context, arg CreateBaseParams) (UserBase, error)
+	CreateBuildPrototype(ctx context.Context, arg CreateBuildPrototypeParams) error
 	// Sector queries
 	CreateSector(ctx context.Context, arg CreateSectorParams) (Sector, error)
 	CrystalCreditExists(ctx context.Context, orderID uuid.UUID) (bool, error)
@@ -153,6 +154,7 @@ type Querier interface {
 	UpdateArmyPrototype(ctx context.Context, arg UpdateArmyPrototypeParams) (ArmyItemPrototype, error)
 	UpdateBase(ctx context.Context, arg UpdateBaseParams) (UserBase, error)
 	UpdateBlackMarketOffer(ctx context.Context, arg UpdateBlackMarketOfferParams) (BlackMarketOffer, error)
+	UpdateBuildPrototype(ctx context.Context, arg UpdateBuildPrototypeParams) (BuildItemPrototype, error)
 	UpdateDangerousLocation(ctx context.Context, arg UpdateDangerousLocationParams) error
 	UpdateDiplomaticRelationship(ctx context.Context, arg UpdateDiplomaticRelationshipParams) error
 	UpdateDiplomaticRequest(ctx context.Context, arg UpdateDiplomaticRequestParams) error

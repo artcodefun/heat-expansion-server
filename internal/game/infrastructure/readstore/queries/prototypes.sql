@@ -15,6 +15,11 @@ SELECT *
 FROM game.build_item_prototypes
 ORDER BY id;
 
+-- name: GetBuildPrototypeByID :one
+SELECT *
+FROM game.build_item_prototypes
+WHERE id = $1;
+
 -- name: ListStoragePrototypes :many
 SELECT *
 FROM game.storage_item_prototypes
