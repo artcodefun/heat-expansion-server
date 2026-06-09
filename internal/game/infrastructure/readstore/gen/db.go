@@ -72,6 +72,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getScansNearStmt, err = db.PrepareContext(ctx, getScansNear); err != nil {
 		return nil, fmt.Errorf("error preparing query GetScansNear: %w", err)
 	}
+	if q.getStoragePrototypeByIDStmt, err = db.PrepareContext(ctx, getStoragePrototypeByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetStoragePrototypeByID: %w", err)
+	}
 	if q.getTradeOperationStmt, err = db.PrepareContext(ctx, getTradeOperation); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTradeOperation: %w", err)
 	}
@@ -287,6 +290,11 @@ func (q *Queries) Close() error {
 	if q.getScansNearStmt != nil {
 		if cerr := q.getScansNearStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getScansNearStmt: %w", cerr)
+		}
+	}
+	if q.getStoragePrototypeByIDStmt != nil {
+		if cerr := q.getStoragePrototypeByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getStoragePrototypeByIDStmt: %w", cerr)
 		}
 	}
 	if q.getTradeOperationStmt != nil {
@@ -564,6 +572,7 @@ type Queries struct {
 	getScanReportByIDStmt                   *sql.Stmt
 	getScanReportByOperationUUIDStmt        *sql.Stmt
 	getScansNearStmt                        *sql.Stmt
+	getStoragePrototypeByIDStmt             *sql.Stmt
 	getTradeOperationStmt                   *sql.Stmt
 	getUserProfileStmt                      *sql.Stmt
 	listActiveBlackMarketArmyOffersStmt     *sql.Stmt
@@ -630,6 +639,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getScanReportByIDStmt:                   q.getScanReportByIDStmt,
 		getScanReportByOperationUUIDStmt:        q.getScanReportByOperationUUIDStmt,
 		getScansNearStmt:                        q.getScansNearStmt,
+		getStoragePrototypeByIDStmt:             q.getStoragePrototypeByIDStmt,
 		getTradeOperationStmt:                   q.getTradeOperationStmt,
 		getUserProfileStmt:                      q.getUserProfileStmt,
 		listActiveBlackMarketArmyOffersStmt:     q.listActiveBlackMarketArmyOffersStmt,

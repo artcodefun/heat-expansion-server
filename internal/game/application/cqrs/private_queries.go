@@ -17,3 +17,9 @@ type BuildPrototypeQueries interface {
 	ListBuildPrototypes(ctx context.Context) ([]*readmodels.BuildItemPrototype, error)
 	GetBuildPrototype(ctx context.Context, id int) (*readmodels.BuildItemPrototype, error)
 }
+
+// StoragePrototypeQueries exposes raw storage prototype catalog reads, without per-base availability filtering.
+type StoragePrototypeQueries interface {
+	ListStoragePrototypes(ctx context.Context) ([]*readmodels.StorageItemPrototype, error)
+	GetStoragePrototype(ctx context.Context, id int) (*readmodels.StorageItemPrototype, error)
+}

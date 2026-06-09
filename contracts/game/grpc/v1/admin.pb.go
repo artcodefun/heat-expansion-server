@@ -1500,6 +1500,841 @@ func (x *UpdateBuildPrototypeResponse) GetPrototype() *BuildPrototype {
 	return nil
 }
 
+type StorageBuffData struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Type            string                 `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
+	Value           float32                `protobuf:"fixed32,2,opt,name=value,proto3" json:"value,omitempty"`
+	DurationSeconds int64                  `protobuf:"varint,3,opt,name=duration_seconds,json=durationSeconds,proto3" json:"duration_seconds,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *StorageBuffData) Reset() {
+	*x = StorageBuffData{}
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StorageBuffData) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StorageBuffData) ProtoMessage() {}
+
+func (x *StorageBuffData) ProtoReflect() protoreflect.Message {
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StorageBuffData.ProtoReflect.Descriptor instead.
+func (*StorageBuffData) Descriptor() ([]byte, []int) {
+	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *StorageBuffData) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
+func (x *StorageBuffData) GetValue() float32 {
+	if x != nil {
+		return x.Value
+	}
+	return 0
+}
+
+func (x *StorageBuffData) GetDurationSeconds() int64 {
+	if x != nil {
+		return x.DurationSeconds
+	}
+	return 0
+}
+
+type StorageIntelData struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	Type              string                 `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
+	DecryptionSeconds int64                  `protobuf:"varint,2,opt,name=decryption_seconds,json=decryptionSeconds,proto3" json:"decryption_seconds,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *StorageIntelData) Reset() {
+	*x = StorageIntelData{}
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StorageIntelData) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StorageIntelData) ProtoMessage() {}
+
+func (x *StorageIntelData) ProtoReflect() protoreflect.Message {
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StorageIntelData.ProtoReflect.Descriptor instead.
+func (*StorageIntelData) Descriptor() ([]byte, []int) {
+	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *StorageIntelData) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
+func (x *StorageIntelData) GetDecryptionSeconds() int64 {
+	if x != nil {
+		return x.DecryptionSeconds
+	}
+	return 0
+}
+
+// StorageDamagedData describes how to restore a damaged army unit.
+// original_unit_id references the ArmyItemPrototype the item restores into.
+type StorageDamagedData struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	RestorePrice       *PriceModel            `protobuf:"bytes,1,opt,name=restore_price,json=restorePrice,proto3" json:"restore_price,omitempty"`
+	RestorationSeconds int64                  `protobuf:"varint,2,opt,name=restoration_seconds,json=restorationSeconds,proto3" json:"restoration_seconds,omitempty"`
+	OriginalUnitId     int64                  `protobuf:"varint,3,opt,name=original_unit_id,json=originalUnitId,proto3" json:"original_unit_id,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *StorageDamagedData) Reset() {
+	*x = StorageDamagedData{}
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StorageDamagedData) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StorageDamagedData) ProtoMessage() {}
+
+func (x *StorageDamagedData) ProtoReflect() protoreflect.Message {
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StorageDamagedData.ProtoReflect.Descriptor instead.
+func (*StorageDamagedData) Descriptor() ([]byte, []int) {
+	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *StorageDamagedData) GetRestorePrice() *PriceModel {
+	if x != nil {
+		return x.RestorePrice
+	}
+	return nil
+}
+
+func (x *StorageDamagedData) GetRestorationSeconds() int64 {
+	if x != nil {
+		return x.RestorationSeconds
+	}
+	return 0
+}
+
+func (x *StorageDamagedData) GetOriginalUnitId() int64 {
+	if x != nil {
+		return x.OriginalUnitId
+	}
+	return 0
+}
+
+type StorageArtifactData struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Type          string                 `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
+	Value         float32                `protobuf:"fixed32,2,opt,name=value,proto3" json:"value,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StorageArtifactData) Reset() {
+	*x = StorageArtifactData{}
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StorageArtifactData) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StorageArtifactData) ProtoMessage() {}
+
+func (x *StorageArtifactData) ProtoReflect() protoreflect.Message {
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StorageArtifactData.ProtoReflect.Descriptor instead.
+func (*StorageArtifactData) Descriptor() ([]byte, []int) {
+	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *StorageArtifactData) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
+func (x *StorageArtifactData) GetValue() float32 {
+	if x != nil {
+		return x.Value
+	}
+	return 0
+}
+
+type StorageConsumableData struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Type          string                 `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
+	BoxContents   []string               `protobuf:"bytes,2,rep,name=box_contents,json=boxContents,proto3" json:"box_contents,omitempty"`
+	BoxSize       int32                  `protobuf:"varint,3,opt,name=box_size,json=boxSize,proto3" json:"box_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StorageConsumableData) Reset() {
+	*x = StorageConsumableData{}
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StorageConsumableData) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StorageConsumableData) ProtoMessage() {}
+
+func (x *StorageConsumableData) ProtoReflect() protoreflect.Message {
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StorageConsumableData.ProtoReflect.Descriptor instead.
+func (*StorageConsumableData) Descriptor() ([]byte, []int) {
+	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *StorageConsumableData) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
+func (x *StorageConsumableData) GetBoxContents() []string {
+	if x != nil {
+		return x.BoxContents
+	}
+	return nil
+}
+
+func (x *StorageConsumableData) GetBoxSize() int32 {
+	if x != nil {
+		return x.BoxSize
+	}
+	return 0
+}
+
+// StoragePrototype is the wire shape of domain.StorageItemPrototype. Like the
+// other prototype types, enum-like fields (category, creation_sources, and the
+// type fields inside data blocks) are carried as strings because the DB is the
+// source of truth. estimated_worth is a rough credit value used in trading.
+//
+// category_data is a oneof: exactly one block is present and it must match the
+// category string.
+type StoragePrototype struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Id               int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name             string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Category         string                 `protobuf:"bytes,3,opt,name=category,proto3" json:"category,omitempty"`
+	CreationSources  []string               `protobuf:"bytes,4,rep,name=creation_sources,json=creationSources,proto3" json:"creation_sources,omitempty"`
+	EstimatedWorth   int32                  `protobuf:"varint,5,opt,name=estimated_worth,json=estimatedWorth,proto3" json:"estimated_worth,omitempty"`
+	ShortDescription string                 `protobuf:"bytes,6,opt,name=short_description,json=shortDescription,proto3" json:"short_description,omitempty"`
+	FullDescription  string                 `protobuf:"bytes,7,opt,name=full_description,json=fullDescription,proto3" json:"full_description,omitempty"`
+	ImageUrl         string                 `protobuf:"bytes,8,opt,name=image_url,json=imageUrl,proto3" json:"image_url,omitempty"`
+	// Types that are valid to be assigned to CategoryData:
+	//
+	//	*StoragePrototype_BuffData
+	//	*StoragePrototype_IntelData
+	//	*StoragePrototype_DamagedData
+	//	*StoragePrototype_ArtifactData
+	//	*StoragePrototype_ConsumableData
+	CategoryData  isStoragePrototype_CategoryData `protobuf_oneof:"category_data"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StoragePrototype) Reset() {
+	*x = StoragePrototype{}
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StoragePrototype) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StoragePrototype) ProtoMessage() {}
+
+func (x *StoragePrototype) ProtoReflect() protoreflect.Message {
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StoragePrototype.ProtoReflect.Descriptor instead.
+func (*StoragePrototype) Descriptor() ([]byte, []int) {
+	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *StoragePrototype) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *StoragePrototype) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *StoragePrototype) GetCategory() string {
+	if x != nil {
+		return x.Category
+	}
+	return ""
+}
+
+func (x *StoragePrototype) GetCreationSources() []string {
+	if x != nil {
+		return x.CreationSources
+	}
+	return nil
+}
+
+func (x *StoragePrototype) GetEstimatedWorth() int32 {
+	if x != nil {
+		return x.EstimatedWorth
+	}
+	return 0
+}
+
+func (x *StoragePrototype) GetShortDescription() string {
+	if x != nil {
+		return x.ShortDescription
+	}
+	return ""
+}
+
+func (x *StoragePrototype) GetFullDescription() string {
+	if x != nil {
+		return x.FullDescription
+	}
+	return ""
+}
+
+func (x *StoragePrototype) GetImageUrl() string {
+	if x != nil {
+		return x.ImageUrl
+	}
+	return ""
+}
+
+func (x *StoragePrototype) GetCategoryData() isStoragePrototype_CategoryData {
+	if x != nil {
+		return x.CategoryData
+	}
+	return nil
+}
+
+func (x *StoragePrototype) GetBuffData() *StorageBuffData {
+	if x != nil {
+		if x, ok := x.CategoryData.(*StoragePrototype_BuffData); ok {
+			return x.BuffData
+		}
+	}
+	return nil
+}
+
+func (x *StoragePrototype) GetIntelData() *StorageIntelData {
+	if x != nil {
+		if x, ok := x.CategoryData.(*StoragePrototype_IntelData); ok {
+			return x.IntelData
+		}
+	}
+	return nil
+}
+
+func (x *StoragePrototype) GetDamagedData() *StorageDamagedData {
+	if x != nil {
+		if x, ok := x.CategoryData.(*StoragePrototype_DamagedData); ok {
+			return x.DamagedData
+		}
+	}
+	return nil
+}
+
+func (x *StoragePrototype) GetArtifactData() *StorageArtifactData {
+	if x != nil {
+		if x, ok := x.CategoryData.(*StoragePrototype_ArtifactData); ok {
+			return x.ArtifactData
+		}
+	}
+	return nil
+}
+
+func (x *StoragePrototype) GetConsumableData() *StorageConsumableData {
+	if x != nil {
+		if x, ok := x.CategoryData.(*StoragePrototype_ConsumableData); ok {
+			return x.ConsumableData
+		}
+	}
+	return nil
+}
+
+type isStoragePrototype_CategoryData interface {
+	isStoragePrototype_CategoryData()
+}
+
+type StoragePrototype_BuffData struct {
+	BuffData *StorageBuffData `protobuf:"bytes,9,opt,name=buff_data,json=buffData,proto3,oneof"`
+}
+
+type StoragePrototype_IntelData struct {
+	IntelData *StorageIntelData `protobuf:"bytes,10,opt,name=intel_data,json=intelData,proto3,oneof"`
+}
+
+type StoragePrototype_DamagedData struct {
+	DamagedData *StorageDamagedData `protobuf:"bytes,11,opt,name=damaged_data,json=damagedData,proto3,oneof"`
+}
+
+type StoragePrototype_ArtifactData struct {
+	ArtifactData *StorageArtifactData `protobuf:"bytes,12,opt,name=artifact_data,json=artifactData,proto3,oneof"`
+}
+
+type StoragePrototype_ConsumableData struct {
+	ConsumableData *StorageConsumableData `protobuf:"bytes,13,opt,name=consumable_data,json=consumableData,proto3,oneof"`
+}
+
+func (*StoragePrototype_BuffData) isStoragePrototype_CategoryData() {}
+
+func (*StoragePrototype_IntelData) isStoragePrototype_CategoryData() {}
+
+func (*StoragePrototype_DamagedData) isStoragePrototype_CategoryData() {}
+
+func (*StoragePrototype_ArtifactData) isStoragePrototype_CategoryData() {}
+
+func (*StoragePrototype_ConsumableData) isStoragePrototype_CategoryData() {}
+
+type ListStoragePrototypesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListStoragePrototypesRequest) Reset() {
+	*x = ListStoragePrototypesRequest{}
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListStoragePrototypesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListStoragePrototypesRequest) ProtoMessage() {}
+
+func (x *ListStoragePrototypesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListStoragePrototypesRequest.ProtoReflect.Descriptor instead.
+func (*ListStoragePrototypesRequest) Descriptor() ([]byte, []int) {
+	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{30}
+}
+
+type ListStoragePrototypesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Prototypes    []*StoragePrototype    `protobuf:"bytes,1,rep,name=prototypes,proto3" json:"prototypes,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListStoragePrototypesResponse) Reset() {
+	*x = ListStoragePrototypesResponse{}
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListStoragePrototypesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListStoragePrototypesResponse) ProtoMessage() {}
+
+func (x *ListStoragePrototypesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListStoragePrototypesResponse.ProtoReflect.Descriptor instead.
+func (*ListStoragePrototypesResponse) Descriptor() ([]byte, []int) {
+	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *ListStoragePrototypesResponse) GetPrototypes() []*StoragePrototype {
+	if x != nil {
+		return x.Prototypes
+	}
+	return nil
+}
+
+type GetStoragePrototypeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetStoragePrototypeRequest) Reset() {
+	*x = GetStoragePrototypeRequest{}
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetStoragePrototypeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetStoragePrototypeRequest) ProtoMessage() {}
+
+func (x *GetStoragePrototypeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetStoragePrototypeRequest.ProtoReflect.Descriptor instead.
+func (*GetStoragePrototypeRequest) Descriptor() ([]byte, []int) {
+	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *GetStoragePrototypeRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type GetStoragePrototypeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Prototype     *StoragePrototype      `protobuf:"bytes,1,opt,name=prototype,proto3" json:"prototype,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetStoragePrototypeResponse) Reset() {
+	*x = GetStoragePrototypeResponse{}
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[33]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetStoragePrototypeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetStoragePrototypeResponse) ProtoMessage() {}
+
+func (x *GetStoragePrototypeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[33]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetStoragePrototypeResponse.ProtoReflect.Descriptor instead.
+func (*GetStoragePrototypeResponse) Descriptor() ([]byte, []int) {
+	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{33}
+}
+
+func (x *GetStoragePrototypeResponse) GetPrototype() *StoragePrototype {
+	if x != nil {
+		return x.Prototype
+	}
+	return nil
+}
+
+// CreateStoragePrototypeRequest carries the prototype to insert. The caller MUST
+// set a positive id: prototypes are ordered and each type occupies its own id range,
+// so the id is chosen by the caller rather than assigned by the server.
+type CreateStoragePrototypeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Prototype     *StoragePrototype      `protobuf:"bytes,1,opt,name=prototype,proto3" json:"prototype,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateStoragePrototypeRequest) Reset() {
+	*x = CreateStoragePrototypeRequest{}
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[34]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateStoragePrototypeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateStoragePrototypeRequest) ProtoMessage() {}
+
+func (x *CreateStoragePrototypeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[34]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateStoragePrototypeRequest.ProtoReflect.Descriptor instead.
+func (*CreateStoragePrototypeRequest) Descriptor() ([]byte, []int) {
+	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{34}
+}
+
+func (x *CreateStoragePrototypeRequest) GetPrototype() *StoragePrototype {
+	if x != nil {
+		return x.Prototype
+	}
+	return nil
+}
+
+type CreateStoragePrototypeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Prototype     *StoragePrototype      `protobuf:"bytes,1,opt,name=prototype,proto3" json:"prototype,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateStoragePrototypeResponse) Reset() {
+	*x = CreateStoragePrototypeResponse{}
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[35]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateStoragePrototypeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateStoragePrototypeResponse) ProtoMessage() {}
+
+func (x *CreateStoragePrototypeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[35]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateStoragePrototypeResponse.ProtoReflect.Descriptor instead.
+func (*CreateStoragePrototypeResponse) Descriptor() ([]byte, []int) {
+	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{35}
+}
+
+func (x *CreateStoragePrototypeResponse) GetPrototype() *StoragePrototype {
+	if x != nil {
+		return x.Prototype
+	}
+	return nil
+}
+
+// UpdateStoragePrototypeRequest overwrites the prototype identified by prototype.id.
+type UpdateStoragePrototypeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Prototype     *StoragePrototype      `protobuf:"bytes,1,opt,name=prototype,proto3" json:"prototype,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateStoragePrototypeRequest) Reset() {
+	*x = UpdateStoragePrototypeRequest{}
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[36]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateStoragePrototypeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateStoragePrototypeRequest) ProtoMessage() {}
+
+func (x *UpdateStoragePrototypeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[36]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateStoragePrototypeRequest.ProtoReflect.Descriptor instead.
+func (*UpdateStoragePrototypeRequest) Descriptor() ([]byte, []int) {
+	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{36}
+}
+
+func (x *UpdateStoragePrototypeRequest) GetPrototype() *StoragePrototype {
+	if x != nil {
+		return x.Prototype
+	}
+	return nil
+}
+
+type UpdateStoragePrototypeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Prototype     *StoragePrototype      `protobuf:"bytes,1,opt,name=prototype,proto3" json:"prototype,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateStoragePrototypeResponse) Reset() {
+	*x = UpdateStoragePrototypeResponse{}
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[37]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateStoragePrototypeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateStoragePrototypeResponse) ProtoMessage() {}
+
+func (x *UpdateStoragePrototypeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[37]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateStoragePrototypeResponse.ProtoReflect.Descriptor instead.
+func (*UpdateStoragePrototypeResponse) Descriptor() ([]byte, []int) {
+	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{37}
+}
+
+func (x *UpdateStoragePrototypeResponse) GetPrototype() *StoragePrototype {
+	if x != nil {
+		return x.Prototype
+	}
+	return nil
+}
+
 var File_game_grpc_v1_admin_proto protoreflect.FileDescriptor
 
 const file_game_grpc_v1_admin_proto_rawDesc = "" +
@@ -1608,7 +2443,59 @@ const file_game_grpc_v1_admin_proto_rawDesc = "" +
 	"\x1bUpdateBuildPrototypeRequest\x12:\n" +
 	"\tprototype\x18\x01 \x01(\v2\x1c.game.grpc.v1.BuildPrototypeR\tprototype\"Z\n" +
 	"\x1cUpdateBuildPrototypeResponse\x12:\n" +
-	"\tprototype\x18\x01 \x01(\v2\x1c.game.grpc.v1.BuildPrototypeR\tprototype2\xba\x03\n" +
+	"\tprototype\x18\x01 \x01(\v2\x1c.game.grpc.v1.BuildPrototypeR\tprototype\"f\n" +
+	"\x0fStorageBuffData\x12\x12\n" +
+	"\x04type\x18\x01 \x01(\tR\x04type\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\x02R\x05value\x12)\n" +
+	"\x10duration_seconds\x18\x03 \x01(\x03R\x0fdurationSeconds\"U\n" +
+	"\x10StorageIntelData\x12\x12\n" +
+	"\x04type\x18\x01 \x01(\tR\x04type\x12-\n" +
+	"\x12decryption_seconds\x18\x02 \x01(\x03R\x11decryptionSeconds\"\xae\x01\n" +
+	"\x12StorageDamagedData\x12=\n" +
+	"\rrestore_price\x18\x01 \x01(\v2\x18.game.grpc.v1.PriceModelR\frestorePrice\x12/\n" +
+	"\x13restoration_seconds\x18\x02 \x01(\x03R\x12restorationSeconds\x12(\n" +
+	"\x10original_unit_id\x18\x03 \x01(\x03R\x0eoriginalUnitId\"?\n" +
+	"\x13StorageArtifactData\x12\x12\n" +
+	"\x04type\x18\x01 \x01(\tR\x04type\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\x02R\x05value\"i\n" +
+	"\x15StorageConsumableData\x12\x12\n" +
+	"\x04type\x18\x01 \x01(\tR\x04type\x12!\n" +
+	"\fbox_contents\x18\x02 \x03(\tR\vboxContents\x12\x19\n" +
+	"\bbox_size\x18\x03 \x01(\x05R\aboxSize\"\x8c\x05\n" +
+	"\x10StoragePrototype\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1a\n" +
+	"\bcategory\x18\x03 \x01(\tR\bcategory\x12)\n" +
+	"\x10creation_sources\x18\x04 \x03(\tR\x0fcreationSources\x12'\n" +
+	"\x0festimated_worth\x18\x05 \x01(\x05R\x0eestimatedWorth\x12+\n" +
+	"\x11short_description\x18\x06 \x01(\tR\x10shortDescription\x12)\n" +
+	"\x10full_description\x18\a \x01(\tR\x0ffullDescription\x12\x1b\n" +
+	"\timage_url\x18\b \x01(\tR\bimageUrl\x12<\n" +
+	"\tbuff_data\x18\t \x01(\v2\x1d.game.grpc.v1.StorageBuffDataH\x00R\bbuffData\x12?\n" +
+	"\n" +
+	"intel_data\x18\n" +
+	" \x01(\v2\x1e.game.grpc.v1.StorageIntelDataH\x00R\tintelData\x12E\n" +
+	"\fdamaged_data\x18\v \x01(\v2 .game.grpc.v1.StorageDamagedDataH\x00R\vdamagedData\x12H\n" +
+	"\rartifact_data\x18\f \x01(\v2!.game.grpc.v1.StorageArtifactDataH\x00R\fartifactData\x12N\n" +
+	"\x0fconsumable_data\x18\r \x01(\v2#.game.grpc.v1.StorageConsumableDataH\x00R\x0econsumableDataB\x0f\n" +
+	"\rcategory_data\"\x1e\n" +
+	"\x1cListStoragePrototypesRequest\"_\n" +
+	"\x1dListStoragePrototypesResponse\x12>\n" +
+	"\n" +
+	"prototypes\x18\x01 \x03(\v2\x1e.game.grpc.v1.StoragePrototypeR\n" +
+	"prototypes\",\n" +
+	"\x1aGetStoragePrototypeRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"[\n" +
+	"\x1bGetStoragePrototypeResponse\x12<\n" +
+	"\tprototype\x18\x01 \x01(\v2\x1e.game.grpc.v1.StoragePrototypeR\tprototype\"]\n" +
+	"\x1dCreateStoragePrototypeRequest\x12<\n" +
+	"\tprototype\x18\x01 \x01(\v2\x1e.game.grpc.v1.StoragePrototypeR\tprototype\"^\n" +
+	"\x1eCreateStoragePrototypeResponse\x12<\n" +
+	"\tprototype\x18\x01 \x01(\v2\x1e.game.grpc.v1.StoragePrototypeR\tprototype\"]\n" +
+	"\x1dUpdateStoragePrototypeRequest\x12<\n" +
+	"\tprototype\x18\x01 \x01(\v2\x1e.game.grpc.v1.StoragePrototypeR\tprototype\"^\n" +
+	"\x1eUpdateStoragePrototypeResponse\x12<\n" +
+	"\tprototype\x18\x01 \x01(\v2\x1e.game.grpc.v1.StoragePrototypeR\tprototype2\xba\x03\n" +
 	"\x14ArmyPrototypeService\x12g\n" +
 	"\x12ListArmyPrototypes\x12'.game.grpc.v1.ListArmyPrototypesRequest\x1a(.game.grpc.v1.ListArmyPrototypesResponse\x12a\n" +
 	"\x10GetArmyPrototype\x12%.game.grpc.v1.GetArmyPrototypeRequest\x1a&.game.grpc.v1.GetArmyPrototypeResponse\x12j\n" +
@@ -1618,7 +2505,12 @@ const file_game_grpc_v1_admin_proto_rawDesc = "" +
 	"\x13ListBuildPrototypes\x12(.game.grpc.v1.ListBuildPrototypesRequest\x1a).game.grpc.v1.ListBuildPrototypesResponse\x12d\n" +
 	"\x11GetBuildPrototype\x12&.game.grpc.v1.GetBuildPrototypeRequest\x1a'.game.grpc.v1.GetBuildPrototypeResponse\x12m\n" +
 	"\x14CreateBuildPrototype\x12).game.grpc.v1.CreateBuildPrototypeRequest\x1a*.game.grpc.v1.CreateBuildPrototypeResponse\x12m\n" +
-	"\x14UpdateBuildPrototype\x12).game.grpc.v1.UpdateBuildPrototypeRequest\x1a*.game.grpc.v1.UpdateBuildPrototypeResponseBKZIgithub.com/artcodefun/heat-expansion-server/contracts/game/grpc/v1;gamev1b\x06proto3"
+	"\x14UpdateBuildPrototype\x12).game.grpc.v1.UpdateBuildPrototypeRequest\x1a*.game.grpc.v1.UpdateBuildPrototypeResponse2\xe1\x03\n" +
+	"\x17StoragePrototypeService\x12p\n" +
+	"\x15ListStoragePrototypes\x12*.game.grpc.v1.ListStoragePrototypesRequest\x1a+.game.grpc.v1.ListStoragePrototypesResponse\x12j\n" +
+	"\x13GetStoragePrototype\x12(.game.grpc.v1.GetStoragePrototypeRequest\x1a).game.grpc.v1.GetStoragePrototypeResponse\x12s\n" +
+	"\x16CreateStoragePrototype\x12+.game.grpc.v1.CreateStoragePrototypeRequest\x1a,.game.grpc.v1.CreateStoragePrototypeResponse\x12s\n" +
+	"\x16UpdateStoragePrototype\x12+.game.grpc.v1.UpdateStoragePrototypeRequest\x1a,.game.grpc.v1.UpdateStoragePrototypeResponseBKZIgithub.com/artcodefun/heat-expansion-server/contracts/game/grpc/v1;gamev1b\x06proto3"
 
 var (
 	file_game_grpc_v1_admin_proto_rawDescOnce sync.Once
@@ -1632,32 +2524,46 @@ func file_game_grpc_v1_admin_proto_rawDescGZIP() []byte {
 	return file_game_grpc_v1_admin_proto_rawDescData
 }
 
-var file_game_grpc_v1_admin_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
+var file_game_grpc_v1_admin_proto_msgTypes = make([]protoimpl.MessageInfo, 38)
 var file_game_grpc_v1_admin_proto_goTypes = []any{
-	(*PriceModel)(nil),                   // 0: game.grpc.v1.PriceModel
-	(*ArmyPrototype)(nil),                // 1: game.grpc.v1.ArmyPrototype
-	(*ListArmyPrototypesRequest)(nil),    // 2: game.grpc.v1.ListArmyPrototypesRequest
-	(*ListArmyPrototypesResponse)(nil),   // 3: game.grpc.v1.ListArmyPrototypesResponse
-	(*GetArmyPrototypeRequest)(nil),      // 4: game.grpc.v1.GetArmyPrototypeRequest
-	(*GetArmyPrototypeResponse)(nil),     // 5: game.grpc.v1.GetArmyPrototypeResponse
-	(*CreateArmyPrototypeRequest)(nil),   // 6: game.grpc.v1.CreateArmyPrototypeRequest
-	(*CreateArmyPrototypeResponse)(nil),  // 7: game.grpc.v1.CreateArmyPrototypeResponse
-	(*UpdateArmyPrototypeRequest)(nil),   // 8: game.grpc.v1.UpdateArmyPrototypeRequest
-	(*UpdateArmyPrototypeResponse)(nil),  // 9: game.grpc.v1.UpdateArmyPrototypeResponse
-	(*BuildControlData)(nil),             // 10: game.grpc.v1.BuildControlData
-	(*BuildResourcesData)(nil),           // 11: game.grpc.v1.BuildResourcesData
-	(*BuildDefenseData)(nil),             // 12: game.grpc.v1.BuildDefenseData
-	(*BuildMilitaryData)(nil),            // 13: game.grpc.v1.BuildMilitaryData
-	(*BuildIntelligenceData)(nil),        // 14: game.grpc.v1.BuildIntelligenceData
-	(*BuildPrototype)(nil),               // 15: game.grpc.v1.BuildPrototype
-	(*ListBuildPrototypesRequest)(nil),   // 16: game.grpc.v1.ListBuildPrototypesRequest
-	(*ListBuildPrototypesResponse)(nil),  // 17: game.grpc.v1.ListBuildPrototypesResponse
-	(*GetBuildPrototypeRequest)(nil),     // 18: game.grpc.v1.GetBuildPrototypeRequest
-	(*GetBuildPrototypeResponse)(nil),    // 19: game.grpc.v1.GetBuildPrototypeResponse
-	(*CreateBuildPrototypeRequest)(nil),  // 20: game.grpc.v1.CreateBuildPrototypeRequest
-	(*CreateBuildPrototypeResponse)(nil), // 21: game.grpc.v1.CreateBuildPrototypeResponse
-	(*UpdateBuildPrototypeRequest)(nil),  // 22: game.grpc.v1.UpdateBuildPrototypeRequest
-	(*UpdateBuildPrototypeResponse)(nil), // 23: game.grpc.v1.UpdateBuildPrototypeResponse
+	(*PriceModel)(nil),                     // 0: game.grpc.v1.PriceModel
+	(*ArmyPrototype)(nil),                  // 1: game.grpc.v1.ArmyPrototype
+	(*ListArmyPrototypesRequest)(nil),      // 2: game.grpc.v1.ListArmyPrototypesRequest
+	(*ListArmyPrototypesResponse)(nil),     // 3: game.grpc.v1.ListArmyPrototypesResponse
+	(*GetArmyPrototypeRequest)(nil),        // 4: game.grpc.v1.GetArmyPrototypeRequest
+	(*GetArmyPrototypeResponse)(nil),       // 5: game.grpc.v1.GetArmyPrototypeResponse
+	(*CreateArmyPrototypeRequest)(nil),     // 6: game.grpc.v1.CreateArmyPrototypeRequest
+	(*CreateArmyPrototypeResponse)(nil),    // 7: game.grpc.v1.CreateArmyPrototypeResponse
+	(*UpdateArmyPrototypeRequest)(nil),     // 8: game.grpc.v1.UpdateArmyPrototypeRequest
+	(*UpdateArmyPrototypeResponse)(nil),    // 9: game.grpc.v1.UpdateArmyPrototypeResponse
+	(*BuildControlData)(nil),               // 10: game.grpc.v1.BuildControlData
+	(*BuildResourcesData)(nil),             // 11: game.grpc.v1.BuildResourcesData
+	(*BuildDefenseData)(nil),               // 12: game.grpc.v1.BuildDefenseData
+	(*BuildMilitaryData)(nil),              // 13: game.grpc.v1.BuildMilitaryData
+	(*BuildIntelligenceData)(nil),          // 14: game.grpc.v1.BuildIntelligenceData
+	(*BuildPrototype)(nil),                 // 15: game.grpc.v1.BuildPrototype
+	(*ListBuildPrototypesRequest)(nil),     // 16: game.grpc.v1.ListBuildPrototypesRequest
+	(*ListBuildPrototypesResponse)(nil),    // 17: game.grpc.v1.ListBuildPrototypesResponse
+	(*GetBuildPrototypeRequest)(nil),       // 18: game.grpc.v1.GetBuildPrototypeRequest
+	(*GetBuildPrototypeResponse)(nil),      // 19: game.grpc.v1.GetBuildPrototypeResponse
+	(*CreateBuildPrototypeRequest)(nil),    // 20: game.grpc.v1.CreateBuildPrototypeRequest
+	(*CreateBuildPrototypeResponse)(nil),   // 21: game.grpc.v1.CreateBuildPrototypeResponse
+	(*UpdateBuildPrototypeRequest)(nil),    // 22: game.grpc.v1.UpdateBuildPrototypeRequest
+	(*UpdateBuildPrototypeResponse)(nil),   // 23: game.grpc.v1.UpdateBuildPrototypeResponse
+	(*StorageBuffData)(nil),                // 24: game.grpc.v1.StorageBuffData
+	(*StorageIntelData)(nil),               // 25: game.grpc.v1.StorageIntelData
+	(*StorageDamagedData)(nil),             // 26: game.grpc.v1.StorageDamagedData
+	(*StorageArtifactData)(nil),            // 27: game.grpc.v1.StorageArtifactData
+	(*StorageConsumableData)(nil),          // 28: game.grpc.v1.StorageConsumableData
+	(*StoragePrototype)(nil),               // 29: game.grpc.v1.StoragePrototype
+	(*ListStoragePrototypesRequest)(nil),   // 30: game.grpc.v1.ListStoragePrototypesRequest
+	(*ListStoragePrototypesResponse)(nil),  // 31: game.grpc.v1.ListStoragePrototypesResponse
+	(*GetStoragePrototypeRequest)(nil),     // 32: game.grpc.v1.GetStoragePrototypeRequest
+	(*GetStoragePrototypeResponse)(nil),    // 33: game.grpc.v1.GetStoragePrototypeResponse
+	(*CreateStoragePrototypeRequest)(nil),  // 34: game.grpc.v1.CreateStoragePrototypeRequest
+	(*CreateStoragePrototypeResponse)(nil), // 35: game.grpc.v1.CreateStoragePrototypeResponse
+	(*UpdateStoragePrototypeRequest)(nil),  // 36: game.grpc.v1.UpdateStoragePrototypeRequest
+	(*UpdateStoragePrototypeResponse)(nil), // 37: game.grpc.v1.UpdateStoragePrototypeResponse
 }
 var file_game_grpc_v1_admin_proto_depIdxs = []int32{
 	0,  // 0: game.grpc.v1.ArmyPrototype.price:type_name -> game.grpc.v1.PriceModel
@@ -1679,27 +2585,47 @@ var file_game_grpc_v1_admin_proto_depIdxs = []int32{
 	15, // 16: game.grpc.v1.CreateBuildPrototypeResponse.prototype:type_name -> game.grpc.v1.BuildPrototype
 	15, // 17: game.grpc.v1.UpdateBuildPrototypeRequest.prototype:type_name -> game.grpc.v1.BuildPrototype
 	15, // 18: game.grpc.v1.UpdateBuildPrototypeResponse.prototype:type_name -> game.grpc.v1.BuildPrototype
-	2,  // 19: game.grpc.v1.ArmyPrototypeService.ListArmyPrototypes:input_type -> game.grpc.v1.ListArmyPrototypesRequest
-	4,  // 20: game.grpc.v1.ArmyPrototypeService.GetArmyPrototype:input_type -> game.grpc.v1.GetArmyPrototypeRequest
-	6,  // 21: game.grpc.v1.ArmyPrototypeService.CreateArmyPrototype:input_type -> game.grpc.v1.CreateArmyPrototypeRequest
-	8,  // 22: game.grpc.v1.ArmyPrototypeService.UpdateArmyPrototype:input_type -> game.grpc.v1.UpdateArmyPrototypeRequest
-	16, // 23: game.grpc.v1.BuildPrototypeService.ListBuildPrototypes:input_type -> game.grpc.v1.ListBuildPrototypesRequest
-	18, // 24: game.grpc.v1.BuildPrototypeService.GetBuildPrototype:input_type -> game.grpc.v1.GetBuildPrototypeRequest
-	20, // 25: game.grpc.v1.BuildPrototypeService.CreateBuildPrototype:input_type -> game.grpc.v1.CreateBuildPrototypeRequest
-	22, // 26: game.grpc.v1.BuildPrototypeService.UpdateBuildPrototype:input_type -> game.grpc.v1.UpdateBuildPrototypeRequest
-	3,  // 27: game.grpc.v1.ArmyPrototypeService.ListArmyPrototypes:output_type -> game.grpc.v1.ListArmyPrototypesResponse
-	5,  // 28: game.grpc.v1.ArmyPrototypeService.GetArmyPrototype:output_type -> game.grpc.v1.GetArmyPrototypeResponse
-	7,  // 29: game.grpc.v1.ArmyPrototypeService.CreateArmyPrototype:output_type -> game.grpc.v1.CreateArmyPrototypeResponse
-	9,  // 30: game.grpc.v1.ArmyPrototypeService.UpdateArmyPrototype:output_type -> game.grpc.v1.UpdateArmyPrototypeResponse
-	17, // 31: game.grpc.v1.BuildPrototypeService.ListBuildPrototypes:output_type -> game.grpc.v1.ListBuildPrototypesResponse
-	19, // 32: game.grpc.v1.BuildPrototypeService.GetBuildPrototype:output_type -> game.grpc.v1.GetBuildPrototypeResponse
-	21, // 33: game.grpc.v1.BuildPrototypeService.CreateBuildPrototype:output_type -> game.grpc.v1.CreateBuildPrototypeResponse
-	23, // 34: game.grpc.v1.BuildPrototypeService.UpdateBuildPrototype:output_type -> game.grpc.v1.UpdateBuildPrototypeResponse
-	27, // [27:35] is the sub-list for method output_type
-	19, // [19:27] is the sub-list for method input_type
-	19, // [19:19] is the sub-list for extension type_name
-	19, // [19:19] is the sub-list for extension extendee
-	0,  // [0:19] is the sub-list for field type_name
+	0,  // 19: game.grpc.v1.StorageDamagedData.restore_price:type_name -> game.grpc.v1.PriceModel
+	24, // 20: game.grpc.v1.StoragePrototype.buff_data:type_name -> game.grpc.v1.StorageBuffData
+	25, // 21: game.grpc.v1.StoragePrototype.intel_data:type_name -> game.grpc.v1.StorageIntelData
+	26, // 22: game.grpc.v1.StoragePrototype.damaged_data:type_name -> game.grpc.v1.StorageDamagedData
+	27, // 23: game.grpc.v1.StoragePrototype.artifact_data:type_name -> game.grpc.v1.StorageArtifactData
+	28, // 24: game.grpc.v1.StoragePrototype.consumable_data:type_name -> game.grpc.v1.StorageConsumableData
+	29, // 25: game.grpc.v1.ListStoragePrototypesResponse.prototypes:type_name -> game.grpc.v1.StoragePrototype
+	29, // 26: game.grpc.v1.GetStoragePrototypeResponse.prototype:type_name -> game.grpc.v1.StoragePrototype
+	29, // 27: game.grpc.v1.CreateStoragePrototypeRequest.prototype:type_name -> game.grpc.v1.StoragePrototype
+	29, // 28: game.grpc.v1.CreateStoragePrototypeResponse.prototype:type_name -> game.grpc.v1.StoragePrototype
+	29, // 29: game.grpc.v1.UpdateStoragePrototypeRequest.prototype:type_name -> game.grpc.v1.StoragePrototype
+	29, // 30: game.grpc.v1.UpdateStoragePrototypeResponse.prototype:type_name -> game.grpc.v1.StoragePrototype
+	2,  // 31: game.grpc.v1.ArmyPrototypeService.ListArmyPrototypes:input_type -> game.grpc.v1.ListArmyPrototypesRequest
+	4,  // 32: game.grpc.v1.ArmyPrototypeService.GetArmyPrototype:input_type -> game.grpc.v1.GetArmyPrototypeRequest
+	6,  // 33: game.grpc.v1.ArmyPrototypeService.CreateArmyPrototype:input_type -> game.grpc.v1.CreateArmyPrototypeRequest
+	8,  // 34: game.grpc.v1.ArmyPrototypeService.UpdateArmyPrototype:input_type -> game.grpc.v1.UpdateArmyPrototypeRequest
+	16, // 35: game.grpc.v1.BuildPrototypeService.ListBuildPrototypes:input_type -> game.grpc.v1.ListBuildPrototypesRequest
+	18, // 36: game.grpc.v1.BuildPrototypeService.GetBuildPrototype:input_type -> game.grpc.v1.GetBuildPrototypeRequest
+	20, // 37: game.grpc.v1.BuildPrototypeService.CreateBuildPrototype:input_type -> game.grpc.v1.CreateBuildPrototypeRequest
+	22, // 38: game.grpc.v1.BuildPrototypeService.UpdateBuildPrototype:input_type -> game.grpc.v1.UpdateBuildPrototypeRequest
+	30, // 39: game.grpc.v1.StoragePrototypeService.ListStoragePrototypes:input_type -> game.grpc.v1.ListStoragePrototypesRequest
+	32, // 40: game.grpc.v1.StoragePrototypeService.GetStoragePrototype:input_type -> game.grpc.v1.GetStoragePrototypeRequest
+	34, // 41: game.grpc.v1.StoragePrototypeService.CreateStoragePrototype:input_type -> game.grpc.v1.CreateStoragePrototypeRequest
+	36, // 42: game.grpc.v1.StoragePrototypeService.UpdateStoragePrototype:input_type -> game.grpc.v1.UpdateStoragePrototypeRequest
+	3,  // 43: game.grpc.v1.ArmyPrototypeService.ListArmyPrototypes:output_type -> game.grpc.v1.ListArmyPrototypesResponse
+	5,  // 44: game.grpc.v1.ArmyPrototypeService.GetArmyPrototype:output_type -> game.grpc.v1.GetArmyPrototypeResponse
+	7,  // 45: game.grpc.v1.ArmyPrototypeService.CreateArmyPrototype:output_type -> game.grpc.v1.CreateArmyPrototypeResponse
+	9,  // 46: game.grpc.v1.ArmyPrototypeService.UpdateArmyPrototype:output_type -> game.grpc.v1.UpdateArmyPrototypeResponse
+	17, // 47: game.grpc.v1.BuildPrototypeService.ListBuildPrototypes:output_type -> game.grpc.v1.ListBuildPrototypesResponse
+	19, // 48: game.grpc.v1.BuildPrototypeService.GetBuildPrototype:output_type -> game.grpc.v1.GetBuildPrototypeResponse
+	21, // 49: game.grpc.v1.BuildPrototypeService.CreateBuildPrototype:output_type -> game.grpc.v1.CreateBuildPrototypeResponse
+	23, // 50: game.grpc.v1.BuildPrototypeService.UpdateBuildPrototype:output_type -> game.grpc.v1.UpdateBuildPrototypeResponse
+	31, // 51: game.grpc.v1.StoragePrototypeService.ListStoragePrototypes:output_type -> game.grpc.v1.ListStoragePrototypesResponse
+	33, // 52: game.grpc.v1.StoragePrototypeService.GetStoragePrototype:output_type -> game.grpc.v1.GetStoragePrototypeResponse
+	35, // 53: game.grpc.v1.StoragePrototypeService.CreateStoragePrototype:output_type -> game.grpc.v1.CreateStoragePrototypeResponse
+	37, // 54: game.grpc.v1.StoragePrototypeService.UpdateStoragePrototype:output_type -> game.grpc.v1.UpdateStoragePrototypeResponse
+	43, // [43:55] is the sub-list for method output_type
+	31, // [31:43] is the sub-list for method input_type
+	31, // [31:31] is the sub-list for extension type_name
+	31, // [31:31] is the sub-list for extension extendee
+	0,  // [0:31] is the sub-list for field type_name
 }
 
 func init() { file_game_grpc_v1_admin_proto_init() }
@@ -1715,15 +2641,22 @@ func file_game_grpc_v1_admin_proto_init() {
 		(*BuildPrototype_MilitaryData)(nil),
 		(*BuildPrototype_IntelligenceData)(nil),
 	}
+	file_game_grpc_v1_admin_proto_msgTypes[29].OneofWrappers = []any{
+		(*StoragePrototype_BuffData)(nil),
+		(*StoragePrototype_IntelData)(nil),
+		(*StoragePrototype_DamagedData)(nil),
+		(*StoragePrototype_ArtifactData)(nil),
+		(*StoragePrototype_ConsumableData)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_game_grpc_v1_admin_proto_rawDesc), len(file_game_grpc_v1_admin_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   24,
+			NumMessages:   38,
 			NumExtensions: 0,
-			NumServices:   2,
+			NumServices:   3,
 		},
 		GoTypes:           file_game_grpc_v1_admin_proto_goTypes,
 		DependencyIndexes: file_game_grpc_v1_admin_proto_depIdxs,

@@ -32,6 +32,7 @@ type Querier interface {
 	GetScanReportByOperationUUID(ctx context.Context, sourceID uuid.NullUUID) (ScanReport, error)
 	// Sector scan report queries
 	GetScansNear(ctx context.Context, arg GetScansNearParams) ([]ScanReport, error)
+	GetStoragePrototypeByID(ctx context.Context, id int64) (StorageItemPrototype, error)
 	// Trade operation read queries
 	GetTradeOperation(ctx context.Context, id int64) (TradeOperation, error)
 	// Readstore user profile queries

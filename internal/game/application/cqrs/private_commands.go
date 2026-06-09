@@ -17,3 +17,9 @@ type BuildPrototypeCommands interface {
 	CreateBuildPrototype(ctx context.Context, proto *domain.BuildItemPrototype) (*domain.BuildItemPrototype, error)
 	UpdateBuildPrototype(ctx context.Context, proto *domain.BuildItemPrototype) (*domain.BuildItemPrototype, error)
 }
+
+// StoragePrototypeCommands encapsulates privileged writes to the storage prototype catalog. No Actor; pre-authorized by caller.
+type StoragePrototypeCommands interface {
+	CreateStoragePrototype(ctx context.Context, proto *domain.StorageItemPrototype) (*domain.StorageItemPrototype, error)
+	UpdateStoragePrototype(ctx context.Context, proto *domain.StorageItemPrototype) (*domain.StorageItemPrototype, error)
+}

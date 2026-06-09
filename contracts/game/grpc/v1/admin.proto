@@ -205,3 +205,106 @@ message UpdateBuildPrototypeRequest {
 message UpdateBuildPrototypeResponse {
   BuildPrototype prototype = 1;
 }
+
+// ============================================================================
+// Storage prototypes
+// ============================================================================
+
+service StoragePrototypeService {
+  rpc ListStoragePrototypes(ListStoragePrototypesRequest) returns (ListStoragePrototypesResponse);
+  rpc GetStoragePrototype(GetStoragePrototypeRequest) returns (GetStoragePrototypeResponse);
+  rpc CreateStoragePrototype(CreateStoragePrototypeRequest) returns (CreateStoragePrototypeResponse);
+  rpc UpdateStoragePrototype(UpdateStoragePrototypeRequest) returns (UpdateStoragePrototypeResponse);
+}
+
+// Category-specific payloads. A storage prototype carries exactly the data
+// block that matches its category; the others are absent.
+
+message StorageBuffData {
+  string type = 1;
+  float value = 2;
+  int64 duration_seconds = 3;
+}
+
+message StorageIntelData {
+  string type = 1;
+  int64 decryption_seconds = 2;
+}
+
+// StorageDamagedData describes how to restore a damaged army unit.
+// original_unit_id references the ArmyItemPrototype the item restores into.
+message StorageDamagedData {
+  PriceModel restore_price = 1;
+  int64 restoration_seconds = 2;
+  int64 original_unit_id = 3;
+}
+
+message StorageArtifactData {
+  string type = 1;
+  float value = 2;
+}
+
+message StorageConsumableData {
+  string type = 1;
+  repeated string box_contents = 2;
+  int32 box_size = 3;
+}
+
+// StoragePrototype is the wire shape of domain.StorageItemPrototype. Like the
+// other prototype types, enum-like fields (category, creation_sources, and the
+// type fields inside data blocks) are carried as strings because the DB is the
+// source of truth. estimated_worth is a rough credit value used in trading.
+//
+// category_data is a oneof: exactly one block is present and it must match the
+// category string.
+message StoragePrototype {
+  int64 id = 1;
+  string name = 2;
+  string category = 3;
+  repeated string creation_sources = 4;
+  int32 estimated_worth = 5;
+  string short_description = 6;
+  string full_description = 7;
+  string image_url = 8;
+  oneof category_data {
+    StorageBuffData buff_data = 9;
+    StorageIntelData intel_data = 10;
+    StorageDamagedData damaged_data = 11;
+    StorageArtifactData artifact_data = 12;
+    StorageConsumableData consumable_data = 13;
+  }
+}
+
+message ListStoragePrototypesRequest {}
+
+message ListStoragePrototypesResponse {
+  repeated StoragePrototype prototypes = 1;
+}
+
+message GetStoragePrototypeRequest {
+  int64 id = 1;
+}
+
+message GetStoragePrototypeResponse {
+  StoragePrototype prototype = 1;
+}
+
+// CreateStoragePrototypeRequest carries the prototype to insert. The caller MUST
+// set a positive id: prototypes are ordered and each type occupies its own id range,
+// so the id is chosen by the caller rather than assigned by the server.
+message CreateStoragePrototypeRequest {
+  StoragePrototype prototype = 1;
+}
+
+message CreateStoragePrototypeResponse {
+  StoragePrototype prototype = 1;
+}
+
+// UpdateStoragePrototypeRequest overwrites the prototype identified by prototype.id.
+message UpdateStoragePrototypeRequest {
+  StoragePrototype prototype = 1;
+}
+
+message UpdateStoragePrototypeResponse {
+  StoragePrototype prototype = 1;
+}

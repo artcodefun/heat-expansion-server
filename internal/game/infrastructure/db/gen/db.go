@@ -48,6 +48,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createSectorStmt, err = db.PrepareContext(ctx, createSector); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateSector: %w", err)
 	}
+	if q.createStoragePrototypeStmt, err = db.PrepareContext(ctx, createStoragePrototype); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateStoragePrototype: %w", err)
+	}
 	if q.crystalCreditExistsStmt, err = db.PrepareContext(ctx, crystalCreditExists); err != nil {
 		return nil, fmt.Errorf("error preparing query CrystalCreditExists: %w", err)
 	}
@@ -408,6 +411,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateSectorStmt, err = db.PrepareContext(ctx, updateSector); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateSector: %w", err)
 	}
+	if q.updateStoragePrototypeStmt, err = db.PrepareContext(ctx, updateStoragePrototype); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateStoragePrototype: %w", err)
+	}
 	if q.updateTradeOperationStmt, err = db.PrepareContext(ctx, updateTradeOperation); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateTradeOperation: %w", err)
 	}
@@ -457,6 +463,11 @@ func (q *Queries) Close() error {
 	if q.createSectorStmt != nil {
 		if cerr := q.createSectorStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createSectorStmt: %w", cerr)
+		}
+	}
+	if q.createStoragePrototypeStmt != nil {
+		if cerr := q.createStoragePrototypeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createStoragePrototypeStmt: %w", cerr)
 		}
 	}
 	if q.crystalCreditExistsStmt != nil {
@@ -1059,6 +1070,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateSectorStmt: %w", cerr)
 		}
 	}
+	if q.updateStoragePrototypeStmt != nil {
+		if cerr := q.updateStoragePrototypeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateStoragePrototypeStmt: %w", cerr)
+		}
+	}
 	if q.updateTradeOperationStmt != nil {
 		if cerr := q.updateTradeOperationStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateTradeOperationStmt: %w", cerr)
@@ -1116,6 +1132,7 @@ type Queries struct {
 	createBaseStmt                                 *sql.Stmt
 	createBuildPrototypeStmt                       *sql.Stmt
 	createSectorStmt                               *sql.Stmt
+	createStoragePrototypeStmt                     *sql.Stmt
 	crystalCreditExistsStmt                        *sql.Stmt
 	deleteActivitiesByBaseStmt                     *sql.Stmt
 	deleteBaseStmt                                 *sql.Stmt
@@ -1236,6 +1253,7 @@ type Queries struct {
 	updateRadarThreatStmt                          *sql.Stmt
 	updateResourceLocationStmt                     *sql.Stmt
 	updateSectorStmt                               *sql.Stmt
+	updateStoragePrototypeStmt                     *sql.Stmt
 	updateTradeOperationStmt                       *sql.Stmt
 	updateUserStmt                                 *sql.Stmt
 }
@@ -1252,6 +1270,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		createBaseStmt:                                 q.createBaseStmt,
 		createBuildPrototypeStmt:                       q.createBuildPrototypeStmt,
 		createSectorStmt:                               q.createSectorStmt,
+		createStoragePrototypeStmt:                     q.createStoragePrototypeStmt,
 		crystalCreditExistsStmt:                        q.crystalCreditExistsStmt,
 		deleteActivitiesByBaseStmt:                     q.deleteActivitiesByBaseStmt,
 		deleteBaseStmt:                                 q.deleteBaseStmt,
@@ -1372,6 +1391,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		updateRadarThreatStmt:                          q.updateRadarThreatStmt,
 		updateResourceLocationStmt:                     q.updateResourceLocationStmt,
 		updateSectorStmt:                               q.updateSectorStmt,
+		updateStoragePrototypeStmt:                     q.updateStoragePrototypeStmt,
 		updateTradeOperationStmt:                       q.updateTradeOperationStmt,
 		updateUserStmt:                                 q.updateUserStmt,
 	}

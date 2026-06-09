@@ -20,6 +20,11 @@ SELECT *
 FROM game.build_item_prototypes
 WHERE id = $1;
 
+-- name: GetStoragePrototypeByID :one
+SELECT *
+FROM game.storage_item_prototypes
+WHERE id = $1;
+
 -- name: ListStoragePrototypes :many
 SELECT *
 FROM game.storage_item_prototypes

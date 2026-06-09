@@ -112,6 +112,12 @@ type BuildPrototypeReadRepository interface {
 	GetBuildPrototype(ctx context.Context, id int) (*readmodels.BuildItemPrototype, error)
 }
 
+// StoragePrototypeReadRepository provides read-only access to the storage prototype catalog.
+type StoragePrototypeReadRepository interface {
+	ListStoragePrototypes(ctx context.Context) ([]*readmodels.StorageItemPrototype, error)
+	GetStoragePrototype(ctx context.Context, id int) (*readmodels.StorageItemPrototype, error)
+}
+
 // RadarReadRepository provides read-only access to radar threats.
 type RadarReadRepository interface {
 	GetRadarThreat(ctx context.Context, id uuid.UUID) (*readmodels.RadarThreat, error)

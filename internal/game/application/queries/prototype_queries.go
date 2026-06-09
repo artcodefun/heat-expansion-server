@@ -9,12 +9,13 @@ import (
 
 // PrototypeQueries serves raw prototype catalog reads for the private API.
 type PrototypeQueries struct {
-	ArmyRepo  ports.ArmyPrototypeReadRepository
-	BuildRepo ports.BuildPrototypeReadRepository
+	ArmyRepo    ports.ArmyPrototypeReadRepository
+	BuildRepo   ports.BuildPrototypeReadRepository
+	StorageRepo ports.StoragePrototypeReadRepository
 }
 
-func NewPrototypeQueries(armyRepo ports.ArmyPrototypeReadRepository, buildRepo ports.BuildPrototypeReadRepository) *PrototypeQueries {
-	return &PrototypeQueries{ArmyRepo: armyRepo, BuildRepo: buildRepo}
+func NewPrototypeQueries(armyRepo ports.ArmyPrototypeReadRepository, buildRepo ports.BuildPrototypeReadRepository, storageRepo ports.StoragePrototypeReadRepository) *PrototypeQueries {
+	return &PrototypeQueries{ArmyRepo: armyRepo, BuildRepo: buildRepo, StorageRepo: storageRepo}
 }
 
 func (q *PrototypeQueries) ListArmyPrototypes(ctx context.Context) ([]*readmodels.ArmyItemPrototype, error) {
@@ -43,6 +44,22 @@ func (q *PrototypeQueries) ListBuildPrototypes(ctx context.Context) ([]*readmode
 
 func (q *PrototypeQueries) GetBuildPrototype(ctx context.Context, id int) (*readmodels.BuildItemPrototype, error) {
 	proto, err := q.BuildRepo.GetBuildPrototype(ctx, id)
+	if err != nil {
+		return nil, repoErr(err)
+	}
+	return proto, nil
+}
+
+func (q *PrototypeQueries) ListStoragePrototypes(ctx context.Context) ([]*readmodels.StorageItemPrototype, error) {
+	protos, err := q.StorageRepo.ListStoragePrototypes(ctx)
+	if err != nil {
+		return nil, repoErr(err)
+	}
+	return protos, nil
+}
+
+func (q *PrototypeQueries) GetStoragePrototype(ctx context.Context, id int) (*readmodels.StorageItemPrototype, error) {
+	proto, err := q.StorageRepo.GetStoragePrototype(ctx, id)
 	if err != nil {
 		return nil, repoErr(err)
 	}

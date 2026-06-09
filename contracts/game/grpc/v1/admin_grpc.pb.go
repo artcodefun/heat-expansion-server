@@ -449,3 +449,220 @@ var BuildPrototypeService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "game/grpc/v1/admin.proto",
 }
+
+const (
+	StoragePrototypeService_ListStoragePrototypes_FullMethodName  = "/game.grpc.v1.StoragePrototypeService/ListStoragePrototypes"
+	StoragePrototypeService_GetStoragePrototype_FullMethodName    = "/game.grpc.v1.StoragePrototypeService/GetStoragePrototype"
+	StoragePrototypeService_CreateStoragePrototype_FullMethodName = "/game.grpc.v1.StoragePrototypeService/CreateStoragePrototype"
+	StoragePrototypeService_UpdateStoragePrototype_FullMethodName = "/game.grpc.v1.StoragePrototypeService/UpdateStoragePrototype"
+)
+
+// StoragePrototypeServiceClient is the client API for StoragePrototypeService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type StoragePrototypeServiceClient interface {
+	ListStoragePrototypes(ctx context.Context, in *ListStoragePrototypesRequest, opts ...grpc.CallOption) (*ListStoragePrototypesResponse, error)
+	GetStoragePrototype(ctx context.Context, in *GetStoragePrototypeRequest, opts ...grpc.CallOption) (*GetStoragePrototypeResponse, error)
+	CreateStoragePrototype(ctx context.Context, in *CreateStoragePrototypeRequest, opts ...grpc.CallOption) (*CreateStoragePrototypeResponse, error)
+	UpdateStoragePrototype(ctx context.Context, in *UpdateStoragePrototypeRequest, opts ...grpc.CallOption) (*UpdateStoragePrototypeResponse, error)
+}
+
+type storagePrototypeServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewStoragePrototypeServiceClient(cc grpc.ClientConnInterface) StoragePrototypeServiceClient {
+	return &storagePrototypeServiceClient{cc}
+}
+
+func (c *storagePrototypeServiceClient) ListStoragePrototypes(ctx context.Context, in *ListStoragePrototypesRequest, opts ...grpc.CallOption) (*ListStoragePrototypesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListStoragePrototypesResponse)
+	err := c.cc.Invoke(ctx, StoragePrototypeService_ListStoragePrototypes_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *storagePrototypeServiceClient) GetStoragePrototype(ctx context.Context, in *GetStoragePrototypeRequest, opts ...grpc.CallOption) (*GetStoragePrototypeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetStoragePrototypeResponse)
+	err := c.cc.Invoke(ctx, StoragePrototypeService_GetStoragePrototype_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *storagePrototypeServiceClient) CreateStoragePrototype(ctx context.Context, in *CreateStoragePrototypeRequest, opts ...grpc.CallOption) (*CreateStoragePrototypeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateStoragePrototypeResponse)
+	err := c.cc.Invoke(ctx, StoragePrototypeService_CreateStoragePrototype_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *storagePrototypeServiceClient) UpdateStoragePrototype(ctx context.Context, in *UpdateStoragePrototypeRequest, opts ...grpc.CallOption) (*UpdateStoragePrototypeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateStoragePrototypeResponse)
+	err := c.cc.Invoke(ctx, StoragePrototypeService_UpdateStoragePrototype_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// StoragePrototypeServiceServer is the server API for StoragePrototypeService service.
+// All implementations must embed UnimplementedStoragePrototypeServiceServer
+// for forward compatibility.
+type StoragePrototypeServiceServer interface {
+	ListStoragePrototypes(context.Context, *ListStoragePrototypesRequest) (*ListStoragePrototypesResponse, error)
+	GetStoragePrototype(context.Context, *GetStoragePrototypeRequest) (*GetStoragePrototypeResponse, error)
+	CreateStoragePrototype(context.Context, *CreateStoragePrototypeRequest) (*CreateStoragePrototypeResponse, error)
+	UpdateStoragePrototype(context.Context, *UpdateStoragePrototypeRequest) (*UpdateStoragePrototypeResponse, error)
+	mustEmbedUnimplementedStoragePrototypeServiceServer()
+}
+
+// UnimplementedStoragePrototypeServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedStoragePrototypeServiceServer struct{}
+
+func (UnimplementedStoragePrototypeServiceServer) ListStoragePrototypes(context.Context, *ListStoragePrototypesRequest) (*ListStoragePrototypesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListStoragePrototypes not implemented")
+}
+func (UnimplementedStoragePrototypeServiceServer) GetStoragePrototype(context.Context, *GetStoragePrototypeRequest) (*GetStoragePrototypeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStoragePrototype not implemented")
+}
+func (UnimplementedStoragePrototypeServiceServer) CreateStoragePrototype(context.Context, *CreateStoragePrototypeRequest) (*CreateStoragePrototypeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateStoragePrototype not implemented")
+}
+func (UnimplementedStoragePrototypeServiceServer) UpdateStoragePrototype(context.Context, *UpdateStoragePrototypeRequest) (*UpdateStoragePrototypeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateStoragePrototype not implemented")
+}
+func (UnimplementedStoragePrototypeServiceServer) mustEmbedUnimplementedStoragePrototypeServiceServer() {
+}
+func (UnimplementedStoragePrototypeServiceServer) testEmbeddedByValue() {}
+
+// UnsafeStoragePrototypeServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to StoragePrototypeServiceServer will
+// result in compilation errors.
+type UnsafeStoragePrototypeServiceServer interface {
+	mustEmbedUnimplementedStoragePrototypeServiceServer()
+}
+
+func RegisterStoragePrototypeServiceServer(s grpc.ServiceRegistrar, srv StoragePrototypeServiceServer) {
+	// If the following call pancis, it indicates UnimplementedStoragePrototypeServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&StoragePrototypeService_ServiceDesc, srv)
+}
+
+func _StoragePrototypeService_ListStoragePrototypes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListStoragePrototypesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StoragePrototypeServiceServer).ListStoragePrototypes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StoragePrototypeService_ListStoragePrototypes_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StoragePrototypeServiceServer).ListStoragePrototypes(ctx, req.(*ListStoragePrototypesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StoragePrototypeService_GetStoragePrototype_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetStoragePrototypeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StoragePrototypeServiceServer).GetStoragePrototype(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StoragePrototypeService_GetStoragePrototype_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StoragePrototypeServiceServer).GetStoragePrototype(ctx, req.(*GetStoragePrototypeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StoragePrototypeService_CreateStoragePrototype_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateStoragePrototypeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StoragePrototypeServiceServer).CreateStoragePrototype(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StoragePrototypeService_CreateStoragePrototype_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StoragePrototypeServiceServer).CreateStoragePrototype(ctx, req.(*CreateStoragePrototypeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StoragePrototypeService_UpdateStoragePrototype_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateStoragePrototypeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StoragePrototypeServiceServer).UpdateStoragePrototype(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StoragePrototypeService_UpdateStoragePrototype_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StoragePrototypeServiceServer).UpdateStoragePrototype(ctx, req.(*UpdateStoragePrototypeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// StoragePrototypeService_ServiceDesc is the grpc.ServiceDesc for StoragePrototypeService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var StoragePrototypeService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "game.grpc.v1.StoragePrototypeService",
+	HandlerType: (*StoragePrototypeServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ListStoragePrototypes",
+			Handler:    _StoragePrototypeService_ListStoragePrototypes_Handler,
+		},
+		{
+			MethodName: "GetStoragePrototype",
+			Handler:    _StoragePrototypeService_GetStoragePrototype_Handler,
+		},
+		{
+			MethodName: "CreateStoragePrototype",
+			Handler:    _StoragePrototypeService_CreateStoragePrototype_Handler,
+		},
+		{
+			MethodName: "UpdateStoragePrototype",
+			Handler:    _StoragePrototypeService_UpdateStoragePrototype_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "game/grpc/v1/admin.proto",
+}

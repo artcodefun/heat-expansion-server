@@ -8,13 +8,14 @@ import (
 )
 
 type PrototypeCommands struct {
-	ArmyRepo  ports.ArmyPrototypeRepository
-	BuildRepo ports.BuildPrototypeRepository
-	TxMgr     ports.TransactionManager
+	ArmyRepo    ports.ArmyPrototypeRepository
+	BuildRepo   ports.BuildPrototypeRepository
+	StorageRepo ports.StoragePrototypeRepository
+	TxMgr       ports.TransactionManager
 }
 
-func NewPrototypeCommands(armyRepo ports.ArmyPrototypeRepository, buildRepo ports.BuildPrototypeRepository, txMgr ports.TransactionManager) *PrototypeCommands {
-	return &PrototypeCommands{ArmyRepo: armyRepo, BuildRepo: buildRepo, TxMgr: txMgr}
+func NewPrototypeCommands(armyRepo ports.ArmyPrototypeRepository, buildRepo ports.BuildPrototypeRepository, storageRepo ports.StoragePrototypeRepository, txMgr ports.TransactionManager) *PrototypeCommands {
+	return &PrototypeCommands{ArmyRepo: armyRepo, BuildRepo: buildRepo, StorageRepo: storageRepo, TxMgr: txMgr}
 }
 
 // CreateArmyPrototype inserts a new army prototype using the caller-supplied ID
@@ -59,6 +60,30 @@ func (c *PrototypeCommands) CreateBuildPrototype(ctx context.Context, proto *dom
 func (c *PrototypeCommands) UpdateBuildPrototype(ctx context.Context, proto *domain.BuildItemPrototype) (*domain.BuildItemPrototype, error) {
 	err := c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		return c.BuildRepo.Tx(tx).UpdatePrototype(ctx, proto)
+	})
+	if err != nil {
+		return nil, repoErr(err)
+	}
+	return proto, nil
+}
+
+// CreateStoragePrototype inserts a new storage prototype using the caller-supplied ID
+// (prototypes are ordered and grouped into id ranges by type) and returns it.
+func (c *PrototypeCommands) CreateStoragePrototype(ctx context.Context, proto *domain.StorageItemPrototype) (*domain.StorageItemPrototype, error) {
+	err := c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
+		return c.StorageRepo.Tx(tx).CreatePrototype(ctx, proto)
+	})
+	if err != nil {
+		return nil, repoErr(err)
+	}
+	return proto, nil
+}
+
+// UpdateStoragePrototype overwrites an existing storage prototype identified by
+// proto.ID, returning the updated aggregate.
+func (c *PrototypeCommands) UpdateStoragePrototype(ctx context.Context, proto *domain.StorageItemPrototype) (*domain.StorageItemPrototype, error) {
+	err := c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
+		return c.StorageRepo.Tx(tx).UpdatePrototype(ctx, proto)
 	})
 	if err != nil {
 		return nil, repoErr(err)
