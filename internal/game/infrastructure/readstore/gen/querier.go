@@ -33,6 +33,7 @@ type Querier interface {
 	// Sector scan report queries
 	GetScansNear(ctx context.Context, arg GetScansNearParams) ([]ScanReport, error)
 	GetStoragePrototypeByID(ctx context.Context, id int64) (StorageItemPrototype, error)
+	GetTechPrototypeByID(ctx context.Context, id int64) (TechItemPrototype, error)
 	// Trade operation read queries
 	GetTradeOperation(ctx context.Context, id int64) (TradeOperation, error)
 	// Readstore user profile queries

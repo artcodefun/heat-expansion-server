@@ -12,10 +12,11 @@ type PrototypeQueries struct {
 	ArmyRepo    ports.ArmyPrototypeReadRepository
 	BuildRepo   ports.BuildPrototypeReadRepository
 	StorageRepo ports.StoragePrototypeReadRepository
+	TechRepo    ports.TechPrototypeReadRepository
 }
 
-func NewPrototypeQueries(armyRepo ports.ArmyPrototypeReadRepository, buildRepo ports.BuildPrototypeReadRepository, storageRepo ports.StoragePrototypeReadRepository) *PrototypeQueries {
-	return &PrototypeQueries{ArmyRepo: armyRepo, BuildRepo: buildRepo, StorageRepo: storageRepo}
+func NewPrototypeQueries(armyRepo ports.ArmyPrototypeReadRepository, buildRepo ports.BuildPrototypeReadRepository, storageRepo ports.StoragePrototypeReadRepository, techRepo ports.TechPrototypeReadRepository) *PrototypeQueries {
+	return &PrototypeQueries{ArmyRepo: armyRepo, BuildRepo: buildRepo, StorageRepo: storageRepo, TechRepo: techRepo}
 }
 
 func (q *PrototypeQueries) ListArmyPrototypes(ctx context.Context) ([]*readmodels.ArmyItemPrototype, error) {
@@ -60,6 +61,22 @@ func (q *PrototypeQueries) ListStoragePrototypes(ctx context.Context) ([]*readmo
 
 func (q *PrototypeQueries) GetStoragePrototype(ctx context.Context, id int) (*readmodels.StorageItemPrototype, error) {
 	proto, err := q.StorageRepo.GetStoragePrototype(ctx, id)
+	if err != nil {
+		return nil, repoErr(err)
+	}
+	return proto, nil
+}
+
+func (q *PrototypeQueries) ListTechPrototypes(ctx context.Context) ([]*readmodels.TechItemPrototype, error) {
+	protos, err := q.TechRepo.ListTechPrototypes(ctx)
+	if err != nil {
+		return nil, repoErr(err)
+	}
+	return protos, nil
+}
+
+func (q *PrototypeQueries) GetTechPrototype(ctx context.Context, id int) (*readmodels.TechItemPrototype, error) {
+	proto, err := q.TechRepo.GetTechPrototype(ctx, id)
 	if err != nil {
 		return nil, repoErr(err)
 	}

@@ -75,6 +75,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getStoragePrototypeByIDStmt, err = db.PrepareContext(ctx, getStoragePrototypeByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetStoragePrototypeByID: %w", err)
 	}
+	if q.getTechPrototypeByIDStmt, err = db.PrepareContext(ctx, getTechPrototypeByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTechPrototypeByID: %w", err)
+	}
 	if q.getTradeOperationStmt, err = db.PrepareContext(ctx, getTradeOperation); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTradeOperation: %w", err)
 	}
@@ -295,6 +298,11 @@ func (q *Queries) Close() error {
 	if q.getStoragePrototypeByIDStmt != nil {
 		if cerr := q.getStoragePrototypeByIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getStoragePrototypeByIDStmt: %w", cerr)
+		}
+	}
+	if q.getTechPrototypeByIDStmt != nil {
+		if cerr := q.getTechPrototypeByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTechPrototypeByIDStmt: %w", cerr)
 		}
 	}
 	if q.getTradeOperationStmt != nil {
@@ -573,6 +581,7 @@ type Queries struct {
 	getScanReportByOperationUUIDStmt        *sql.Stmt
 	getScansNearStmt                        *sql.Stmt
 	getStoragePrototypeByIDStmt             *sql.Stmt
+	getTechPrototypeByIDStmt                *sql.Stmt
 	getTradeOperationStmt                   *sql.Stmt
 	getUserProfileStmt                      *sql.Stmt
 	listActiveBlackMarketArmyOffersStmt     *sql.Stmt
@@ -640,6 +649,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getScanReportByOperationUUIDStmt:        q.getScanReportByOperationUUIDStmt,
 		getScansNearStmt:                        q.getScansNearStmt,
 		getStoragePrototypeByIDStmt:             q.getStoragePrototypeByIDStmt,
+		getTechPrototypeByIDStmt:                q.getTechPrototypeByIDStmt,
 		getTradeOperationStmt:                   q.getTradeOperationStmt,
 		getUserProfileStmt:                      q.getUserProfileStmt,
 		listActiveBlackMarketArmyOffersStmt:     q.listActiveBlackMarketArmyOffersStmt,

@@ -15,6 +15,7 @@ type Commands struct {
 	ArmyPrototype    cqrs.ArmyPrototypeCommands
 	BuildPrototype   cqrs.BuildPrototypeCommands
 	StoragePrototype cqrs.StoragePrototypeCommands
+	TechPrototype    cqrs.TechPrototypeCommands
 }
 
 // Queries groups CQRS query interfaces needed by gRPC handlers.
@@ -22,6 +23,7 @@ type Queries struct {
 	ArmyPrototype    cqrs.ArmyPrototypeQueries
 	BuildPrototype   cqrs.BuildPrototypeQueries
 	StoragePrototype cqrs.StoragePrototypeQueries
+	TechPrototype    cqrs.TechPrototypeQueries
 }
 
 type Router struct {
@@ -36,5 +38,6 @@ func NewRouter(cmd Commands, qry Queries, internalKey string, tr ports.Translato
 	gamev1.RegisterArmyPrototypeServiceServer(srv, handlers.NewArmyPrototypeHandler(cmd.ArmyPrototype, qry.ArmyPrototype, tr))
 	gamev1.RegisterBuildPrototypeServiceServer(srv, handlers.NewBuildPrototypeHandler(cmd.BuildPrototype, qry.BuildPrototype, tr))
 	gamev1.RegisterStoragePrototypeServiceServer(srv, handlers.NewStoragePrototypeHandler(cmd.StoragePrototype, qry.StoragePrototype, tr))
+	gamev1.RegisterTechPrototypeServiceServer(srv, handlers.NewTechPrototypeHandler(cmd.TechPrototype, qry.TechPrototype, tr))
 	return Router{srv}
 }

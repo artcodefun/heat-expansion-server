@@ -81,6 +81,19 @@ func TechItemDoneFromAllRow(r gen.ListDoneTechItemsAllRow) readmodels.TechItemDo
 	}
 }
 
+func TechPrototypeFromModel(r gen.TechItemPrototype) readmodels.TechItemPrototype {
+	return techPrototypeFromParts(r.ID, r.Name, r.Category, r.UnlockTechnologyID, r.ShortDescription, r.FullDescription, r.Price, r.ResearchTime, r.ImageUrl, r.Improvement.RawMessage)
+}
+
+func TechPrototypesFromModels(rows []gen.TechItemPrototype) []*readmodels.TechItemPrototype {
+	dst := make([]*readmodels.TechItemPrototype, len(rows))
+	for i, r := range rows {
+		v := TechPrototypeFromModel(r)
+		dst[i] = &v
+	}
+	return dst
+}
+
 func techImprovementFromJSON(b []byte) *readmodels.TechImprovement {
 	if len(b) == 0 {
 		return nil

@@ -36,3 +36,10 @@ SELECT id, name, category, unlock_technology_id, short_description, full_descrip
        research_time, image_url, improvement
 FROM game.tech_item_prototypes
 ORDER BY id;
+
+-- name: GetTechPrototypeByID :one
+SELECT id, name, category, unlock_technology_id, short_description, full_description,
+       price,
+       research_time, image_url, improvement
+FROM game.tech_item_prototypes
+WHERE id = $1;

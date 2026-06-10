@@ -11,11 +11,12 @@ type PrototypeCommands struct {
 	ArmyRepo    ports.ArmyPrototypeRepository
 	BuildRepo   ports.BuildPrototypeRepository
 	StorageRepo ports.StoragePrototypeRepository
+	TechRepo    ports.TechPrototypeRepository
 	TxMgr       ports.TransactionManager
 }
 
-func NewPrototypeCommands(armyRepo ports.ArmyPrototypeRepository, buildRepo ports.BuildPrototypeRepository, storageRepo ports.StoragePrototypeRepository, txMgr ports.TransactionManager) *PrototypeCommands {
-	return &PrototypeCommands{ArmyRepo: armyRepo, BuildRepo: buildRepo, StorageRepo: storageRepo, TxMgr: txMgr}
+func NewPrototypeCommands(armyRepo ports.ArmyPrototypeRepository, buildRepo ports.BuildPrototypeRepository, storageRepo ports.StoragePrototypeRepository, techRepo ports.TechPrototypeRepository, txMgr ports.TransactionManager) *PrototypeCommands {
+	return &PrototypeCommands{ArmyRepo: armyRepo, BuildRepo: buildRepo, StorageRepo: storageRepo, TechRepo: techRepo, TxMgr: txMgr}
 }
 
 // CreateArmyPrototype inserts a new army prototype using the caller-supplied ID
@@ -84,6 +85,30 @@ func (c *PrototypeCommands) CreateStoragePrototype(ctx context.Context, proto *d
 func (c *PrototypeCommands) UpdateStoragePrototype(ctx context.Context, proto *domain.StorageItemPrototype) (*domain.StorageItemPrototype, error) {
 	err := c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		return c.StorageRepo.Tx(tx).UpdatePrototype(ctx, proto)
+	})
+	if err != nil {
+		return nil, repoErr(err)
+	}
+	return proto, nil
+}
+
+// CreateTechPrototype inserts a new tech prototype using the caller-supplied ID
+// (prototypes are ordered and grouped into id ranges by type) and returns it.
+func (c *PrototypeCommands) CreateTechPrototype(ctx context.Context, proto *domain.TechItemPrototype) (*domain.TechItemPrototype, error) {
+	err := c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
+		return c.TechRepo.Tx(tx).CreatePrototype(ctx, proto)
+	})
+	if err != nil {
+		return nil, repoErr(err)
+	}
+	return proto, nil
+}
+
+// UpdateTechPrototype overwrites an existing tech prototype identified by
+// proto.ID, returning the updated aggregate.
+func (c *PrototypeCommands) UpdateTechPrototype(ctx context.Context, proto *domain.TechItemPrototype) (*domain.TechItemPrototype, error) {
+	err := c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
+		return c.TechRepo.Tx(tx).UpdatePrototype(ctx, proto)
 	})
 	if err != nil {
 		return nil, repoErr(err)

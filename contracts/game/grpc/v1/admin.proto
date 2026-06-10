@@ -308,3 +308,74 @@ message UpdateStoragePrototypeRequest {
 message UpdateStoragePrototypeResponse {
   StoragePrototype prototype = 1;
 }
+
+// ============================================================================
+// TechPrototypeService
+// ============================================================================
+
+service TechPrototypeService {
+  rpc ListTechPrototypes(ListTechPrototypesRequest) returns (ListTechPrototypesResponse);
+  rpc GetTechPrototype(GetTechPrototypeRequest) returns (GetTechPrototypeResponse);
+  rpc CreateTechPrototype(CreateTechPrototypeRequest) returns (CreateTechPrototypeResponse);
+  rpc UpdateTechPrototype(UpdateTechPrototypeRequest) returns (UpdateTechPrototypeResponse);
+}
+
+// TechPrototype is the wire shape of domain.TechItemPrototype.
+// Enum-like fields (category, improvement.type) are strings; the DB is the
+// source of truth. unlock_technology_id is 0 when absent (proto3 default).
+// improvement is an optional message; omit the field entirely when no
+// improvement is present.
+message TechPrototype {
+  int64 id = 1;
+  string name = 2;
+  string category = 3;
+  int64 unlock_technology_id = 4;  // 0 means "no prerequisite"
+  string short_description = 5;
+  string full_description = 6;
+  PriceModel price = 7;
+  int64 research_time = 8;
+  string image_url = 9;
+  TechImprovementModel improvement = 10;  // optional; omit if no improvement
+}
+
+// TechImprovementModel carries the optional numeric benefit that scales with
+// technology level. max_level of 0 means infinite (no cap).
+message TechImprovementModel {
+  string type = 1;
+  int32 value = 2;
+  int32 max_level = 3;  // 0 = no cap (infinite)
+}
+
+message ListTechPrototypesRequest {}
+
+message ListTechPrototypesResponse {
+  repeated TechPrototype prototypes = 1;
+}
+
+message GetTechPrototypeRequest {
+  int64 id = 1;
+}
+
+message GetTechPrototypeResponse {
+  TechPrototype prototype = 1;
+}
+
+// CreateTechPrototypeRequest carries the prototype to insert. The caller MUST
+// set a positive id: prototypes are ordered and each type occupies its own id range,
+// so the id is chosen by the caller rather than assigned by the server.
+message CreateTechPrototypeRequest {
+  TechPrototype prototype = 1;
+}
+
+message CreateTechPrototypeResponse {
+  TechPrototype prototype = 1;
+}
+
+// UpdateTechPrototypeRequest overwrites the prototype identified by prototype.id.
+message UpdateTechPrototypeRequest {
+  TechPrototype prototype = 1;
+}
+
+message UpdateTechPrototypeResponse {
+  TechPrototype prototype = 1;
+}

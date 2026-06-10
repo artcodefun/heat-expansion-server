@@ -51,6 +51,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createStoragePrototypeStmt, err = db.PrepareContext(ctx, createStoragePrototype); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateStoragePrototype: %w", err)
 	}
+	if q.createTechPrototypeStmt, err = db.PrepareContext(ctx, createTechPrototype); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateTechPrototype: %w", err)
+	}
 	if q.crystalCreditExistsStmt, err = db.PrepareContext(ctx, crystalCreditExists); err != nil {
 		return nil, fmt.Errorf("error preparing query CrystalCreditExists: %w", err)
 	}
@@ -414,6 +417,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateStoragePrototypeStmt, err = db.PrepareContext(ctx, updateStoragePrototype); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateStoragePrototype: %w", err)
 	}
+	if q.updateTechPrototypeStmt, err = db.PrepareContext(ctx, updateTechPrototype); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateTechPrototype: %w", err)
+	}
 	if q.updateTradeOperationStmt, err = db.PrepareContext(ctx, updateTradeOperation); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateTradeOperation: %w", err)
 	}
@@ -468,6 +474,11 @@ func (q *Queries) Close() error {
 	if q.createStoragePrototypeStmt != nil {
 		if cerr := q.createStoragePrototypeStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createStoragePrototypeStmt: %w", cerr)
+		}
+	}
+	if q.createTechPrototypeStmt != nil {
+		if cerr := q.createTechPrototypeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createTechPrototypeStmt: %w", cerr)
 		}
 	}
 	if q.crystalCreditExistsStmt != nil {
@@ -1075,6 +1086,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateStoragePrototypeStmt: %w", cerr)
 		}
 	}
+	if q.updateTechPrototypeStmt != nil {
+		if cerr := q.updateTechPrototypeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateTechPrototypeStmt: %w", cerr)
+		}
+	}
 	if q.updateTradeOperationStmt != nil {
 		if cerr := q.updateTradeOperationStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateTradeOperationStmt: %w", cerr)
@@ -1133,6 +1149,7 @@ type Queries struct {
 	createBuildPrototypeStmt                       *sql.Stmt
 	createSectorStmt                               *sql.Stmt
 	createStoragePrototypeStmt                     *sql.Stmt
+	createTechPrototypeStmt                        *sql.Stmt
 	crystalCreditExistsStmt                        *sql.Stmt
 	deleteActivitiesByBaseStmt                     *sql.Stmt
 	deleteBaseStmt                                 *sql.Stmt
@@ -1254,6 +1271,7 @@ type Queries struct {
 	updateResourceLocationStmt                     *sql.Stmt
 	updateSectorStmt                               *sql.Stmt
 	updateStoragePrototypeStmt                     *sql.Stmt
+	updateTechPrototypeStmt                        *sql.Stmt
 	updateTradeOperationStmt                       *sql.Stmt
 	updateUserStmt                                 *sql.Stmt
 }
@@ -1271,6 +1289,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		createBuildPrototypeStmt:                       q.createBuildPrototypeStmt,
 		createSectorStmt:                               q.createSectorStmt,
 		createStoragePrototypeStmt:                     q.createStoragePrototypeStmt,
+		createTechPrototypeStmt:                        q.createTechPrototypeStmt,
 		crystalCreditExistsStmt:                        q.crystalCreditExistsStmt,
 		deleteActivitiesByBaseStmt:                     q.deleteActivitiesByBaseStmt,
 		deleteBaseStmt:                                 q.deleteBaseStmt,
@@ -1392,6 +1411,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		updateResourceLocationStmt:                     q.updateResourceLocationStmt,
 		updateSectorStmt:                               q.updateSectorStmt,
 		updateStoragePrototypeStmt:                     q.updateStoragePrototypeStmt,
+		updateTechPrototypeStmt:                        q.updateTechPrototypeStmt,
 		updateTradeOperationStmt:                       q.updateTradeOperationStmt,
 		updateUserStmt:                                 q.updateUserStmt,
 	}

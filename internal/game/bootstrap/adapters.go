@@ -49,6 +49,7 @@ type Adapters struct {
 	ArmyPrototypeRead    ports.ArmyPrototypeReadRepository
 	BuildPrototypeRead   ports.BuildPrototypeReadRepository
 	StoragePrototypeRead ports.StoragePrototypeReadRepository
+	TechPrototypeRead    ports.TechPrototypeReadRepository
 	StorageRead          ports.StorageReadRepository
 	TechRead             ports.TechReadRepository
 	OperationRead        ports.OperationReadRepository
@@ -146,6 +147,7 @@ func NewAdapters(db *sql.DB, staticBaseURL string, jwtPublicKeyPEM string) (*Ada
 		ArmyPrototypeRead:    readrepo.NewPrototypeReadRepo(rq),
 		BuildPrototypeRead:   readrepo.NewPrototypeReadRepo(rq),
 		StoragePrototypeRead: readrepo.NewPrototypeReadRepo(rq),
+		TechPrototypeRead:    readrepo.NewPrototypeReadRepo(rq),
 		StorageRead:          readrepo.NewStorageReadRepo(rq),
 		TechRead:             readrepo.NewTechReadRepo(rq),
 		OperationRead:        opRead,

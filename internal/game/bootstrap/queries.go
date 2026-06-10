@@ -39,6 +39,6 @@ func NewQueries(a *Adapters, as *AppServices) *Queries {
 		BlackMarket: queries.NewBlackMarketQueries(a.BlackMarketRead, as.Access),
 		Alert:       queries.NewAlertQueries(a.AlertRead),
 		Diplomacy:   queries.NewDiplomacyQueries(a.DiplomacyRead),
-		Prototype:   queries.NewPrototypeQueries(a.ArmyPrototypeRead, a.BuildPrototypeRead, a.StoragePrototypeRead),
+		Prototype:   queries.NewPrototypeQueries(a.ArmyPrototypeRead, a.BuildPrototypeRead, a.StoragePrototypeRead, a.TechPrototypeRead),
 	}
 }

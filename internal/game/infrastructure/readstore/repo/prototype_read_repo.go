@@ -74,3 +74,23 @@ func (r *PrototypeReadRepo) GetStoragePrototype(ctx context.Context, id int) (*r
 	v := mappers.StoragePrototypeFromModel(row)
 	return &v, nil
 }
+
+func (r *PrototypeReadRepo) ListTechPrototypes(ctx context.Context) ([]*readmodels.TechItemPrototype, error) {
+	rows, err := r.q.ListTechPrototypes(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return mappers.TechPrototypesFromModels(rows), nil
+}
+
+func (r *PrototypeReadRepo) GetTechPrototype(ctx context.Context, id int) (*readmodels.TechItemPrototype, error) {
+	row, err := r.q.GetTechPrototypeByID(ctx, int64(id))
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ports.ErrNotFound
+		}
+		return nil, err
+	}
+	v := mappers.TechPrototypeFromModel(row)
+	return &v, nil
+}

@@ -23,6 +23,7 @@ type Querier interface {
 	// Sector queries
 	CreateSector(ctx context.Context, arg CreateSectorParams) (Sector, error)
 	CreateStoragePrototype(ctx context.Context, arg CreateStoragePrototypeParams) error
+	CreateTechPrototype(ctx context.Context, arg CreateTechPrototypeParams) error
 	CrystalCreditExists(ctx context.Context, orderID uuid.UUID) (bool, error)
 	DeleteActivitiesByBase(ctx context.Context, baseID int64) error
 	// Note: above RETURNING still lists sector_id; fix below to sector_x, sector_y
@@ -164,6 +165,7 @@ type Querier interface {
 	UpdateResourceLocation(ctx context.Context, arg UpdateResourceLocationParams) error
 	UpdateSector(ctx context.Context, arg UpdateSectorParams) (Sector, error)
 	UpdateStoragePrototype(ctx context.Context, arg UpdateStoragePrototypeParams) (StorageItemPrototype, error)
+	UpdateTechPrototype(ctx context.Context, arg UpdateTechPrototypeParams) (TechItemPrototype, error)
 	UpdateTradeOperation(ctx context.Context, arg UpdateTradeOperationParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
 }

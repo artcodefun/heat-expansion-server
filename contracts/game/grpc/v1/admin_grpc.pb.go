@@ -666,3 +666,219 @@ var StoragePrototypeService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "game/grpc/v1/admin.proto",
 }
+
+const (
+	TechPrototypeService_ListTechPrototypes_FullMethodName  = "/game.grpc.v1.TechPrototypeService/ListTechPrototypes"
+	TechPrototypeService_GetTechPrototype_FullMethodName    = "/game.grpc.v1.TechPrototypeService/GetTechPrototype"
+	TechPrototypeService_CreateTechPrototype_FullMethodName = "/game.grpc.v1.TechPrototypeService/CreateTechPrototype"
+	TechPrototypeService_UpdateTechPrototype_FullMethodName = "/game.grpc.v1.TechPrototypeService/UpdateTechPrototype"
+)
+
+// TechPrototypeServiceClient is the client API for TechPrototypeService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type TechPrototypeServiceClient interface {
+	ListTechPrototypes(ctx context.Context, in *ListTechPrototypesRequest, opts ...grpc.CallOption) (*ListTechPrototypesResponse, error)
+	GetTechPrototype(ctx context.Context, in *GetTechPrototypeRequest, opts ...grpc.CallOption) (*GetTechPrototypeResponse, error)
+	CreateTechPrototype(ctx context.Context, in *CreateTechPrototypeRequest, opts ...grpc.CallOption) (*CreateTechPrototypeResponse, error)
+	UpdateTechPrototype(ctx context.Context, in *UpdateTechPrototypeRequest, opts ...grpc.CallOption) (*UpdateTechPrototypeResponse, error)
+}
+
+type techPrototypeServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewTechPrototypeServiceClient(cc grpc.ClientConnInterface) TechPrototypeServiceClient {
+	return &techPrototypeServiceClient{cc}
+}
+
+func (c *techPrototypeServiceClient) ListTechPrototypes(ctx context.Context, in *ListTechPrototypesRequest, opts ...grpc.CallOption) (*ListTechPrototypesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListTechPrototypesResponse)
+	err := c.cc.Invoke(ctx, TechPrototypeService_ListTechPrototypes_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *techPrototypeServiceClient) GetTechPrototype(ctx context.Context, in *GetTechPrototypeRequest, opts ...grpc.CallOption) (*GetTechPrototypeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetTechPrototypeResponse)
+	err := c.cc.Invoke(ctx, TechPrototypeService_GetTechPrototype_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *techPrototypeServiceClient) CreateTechPrototype(ctx context.Context, in *CreateTechPrototypeRequest, opts ...grpc.CallOption) (*CreateTechPrototypeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateTechPrototypeResponse)
+	err := c.cc.Invoke(ctx, TechPrototypeService_CreateTechPrototype_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *techPrototypeServiceClient) UpdateTechPrototype(ctx context.Context, in *UpdateTechPrototypeRequest, opts ...grpc.CallOption) (*UpdateTechPrototypeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateTechPrototypeResponse)
+	err := c.cc.Invoke(ctx, TechPrototypeService_UpdateTechPrototype_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// TechPrototypeServiceServer is the server API for TechPrototypeService service.
+// All implementations must embed UnimplementedTechPrototypeServiceServer
+// for forward compatibility.
+type TechPrototypeServiceServer interface {
+	ListTechPrototypes(context.Context, *ListTechPrototypesRequest) (*ListTechPrototypesResponse, error)
+	GetTechPrototype(context.Context, *GetTechPrototypeRequest) (*GetTechPrototypeResponse, error)
+	CreateTechPrototype(context.Context, *CreateTechPrototypeRequest) (*CreateTechPrototypeResponse, error)
+	UpdateTechPrototype(context.Context, *UpdateTechPrototypeRequest) (*UpdateTechPrototypeResponse, error)
+	mustEmbedUnimplementedTechPrototypeServiceServer()
+}
+
+// UnimplementedTechPrototypeServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedTechPrototypeServiceServer struct{}
+
+func (UnimplementedTechPrototypeServiceServer) ListTechPrototypes(context.Context, *ListTechPrototypesRequest) (*ListTechPrototypesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListTechPrototypes not implemented")
+}
+func (UnimplementedTechPrototypeServiceServer) GetTechPrototype(context.Context, *GetTechPrototypeRequest) (*GetTechPrototypeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTechPrototype not implemented")
+}
+func (UnimplementedTechPrototypeServiceServer) CreateTechPrototype(context.Context, *CreateTechPrototypeRequest) (*CreateTechPrototypeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateTechPrototype not implemented")
+}
+func (UnimplementedTechPrototypeServiceServer) UpdateTechPrototype(context.Context, *UpdateTechPrototypeRequest) (*UpdateTechPrototypeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateTechPrototype not implemented")
+}
+func (UnimplementedTechPrototypeServiceServer) mustEmbedUnimplementedTechPrototypeServiceServer() {}
+func (UnimplementedTechPrototypeServiceServer) testEmbeddedByValue()                              {}
+
+// UnsafeTechPrototypeServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to TechPrototypeServiceServer will
+// result in compilation errors.
+type UnsafeTechPrototypeServiceServer interface {
+	mustEmbedUnimplementedTechPrototypeServiceServer()
+}
+
+func RegisterTechPrototypeServiceServer(s grpc.ServiceRegistrar, srv TechPrototypeServiceServer) {
+	// If the following call pancis, it indicates UnimplementedTechPrototypeServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&TechPrototypeService_ServiceDesc, srv)
+}
+
+func _TechPrototypeService_ListTechPrototypes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListTechPrototypesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TechPrototypeServiceServer).ListTechPrototypes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TechPrototypeService_ListTechPrototypes_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TechPrototypeServiceServer).ListTechPrototypes(ctx, req.(*ListTechPrototypesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TechPrototypeService_GetTechPrototype_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTechPrototypeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TechPrototypeServiceServer).GetTechPrototype(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TechPrototypeService_GetTechPrototype_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TechPrototypeServiceServer).GetTechPrototype(ctx, req.(*GetTechPrototypeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TechPrototypeService_CreateTechPrototype_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateTechPrototypeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TechPrototypeServiceServer).CreateTechPrototype(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TechPrototypeService_CreateTechPrototype_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TechPrototypeServiceServer).CreateTechPrototype(ctx, req.(*CreateTechPrototypeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TechPrototypeService_UpdateTechPrototype_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateTechPrototypeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TechPrototypeServiceServer).UpdateTechPrototype(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TechPrototypeService_UpdateTechPrototype_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TechPrototypeServiceServer).UpdateTechPrototype(ctx, req.(*UpdateTechPrototypeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// TechPrototypeService_ServiceDesc is the grpc.ServiceDesc for TechPrototypeService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var TechPrototypeService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "game.grpc.v1.TechPrototypeService",
+	HandlerType: (*TechPrototypeServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ListTechPrototypes",
+			Handler:    _TechPrototypeService_ListTechPrototypes_Handler,
+		},
+		{
+			MethodName: "GetTechPrototype",
+			Handler:    _TechPrototypeService_GetTechPrototype_Handler,
+		},
+		{
+			MethodName: "CreateTechPrototype",
+			Handler:    _TechPrototypeService_CreateTechPrototype_Handler,
+		},
+		{
+			MethodName: "UpdateTechPrototype",
+			Handler:    _TechPrototypeService_UpdateTechPrototype_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "game/grpc/v1/admin.proto",
+}
