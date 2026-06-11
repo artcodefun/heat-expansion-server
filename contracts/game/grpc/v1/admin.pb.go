@@ -2866,6 +2866,238 @@ func (x *UpdateTechPrototypeResponse) GetPrototype() *TechPrototype {
 	return nil
 }
 
+// TranslationEntry is the wire shape of a single localised string row.
+// locale must be one of the supported codes ("en", "ru").
+type TranslationEntry struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Key           string                 `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	Locale        string                 `protobuf:"bytes,2,opt,name=locale,proto3" json:"locale,omitempty"`
+	Value         string                 `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TranslationEntry) Reset() {
+	*x = TranslationEntry{}
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[48]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TranslationEntry) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TranslationEntry) ProtoMessage() {}
+
+func (x *TranslationEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[48]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TranslationEntry.ProtoReflect.Descriptor instead.
+func (*TranslationEntry) Descriptor() ([]byte, []int) {
+	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{48}
+}
+
+func (x *TranslationEntry) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+func (x *TranslationEntry) GetLocale() string {
+	if x != nil {
+		return x.Locale
+	}
+	return ""
+}
+
+func (x *TranslationEntry) GetValue() string {
+	if x != nil {
+		return x.Value
+	}
+	return ""
+}
+
+// UpsertTranslationRequest inserts or overwrites a single translation row.
+// Both key and locale are required; value may be empty (clears the string).
+type UpsertTranslationRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Entry         *TranslationEntry      `protobuf:"bytes,1,opt,name=entry,proto3" json:"entry,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpsertTranslationRequest) Reset() {
+	*x = UpsertTranslationRequest{}
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[49]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpsertTranslationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpsertTranslationRequest) ProtoMessage() {}
+
+func (x *UpsertTranslationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[49]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpsertTranslationRequest.ProtoReflect.Descriptor instead.
+func (*UpsertTranslationRequest) Descriptor() ([]byte, []int) {
+	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{49}
+}
+
+func (x *UpsertTranslationRequest) GetEntry() *TranslationEntry {
+	if x != nil {
+		return x.Entry
+	}
+	return nil
+}
+
+type UpsertTranslationResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Entry         *TranslationEntry      `protobuf:"bytes,1,opt,name=entry,proto3" json:"entry,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpsertTranslationResponse) Reset() {
+	*x = UpsertTranslationResponse{}
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[50]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpsertTranslationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpsertTranslationResponse) ProtoMessage() {}
+
+func (x *UpsertTranslationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[50]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpsertTranslationResponse.ProtoReflect.Descriptor instead.
+func (*UpsertTranslationResponse) Descriptor() ([]byte, []int) {
+	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{50}
+}
+
+func (x *UpsertTranslationResponse) GetEntry() *TranslationEntry {
+	if x != nil {
+		return x.Entry
+	}
+	return nil
+}
+
+type ListTranslationsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListTranslationsRequest) Reset() {
+	*x = ListTranslationsRequest{}
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[51]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListTranslationsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListTranslationsRequest) ProtoMessage() {}
+
+func (x *ListTranslationsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[51]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListTranslationsRequest.ProtoReflect.Descriptor instead.
+func (*ListTranslationsRequest) Descriptor() ([]byte, []int) {
+	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{51}
+}
+
+type ListTranslationsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Entries       []*TranslationEntry    `protobuf:"bytes,1,rep,name=entries,proto3" json:"entries,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListTranslationsResponse) Reset() {
+	*x = ListTranslationsResponse{}
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[52]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListTranslationsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListTranslationsResponse) ProtoMessage() {}
+
+func (x *ListTranslationsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_game_grpc_v1_admin_proto_msgTypes[52]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListTranslationsResponse.ProtoReflect.Descriptor instead.
+func (*ListTranslationsResponse) Descriptor() ([]byte, []int) {
+	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{52}
+}
+
+func (x *ListTranslationsResponse) GetEntries() []*TranslationEntry {
+	if x != nil {
+		return x.Entries
+	}
+	return nil
+}
+
 var File_game_grpc_v1_admin_proto protoreflect.FileDescriptor
 
 const file_game_grpc_v1_admin_proto_rawDesc = "" +
@@ -3059,7 +3291,18 @@ const file_game_grpc_v1_admin_proto_rawDesc = "" +
 	"\x1aUpdateTechPrototypeRequest\x129\n" +
 	"\tprototype\x18\x01 \x01(\v2\x1b.game.grpc.v1.TechPrototypeR\tprototype\"X\n" +
 	"\x1bUpdateTechPrototypeResponse\x129\n" +
-	"\tprototype\x18\x01 \x01(\v2\x1b.game.grpc.v1.TechPrototypeR\tprototype2\xba\x03\n" +
+	"\tprototype\x18\x01 \x01(\v2\x1b.game.grpc.v1.TechPrototypeR\tprototype\"R\n" +
+	"\x10TranslationEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x16\n" +
+	"\x06locale\x18\x02 \x01(\tR\x06locale\x12\x14\n" +
+	"\x05value\x18\x03 \x01(\tR\x05value\"P\n" +
+	"\x18UpsertTranslationRequest\x124\n" +
+	"\x05entry\x18\x01 \x01(\v2\x1e.game.grpc.v1.TranslationEntryR\x05entry\"Q\n" +
+	"\x19UpsertTranslationResponse\x124\n" +
+	"\x05entry\x18\x01 \x01(\v2\x1e.game.grpc.v1.TranslationEntryR\x05entry\"\x19\n" +
+	"\x17ListTranslationsRequest\"T\n" +
+	"\x18ListTranslationsResponse\x128\n" +
+	"\aentries\x18\x01 \x03(\v2\x1e.game.grpc.v1.TranslationEntryR\aentries2\xba\x03\n" +
 	"\x14ArmyPrototypeService\x12g\n" +
 	"\x12ListArmyPrototypes\x12'.game.grpc.v1.ListArmyPrototypesRequest\x1a(.game.grpc.v1.ListArmyPrototypesResponse\x12a\n" +
 	"\x10GetArmyPrototype\x12%.game.grpc.v1.GetArmyPrototypeRequest\x1a&.game.grpc.v1.GetArmyPrototypeResponse\x12j\n" +
@@ -3079,7 +3322,10 @@ const file_game_grpc_v1_admin_proto_rawDesc = "" +
 	"\x12ListTechPrototypes\x12'.game.grpc.v1.ListTechPrototypesRequest\x1a(.game.grpc.v1.ListTechPrototypesResponse\x12a\n" +
 	"\x10GetTechPrototype\x12%.game.grpc.v1.GetTechPrototypeRequest\x1a&.game.grpc.v1.GetTechPrototypeResponse\x12j\n" +
 	"\x13CreateTechPrototype\x12(.game.grpc.v1.CreateTechPrototypeRequest\x1a).game.grpc.v1.CreateTechPrototypeResponse\x12j\n" +
-	"\x13UpdateTechPrototype\x12(.game.grpc.v1.UpdateTechPrototypeRequest\x1a).game.grpc.v1.UpdateTechPrototypeResponseBKZIgithub.com/artcodefun/heat-expansion-server/contracts/game/grpc/v1;gamev1b\x06proto3"
+	"\x13UpdateTechPrototype\x12(.game.grpc.v1.UpdateTechPrototypeRequest\x1a).game.grpc.v1.UpdateTechPrototypeResponse2\xdd\x01\n" +
+	"\x12TranslationService\x12d\n" +
+	"\x11UpsertTranslation\x12&.game.grpc.v1.UpsertTranslationRequest\x1a'.game.grpc.v1.UpsertTranslationResponse\x12a\n" +
+	"\x10ListTranslations\x12%.game.grpc.v1.ListTranslationsRequest\x1a&.game.grpc.v1.ListTranslationsResponseBKZIgithub.com/artcodefun/heat-expansion-server/contracts/game/grpc/v1;gamev1b\x06proto3"
 
 var (
 	file_game_grpc_v1_admin_proto_rawDescOnce sync.Once
@@ -3093,7 +3339,7 @@ func file_game_grpc_v1_admin_proto_rawDescGZIP() []byte {
 	return file_game_grpc_v1_admin_proto_rawDescData
 }
 
-var file_game_grpc_v1_admin_proto_msgTypes = make([]protoimpl.MessageInfo, 48)
+var file_game_grpc_v1_admin_proto_msgTypes = make([]protoimpl.MessageInfo, 53)
 var file_game_grpc_v1_admin_proto_goTypes = []any{
 	(*PriceModel)(nil),                     // 0: game.grpc.v1.PriceModel
 	(*ArmyPrototype)(nil),                  // 1: game.grpc.v1.ArmyPrototype
@@ -3143,6 +3389,11 @@ var file_game_grpc_v1_admin_proto_goTypes = []any{
 	(*CreateTechPrototypeResponse)(nil),    // 45: game.grpc.v1.CreateTechPrototypeResponse
 	(*UpdateTechPrototypeRequest)(nil),     // 46: game.grpc.v1.UpdateTechPrototypeRequest
 	(*UpdateTechPrototypeResponse)(nil),    // 47: game.grpc.v1.UpdateTechPrototypeResponse
+	(*TranslationEntry)(nil),               // 48: game.grpc.v1.TranslationEntry
+	(*UpsertTranslationRequest)(nil),       // 49: game.grpc.v1.UpsertTranslationRequest
+	(*UpsertTranslationResponse)(nil),      // 50: game.grpc.v1.UpsertTranslationResponse
+	(*ListTranslationsRequest)(nil),        // 51: game.grpc.v1.ListTranslationsRequest
+	(*ListTranslationsResponse)(nil),       // 52: game.grpc.v1.ListTranslationsResponse
 }
 var file_game_grpc_v1_admin_proto_depIdxs = []int32{
 	0,  // 0: game.grpc.v1.ArmyPrototype.price:type_name -> game.grpc.v1.PriceModel
@@ -3184,43 +3435,50 @@ var file_game_grpc_v1_admin_proto_depIdxs = []int32{
 	38, // 36: game.grpc.v1.CreateTechPrototypeResponse.prototype:type_name -> game.grpc.v1.TechPrototype
 	38, // 37: game.grpc.v1.UpdateTechPrototypeRequest.prototype:type_name -> game.grpc.v1.TechPrototype
 	38, // 38: game.grpc.v1.UpdateTechPrototypeResponse.prototype:type_name -> game.grpc.v1.TechPrototype
-	2,  // 39: game.grpc.v1.ArmyPrototypeService.ListArmyPrototypes:input_type -> game.grpc.v1.ListArmyPrototypesRequest
-	4,  // 40: game.grpc.v1.ArmyPrototypeService.GetArmyPrototype:input_type -> game.grpc.v1.GetArmyPrototypeRequest
-	6,  // 41: game.grpc.v1.ArmyPrototypeService.CreateArmyPrototype:input_type -> game.grpc.v1.CreateArmyPrototypeRequest
-	8,  // 42: game.grpc.v1.ArmyPrototypeService.UpdateArmyPrototype:input_type -> game.grpc.v1.UpdateArmyPrototypeRequest
-	16, // 43: game.grpc.v1.BuildPrototypeService.ListBuildPrototypes:input_type -> game.grpc.v1.ListBuildPrototypesRequest
-	18, // 44: game.grpc.v1.BuildPrototypeService.GetBuildPrototype:input_type -> game.grpc.v1.GetBuildPrototypeRequest
-	20, // 45: game.grpc.v1.BuildPrototypeService.CreateBuildPrototype:input_type -> game.grpc.v1.CreateBuildPrototypeRequest
-	22, // 46: game.grpc.v1.BuildPrototypeService.UpdateBuildPrototype:input_type -> game.grpc.v1.UpdateBuildPrototypeRequest
-	30, // 47: game.grpc.v1.StoragePrototypeService.ListStoragePrototypes:input_type -> game.grpc.v1.ListStoragePrototypesRequest
-	32, // 48: game.grpc.v1.StoragePrototypeService.GetStoragePrototype:input_type -> game.grpc.v1.GetStoragePrototypeRequest
-	34, // 49: game.grpc.v1.StoragePrototypeService.CreateStoragePrototype:input_type -> game.grpc.v1.CreateStoragePrototypeRequest
-	36, // 50: game.grpc.v1.StoragePrototypeService.UpdateStoragePrototype:input_type -> game.grpc.v1.UpdateStoragePrototypeRequest
-	40, // 51: game.grpc.v1.TechPrototypeService.ListTechPrototypes:input_type -> game.grpc.v1.ListTechPrototypesRequest
-	42, // 52: game.grpc.v1.TechPrototypeService.GetTechPrototype:input_type -> game.grpc.v1.GetTechPrototypeRequest
-	44, // 53: game.grpc.v1.TechPrototypeService.CreateTechPrototype:input_type -> game.grpc.v1.CreateTechPrototypeRequest
-	46, // 54: game.grpc.v1.TechPrototypeService.UpdateTechPrototype:input_type -> game.grpc.v1.UpdateTechPrototypeRequest
-	3,  // 55: game.grpc.v1.ArmyPrototypeService.ListArmyPrototypes:output_type -> game.grpc.v1.ListArmyPrototypesResponse
-	5,  // 56: game.grpc.v1.ArmyPrototypeService.GetArmyPrototype:output_type -> game.grpc.v1.GetArmyPrototypeResponse
-	7,  // 57: game.grpc.v1.ArmyPrototypeService.CreateArmyPrototype:output_type -> game.grpc.v1.CreateArmyPrototypeResponse
-	9,  // 58: game.grpc.v1.ArmyPrototypeService.UpdateArmyPrototype:output_type -> game.grpc.v1.UpdateArmyPrototypeResponse
-	17, // 59: game.grpc.v1.BuildPrototypeService.ListBuildPrototypes:output_type -> game.grpc.v1.ListBuildPrototypesResponse
-	19, // 60: game.grpc.v1.BuildPrototypeService.GetBuildPrototype:output_type -> game.grpc.v1.GetBuildPrototypeResponse
-	21, // 61: game.grpc.v1.BuildPrototypeService.CreateBuildPrototype:output_type -> game.grpc.v1.CreateBuildPrototypeResponse
-	23, // 62: game.grpc.v1.BuildPrototypeService.UpdateBuildPrototype:output_type -> game.grpc.v1.UpdateBuildPrototypeResponse
-	31, // 63: game.grpc.v1.StoragePrototypeService.ListStoragePrototypes:output_type -> game.grpc.v1.ListStoragePrototypesResponse
-	33, // 64: game.grpc.v1.StoragePrototypeService.GetStoragePrototype:output_type -> game.grpc.v1.GetStoragePrototypeResponse
-	35, // 65: game.grpc.v1.StoragePrototypeService.CreateStoragePrototype:output_type -> game.grpc.v1.CreateStoragePrototypeResponse
-	37, // 66: game.grpc.v1.StoragePrototypeService.UpdateStoragePrototype:output_type -> game.grpc.v1.UpdateStoragePrototypeResponse
-	41, // 67: game.grpc.v1.TechPrototypeService.ListTechPrototypes:output_type -> game.grpc.v1.ListTechPrototypesResponse
-	43, // 68: game.grpc.v1.TechPrototypeService.GetTechPrototype:output_type -> game.grpc.v1.GetTechPrototypeResponse
-	45, // 69: game.grpc.v1.TechPrototypeService.CreateTechPrototype:output_type -> game.grpc.v1.CreateTechPrototypeResponse
-	47, // 70: game.grpc.v1.TechPrototypeService.UpdateTechPrototype:output_type -> game.grpc.v1.UpdateTechPrototypeResponse
-	55, // [55:71] is the sub-list for method output_type
-	39, // [39:55] is the sub-list for method input_type
-	39, // [39:39] is the sub-list for extension type_name
-	39, // [39:39] is the sub-list for extension extendee
-	0,  // [0:39] is the sub-list for field type_name
+	48, // 39: game.grpc.v1.UpsertTranslationRequest.entry:type_name -> game.grpc.v1.TranslationEntry
+	48, // 40: game.grpc.v1.UpsertTranslationResponse.entry:type_name -> game.grpc.v1.TranslationEntry
+	48, // 41: game.grpc.v1.ListTranslationsResponse.entries:type_name -> game.grpc.v1.TranslationEntry
+	2,  // 42: game.grpc.v1.ArmyPrototypeService.ListArmyPrototypes:input_type -> game.grpc.v1.ListArmyPrototypesRequest
+	4,  // 43: game.grpc.v1.ArmyPrototypeService.GetArmyPrototype:input_type -> game.grpc.v1.GetArmyPrototypeRequest
+	6,  // 44: game.grpc.v1.ArmyPrototypeService.CreateArmyPrototype:input_type -> game.grpc.v1.CreateArmyPrototypeRequest
+	8,  // 45: game.grpc.v1.ArmyPrototypeService.UpdateArmyPrototype:input_type -> game.grpc.v1.UpdateArmyPrototypeRequest
+	16, // 46: game.grpc.v1.BuildPrototypeService.ListBuildPrototypes:input_type -> game.grpc.v1.ListBuildPrototypesRequest
+	18, // 47: game.grpc.v1.BuildPrototypeService.GetBuildPrototype:input_type -> game.grpc.v1.GetBuildPrototypeRequest
+	20, // 48: game.grpc.v1.BuildPrototypeService.CreateBuildPrototype:input_type -> game.grpc.v1.CreateBuildPrototypeRequest
+	22, // 49: game.grpc.v1.BuildPrototypeService.UpdateBuildPrototype:input_type -> game.grpc.v1.UpdateBuildPrototypeRequest
+	30, // 50: game.grpc.v1.StoragePrototypeService.ListStoragePrototypes:input_type -> game.grpc.v1.ListStoragePrototypesRequest
+	32, // 51: game.grpc.v1.StoragePrototypeService.GetStoragePrototype:input_type -> game.grpc.v1.GetStoragePrototypeRequest
+	34, // 52: game.grpc.v1.StoragePrototypeService.CreateStoragePrototype:input_type -> game.grpc.v1.CreateStoragePrototypeRequest
+	36, // 53: game.grpc.v1.StoragePrototypeService.UpdateStoragePrototype:input_type -> game.grpc.v1.UpdateStoragePrototypeRequest
+	40, // 54: game.grpc.v1.TechPrototypeService.ListTechPrototypes:input_type -> game.grpc.v1.ListTechPrototypesRequest
+	42, // 55: game.grpc.v1.TechPrototypeService.GetTechPrototype:input_type -> game.grpc.v1.GetTechPrototypeRequest
+	44, // 56: game.grpc.v1.TechPrototypeService.CreateTechPrototype:input_type -> game.grpc.v1.CreateTechPrototypeRequest
+	46, // 57: game.grpc.v1.TechPrototypeService.UpdateTechPrototype:input_type -> game.grpc.v1.UpdateTechPrototypeRequest
+	49, // 58: game.grpc.v1.TranslationService.UpsertTranslation:input_type -> game.grpc.v1.UpsertTranslationRequest
+	51, // 59: game.grpc.v1.TranslationService.ListTranslations:input_type -> game.grpc.v1.ListTranslationsRequest
+	3,  // 60: game.grpc.v1.ArmyPrototypeService.ListArmyPrototypes:output_type -> game.grpc.v1.ListArmyPrototypesResponse
+	5,  // 61: game.grpc.v1.ArmyPrototypeService.GetArmyPrototype:output_type -> game.grpc.v1.GetArmyPrototypeResponse
+	7,  // 62: game.grpc.v1.ArmyPrototypeService.CreateArmyPrototype:output_type -> game.grpc.v1.CreateArmyPrototypeResponse
+	9,  // 63: game.grpc.v1.ArmyPrototypeService.UpdateArmyPrototype:output_type -> game.grpc.v1.UpdateArmyPrototypeResponse
+	17, // 64: game.grpc.v1.BuildPrototypeService.ListBuildPrototypes:output_type -> game.grpc.v1.ListBuildPrototypesResponse
+	19, // 65: game.grpc.v1.BuildPrototypeService.GetBuildPrototype:output_type -> game.grpc.v1.GetBuildPrototypeResponse
+	21, // 66: game.grpc.v1.BuildPrototypeService.CreateBuildPrototype:output_type -> game.grpc.v1.CreateBuildPrototypeResponse
+	23, // 67: game.grpc.v1.BuildPrototypeService.UpdateBuildPrototype:output_type -> game.grpc.v1.UpdateBuildPrototypeResponse
+	31, // 68: game.grpc.v1.StoragePrototypeService.ListStoragePrototypes:output_type -> game.grpc.v1.ListStoragePrototypesResponse
+	33, // 69: game.grpc.v1.StoragePrototypeService.GetStoragePrototype:output_type -> game.grpc.v1.GetStoragePrototypeResponse
+	35, // 70: game.grpc.v1.StoragePrototypeService.CreateStoragePrototype:output_type -> game.grpc.v1.CreateStoragePrototypeResponse
+	37, // 71: game.grpc.v1.StoragePrototypeService.UpdateStoragePrototype:output_type -> game.grpc.v1.UpdateStoragePrototypeResponse
+	41, // 72: game.grpc.v1.TechPrototypeService.ListTechPrototypes:output_type -> game.grpc.v1.ListTechPrototypesResponse
+	43, // 73: game.grpc.v1.TechPrototypeService.GetTechPrototype:output_type -> game.grpc.v1.GetTechPrototypeResponse
+	45, // 74: game.grpc.v1.TechPrototypeService.CreateTechPrototype:output_type -> game.grpc.v1.CreateTechPrototypeResponse
+	47, // 75: game.grpc.v1.TechPrototypeService.UpdateTechPrototype:output_type -> game.grpc.v1.UpdateTechPrototypeResponse
+	50, // 76: game.grpc.v1.TranslationService.UpsertTranslation:output_type -> game.grpc.v1.UpsertTranslationResponse
+	52, // 77: game.grpc.v1.TranslationService.ListTranslations:output_type -> game.grpc.v1.ListTranslationsResponse
+	60, // [60:78] is the sub-list for method output_type
+	42, // [42:60] is the sub-list for method input_type
+	42, // [42:42] is the sub-list for extension type_name
+	42, // [42:42] is the sub-list for extension extendee
+	0,  // [0:42] is the sub-list for field type_name
 }
 
 func init() { file_game_grpc_v1_admin_proto_init() }
@@ -3249,9 +3507,9 @@ func file_game_grpc_v1_admin_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_game_grpc_v1_admin_proto_rawDesc), len(file_game_grpc_v1_admin_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   48,
+			NumMessages:   53,
 			NumExtensions: 0,
-			NumServices:   4,
+			NumServices:   5,
 		},
 		GoTypes:           file_game_grpc_v1_admin_proto_goTypes,
 		DependencyIndexes: file_game_grpc_v1_admin_proto_depIdxs,

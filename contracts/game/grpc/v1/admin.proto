@@ -4,13 +4,11 @@ package game.grpc.v1;
 
 option go_package = "github.com/artcodefun/heat-expansion-server/contracts/game/grpc/v1;gamev1";
 
-// This file defines the private gRPC API exposed by the game module for the
+// This file defines the private gRPC API exposed by the game module for
 // internal use. It is reached over loopback and guarded by a static module key
-// in request metadata. There is one service per resource (and one handler type
-// per service): ArmyPrototypeService today; BuildPrototypeService,
-// StoragePrototypeService, TechPrototypeService and TranslationService are
-// added in later phases. RPC and message names are resource-qualified because
-// all services share this proto package and names must stay globally unique.
+// in request metadata. There is one service per resource and one handler type
+// per service. RPC and message names are resource-qualified because all
+// services share this proto package and names must stay globally unique.
 
 // ============================================================================
 // Shared messages
@@ -378,4 +376,37 @@ message UpdateTechPrototypeRequest {
 
 message UpdateTechPrototypeResponse {
   TechPrototype prototype = 1;
+}
+
+// ============================================================================
+// TranslationService
+// ============================================================================
+
+service TranslationService {
+  rpc UpsertTranslation(UpsertTranslationRequest) returns (UpsertTranslationResponse);
+  rpc ListTranslations(ListTranslationsRequest) returns (ListTranslationsResponse);
+}
+
+// TranslationEntry is the wire shape of a single localised string row.
+// locale must be one of the supported codes ("en", "ru").
+message TranslationEntry {
+  string key = 1;
+  string locale = 2;
+  string value = 3;
+}
+
+// UpsertTranslationRequest inserts or overwrites a single translation row.
+// Both key and locale are required; value may be empty (clears the string).
+message UpsertTranslationRequest {
+  TranslationEntry entry = 1;
+}
+
+message UpsertTranslationResponse {
+  TranslationEntry entry = 1;
+}
+
+message ListTranslationsRequest {}
+
+message ListTranslationsResponse {
+  repeated TranslationEntry entries = 1;
 }

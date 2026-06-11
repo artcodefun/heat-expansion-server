@@ -17,3 +17,14 @@ func NewTranslationRepo(q *dbgen.Queries) *TranslationRepo {
 func (r *TranslationRepo) GetAll(ctx context.Context) ([]dbgen.Translation, error) {
 	return r.q.GetAllTranslations(ctx)
 }
+
+func (r *TranslationRepo) Upsert(ctx context.Context, key, locale, value string) error {
+	if err := r.q.UpsertTranslation(ctx, dbgen.UpsertTranslationParams{
+		Key:    key,
+		Locale: locale,
+		Value:  value,
+	}); err != nil {
+		return err
+	}
+	return r.q.NotifyTranslationsChanged(ctx)
+}

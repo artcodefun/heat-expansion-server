@@ -375,6 +375,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.notifyOutboxEventStmt, err = db.PrepareContext(ctx, notifyOutboxEvent); err != nil {
 		return nil, fmt.Errorf("error preparing query NotifyOutboxEvent: %w", err)
 	}
+	if q.notifyTranslationsChangedStmt, err = db.PrepareContext(ctx, notifyTranslationsChanged); err != nil {
+		return nil, fmt.Errorf("error preparing query NotifyTranslationsChanged: %w", err)
+	}
 	if q.radarThreatExistsStmt, err = db.PrepareContext(ctx, radarThreatExists); err != nil {
 		return nil, fmt.Errorf("error preparing query RadarThreatExists: %w", err)
 	}
@@ -425,6 +428,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.updateUserStmt, err = db.PrepareContext(ctx, updateUser); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateUser: %w", err)
+	}
+	if q.upsertTranslationStmt, err = db.PrepareContext(ctx, upsertTranslation); err != nil {
+		return nil, fmt.Errorf("error preparing query UpsertTranslation: %w", err)
 	}
 	return &q, nil
 }
@@ -1016,6 +1022,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing notifyOutboxEventStmt: %w", cerr)
 		}
 	}
+	if q.notifyTranslationsChangedStmt != nil {
+		if cerr := q.notifyTranslationsChangedStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing notifyTranslationsChangedStmt: %w", cerr)
+		}
+	}
 	if q.radarThreatExistsStmt != nil {
 		if cerr := q.radarThreatExistsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing radarThreatExistsStmt: %w", cerr)
@@ -1099,6 +1110,11 @@ func (q *Queries) Close() error {
 	if q.updateUserStmt != nil {
 		if cerr := q.updateUserStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateUserStmt: %w", cerr)
+		}
+	}
+	if q.upsertTranslationStmt != nil {
+		if cerr := q.upsertTranslationStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing upsertTranslationStmt: %w", cerr)
 		}
 	}
 	return err
@@ -1257,6 +1273,7 @@ type Queries struct {
 	markOutboxEventPublishedStmt                   *sql.Stmt
 	markScheduledJobDispatchedStmt                 *sql.Stmt
 	notifyOutboxEventStmt                          *sql.Stmt
+	notifyTranslationsChangedStmt                  *sql.Stmt
 	radarThreatExistsStmt                          *sql.Stmt
 	recentReportExistsByScannerStmt                *sql.Stmt
 	updateArmyPrototypeStmt                        *sql.Stmt
@@ -1274,6 +1291,7 @@ type Queries struct {
 	updateTechPrototypeStmt                        *sql.Stmt
 	updateTradeOperationStmt                       *sql.Stmt
 	updateUserStmt                                 *sql.Stmt
+	upsertTranslationStmt                          *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
@@ -1397,6 +1415,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		markOutboxEventPublishedStmt:                   q.markOutboxEventPublishedStmt,
 		markScheduledJobDispatchedStmt:                 q.markScheduledJobDispatchedStmt,
 		notifyOutboxEventStmt:                          q.notifyOutboxEventStmt,
+		notifyTranslationsChangedStmt:                  q.notifyTranslationsChangedStmt,
 		radarThreatExistsStmt:                          q.radarThreatExistsStmt,
 		recentReportExistsByScannerStmt:                q.recentReportExistsByScannerStmt,
 		updateArmyPrototypeStmt:                        q.updateArmyPrototypeStmt,
@@ -1414,5 +1433,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		updateTechPrototypeStmt:                        q.updateTechPrototypeStmt,
 		updateTradeOperationStmt:                       q.updateTradeOperationStmt,
 		updateUserStmt:                                 q.updateUserStmt,
+		upsertTranslationStmt:                          q.upsertTranslationStmt,
 	}
 }

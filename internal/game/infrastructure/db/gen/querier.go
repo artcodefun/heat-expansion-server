@@ -151,6 +151,7 @@ type Querier interface {
 	MarkOutboxEventPublished(ctx context.Context, arg MarkOutboxEventPublishedParams) error
 	MarkScheduledJobDispatched(ctx context.Context, arg MarkScheduledJobDispatchedParams) error
 	NotifyOutboxEvent(ctx context.Context) error
+	NotifyTranslationsChanged(ctx context.Context) error
 	RadarThreatExists(ctx context.Context, arg RadarThreatExistsParams) (bool, error)
 	RecentReportExistsByScanner(ctx context.Context, arg RecentReportExistsByScannerParams) (bool, error)
 	UpdateArmyPrototype(ctx context.Context, arg UpdateArmyPrototypeParams) (ArmyItemPrototype, error)
@@ -168,6 +169,7 @@ type Querier interface {
 	UpdateTechPrototype(ctx context.Context, arg UpdateTechPrototypeParams) (TechItemPrototype, error)
 	UpdateTradeOperation(ctx context.Context, arg UpdateTradeOperationParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
+	UpsertTranslation(ctx context.Context, arg UpsertTranslationParams) error
 }
 
 var _ Querier = (*Queries)(nil)

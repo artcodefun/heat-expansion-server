@@ -12,15 +12,17 @@ import (
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/repo"
+	goi18n "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/i18n"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/jobs"
 	"github.com/artcodefun/heat-expansion-server/internal/platform/rabbitmq"
 )
 
 type Workers struct {
-	OutboxLoop         func(ctx context.Context) error
-	SchedulerLoop      func(ctx context.Context) error
-	IntegrationEvtLoop func(ctx context.Context) error
-	g                  *errgroup.Group
+	OutboxLoop            func(ctx context.Context) error
+	SchedulerLoop         func(ctx context.Context) error
+	IntegrationEvtLoop    func(ctx context.Context) error
+	TranslationReloadLoop func(ctx context.Context) error
+	g                     *errgroup.Group
 }
 
 func NewWorkers(
@@ -28,6 +30,7 @@ func NewWorkers(
 	outbox *services.OutboxService,
 	scheduler ports.Scheduler,
 	consumer *rabbitmq.RabbitMQConsumer,
+	translator *goi18n.SimpleTranslator,
 ) *Workers {
 	runner, ok := scheduler.(*jobs.DBScheduler)
 	if !ok {
@@ -75,6 +78,24 @@ func NewWorkers(
 			}
 			return nil
 		},
+		TranslationReloadLoop: func(ctx context.Context) error {
+			slog.InfoContext(ctx, "game translation reload worker started")
+			defer slog.InfoContext(ctx, "game translation reload worker stopped")
+
+			listener := repo.NewPostgresListener(dbURL, "game_translations_changed")
+			for {
+				select {
+				case <-ctx.Done():
+					return nil
+				case <-listener.Events:
+					if err := translator.LoadFromRepo(ctx); err != nil {
+						slog.WarnContext(ctx, "game translation reload failed", "error", err)
+					} else {
+						slog.InfoContext(ctx, "game translations reloaded")
+					}
+				}
+			}
+		},
 	}
 }
 
@@ -86,6 +107,7 @@ func (w *Workers) Start(ctx context.Context) {
 	g.Go(func() error { return w.SchedulerLoop(ctx) })
 	g.Go(func() error { return w.IntegrationEvtLoop(ctx) })
 	g.Go(func() error { return w.OutboxLoop(ctx) })
+	g.Go(func() error { return w.TranslationReloadLoop(ctx) })
 }
 
 // Wait blocks until all background worker loops have exited and returns the

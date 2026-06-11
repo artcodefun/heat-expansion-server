@@ -39,5 +39,6 @@ func NewRouter(cmd Commands, qry Queries, internalKey string, tr ports.Translato
 	gamev1.RegisterBuildPrototypeServiceServer(srv, handlers.NewBuildPrototypeHandler(cmd.BuildPrototype, qry.BuildPrototype, tr))
 	gamev1.RegisterStoragePrototypeServiceServer(srv, handlers.NewStoragePrototypeHandler(cmd.StoragePrototype, qry.StoragePrototype, tr))
 	gamev1.RegisterTechPrototypeServiceServer(srv, handlers.NewTechPrototypeHandler(cmd.TechPrototype, qry.TechPrototype, tr))
+	gamev1.RegisterTranslationServiceServer(srv, handlers.NewTranslationHandler(tr))
 	return Router{srv}
 }

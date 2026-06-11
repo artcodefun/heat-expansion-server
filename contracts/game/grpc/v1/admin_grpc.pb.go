@@ -882,3 +882,143 @@ var TechPrototypeService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "game/grpc/v1/admin.proto",
 }
+
+const (
+	TranslationService_UpsertTranslation_FullMethodName = "/game.grpc.v1.TranslationService/UpsertTranslation"
+	TranslationService_ListTranslations_FullMethodName  = "/game.grpc.v1.TranslationService/ListTranslations"
+)
+
+// TranslationServiceClient is the client API for TranslationService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type TranslationServiceClient interface {
+	UpsertTranslation(ctx context.Context, in *UpsertTranslationRequest, opts ...grpc.CallOption) (*UpsertTranslationResponse, error)
+	ListTranslations(ctx context.Context, in *ListTranslationsRequest, opts ...grpc.CallOption) (*ListTranslationsResponse, error)
+}
+
+type translationServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewTranslationServiceClient(cc grpc.ClientConnInterface) TranslationServiceClient {
+	return &translationServiceClient{cc}
+}
+
+func (c *translationServiceClient) UpsertTranslation(ctx context.Context, in *UpsertTranslationRequest, opts ...grpc.CallOption) (*UpsertTranslationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpsertTranslationResponse)
+	err := c.cc.Invoke(ctx, TranslationService_UpsertTranslation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *translationServiceClient) ListTranslations(ctx context.Context, in *ListTranslationsRequest, opts ...grpc.CallOption) (*ListTranslationsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListTranslationsResponse)
+	err := c.cc.Invoke(ctx, TranslationService_ListTranslations_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// TranslationServiceServer is the server API for TranslationService service.
+// All implementations must embed UnimplementedTranslationServiceServer
+// for forward compatibility.
+type TranslationServiceServer interface {
+	UpsertTranslation(context.Context, *UpsertTranslationRequest) (*UpsertTranslationResponse, error)
+	ListTranslations(context.Context, *ListTranslationsRequest) (*ListTranslationsResponse, error)
+	mustEmbedUnimplementedTranslationServiceServer()
+}
+
+// UnimplementedTranslationServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedTranslationServiceServer struct{}
+
+func (UnimplementedTranslationServiceServer) UpsertTranslation(context.Context, *UpsertTranslationRequest) (*UpsertTranslationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpsertTranslation not implemented")
+}
+func (UnimplementedTranslationServiceServer) ListTranslations(context.Context, *ListTranslationsRequest) (*ListTranslationsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListTranslations not implemented")
+}
+func (UnimplementedTranslationServiceServer) mustEmbedUnimplementedTranslationServiceServer() {}
+func (UnimplementedTranslationServiceServer) testEmbeddedByValue()                            {}
+
+// UnsafeTranslationServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to TranslationServiceServer will
+// result in compilation errors.
+type UnsafeTranslationServiceServer interface {
+	mustEmbedUnimplementedTranslationServiceServer()
+}
+
+func RegisterTranslationServiceServer(s grpc.ServiceRegistrar, srv TranslationServiceServer) {
+	// If the following call pancis, it indicates UnimplementedTranslationServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&TranslationService_ServiceDesc, srv)
+}
+
+func _TranslationService_UpsertTranslation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpsertTranslationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TranslationServiceServer).UpsertTranslation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TranslationService_UpsertTranslation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TranslationServiceServer).UpsertTranslation(ctx, req.(*UpsertTranslationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TranslationService_ListTranslations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListTranslationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TranslationServiceServer).ListTranslations(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TranslationService_ListTranslations_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TranslationServiceServer).ListTranslations(ctx, req.(*ListTranslationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// TranslationService_ServiceDesc is the grpc.ServiceDesc for TranslationService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var TranslationService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "game.grpc.v1.TranslationService",
+	HandlerType: (*TranslationServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "UpsertTranslation",
+			Handler:    _TranslationService_UpsertTranslation_Handler,
+		},
+		{
+			MethodName: "ListTranslations",
+			Handler:    _TranslationService_ListTranslations_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "game/grpc/v1/admin.proto",
+}

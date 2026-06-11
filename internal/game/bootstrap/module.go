@@ -78,7 +78,7 @@ func NewModule() *Module {
 
 	consumer := rabbitmq.NewRabbitMQConsumer(rabbitURL)
 	WireCommandIntegrationEvents(commands, consumer, authExchange, "game.auth.integration.events", billingExchange, "game.billing.integration.events")
-	workers := NewWorkers(dbURL, services.Outbox, adapters.Scheduler, consumer)
+	workers := NewWorkers(dbURL, services.Outbox, adapters.Scheduler, consumer, adapters.translator)
 
 	httpCommands := httpapi.Commands{
 		User:        commands.User,
