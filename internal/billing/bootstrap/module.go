@@ -13,13 +13,15 @@ import (
 	_ "github.com/lib/pq"
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 
+	grpcapi "github.com/artcodefun/heat-expansion-server/internal/billing/interfaces/grpc"
 	httpapi "github.com/artcodefun/heat-expansion-server/internal/billing/interfaces/http"
 	"github.com/artcodefun/heat-expansion-server/internal/platform/rabbitmq"
 )
 
 type Module struct {
-	Port  string
-	DBURL string
+	Port     string
+	DBURL    string
+	GRPCPort string
 
 	DB         *sql.DB
 	Adapters   *Adapters
@@ -28,6 +30,7 @@ type Module struct {
 	Commands   *Commands
 	Queries    *Queries
 	HTTPServer *httpapi.Server
+	GRPCServer *grpcapi.Server
 }
 
 func NewModule() *Module {
@@ -39,9 +42,11 @@ func NewModule() *Module {
 	rabbitURL := os.Getenv("RABBITMQ_URL")
 	yookassaShopID := os.Getenv("YOOKASSA_SHOP_ID")
 	yookassaSecretKey := os.Getenv("YOOKASSA_SECRET_KEY")
+	grpcPort := os.Getenv("BILLING_GRPC_PORT")
+	grpcKey := os.Getenv("BILLING_GRPC_KEY")
 
-	if port == "" || dbURL == "" || jwtPublicKeyPEM == "" || intExchange == "" || authIntExchange == "" || rabbitURL == "" {
-		log.Fatal("Missing required billing environment variables (BILLING_PORT, BILLING_DB_URL, AUTH_JWT_PUBLIC_KEY, BILLING_INTEGRATION_EXCHANGE, AUTH_INTEGRATION_EXCHANGE, RABBITMQ_URL)")
+	if port == "" || dbURL == "" || jwtPublicKeyPEM == "" || intExchange == "" || authIntExchange == "" || rabbitURL == "" || grpcPort == "" || grpcKey == "" {
+		log.Fatal("Missing required billing environment variables (BILLING_PORT, BILLING_DB_URL, AUTH_JWT_PUBLIC_KEY, BILLING_INTEGRATION_EXCHANGE, AUTH_INTEGRATION_EXCHANGE, RABBITMQ_URL, BILLING_GRPC_PORT, BILLING_GRPC_KEY)")
 	}
 
 	if yookassaShopID == "" || yookassaSecretKey == "" {
@@ -86,9 +91,16 @@ func NewModule() *Module {
 	)
 	server := httpapi.NewServer(router, addr)
 
+	grpcAddr := fmt.Sprintf(":%s", grpcPort)
+	grpcCommands := grpcapi.Commands{Package: commands.Package}
+	grpcQueries := grpcapi.Queries{Package: queries.Package}
+	grpcRouter := grpcapi.NewRouter(grpcCommands, grpcQueries, grpcKey, adapters.Translator)
+	grpcServer := grpcapi.NewServer(grpcRouter, grpcAddr)
+
 	return &Module{
 		Port:       port,
 		DBURL:      dbURL,
+		GRPCPort:   grpcPort,
 		DB:         db,
 		Adapters:   adapters,
 		Services:   appServices,
@@ -96,6 +108,7 @@ func NewModule() *Module {
 		Commands:   commands,
 		Queries:    queries,
 		HTTPServer: server,
+		GRPCServer: grpcServer,
 	}
 }
 
@@ -105,9 +118,8 @@ func NewModule() *Module {
 func (m *Module) Run(ctx context.Context) error {
 	slog.InfoContext(ctx, "starting billing service", "port", m.Port)
 
-	// Module-local cancel: a fatal HTTP error must stop the workers (and a
-	// fatal worker error must stop the HTTP server), otherwise the drain
-	// below would block forever.
+	// Module-local cancel: a fatal HTTP or gRPC error must stop the workers,
+	// otherwise the drain below would block forever.
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -129,6 +141,13 @@ func (m *Module) Run(ctx context.Context) error {
 		}
 	}()
 
+	grpcErr := make(chan error, 1)
+	go func() {
+		if err := m.GRPCServer.Start(); err != nil {
+			grpcErr <- err
+		}
+	}()
+
 	var runErr error
 	select {
 	case <-ctx.Done():
@@ -136,6 +155,10 @@ func (m *Module) Run(ctx context.Context) error {
 	case err := <-httpErr:
 		runErr = fmt.Errorf("billing http server failed: %w", err)
 		slog.ErrorContext(ctx, "billing module: http server failed, draining...", "error", err)
+		cancel()
+	case err := <-grpcErr:
+		runErr = fmt.Errorf("billing grpc server failed: %w", err)
+		slog.ErrorContext(ctx, "billing module: grpc server failed, draining...", "error", err)
 		cancel()
 	case err := <-workerErr:
 		runErr = fmt.Errorf("billing workers failed: %w", err)
@@ -147,6 +170,9 @@ func (m *Module) Run(ctx context.Context) error {
 	defer shutdownCancel()
 	if err := m.HTTPServer.Shutdown(shutdownCtx); err != nil {
 		slog.ErrorContext(ctx, "billing http server shutdown error", "error", err)
+	}
+	if err := m.GRPCServer.Shutdown(shutdownCtx); err != nil {
+		slog.ErrorContext(ctx, "billing grpc server shutdown error", "error", err)
 	}
 
 	if err := m.Workers.Wait(); err != nil && runErr == nil {

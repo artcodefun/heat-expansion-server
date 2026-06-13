@@ -30,6 +30,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.claimUnpublishedIntegrationEventsStmt, err = db.PrepareContext(ctx, claimUnpublishedIntegrationEvents); err != nil {
 		return nil, fmt.Errorf("error preparing query ClaimUnpublishedIntegrationEvents: %w", err)
 	}
+	if q.createPackageStmt, err = db.PrepareContext(ctx, createPackage); err != nil {
+		return nil, fmt.Errorf("error preparing query CreatePackage: %w", err)
+	}
 	if q.getOrderByIDStmt, err = db.PrepareContext(ctx, getOrderByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetOrderByID: %w", err)
 	}
@@ -72,6 +75,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateOrderStmt, err = db.PrepareContext(ctx, updateOrder); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateOrder: %w", err)
 	}
+	if q.updatePackageStmt, err = db.PrepareContext(ctx, updatePackage); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdatePackage: %w", err)
+	}
 	if q.upsertUserStmt, err = db.PrepareContext(ctx, upsertUser); err != nil {
 		return nil, fmt.Errorf("error preparing query UpsertUser: %w", err)
 	}
@@ -88,6 +94,11 @@ func (q *Queries) Close() error {
 	if q.claimUnpublishedIntegrationEventsStmt != nil {
 		if cerr := q.claimUnpublishedIntegrationEventsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing claimUnpublishedIntegrationEventsStmt: %w", cerr)
+		}
+	}
+	if q.createPackageStmt != nil {
+		if cerr := q.createPackageStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createPackageStmt: %w", cerr)
 		}
 	}
 	if q.getOrderByIDStmt != nil {
@@ -160,6 +171,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateOrderStmt: %w", cerr)
 		}
 	}
+	if q.updatePackageStmt != nil {
+		if cerr := q.updatePackageStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updatePackageStmt: %w", cerr)
+		}
+	}
 	if q.upsertUserStmt != nil {
 		if cerr := q.upsertUserStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing upsertUserStmt: %w", cerr)
@@ -206,6 +222,7 @@ type Queries struct {
 	tx                                     *sql.Tx
 	claimUnpublishedEventsStmt             *sql.Stmt
 	claimUnpublishedIntegrationEventsStmt  *sql.Stmt
+	createPackageStmt                      *sql.Stmt
 	getOrderByIDStmt                       *sql.Stmt
 	getOrderByProviderOrderIDStmt          *sql.Stmt
 	getOrderByProviderOrderIDForUpdateStmt *sql.Stmt
@@ -220,6 +237,7 @@ type Queries struct {
 	saveIntegrationEventStmt               *sql.Stmt
 	saveOutboxEventStmt                    *sql.Stmt
 	updateOrderStmt                        *sql.Stmt
+	updatePackageStmt                      *sql.Stmt
 	upsertUserStmt                         *sql.Stmt
 }
 
@@ -229,6 +247,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		tx:                                     tx,
 		claimUnpublishedEventsStmt:             q.claimUnpublishedEventsStmt,
 		claimUnpublishedIntegrationEventsStmt:  q.claimUnpublishedIntegrationEventsStmt,
+		createPackageStmt:                      q.createPackageStmt,
 		getOrderByIDStmt:                       q.getOrderByIDStmt,
 		getOrderByProviderOrderIDStmt:          q.getOrderByProviderOrderIDStmt,
 		getOrderByProviderOrderIDForUpdateStmt: q.getOrderByProviderOrderIDForUpdateStmt,
@@ -243,6 +262,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		saveIntegrationEventStmt:               q.saveIntegrationEventStmt,
 		saveOutboxEventStmt:                    q.saveOutboxEventStmt,
 		updateOrderStmt:                        q.updateOrderStmt,
+		updatePackageStmt:                      q.updatePackageStmt,
 		upsertUserStmt:                         q.upsertUserStmt,
 	}
 }

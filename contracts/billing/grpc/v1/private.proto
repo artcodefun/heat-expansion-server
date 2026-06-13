@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package billing.grpc.v1;
+
+option go_package = "github.com/artcodefun/heat-expansion-server/contracts/billing/grpc/v1;billingv1";
+
+// This file defines the private gRPC API exposed by the billing module for
+// internal use. It is reached over loopback and guarded by a static module key
+// in request metadata.
+
+// CrystalPackageService exposes private CRUD operations for crystal packages.
+// All RPCs require the x-internal-key metadata header.
+service CrystalPackageService {
+  rpc ListCrystalPackages(ListCrystalPackagesRequest) returns (ListCrystalPackagesResponse);
+  rpc GetCrystalPackage(GetCrystalPackageRequest) returns (GetCrystalPackageResponse);
+  rpc CreateCrystalPackage(CreateCrystalPackageRequest) returns (CreateCrystalPackageResponse);
+  rpc UpdateCrystalPackage(UpdateCrystalPackageRequest) returns (UpdateCrystalPackageResponse);
+}
+
+message CrystalPackage {
+  string   id               = 1;
+  string   name             = 2;
+  int32    crystals         = 3;
+  int64    price_minor_units = 4;
+  string   currency        = 5;
+  string   image_url       = 6;
+  bool     is_active       = 7;
+}
+
+message ListCrystalPackagesRequest {}
+
+message ListCrystalPackagesResponse {
+  repeated CrystalPackage packages = 1;
+}
+
+message GetCrystalPackageRequest {
+  string id = 1;
+}
+
+message GetCrystalPackageResponse {
+  CrystalPackage package = 1;
+}
+
+message CreateCrystalPackageRequest {
+  string name              = 1;
+  int32  crystals          = 2;
+  int64  price_minor_units = 3;
+  string currency          = 4;
+  string image_url         = 5;
+  bool   is_active         = 6;
+}
+
+message CreateCrystalPackageResponse {
+  CrystalPackage package = 1;
+}
+
+message UpdateCrystalPackageRequest {
+  string id                = 1;
+  string name              = 2;
+  int32  crystals          = 3;
+  int64  price_minor_units = 4;
+  string currency          = 5;
+  string image_url         = 6;
+  bool   is_active         = 7;
+}
+
+message UpdateCrystalPackageResponse {
+  CrystalPackage package = 1;
+}

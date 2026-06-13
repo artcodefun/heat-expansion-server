@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             (unknown)
-// source: game/grpc/v1/admin.proto
+// source: game/grpc/v1/private.proto
 
 package gamev1
 
@@ -231,7 +231,7 @@ var ArmyPrototypeService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "game/grpc/v1/admin.proto",
+	Metadata: "game/grpc/v1/private.proto",
 }
 
 const (
@@ -447,7 +447,7 @@ var BuildPrototypeService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "game/grpc/v1/admin.proto",
+	Metadata: "game/grpc/v1/private.proto",
 }
 
 const (
@@ -664,7 +664,7 @@ var StoragePrototypeService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "game/grpc/v1/admin.proto",
+	Metadata: "game/grpc/v1/private.proto",
 }
 
 const (
@@ -880,7 +880,7 @@ var TechPrototypeService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "game/grpc/v1/admin.proto",
+	Metadata: "game/grpc/v1/private.proto",
 }
 
 const (
@@ -1020,5 +1020,5 @@ var TranslationService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "game/grpc/v1/admin.proto",
+	Metadata: "game/grpc/v1/private.proto",
 }

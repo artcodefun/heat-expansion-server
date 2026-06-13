@@ -11,6 +11,51 @@ import (
 	"github.com/google/uuid"
 )
 
+const createPackage = `-- name: CreatePackage :one
+INSERT INTO billing.crystal_packages (id, name, crystals, price_minor_units, currency, image_url, is_active, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+RETURNING id, name, crystals, price_minor_units, currency, image_url, is_active, created_at, updated_at
+`
+
+type CreatePackageParams struct {
+	ID              uuid.UUID `json:"id"`
+	Name            string    `json:"name"`
+	Crystals        int32     `json:"crystals"`
+	PriceMinorUnits int64     `json:"price_minor_units"`
+	Currency        string    `json:"currency"`
+	ImageUrl        string    `json:"image_url"`
+	IsActive        bool      `json:"is_active"`
+	CreatedAt       int64     `json:"created_at"`
+	UpdatedAt       int64     `json:"updated_at"`
+}
+
+func (q *Queries) CreatePackage(ctx context.Context, arg CreatePackageParams) (CrystalPackage, error) {
+	row := q.queryRow(ctx, q.createPackageStmt, createPackage,
+		arg.ID,
+		arg.Name,
+		arg.Crystals,
+		arg.PriceMinorUnits,
+		arg.Currency,
+		arg.ImageUrl,
+		arg.IsActive,
+		arg.CreatedAt,
+		arg.UpdatedAt,
+	)
+	var i CrystalPackage
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Crystals,
+		&i.PriceMinorUnits,
+		&i.Currency,
+		&i.ImageUrl,
+		&i.IsActive,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getPackageByID = `-- name: GetPackageByID :one
 SELECT id, name, crystals, price_minor_units, currency, image_url, is_active, created_at, updated_at
 FROM billing.crystal_packages
@@ -19,6 +64,56 @@ WHERE id = $1
 
 func (q *Queries) GetPackageByID(ctx context.Context, id uuid.UUID) (CrystalPackage, error) {
 	row := q.queryRow(ctx, q.getPackageByIDStmt, getPackageByID, id)
+	var i CrystalPackage
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Crystals,
+		&i.PriceMinorUnits,
+		&i.Currency,
+		&i.ImageUrl,
+		&i.IsActive,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updatePackage = `-- name: UpdatePackage :one
+UPDATE billing.crystal_packages
+SET name              = $1,
+    crystals          = $2,
+    price_minor_units = $3,
+    currency          = $4,
+    image_url         = $5,
+    is_active         = $6,
+    updated_at        = $7
+WHERE id = $8
+RETURNING id, name, crystals, price_minor_units, currency, image_url, is_active, created_at, updated_at
+`
+
+type UpdatePackageParams struct {
+	Name            string    `json:"name"`
+	Crystals        int32     `json:"crystals"`
+	PriceMinorUnits int64     `json:"price_minor_units"`
+	Currency        string    `json:"currency"`
+	ImageUrl        string    `json:"image_url"`
+	IsActive        bool      `json:"is_active"`
+	UpdatedAt       int64     `json:"updated_at"`
+	ID              uuid.UUID `json:"id"`
+}
+
+func (q *Queries) UpdatePackage(ctx context.Context, arg UpdatePackageParams) (CrystalPackage, error) {
+	row := q.queryRow(ctx, q.updatePackageStmt, updatePackage,
+		arg.Name,
+		arg.Crystals,
+		arg.PriceMinorUnits,
+		arg.Currency,
+		arg.ImageUrl,
+		arg.IsActive,
+		arg.UpdatedAt,
+		arg.ID,
+	)
 	var i CrystalPackage
 	err := row.Scan(
 		&i.ID,

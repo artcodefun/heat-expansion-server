@@ -12,7 +12,9 @@ import (
 
 type Querier interface {
 	GetOrderByID(ctx context.Context, id uuid.UUID) (GetOrderByIDRow, error)
+	GetPackageByID(ctx context.Context, id uuid.UUID) (GetPackageByIDRow, error)
 	ListActivePackages(ctx context.Context) ([]ListActivePackagesRow, error)
+	ListAllPackages(ctx context.Context) ([]ListAllPackagesRow, error)
 }
 
 var _ Querier = (*Queries)(nil)

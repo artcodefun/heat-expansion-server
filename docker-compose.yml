@@ -79,6 +79,7 @@ services:
       - BILLING_DB_URL=postgres://heatuser:heatpassword@db:5432/heatdb?sslmode=disable
       - BILLING_MIGRATIONS_TABLE=billing_schema_migrations
       - BILLING_INTEGRATION_EXCHANGE=billing.integration
+      - BILLING_GRPC_PORT=9081
       - ADMIN_PORT=8083
       - ADMIN_DB_URL=postgres://heatuser:heatpassword@db:5432/heatdb?sslmode=disable
       - ADMIN_MIGRATIONS_TABLE=admin_schema_migrations

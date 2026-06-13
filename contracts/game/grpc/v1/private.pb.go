@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        (unknown)
-// source: game/grpc/v1/admin.proto
+// source: game/grpc/v1/private.proto
 
 package gamev1
 
@@ -34,7 +34,7 @@ type PriceModel struct {
 
 func (x *PriceModel) Reset() {
 	*x = PriceModel{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[0]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46,7 +46,7 @@ func (x *PriceModel) String() string {
 func (*PriceModel) ProtoMessage() {}
 
 func (x *PriceModel) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[0]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59,7 +59,7 @@ func (x *PriceModel) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PriceModel.ProtoReflect.Descriptor instead.
 func (*PriceModel) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{0}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *PriceModel) GetCredits() int64 {
@@ -122,7 +122,7 @@ type ArmyPrototype struct {
 
 func (x *ArmyPrototype) Reset() {
 	*x = ArmyPrototype{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[1]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -134,7 +134,7 @@ func (x *ArmyPrototype) String() string {
 func (*ArmyPrototype) ProtoMessage() {}
 
 func (x *ArmyPrototype) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[1]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -147,7 +147,7 @@ func (x *ArmyPrototype) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArmyPrototype.ProtoReflect.Descriptor instead.
 func (*ArmyPrototype) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{1}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *ArmyPrototype) GetId() int64 {
@@ -277,7 +277,7 @@ type ListArmyPrototypesRequest struct {
 
 func (x *ListArmyPrototypesRequest) Reset() {
 	*x = ListArmyPrototypesRequest{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[2]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -289,7 +289,7 @@ func (x *ListArmyPrototypesRequest) String() string {
 func (*ListArmyPrototypesRequest) ProtoMessage() {}
 
 func (x *ListArmyPrototypesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[2]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -302,7 +302,7 @@ func (x *ListArmyPrototypesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListArmyPrototypesRequest.ProtoReflect.Descriptor instead.
 func (*ListArmyPrototypesRequest) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{2}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{2}
 }
 
 type ListArmyPrototypesResponse struct {
@@ -314,7 +314,7 @@ type ListArmyPrototypesResponse struct {
 
 func (x *ListArmyPrototypesResponse) Reset() {
 	*x = ListArmyPrototypesResponse{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[3]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -326,7 +326,7 @@ func (x *ListArmyPrototypesResponse) String() string {
 func (*ListArmyPrototypesResponse) ProtoMessage() {}
 
 func (x *ListArmyPrototypesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[3]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -339,7 +339,7 @@ func (x *ListArmyPrototypesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListArmyPrototypesResponse.ProtoReflect.Descriptor instead.
 func (*ListArmyPrototypesResponse) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{3}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ListArmyPrototypesResponse) GetPrototypes() []*ArmyPrototype {
@@ -358,7 +358,7 @@ type GetArmyPrototypeRequest struct {
 
 func (x *GetArmyPrototypeRequest) Reset() {
 	*x = GetArmyPrototypeRequest{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[4]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -370,7 +370,7 @@ func (x *GetArmyPrototypeRequest) String() string {
 func (*GetArmyPrototypeRequest) ProtoMessage() {}
 
 func (x *GetArmyPrototypeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[4]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -383,7 +383,7 @@ func (x *GetArmyPrototypeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetArmyPrototypeRequest.ProtoReflect.Descriptor instead.
 func (*GetArmyPrototypeRequest) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{4}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *GetArmyPrototypeRequest) GetId() int64 {
@@ -402,7 +402,7 @@ type GetArmyPrototypeResponse struct {
 
 func (x *GetArmyPrototypeResponse) Reset() {
 	*x = GetArmyPrototypeResponse{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[5]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -414,7 +414,7 @@ func (x *GetArmyPrototypeResponse) String() string {
 func (*GetArmyPrototypeResponse) ProtoMessage() {}
 
 func (x *GetArmyPrototypeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[5]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -427,7 +427,7 @@ func (x *GetArmyPrototypeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetArmyPrototypeResponse.ProtoReflect.Descriptor instead.
 func (*GetArmyPrototypeResponse) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{5}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetArmyPrototypeResponse) GetPrototype() *ArmyPrototype {
@@ -449,7 +449,7 @@ type CreateArmyPrototypeRequest struct {
 
 func (x *CreateArmyPrototypeRequest) Reset() {
 	*x = CreateArmyPrototypeRequest{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[6]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -461,7 +461,7 @@ func (x *CreateArmyPrototypeRequest) String() string {
 func (*CreateArmyPrototypeRequest) ProtoMessage() {}
 
 func (x *CreateArmyPrototypeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[6]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -474,7 +474,7 @@ func (x *CreateArmyPrototypeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateArmyPrototypeRequest.ProtoReflect.Descriptor instead.
 func (*CreateArmyPrototypeRequest) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{6}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *CreateArmyPrototypeRequest) GetPrototype() *ArmyPrototype {
@@ -493,7 +493,7 @@ type CreateArmyPrototypeResponse struct {
 
 func (x *CreateArmyPrototypeResponse) Reset() {
 	*x = CreateArmyPrototypeResponse{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[7]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -505,7 +505,7 @@ func (x *CreateArmyPrototypeResponse) String() string {
 func (*CreateArmyPrototypeResponse) ProtoMessage() {}
 
 func (x *CreateArmyPrototypeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[7]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -518,7 +518,7 @@ func (x *CreateArmyPrototypeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateArmyPrototypeResponse.ProtoReflect.Descriptor instead.
 func (*CreateArmyPrototypeResponse) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{7}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *CreateArmyPrototypeResponse) GetPrototype() *ArmyPrototype {
@@ -538,7 +538,7 @@ type UpdateArmyPrototypeRequest struct {
 
 func (x *UpdateArmyPrototypeRequest) Reset() {
 	*x = UpdateArmyPrototypeRequest{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[8]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -550,7 +550,7 @@ func (x *UpdateArmyPrototypeRequest) String() string {
 func (*UpdateArmyPrototypeRequest) ProtoMessage() {}
 
 func (x *UpdateArmyPrototypeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[8]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -563,7 +563,7 @@ func (x *UpdateArmyPrototypeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateArmyPrototypeRequest.ProtoReflect.Descriptor instead.
 func (*UpdateArmyPrototypeRequest) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{8}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *UpdateArmyPrototypeRequest) GetPrototype() *ArmyPrototype {
@@ -582,7 +582,7 @@ type UpdateArmyPrototypeResponse struct {
 
 func (x *UpdateArmyPrototypeResponse) Reset() {
 	*x = UpdateArmyPrototypeResponse{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[9]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -594,7 +594,7 @@ func (x *UpdateArmyPrototypeResponse) String() string {
 func (*UpdateArmyPrototypeResponse) ProtoMessage() {}
 
 func (x *UpdateArmyPrototypeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[9]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -607,7 +607,7 @@ func (x *UpdateArmyPrototypeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateArmyPrototypeResponse.ProtoReflect.Descriptor instead.
 func (*UpdateArmyPrototypeResponse) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{9}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *UpdateArmyPrototypeResponse) GetPrototype() *ArmyPrototype {
@@ -626,7 +626,7 @@ type BuildControlData struct {
 
 func (x *BuildControlData) Reset() {
 	*x = BuildControlData{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[10]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -638,7 +638,7 @@ func (x *BuildControlData) String() string {
 func (*BuildControlData) ProtoMessage() {}
 
 func (x *BuildControlData) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[10]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -651,7 +651,7 @@ func (x *BuildControlData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BuildControlData.ProtoReflect.Descriptor instead.
 func (*BuildControlData) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{10}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *BuildControlData) GetSubtype() string {
@@ -677,7 +677,7 @@ type BuildResourcesData struct {
 
 func (x *BuildResourcesData) Reset() {
 	*x = BuildResourcesData{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[11]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -689,7 +689,7 @@ func (x *BuildResourcesData) String() string {
 func (*BuildResourcesData) ProtoMessage() {}
 
 func (x *BuildResourcesData) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[11]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -702,7 +702,7 @@ func (x *BuildResourcesData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BuildResourcesData.ProtoReflect.Descriptor instead.
 func (*BuildResourcesData) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{11}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *BuildResourcesData) GetCreditsProduction() float64 {
@@ -770,7 +770,7 @@ type BuildDefenseData struct {
 
 func (x *BuildDefenseData) Reset() {
 	*x = BuildDefenseData{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[12]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -782,7 +782,7 @@ func (x *BuildDefenseData) String() string {
 func (*BuildDefenseData) ProtoMessage() {}
 
 func (x *BuildDefenseData) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[12]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -795,7 +795,7 @@ func (x *BuildDefenseData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BuildDefenseData.ProtoReflect.Descriptor instead.
 func (*BuildDefenseData) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{12}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *BuildDefenseData) GetDefenceBonus() int32 {
@@ -814,7 +814,7 @@ type BuildMilitaryData struct {
 
 func (x *BuildMilitaryData) Reset() {
 	*x = BuildMilitaryData{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[13]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -826,7 +826,7 @@ func (x *BuildMilitaryData) String() string {
 func (*BuildMilitaryData) ProtoMessage() {}
 
 func (x *BuildMilitaryData) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[13]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -839,7 +839,7 @@ func (x *BuildMilitaryData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BuildMilitaryData.ProtoReflect.Descriptor instead.
 func (*BuildMilitaryData) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{13}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *BuildMilitaryData) GetUnlockArmyCategory() string {
@@ -861,7 +861,7 @@ type BuildIntelligenceData struct {
 
 func (x *BuildIntelligenceData) Reset() {
 	*x = BuildIntelligenceData{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[14]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -873,7 +873,7 @@ func (x *BuildIntelligenceData) String() string {
 func (*BuildIntelligenceData) ProtoMessage() {}
 
 func (x *BuildIntelligenceData) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[14]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -886,7 +886,7 @@ func (x *BuildIntelligenceData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BuildIntelligenceData.ProtoReflect.Descriptor instead.
 func (*BuildIntelligenceData) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{14}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *BuildIntelligenceData) GetSubtype() string {
@@ -954,7 +954,7 @@ type BuildPrototype struct {
 
 func (x *BuildPrototype) Reset() {
 	*x = BuildPrototype{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[15]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -966,7 +966,7 @@ func (x *BuildPrototype) String() string {
 func (*BuildPrototype) ProtoMessage() {}
 
 func (x *BuildPrototype) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[15]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -979,7 +979,7 @@ func (x *BuildPrototype) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BuildPrototype.ProtoReflect.Descriptor instead.
 func (*BuildPrototype) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{15}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *BuildPrototype) GetId() int64 {
@@ -1160,7 +1160,7 @@ type ListBuildPrototypesRequest struct {
 
 func (x *ListBuildPrototypesRequest) Reset() {
 	*x = ListBuildPrototypesRequest{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[16]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1172,7 +1172,7 @@ func (x *ListBuildPrototypesRequest) String() string {
 func (*ListBuildPrototypesRequest) ProtoMessage() {}
 
 func (x *ListBuildPrototypesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[16]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1185,7 +1185,7 @@ func (x *ListBuildPrototypesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListBuildPrototypesRequest.ProtoReflect.Descriptor instead.
 func (*ListBuildPrototypesRequest) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{16}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{16}
 }
 
 type ListBuildPrototypesResponse struct {
@@ -1197,7 +1197,7 @@ type ListBuildPrototypesResponse struct {
 
 func (x *ListBuildPrototypesResponse) Reset() {
 	*x = ListBuildPrototypesResponse{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[17]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1209,7 +1209,7 @@ func (x *ListBuildPrototypesResponse) String() string {
 func (*ListBuildPrototypesResponse) ProtoMessage() {}
 
 func (x *ListBuildPrototypesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[17]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1222,7 +1222,7 @@ func (x *ListBuildPrototypesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListBuildPrototypesResponse.ProtoReflect.Descriptor instead.
 func (*ListBuildPrototypesResponse) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{17}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *ListBuildPrototypesResponse) GetPrototypes() []*BuildPrototype {
@@ -1241,7 +1241,7 @@ type GetBuildPrototypeRequest struct {
 
 func (x *GetBuildPrototypeRequest) Reset() {
 	*x = GetBuildPrototypeRequest{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[18]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1253,7 +1253,7 @@ func (x *GetBuildPrototypeRequest) String() string {
 func (*GetBuildPrototypeRequest) ProtoMessage() {}
 
 func (x *GetBuildPrototypeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[18]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1266,7 +1266,7 @@ func (x *GetBuildPrototypeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetBuildPrototypeRequest.ProtoReflect.Descriptor instead.
 func (*GetBuildPrototypeRequest) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{18}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *GetBuildPrototypeRequest) GetId() int64 {
@@ -1285,7 +1285,7 @@ type GetBuildPrototypeResponse struct {
 
 func (x *GetBuildPrototypeResponse) Reset() {
 	*x = GetBuildPrototypeResponse{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[19]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1297,7 +1297,7 @@ func (x *GetBuildPrototypeResponse) String() string {
 func (*GetBuildPrototypeResponse) ProtoMessage() {}
 
 func (x *GetBuildPrototypeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[19]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1310,7 +1310,7 @@ func (x *GetBuildPrototypeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetBuildPrototypeResponse.ProtoReflect.Descriptor instead.
 func (*GetBuildPrototypeResponse) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{19}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *GetBuildPrototypeResponse) GetPrototype() *BuildPrototype {
@@ -1332,7 +1332,7 @@ type CreateBuildPrototypeRequest struct {
 
 func (x *CreateBuildPrototypeRequest) Reset() {
 	*x = CreateBuildPrototypeRequest{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[20]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1344,7 +1344,7 @@ func (x *CreateBuildPrototypeRequest) String() string {
 func (*CreateBuildPrototypeRequest) ProtoMessage() {}
 
 func (x *CreateBuildPrototypeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[20]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1357,7 +1357,7 @@ func (x *CreateBuildPrototypeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateBuildPrototypeRequest.ProtoReflect.Descriptor instead.
 func (*CreateBuildPrototypeRequest) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{20}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *CreateBuildPrototypeRequest) GetPrototype() *BuildPrototype {
@@ -1376,7 +1376,7 @@ type CreateBuildPrototypeResponse struct {
 
 func (x *CreateBuildPrototypeResponse) Reset() {
 	*x = CreateBuildPrototypeResponse{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[21]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1388,7 +1388,7 @@ func (x *CreateBuildPrototypeResponse) String() string {
 func (*CreateBuildPrototypeResponse) ProtoMessage() {}
 
 func (x *CreateBuildPrototypeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[21]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1401,7 +1401,7 @@ func (x *CreateBuildPrototypeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateBuildPrototypeResponse.ProtoReflect.Descriptor instead.
 func (*CreateBuildPrototypeResponse) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{21}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *CreateBuildPrototypeResponse) GetPrototype() *BuildPrototype {
@@ -1421,7 +1421,7 @@ type UpdateBuildPrototypeRequest struct {
 
 func (x *UpdateBuildPrototypeRequest) Reset() {
 	*x = UpdateBuildPrototypeRequest{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[22]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1433,7 +1433,7 @@ func (x *UpdateBuildPrototypeRequest) String() string {
 func (*UpdateBuildPrototypeRequest) ProtoMessage() {}
 
 func (x *UpdateBuildPrototypeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[22]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1446,7 +1446,7 @@ func (x *UpdateBuildPrototypeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateBuildPrototypeRequest.ProtoReflect.Descriptor instead.
 func (*UpdateBuildPrototypeRequest) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{22}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *UpdateBuildPrototypeRequest) GetPrototype() *BuildPrototype {
@@ -1465,7 +1465,7 @@ type UpdateBuildPrototypeResponse struct {
 
 func (x *UpdateBuildPrototypeResponse) Reset() {
 	*x = UpdateBuildPrototypeResponse{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[23]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1477,7 +1477,7 @@ func (x *UpdateBuildPrototypeResponse) String() string {
 func (*UpdateBuildPrototypeResponse) ProtoMessage() {}
 
 func (x *UpdateBuildPrototypeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[23]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1490,7 +1490,7 @@ func (x *UpdateBuildPrototypeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateBuildPrototypeResponse.ProtoReflect.Descriptor instead.
 func (*UpdateBuildPrototypeResponse) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{23}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *UpdateBuildPrototypeResponse) GetPrototype() *BuildPrototype {
@@ -1511,7 +1511,7 @@ type StorageBuffData struct {
 
 func (x *StorageBuffData) Reset() {
 	*x = StorageBuffData{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[24]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1523,7 +1523,7 @@ func (x *StorageBuffData) String() string {
 func (*StorageBuffData) ProtoMessage() {}
 
 func (x *StorageBuffData) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[24]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1536,7 +1536,7 @@ func (x *StorageBuffData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StorageBuffData.ProtoReflect.Descriptor instead.
 func (*StorageBuffData) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{24}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *StorageBuffData) GetType() string {
@@ -1570,7 +1570,7 @@ type StorageIntelData struct {
 
 func (x *StorageIntelData) Reset() {
 	*x = StorageIntelData{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[25]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1582,7 +1582,7 @@ func (x *StorageIntelData) String() string {
 func (*StorageIntelData) ProtoMessage() {}
 
 func (x *StorageIntelData) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[25]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1595,7 +1595,7 @@ func (x *StorageIntelData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StorageIntelData.ProtoReflect.Descriptor instead.
 func (*StorageIntelData) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{25}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *StorageIntelData) GetType() string {
@@ -1625,7 +1625,7 @@ type StorageDamagedData struct {
 
 func (x *StorageDamagedData) Reset() {
 	*x = StorageDamagedData{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[26]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1637,7 +1637,7 @@ func (x *StorageDamagedData) String() string {
 func (*StorageDamagedData) ProtoMessage() {}
 
 func (x *StorageDamagedData) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[26]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1650,7 +1650,7 @@ func (x *StorageDamagedData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StorageDamagedData.ProtoReflect.Descriptor instead.
 func (*StorageDamagedData) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{26}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *StorageDamagedData) GetRestorePrice() *PriceModel {
@@ -1684,7 +1684,7 @@ type StorageArtifactData struct {
 
 func (x *StorageArtifactData) Reset() {
 	*x = StorageArtifactData{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[27]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1696,7 +1696,7 @@ func (x *StorageArtifactData) String() string {
 func (*StorageArtifactData) ProtoMessage() {}
 
 func (x *StorageArtifactData) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[27]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1709,7 +1709,7 @@ func (x *StorageArtifactData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StorageArtifactData.ProtoReflect.Descriptor instead.
 func (*StorageArtifactData) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{27}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *StorageArtifactData) GetType() string {
@@ -1737,7 +1737,7 @@ type StorageConsumableData struct {
 
 func (x *StorageConsumableData) Reset() {
 	*x = StorageConsumableData{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[28]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1749,7 +1749,7 @@ func (x *StorageConsumableData) String() string {
 func (*StorageConsumableData) ProtoMessage() {}
 
 func (x *StorageConsumableData) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[28]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1762,7 +1762,7 @@ func (x *StorageConsumableData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StorageConsumableData.ProtoReflect.Descriptor instead.
 func (*StorageConsumableData) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{28}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *StorageConsumableData) GetType() string {
@@ -1817,7 +1817,7 @@ type StoragePrototype struct {
 
 func (x *StoragePrototype) Reset() {
 	*x = StoragePrototype{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[29]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1829,7 +1829,7 @@ func (x *StoragePrototype) String() string {
 func (*StoragePrototype) ProtoMessage() {}
 
 func (x *StoragePrototype) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[29]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1842,7 +1842,7 @@ func (x *StoragePrototype) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StoragePrototype.ProtoReflect.Descriptor instead.
 func (*StoragePrototype) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{29}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *StoragePrototype) GetId() int64 {
@@ -1995,7 +1995,7 @@ type ListStoragePrototypesRequest struct {
 
 func (x *ListStoragePrototypesRequest) Reset() {
 	*x = ListStoragePrototypesRequest{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[30]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2007,7 +2007,7 @@ func (x *ListStoragePrototypesRequest) String() string {
 func (*ListStoragePrototypesRequest) ProtoMessage() {}
 
 func (x *ListStoragePrototypesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[30]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2020,7 +2020,7 @@ func (x *ListStoragePrototypesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListStoragePrototypesRequest.ProtoReflect.Descriptor instead.
 func (*ListStoragePrototypesRequest) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{30}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{30}
 }
 
 type ListStoragePrototypesResponse struct {
@@ -2032,7 +2032,7 @@ type ListStoragePrototypesResponse struct {
 
 func (x *ListStoragePrototypesResponse) Reset() {
 	*x = ListStoragePrototypesResponse{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[31]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2044,7 +2044,7 @@ func (x *ListStoragePrototypesResponse) String() string {
 func (*ListStoragePrototypesResponse) ProtoMessage() {}
 
 func (x *ListStoragePrototypesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[31]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2057,7 +2057,7 @@ func (x *ListStoragePrototypesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListStoragePrototypesResponse.ProtoReflect.Descriptor instead.
 func (*ListStoragePrototypesResponse) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{31}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *ListStoragePrototypesResponse) GetPrototypes() []*StoragePrototype {
@@ -2076,7 +2076,7 @@ type GetStoragePrototypeRequest struct {
 
 func (x *GetStoragePrototypeRequest) Reset() {
 	*x = GetStoragePrototypeRequest{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[32]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2088,7 +2088,7 @@ func (x *GetStoragePrototypeRequest) String() string {
 func (*GetStoragePrototypeRequest) ProtoMessage() {}
 
 func (x *GetStoragePrototypeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[32]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2101,7 +2101,7 @@ func (x *GetStoragePrototypeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetStoragePrototypeRequest.ProtoReflect.Descriptor instead.
 func (*GetStoragePrototypeRequest) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{32}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *GetStoragePrototypeRequest) GetId() int64 {
@@ -2120,7 +2120,7 @@ type GetStoragePrototypeResponse struct {
 
 func (x *GetStoragePrototypeResponse) Reset() {
 	*x = GetStoragePrototypeResponse{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[33]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2132,7 +2132,7 @@ func (x *GetStoragePrototypeResponse) String() string {
 func (*GetStoragePrototypeResponse) ProtoMessage() {}
 
 func (x *GetStoragePrototypeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[33]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2145,7 +2145,7 @@ func (x *GetStoragePrototypeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetStoragePrototypeResponse.ProtoReflect.Descriptor instead.
 func (*GetStoragePrototypeResponse) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{33}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *GetStoragePrototypeResponse) GetPrototype() *StoragePrototype {
@@ -2167,7 +2167,7 @@ type CreateStoragePrototypeRequest struct {
 
 func (x *CreateStoragePrototypeRequest) Reset() {
 	*x = CreateStoragePrototypeRequest{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[34]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2179,7 +2179,7 @@ func (x *CreateStoragePrototypeRequest) String() string {
 func (*CreateStoragePrototypeRequest) ProtoMessage() {}
 
 func (x *CreateStoragePrototypeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[34]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2192,7 +2192,7 @@ func (x *CreateStoragePrototypeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateStoragePrototypeRequest.ProtoReflect.Descriptor instead.
 func (*CreateStoragePrototypeRequest) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{34}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *CreateStoragePrototypeRequest) GetPrototype() *StoragePrototype {
@@ -2211,7 +2211,7 @@ type CreateStoragePrototypeResponse struct {
 
 func (x *CreateStoragePrototypeResponse) Reset() {
 	*x = CreateStoragePrototypeResponse{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[35]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2223,7 +2223,7 @@ func (x *CreateStoragePrototypeResponse) String() string {
 func (*CreateStoragePrototypeResponse) ProtoMessage() {}
 
 func (x *CreateStoragePrototypeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[35]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2236,7 +2236,7 @@ func (x *CreateStoragePrototypeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateStoragePrototypeResponse.ProtoReflect.Descriptor instead.
 func (*CreateStoragePrototypeResponse) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{35}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *CreateStoragePrototypeResponse) GetPrototype() *StoragePrototype {
@@ -2256,7 +2256,7 @@ type UpdateStoragePrototypeRequest struct {
 
 func (x *UpdateStoragePrototypeRequest) Reset() {
 	*x = UpdateStoragePrototypeRequest{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[36]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2268,7 +2268,7 @@ func (x *UpdateStoragePrototypeRequest) String() string {
 func (*UpdateStoragePrototypeRequest) ProtoMessage() {}
 
 func (x *UpdateStoragePrototypeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[36]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2281,7 +2281,7 @@ func (x *UpdateStoragePrototypeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateStoragePrototypeRequest.ProtoReflect.Descriptor instead.
 func (*UpdateStoragePrototypeRequest) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{36}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *UpdateStoragePrototypeRequest) GetPrototype() *StoragePrototype {
@@ -2300,7 +2300,7 @@ type UpdateStoragePrototypeResponse struct {
 
 func (x *UpdateStoragePrototypeResponse) Reset() {
 	*x = UpdateStoragePrototypeResponse{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[37]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2312,7 +2312,7 @@ func (x *UpdateStoragePrototypeResponse) String() string {
 func (*UpdateStoragePrototypeResponse) ProtoMessage() {}
 
 func (x *UpdateStoragePrototypeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[37]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2325,7 +2325,7 @@ func (x *UpdateStoragePrototypeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateStoragePrototypeResponse.ProtoReflect.Descriptor instead.
 func (*UpdateStoragePrototypeResponse) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{37}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *UpdateStoragePrototypeResponse) GetPrototype() *StoragePrototype {
@@ -2358,7 +2358,7 @@ type TechPrototype struct {
 
 func (x *TechPrototype) Reset() {
 	*x = TechPrototype{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[38]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2370,7 +2370,7 @@ func (x *TechPrototype) String() string {
 func (*TechPrototype) ProtoMessage() {}
 
 func (x *TechPrototype) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[38]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2383,7 +2383,7 @@ func (x *TechPrototype) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TechPrototype.ProtoReflect.Descriptor instead.
 func (*TechPrototype) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{38}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *TechPrototype) GetId() int64 {
@@ -2469,7 +2469,7 @@ type TechImprovementModel struct {
 
 func (x *TechImprovementModel) Reset() {
 	*x = TechImprovementModel{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[39]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2481,7 +2481,7 @@ func (x *TechImprovementModel) String() string {
 func (*TechImprovementModel) ProtoMessage() {}
 
 func (x *TechImprovementModel) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[39]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2494,7 +2494,7 @@ func (x *TechImprovementModel) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TechImprovementModel.ProtoReflect.Descriptor instead.
 func (*TechImprovementModel) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{39}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *TechImprovementModel) GetType() string {
@@ -2526,7 +2526,7 @@ type ListTechPrototypesRequest struct {
 
 func (x *ListTechPrototypesRequest) Reset() {
 	*x = ListTechPrototypesRequest{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[40]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2538,7 +2538,7 @@ func (x *ListTechPrototypesRequest) String() string {
 func (*ListTechPrototypesRequest) ProtoMessage() {}
 
 func (x *ListTechPrototypesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[40]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2551,7 +2551,7 @@ func (x *ListTechPrototypesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListTechPrototypesRequest.ProtoReflect.Descriptor instead.
 func (*ListTechPrototypesRequest) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{40}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{40}
 }
 
 type ListTechPrototypesResponse struct {
@@ -2563,7 +2563,7 @@ type ListTechPrototypesResponse struct {
 
 func (x *ListTechPrototypesResponse) Reset() {
 	*x = ListTechPrototypesResponse{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[41]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2575,7 +2575,7 @@ func (x *ListTechPrototypesResponse) String() string {
 func (*ListTechPrototypesResponse) ProtoMessage() {}
 
 func (x *ListTechPrototypesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[41]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2588,7 +2588,7 @@ func (x *ListTechPrototypesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListTechPrototypesResponse.ProtoReflect.Descriptor instead.
 func (*ListTechPrototypesResponse) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{41}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *ListTechPrototypesResponse) GetPrototypes() []*TechPrototype {
@@ -2607,7 +2607,7 @@ type GetTechPrototypeRequest struct {
 
 func (x *GetTechPrototypeRequest) Reset() {
 	*x = GetTechPrototypeRequest{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[42]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2619,7 +2619,7 @@ func (x *GetTechPrototypeRequest) String() string {
 func (*GetTechPrototypeRequest) ProtoMessage() {}
 
 func (x *GetTechPrototypeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[42]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2632,7 +2632,7 @@ func (x *GetTechPrototypeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTechPrototypeRequest.ProtoReflect.Descriptor instead.
 func (*GetTechPrototypeRequest) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{42}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *GetTechPrototypeRequest) GetId() int64 {
@@ -2651,7 +2651,7 @@ type GetTechPrototypeResponse struct {
 
 func (x *GetTechPrototypeResponse) Reset() {
 	*x = GetTechPrototypeResponse{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[43]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2663,7 +2663,7 @@ func (x *GetTechPrototypeResponse) String() string {
 func (*GetTechPrototypeResponse) ProtoMessage() {}
 
 func (x *GetTechPrototypeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[43]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2676,7 +2676,7 @@ func (x *GetTechPrototypeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTechPrototypeResponse.ProtoReflect.Descriptor instead.
 func (*GetTechPrototypeResponse) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{43}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *GetTechPrototypeResponse) GetPrototype() *TechPrototype {
@@ -2698,7 +2698,7 @@ type CreateTechPrototypeRequest struct {
 
 func (x *CreateTechPrototypeRequest) Reset() {
 	*x = CreateTechPrototypeRequest{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[44]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2710,7 +2710,7 @@ func (x *CreateTechPrototypeRequest) String() string {
 func (*CreateTechPrototypeRequest) ProtoMessage() {}
 
 func (x *CreateTechPrototypeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[44]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2723,7 +2723,7 @@ func (x *CreateTechPrototypeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateTechPrototypeRequest.ProtoReflect.Descriptor instead.
 func (*CreateTechPrototypeRequest) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{44}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *CreateTechPrototypeRequest) GetPrototype() *TechPrototype {
@@ -2742,7 +2742,7 @@ type CreateTechPrototypeResponse struct {
 
 func (x *CreateTechPrototypeResponse) Reset() {
 	*x = CreateTechPrototypeResponse{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[45]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2754,7 +2754,7 @@ func (x *CreateTechPrototypeResponse) String() string {
 func (*CreateTechPrototypeResponse) ProtoMessage() {}
 
 func (x *CreateTechPrototypeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[45]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2767,7 +2767,7 @@ func (x *CreateTechPrototypeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateTechPrototypeResponse.ProtoReflect.Descriptor instead.
 func (*CreateTechPrototypeResponse) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{45}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *CreateTechPrototypeResponse) GetPrototype() *TechPrototype {
@@ -2787,7 +2787,7 @@ type UpdateTechPrototypeRequest struct {
 
 func (x *UpdateTechPrototypeRequest) Reset() {
 	*x = UpdateTechPrototypeRequest{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[46]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2799,7 +2799,7 @@ func (x *UpdateTechPrototypeRequest) String() string {
 func (*UpdateTechPrototypeRequest) ProtoMessage() {}
 
 func (x *UpdateTechPrototypeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[46]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2812,7 +2812,7 @@ func (x *UpdateTechPrototypeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateTechPrototypeRequest.ProtoReflect.Descriptor instead.
 func (*UpdateTechPrototypeRequest) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{46}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *UpdateTechPrototypeRequest) GetPrototype() *TechPrototype {
@@ -2831,7 +2831,7 @@ type UpdateTechPrototypeResponse struct {
 
 func (x *UpdateTechPrototypeResponse) Reset() {
 	*x = UpdateTechPrototypeResponse{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[47]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[47]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2843,7 +2843,7 @@ func (x *UpdateTechPrototypeResponse) String() string {
 func (*UpdateTechPrototypeResponse) ProtoMessage() {}
 
 func (x *UpdateTechPrototypeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[47]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[47]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2856,7 +2856,7 @@ func (x *UpdateTechPrototypeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateTechPrototypeResponse.ProtoReflect.Descriptor instead.
 func (*UpdateTechPrototypeResponse) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{47}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *UpdateTechPrototypeResponse) GetPrototype() *TechPrototype {
@@ -2879,7 +2879,7 @@ type TranslationEntry struct {
 
 func (x *TranslationEntry) Reset() {
 	*x = TranslationEntry{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[48]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[48]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2891,7 +2891,7 @@ func (x *TranslationEntry) String() string {
 func (*TranslationEntry) ProtoMessage() {}
 
 func (x *TranslationEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[48]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[48]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2904,7 +2904,7 @@ func (x *TranslationEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TranslationEntry.ProtoReflect.Descriptor instead.
 func (*TranslationEntry) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{48}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *TranslationEntry) GetKey() string {
@@ -2939,7 +2939,7 @@ type UpsertTranslationRequest struct {
 
 func (x *UpsertTranslationRequest) Reset() {
 	*x = UpsertTranslationRequest{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[49]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[49]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2951,7 +2951,7 @@ func (x *UpsertTranslationRequest) String() string {
 func (*UpsertTranslationRequest) ProtoMessage() {}
 
 func (x *UpsertTranslationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[49]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[49]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2964,7 +2964,7 @@ func (x *UpsertTranslationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertTranslationRequest.ProtoReflect.Descriptor instead.
 func (*UpsertTranslationRequest) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{49}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *UpsertTranslationRequest) GetEntry() *TranslationEntry {
@@ -2983,7 +2983,7 @@ type UpsertTranslationResponse struct {
 
 func (x *UpsertTranslationResponse) Reset() {
 	*x = UpsertTranslationResponse{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[50]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[50]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2995,7 +2995,7 @@ func (x *UpsertTranslationResponse) String() string {
 func (*UpsertTranslationResponse) ProtoMessage() {}
 
 func (x *UpsertTranslationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[50]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[50]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3008,7 +3008,7 @@ func (x *UpsertTranslationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertTranslationResponse.ProtoReflect.Descriptor instead.
 func (*UpsertTranslationResponse) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{50}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{50}
 }
 
 func (x *UpsertTranslationResponse) GetEntry() *TranslationEntry {
@@ -3026,7 +3026,7 @@ type ListTranslationsRequest struct {
 
 func (x *ListTranslationsRequest) Reset() {
 	*x = ListTranslationsRequest{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[51]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[51]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3038,7 +3038,7 @@ func (x *ListTranslationsRequest) String() string {
 func (*ListTranslationsRequest) ProtoMessage() {}
 
 func (x *ListTranslationsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[51]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[51]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3051,7 +3051,7 @@ func (x *ListTranslationsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListTranslationsRequest.ProtoReflect.Descriptor instead.
 func (*ListTranslationsRequest) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{51}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{51}
 }
 
 type ListTranslationsResponse struct {
@@ -3063,7 +3063,7 @@ type ListTranslationsResponse struct {
 
 func (x *ListTranslationsResponse) Reset() {
 	*x = ListTranslationsResponse{}
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[52]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[52]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3075,7 +3075,7 @@ func (x *ListTranslationsResponse) String() string {
 func (*ListTranslationsResponse) ProtoMessage() {}
 
 func (x *ListTranslationsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_game_grpc_v1_admin_proto_msgTypes[52]
+	mi := &file_game_grpc_v1_private_proto_msgTypes[52]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3088,7 +3088,7 @@ func (x *ListTranslationsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListTranslationsResponse.ProtoReflect.Descriptor instead.
 func (*ListTranslationsResponse) Descriptor() ([]byte, []int) {
-	return file_game_grpc_v1_admin_proto_rawDescGZIP(), []int{52}
+	return file_game_grpc_v1_private_proto_rawDescGZIP(), []int{52}
 }
 
 func (x *ListTranslationsResponse) GetEntries() []*TranslationEntry {
@@ -3098,11 +3098,11 @@ func (x *ListTranslationsResponse) GetEntries() []*TranslationEntry {
 	return nil
 }
 
-var File_game_grpc_v1_admin_proto protoreflect.FileDescriptor
+var File_game_grpc_v1_private_proto protoreflect.FileDescriptor
 
-const file_game_grpc_v1_admin_proto_rawDesc = "" +
+const file_game_grpc_v1_private_proto_rawDesc = "" +
 	"\n" +
-	"\x18game/grpc/v1/admin.proto\x12\fgame.grpc.v1\"v\n" +
+	"\x1agame/grpc/v1/private.proto\x12\fgame.grpc.v1\"v\n" +
 	"\n" +
 	"PriceModel\x12\x18\n" +
 	"\acredits\x18\x01 \x01(\x03R\acredits\x12\x12\n" +
@@ -3328,19 +3328,19 @@ const file_game_grpc_v1_admin_proto_rawDesc = "" +
 	"\x10ListTranslations\x12%.game.grpc.v1.ListTranslationsRequest\x1a&.game.grpc.v1.ListTranslationsResponseBKZIgithub.com/artcodefun/heat-expansion-server/contracts/game/grpc/v1;gamev1b\x06proto3"
 
 var (
-	file_game_grpc_v1_admin_proto_rawDescOnce sync.Once
-	file_game_grpc_v1_admin_proto_rawDescData []byte
+	file_game_grpc_v1_private_proto_rawDescOnce sync.Once
+	file_game_grpc_v1_private_proto_rawDescData []byte
 )
 
-func file_game_grpc_v1_admin_proto_rawDescGZIP() []byte {
-	file_game_grpc_v1_admin_proto_rawDescOnce.Do(func() {
-		file_game_grpc_v1_admin_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_game_grpc_v1_admin_proto_rawDesc), len(file_game_grpc_v1_admin_proto_rawDesc)))
+func file_game_grpc_v1_private_proto_rawDescGZIP() []byte {
+	file_game_grpc_v1_private_proto_rawDescOnce.Do(func() {
+		file_game_grpc_v1_private_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_game_grpc_v1_private_proto_rawDesc), len(file_game_grpc_v1_private_proto_rawDesc)))
 	})
-	return file_game_grpc_v1_admin_proto_rawDescData
+	return file_game_grpc_v1_private_proto_rawDescData
 }
 
-var file_game_grpc_v1_admin_proto_msgTypes = make([]protoimpl.MessageInfo, 53)
-var file_game_grpc_v1_admin_proto_goTypes = []any{
+var file_game_grpc_v1_private_proto_msgTypes = make([]protoimpl.MessageInfo, 53)
+var file_game_grpc_v1_private_proto_goTypes = []any{
 	(*PriceModel)(nil),                     // 0: game.grpc.v1.PriceModel
 	(*ArmyPrototype)(nil),                  // 1: game.grpc.v1.ArmyPrototype
 	(*ListArmyPrototypesRequest)(nil),      // 2: game.grpc.v1.ListArmyPrototypesRequest
@@ -3395,7 +3395,7 @@ var file_game_grpc_v1_admin_proto_goTypes = []any{
 	(*ListTranslationsRequest)(nil),        // 51: game.grpc.v1.ListTranslationsRequest
 	(*ListTranslationsResponse)(nil),       // 52: game.grpc.v1.ListTranslationsResponse
 }
-var file_game_grpc_v1_admin_proto_depIdxs = []int32{
+var file_game_grpc_v1_private_proto_depIdxs = []int32{
 	0,  // 0: game.grpc.v1.ArmyPrototype.price:type_name -> game.grpc.v1.PriceModel
 	1,  // 1: game.grpc.v1.ListArmyPrototypesResponse.prototypes:type_name -> game.grpc.v1.ArmyPrototype
 	1,  // 2: game.grpc.v1.GetArmyPrototypeResponse.prototype:type_name -> game.grpc.v1.ArmyPrototype
@@ -3481,20 +3481,20 @@ var file_game_grpc_v1_admin_proto_depIdxs = []int32{
 	0,  // [0:42] is the sub-list for field type_name
 }
 
-func init() { file_game_grpc_v1_admin_proto_init() }
-func file_game_grpc_v1_admin_proto_init() {
-	if File_game_grpc_v1_admin_proto != nil {
+func init() { file_game_grpc_v1_private_proto_init() }
+func file_game_grpc_v1_private_proto_init() {
+	if File_game_grpc_v1_private_proto != nil {
 		return
 	}
-	file_game_grpc_v1_admin_proto_msgTypes[1].OneofWrappers = []any{}
-	file_game_grpc_v1_admin_proto_msgTypes[15].OneofWrappers = []any{
+	file_game_grpc_v1_private_proto_msgTypes[1].OneofWrappers = []any{}
+	file_game_grpc_v1_private_proto_msgTypes[15].OneofWrappers = []any{
 		(*BuildPrototype_ControlData)(nil),
 		(*BuildPrototype_ResourcesData)(nil),
 		(*BuildPrototype_DefenseData)(nil),
 		(*BuildPrototype_MilitaryData)(nil),
 		(*BuildPrototype_IntelligenceData)(nil),
 	}
-	file_game_grpc_v1_admin_proto_msgTypes[29].OneofWrappers = []any{
+	file_game_grpc_v1_private_proto_msgTypes[29].OneofWrappers = []any{
 		(*StoragePrototype_BuffData)(nil),
 		(*StoragePrototype_IntelData)(nil),
 		(*StoragePrototype_DamagedData)(nil),
@@ -3505,17 +3505,17 @@ func file_game_grpc_v1_admin_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_game_grpc_v1_admin_proto_rawDesc), len(file_game_grpc_v1_admin_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_game_grpc_v1_private_proto_rawDesc), len(file_game_grpc_v1_private_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   53,
 			NumExtensions: 0,
 			NumServices:   5,
 		},
-		GoTypes:           file_game_grpc_v1_admin_proto_goTypes,
-		DependencyIndexes: file_game_grpc_v1_admin_proto_depIdxs,
-		MessageInfos:      file_game_grpc_v1_admin_proto_msgTypes,
+		GoTypes:           file_game_grpc_v1_private_proto_goTypes,
+		DependencyIndexes: file_game_grpc_v1_private_proto_depIdxs,
+		MessageInfos:      file_game_grpc_v1_private_proto_msgTypes,
 	}.Build()
-	File_game_grpc_v1_admin_proto = out.File
-	file_game_grpc_v1_admin_proto_goTypes = nil
-	file_game_grpc_v1_admin_proto_depIdxs = nil
+	File_game_grpc_v1_private_proto = out.File
+	file_game_grpc_v1_private_proto_goTypes = nil
+	file_game_grpc_v1_private_proto_depIdxs = nil
 }
