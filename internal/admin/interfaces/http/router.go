@@ -16,12 +16,18 @@ import (
 
 // Commands groups CQRS command interfaces needed by HTTP handlers.
 type Commands struct {
-	Admin cqrs.AdminCommands
+	Admin       cqrs.AdminCommands
+	Prototype   cqrs.PrototypeCommands
+	Translation cqrs.TranslationCommands
+	Package     cqrs.PackageCommands
 }
 
 // Queries groups CQRS query interfaces needed by HTTP handlers.
 type Queries struct {
-	Admin cqrs.AdminQueries
+	Admin       cqrs.AdminQueries
+	Prototype   cqrs.PrototypeQueries
+	Translation cqrs.TranslationQueries
+	Package     cqrs.PackageQueries
 }
 
 // NewRouter constructs the Gin engine, registers middleware and routes.
@@ -29,7 +35,10 @@ func NewRouter(cmd Commands, qry Queries, sessionValidator ports.SessionValidato
 	r := gin.Default()
 	r.Use(otelgin.Middleware("heat-expansion-admin"))
 
-	handler := handlers.NewAdminHandler(cmd.Admin, qry.Admin, tr)
+	adminHandler := handlers.NewAdminHandler(cmd.Admin, qry.Admin, tr)
+	protoHandler := handlers.NewPrototypeHandler(cmd.Prototype, qry.Prototype, tr)
+	translationHandler := handlers.NewTranslationHandler(cmd.Translation, qry.Translation, tr)
+	packageHandler := handlers.NewPackageHandler(cmd.Package, qry.Package, tr)
 
 	// Global routes
 	r.GET("/health", HealthHandler)
@@ -42,11 +51,10 @@ func NewRouter(cmd Commands, qry Queries, sessionValidator ports.SessionValidato
 		})
 		publicApi.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, ginSwagger.URL("../openapi.yaml")))
 
-		// Identity: establish a session.
 		auth := publicApi.Group("/auth")
 		{
-			auth.POST("/register", handler.Register)
-			auth.POST("/login", handler.Login)
+			auth.POST("/register", adminHandler.Register)
+			auth.POST("/login", adminHandler.Login)
 		}
 	}
 
@@ -54,11 +62,59 @@ func NewRouter(cmd Commands, qry Queries, sessionValidator ports.SessionValidato
 	api := r.Group("/api/v1")
 	api.Use(middleware.Auth(sessionValidator))
 	{
-		// Identity: manage the current session.
 		auth := api.Group("/auth")
 		{
-			auth.POST("/logout", handler.Logout)
-			auth.GET("/me", handler.Me)
+			auth.POST("/logout", adminHandler.Logout)
+			auth.GET("/me", adminHandler.Me)
+		}
+
+		// Game prototype catalog
+		army := api.Group("/game/prototypes/army")
+		{
+			army.GET("", protoHandler.ListArmy)
+			army.GET("/:id", protoHandler.GetArmy)
+			army.POST("", protoHandler.CreateArmy)
+			army.PUT("/:id", protoHandler.UpdateArmy)
+		}
+
+		build := api.Group("/game/prototypes/build")
+		{
+			build.GET("", protoHandler.ListBuild)
+			build.GET("/:id", protoHandler.GetBuild)
+			build.POST("", protoHandler.CreateBuild)
+			build.PUT("/:id", protoHandler.UpdateBuild)
+		}
+
+		storage := api.Group("/game/prototypes/storage")
+		{
+			storage.GET("", protoHandler.ListStorage)
+			storage.GET("/:id", protoHandler.GetStorage)
+			storage.POST("", protoHandler.CreateStorage)
+			storage.PUT("/:id", protoHandler.UpdateStorage)
+		}
+
+		tech := api.Group("/game/prototypes/tech")
+		{
+			tech.GET("", protoHandler.ListTech)
+			tech.GET("/:id", protoHandler.GetTech)
+			tech.POST("", protoHandler.CreateTech)
+			tech.PUT("/:id", protoHandler.UpdateTech)
+		}
+
+		// Game translation catalog
+		translations := api.Group("/game/translations")
+		{
+			translations.GET("", translationHandler.ListTranslations)
+			translations.PUT("", translationHandler.UpsertTranslation)
+		}
+
+		// Billing crystal package catalog
+		packages := api.Group("/billing/packages")
+		{
+			packages.GET("", packageHandler.ListPackages)
+			packages.GET("/:id", packageHandler.GetPackage)
+			packages.POST("", packageHandler.CreatePackage)
+			packages.PUT("/:id", packageHandler.UpdatePackage)
 		}
 	}
 

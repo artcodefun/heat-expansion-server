@@ -1,5 +1,6 @@
 {
     "error.application.not_found": "Resource not found",
+    "error.application.invalid_input": "Invalid input",
     "error.application.forbidden": "Permission denied",
     "error.application.internal_server_error": "Internal server error",
     "error.application.admin.invalid_invite_token": "Invalid invite token",

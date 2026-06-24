@@ -31,9 +31,13 @@ type Module struct {
 func NewModule() *Module {
 	port := os.Getenv("ADMIN_PORT")
 	dbURL := os.Getenv("ADMIN_DB_URL")
+	gameAddr := os.Getenv("GAME_GRPC_ADDR")
+	gameKey := os.Getenv("GAME_GRPC_KEY")
+	billingAddr := os.Getenv("BILLING_GRPC_ADDR")
+	billingKey := os.Getenv("BILLING_GRPC_KEY")
 
-	if port == "" || dbURL == "" {
-		log.Fatal("Missing required environment variables: ADMIN_PORT, ADMIN_DB_URL")
+	if port == "" || dbURL == "" || gameAddr == "" || gameKey == "" || billingAddr == "" || billingKey == "" {
+		log.Fatal("Missing required environment variables: ADMIN_PORT, ADMIN_DB_URL, GAME_GRPC_ADDR, GAME_GRPC_KEY, BILLING_GRPC_ADDR, BILLING_GRPC_KEY")
 	}
 
 	db, err := otelsql.Open("postgres", dbURL,
@@ -48,7 +52,7 @@ func NewModule() *Module {
 	}
 	slog.Info("connected to admin database")
 
-	adapters, err := NewAdapters(db)
+	adapters, err := NewAdapters(db, gameAddr, gameKey, billingAddr, billingKey)
 	if err != nil {
 		log.Fatal("Failed to initialise admin adapters:", err)
 	}
@@ -58,8 +62,18 @@ func NewModule() *Module {
 
 	addr := fmt.Sprintf(":%s", port)
 	router := httpapi.NewRouter(
-		httpapi.Commands{Admin: cmds.Admin},
-		httpapi.Queries{Admin: qrys.Admin},
+		httpapi.Commands{
+			Admin:       cmds.Admin,
+			Prototype:   cmds.Prototype,
+			Translation: cmds.Translation,
+			Package:     cmds.Package,
+		},
+		httpapi.Queries{
+			Admin:       qrys.Admin,
+			Prototype:   qrys.Prototype,
+			Translation: qrys.Translation,
+			Package:     qrys.Package,
+		},
 		adapters.SessionValidator,
 		adapters.Translator,
 	)

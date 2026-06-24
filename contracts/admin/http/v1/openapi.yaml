@@ -1,18 +1,22 @@
 openapi: 3.0.3
 info:
   title: Heat Expansion Admin API
-  version: 0.1.0
+  version: 0.2.0
   description: |
-    Administration service for Heat Expansion.
-    This API covers admin identity and session management (invite-based registration,
-    login, logout, current admin). Module-administration endpoints (game prototypes,
-    content translations, billing crystal packages) will be added under /api/v1
-    alongside the auth group in future revisions.
+    Administration service for Heat Expansion. Covers admin identity and session
+    management, game prototype CRUD, content translation management, and billing
+    crystal package CRUD.
 servers:
   - url: .
 tags:
   - name: Auth
     description: Admin identity and session management.
+  - name: Prototypes
+    description: Game prototype catalog management (army, build, storage, tech).
+  - name: Translations
+    description: Game content translation management.
+  - name: Packages
+    description: Billing crystal package catalog management.
 paths:
   /auth/register:
     post:
@@ -110,12 +114,544 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
         '404':
           $ref: '#/components/responses/ErrorResponse'
+
+  # ── Army prototypes ──────────────────────────────────────────────────────────
+  /game/prototypes/army:
+    get:
+      tags: [Prototypes]
+      summary: List all army prototypes
+      operationId: listArmyPrototypes
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Array of army prototypes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ArmyPrototype'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+    post:
+      tags: [Prototypes]
+      summary: Create an army prototype
+      operationId: createArmyPrototype
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArmyPrototype'
+      responses:
+        '201':
+          description: Created army prototype
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArmyPrototype'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+  /game/prototypes/army/{id}:
+    get:
+      tags: [Prototypes]
+      summary: Get an army prototype by id
+      operationId: getArmyPrototype
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PrototypeID'
+      responses:
+        '200':
+          description: Army prototype
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArmyPrototype'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+    put:
+      tags: [Prototypes]
+      summary: Update an army prototype
+      operationId: updateArmyPrototype
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PrototypeID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArmyPrototype'
+      responses:
+        '200':
+          description: Updated army prototype
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArmyPrototype'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+
+  # ── Build prototypes ─────────────────────────────────────────────────────────
+  /game/prototypes/build:
+    get:
+      tags: [Prototypes]
+      summary: List all build prototypes
+      operationId: listBuildPrototypes
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Array of build prototypes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BuildPrototype'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+    post:
+      tags: [Prototypes]
+      summary: Create a build prototype
+      operationId: createBuildPrototype
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BuildPrototype'
+      responses:
+        '201':
+          description: Created build prototype
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuildPrototype'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+  /game/prototypes/build/{id}:
+    get:
+      tags: [Prototypes]
+      summary: Get a build prototype by id
+      operationId: getBuildPrototype
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PrototypeID'
+      responses:
+        '200':
+          description: Build prototype
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuildPrototype'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+    put:
+      tags: [Prototypes]
+      summary: Update a build prototype
+      operationId: updateBuildPrototype
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PrototypeID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BuildPrototype'
+      responses:
+        '200':
+          description: Updated build prototype
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuildPrototype'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+
+  # ── Storage prototypes ───────────────────────────────────────────────────────
+  /game/prototypes/storage:
+    get:
+      tags: [Prototypes]
+      summary: List all storage prototypes
+      operationId: listStoragePrototypes
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Array of storage prototypes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StoragePrototype'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+    post:
+      tags: [Prototypes]
+      summary: Create a storage prototype
+      operationId: createStoragePrototype
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoragePrototype'
+      responses:
+        '201':
+          description: Created storage prototype
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoragePrototype'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+  /game/prototypes/storage/{id}:
+    get:
+      tags: [Prototypes]
+      summary: Get a storage prototype by id
+      operationId: getStoragePrototype
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PrototypeID'
+      responses:
+        '200':
+          description: Storage prototype
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoragePrototype'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+    put:
+      tags: [Prototypes]
+      summary: Update a storage prototype
+      operationId: updateStoragePrototype
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PrototypeID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoragePrototype'
+      responses:
+        '200':
+          description: Updated storage prototype
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoragePrototype'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+
+  # ── Tech prototypes ──────────────────────────────────────────────────────────
+  /game/prototypes/tech:
+    get:
+      tags: [Prototypes]
+      summary: List all tech prototypes
+      operationId: listTechPrototypes
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Array of tech prototypes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TechPrototype'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+    post:
+      tags: [Prototypes]
+      summary: Create a tech prototype
+      operationId: createTechPrototype
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TechPrototype'
+      responses:
+        '201':
+          description: Created tech prototype
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TechPrototype'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+  /game/prototypes/tech/{id}:
+    get:
+      tags: [Prototypes]
+      summary: Get a tech prototype by id
+      operationId: getTechPrototype
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PrototypeID'
+      responses:
+        '200':
+          description: Tech prototype
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TechPrototype'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+    put:
+      tags: [Prototypes]
+      summary: Update a tech prototype
+      operationId: updateTechPrototype
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PrototypeID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TechPrototype'
+      responses:
+        '200':
+          description: Updated tech prototype
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TechPrototype'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+
+  # ── Translations ─────────────────────────────────────────────────────────────
+  /game/translations:
+    get:
+      tags: [Translations]
+      summary: List all translations
+      operationId: listTranslations
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Array of translation entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Translation'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+    put:
+      tags: [Translations]
+      summary: Upsert a translation entry
+      description: Inserts or overwrites a single localised string. Triggers a hot-reload on all game nodes via LISTEN/NOTIFY.
+      operationId: upsertTranslation
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Translation'
+      responses:
+        '200':
+          description: Upserted translation entry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Translation'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+
+  # ── Crystal packages ─────────────────────────────────────────────────────────
+  /billing/packages:
+    get:
+      tags: [Packages]
+      summary: List all crystal packages
+      operationId: listCrystalPackages
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Array of crystal packages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CrystalPackage'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+    post:
+      tags: [Packages]
+      summary: Create a crystal package
+      operationId: createCrystalPackage
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCrystalPackageRequest'
+      responses:
+        '201':
+          description: Created crystal package
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CrystalPackage'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+  /billing/packages/{id}:
+    get:
+      tags: [Packages]
+      summary: Get a crystal package by id
+      operationId: getCrystalPackage
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PackageID'
+      responses:
+        '200':
+          description: Crystal package
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CrystalPackage'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+    put:
+      tags: [Packages]
+      summary: Update a crystal package
+      operationId: updateCrystalPackage
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PackageID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCrystalPackageRequest'
+      responses:
+        '200':
+          description: Updated crystal package
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CrystalPackage'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ErrorResponse'
+
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       description: Opaque session token returned by /auth/login or /auth/register.
+  parameters:
+    PrototypeID:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    PackageID:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
   responses:
     ErrorResponse:
       description: Request failed
@@ -151,3 +687,317 @@ components:
           type: integer
           format: int64
           description: Creation time as unix seconds.
+    PriceModel:
+      type: object
+      properties:
+        credits:
+          type: integer
+          format: int64
+        iron:
+          type: integer
+          format: int64
+        titanium:
+          type: integer
+          format: int64
+        antimatter:
+          type: integer
+          format: int64
+    ArmyPrototype:
+      type: object
+      required: [id, name, category, faction]
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        category:
+          type: string
+        creation_sources:
+          type: array
+          items:
+            type: string
+        faction:
+          type: string
+        unlock_technology_id:
+          type: integer
+          format: int64
+          nullable: true
+        short_description:
+          type: string
+        full_description:
+          type: string
+        price:
+          $ref: '#/components/schemas/PriceModel'
+        production_time:
+          type: integer
+          format: int64
+        space:
+          type: integer
+          format: int32
+        image_url:
+          type: string
+        attack:
+          type: integer
+          format: int32
+        defence:
+          type: integer
+          format: int32
+        capacity:
+          type: integer
+          format: int32
+        stealth:
+          type: integer
+          format: int32
+        speed:
+          type: integer
+          format: int32
+    BuildPrototype:
+      type: object
+      required: [id, name, category, faction]
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        category:
+          type: string
+        creation_sources:
+          type: array
+          items:
+            type: string
+        faction:
+          type: string
+        unlock_technology_id:
+          type: integer
+          format: int64
+          nullable: true
+        short_description:
+          type: string
+        full_description:
+          type: string
+        price:
+          $ref: '#/components/schemas/PriceModel'
+        production_time:
+          type: integer
+          format: int64
+        space:
+          type: integer
+          format: int32
+        image_url:
+          type: string
+        control_data:
+          type: object
+          nullable: true
+          properties:
+            subtype:
+              type: string
+        resources_data:
+          type: object
+          nullable: true
+          properties:
+            credits_production:
+              type: number
+            iron_production:
+              type: number
+            titanium_production:
+              type: number
+            antimatter_production:
+              type: number
+            credits_capacity:
+              type: integer
+            iron_capacity:
+              type: integer
+            titanium_capacity:
+              type: integer
+            antimatter_capacity:
+              type: integer
+        defense_data:
+          type: object
+          nullable: true
+          properties:
+            defence_bonus:
+              type: integer
+        military_data:
+          type: object
+          nullable: true
+          properties:
+            unlock_army_category:
+              type: string
+        intelligence_data:
+          type: object
+          nullable: true
+          properties:
+            subtype:
+              type: string
+            stealth_strength:
+              type: integer
+            scan_range:
+              type: integer
+            scan_cooldown:
+              type: integer
+              format: int64
+    StoragePrototype:
+      type: object
+      required: [id, name, category]
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        category:
+          type: string
+        creation_sources:
+          type: array
+          items:
+            type: string
+        estimated_worth:
+          type: integer
+          format: int32
+        short_description:
+          type: string
+        full_description:
+          type: string
+        image_url:
+          type: string
+        buff_data:
+          type: object
+          nullable: true
+          properties:
+            type:
+              type: string
+            value:
+              type: number
+            duration_seconds:
+              type: integer
+              format: int64
+        intel_data:
+          type: object
+          nullable: true
+          properties:
+            type:
+              type: string
+            decryption_seconds:
+              type: integer
+              format: int64
+        damaged_data:
+          type: object
+          nullable: true
+          properties:
+            restore_price:
+              $ref: '#/components/schemas/PriceModel'
+            restoration_seconds:
+              type: integer
+              format: int64
+            original_unit_id:
+              type: integer
+              format: int64
+        artifact_data:
+          type: object
+          nullable: true
+          properties:
+            type:
+              type: string
+            value:
+              type: number
+        consumable_data:
+          type: object
+          nullable: true
+          properties:
+            type:
+              type: string
+            box_contents:
+              type: array
+              items:
+                type: string
+            box_size:
+              type: integer
+    TechPrototype:
+      type: object
+      required: [id, name, category]
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        category:
+          type: string
+        unlock_technology_id:
+          type: integer
+          format: int64
+          description: 0 means no prerequisite.
+        short_description:
+          type: string
+        full_description:
+          type: string
+        price:
+          $ref: '#/components/schemas/PriceModel'
+        research_time:
+          type: integer
+          format: int64
+        image_url:
+          type: string
+        improvement:
+          type: object
+          nullable: true
+          properties:
+            type:
+              type: string
+            value:
+              type: integer
+            max_level:
+              type: integer
+              description: 0 = no cap.
+    Translation:
+      type: object
+      required: [key, locale]
+      properties:
+        key:
+          type: string
+        locale:
+          type: string
+          enum: [en, ru]
+        value:
+          type: string
+    CrystalPackage:
+      type: object
+      required: [id, name, crystals, price_minor_units, currency]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        crystals:
+          type: integer
+          format: int32
+        price_minor_units:
+          type: integer
+          format: int64
+        currency:
+          type: string
+        image_url:
+          type: string
+        is_active:
+          type: boolean
+    CreateCrystalPackageRequest:
+      type: object
+      required: [name, currency]
+      properties:
+        name:
+          type: string
+        crystals:
+          type: integer
+          format: int32
+        price_minor_units:
+          type: integer
+          format: int64
+        currency:
+          type: string
+        image_url:
+          type: string
+        is_active:
+          type: boolean

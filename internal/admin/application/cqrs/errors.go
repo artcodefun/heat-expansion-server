@@ -33,6 +33,7 @@ func NewAppErrorWithParams(kind ErrorKind, code string, params map[string]any) A
 }
 
 var (
-	ErrNotFound  = NewAppError(KindNotFound, "error.application.not_found")
-	ErrForbidden = NewAppError(KindForbidden, "error.application.forbidden")
+	ErrNotFound     = NewAppError(KindNotFound, "error.application.not_found")
+	ErrForbidden    = NewAppError(KindForbidden, "error.application.forbidden")
+	ErrInvalidInput = NewAppError(KindInvalidInput, "error.application.invalid_input")
 )

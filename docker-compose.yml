@@ -83,6 +83,8 @@ services:
       - ADMIN_PORT=8083
       - ADMIN_DB_URL=postgres://heatuser:heatpassword@db:5432/heatdb?sslmode=disable
       - ADMIN_MIGRATIONS_TABLE=admin_schema_migrations
+      - GAME_GRPC_ADDR=127.0.0.1:9080
+      - BILLING_GRPC_ADDR=127.0.0.1:9081
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
       - OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4317
       - OTEL_SERVICE_NAME=heat-expansion

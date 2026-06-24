@@ -6,6 +6,7 @@ import (
 	"github.com/artcodefun/heat-expansion-server/internal/admin/application/ports"
 	dbgen "github.com/artcodefun/heat-expansion-server/internal/admin/infrastructure/db/gen"
 	dbrepo "github.com/artcodefun/heat-expansion-server/internal/admin/infrastructure/db/repo"
+	"github.com/artcodefun/heat-expansion-server/internal/admin/infrastructure/grpcclient"
 	"github.com/artcodefun/heat-expansion-server/internal/admin/infrastructure/i18n"
 	readgen "github.com/artcodefun/heat-expansion-server/internal/admin/infrastructure/readstore/gen"
 	readrepo "github.com/artcodefun/heat-expansion-server/internal/admin/infrastructure/readstore/repo"
@@ -23,9 +24,11 @@ type Adapters struct {
 	Hasher           ports.PasswordHasher
 	TokenGen         ports.SessionTokenGenerator
 	Translator       ports.Translator
+	GameClient       ports.GamePrivateClient
+	BillingClient    ports.BillingPrivateClient
 }
 
-func NewAdapters(db *sql.DB) (*Adapters, error) {
+func NewAdapters(db *sql.DB, gameGRPCAddr, gameGRPCKey, billingGRPCAddr, billingGRPCKey string) (*Adapters, error) {
 	q := dbgen.New(db)
 	rq := readgen.New(db)
 
@@ -37,6 +40,16 @@ func NewAdapters(db *sql.DB) (*Adapters, error) {
 	sessions := dbrepo.NewSessionRepository(q)
 	admins := dbrepo.NewAdminRepository(q)
 
+	gameClient, err := grpcclient.NewGameClient(gameGRPCAddr, gameGRPCKey)
+	if err != nil {
+		return nil, err
+	}
+
+	billingClient, err := grpcclient.NewBillingClient(billingGRPCAddr, billingGRPCKey)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Adapters{
 		Admins:           admins,
 		Sessions:         sessions,
@@ -46,5 +59,7 @@ func NewAdapters(db *sql.DB) (*Adapters, error) {
 		Hasher:           platformsecurity.NewBcryptHasher(),
 		TokenGen:         security.NewRandomSessionTokenGenerator(),
 		Translator:       translator,
+		GameClient:       gameClient,
+		BillingClient:    billingClient,
 	}, nil
 }

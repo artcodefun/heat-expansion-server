@@ -83,3 +83,13 @@ func bindRequest(c *gin.Context, req interface{}) bool {
 	}
 	return true
 }
+
+// bindURI deserialises URI parameters and writes a 400 on failure.
+func bindURI(c *gin.Context, req interface{}) bool {
+	if err := c.ShouldBindUri(req); err != nil {
+		slog.WarnContext(c.Request.Context(), "request rejected; invalid uri", "error", err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return false
+	}
+	return true
+}
