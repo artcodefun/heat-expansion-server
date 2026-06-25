@@ -9,6 +9,7 @@ import (
 	billingv1 "github.com/artcodefun/heat-expansion-server/contracts/billing/grpc/v1"
 	"github.com/artcodefun/heat-expansion-server/internal/admin/application/cqrs/readmodels"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 )
 
 // BillingClient implements ports.BillingPrivateClient by calling the billing
@@ -22,6 +23,7 @@ func NewBillingClient(addr, key string) (*BillingClient, error) {
 	conn, err := grpc.NewClient(
 		addr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithStatsHandler(otelgrpc.NewClientHandler()),
 		grpc.WithUnaryInterceptor(keyInterceptor(key)),
 	)
 	if err != nil {

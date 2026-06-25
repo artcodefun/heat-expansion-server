@@ -8,6 +8,7 @@ import (
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/grpc/handlers"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/grpc/interceptor"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 )
 
 // Commands groups CQRS command interfaces needed by gRPC handlers.
@@ -33,6 +34,7 @@ type Router struct {
 // NewRouter builds the configured gRPC server: installs interceptors and registers services.
 func NewRouter(cmd Commands, qry Queries, internalKey string, tr ports.Translator) Router {
 	srv := grpc.NewServer(
+		grpc.StatsHandler(otelgrpc.NewServerHandler()),
 		grpc.ChainUnaryInterceptor(interceptor.KeyAuth(internalKey)),
 	)
 	gamev1.RegisterArmyPrototypeServiceServer(srv, handlers.NewArmyPrototypeHandler(cmd.ArmyPrototype, qry.ArmyPrototype, tr))

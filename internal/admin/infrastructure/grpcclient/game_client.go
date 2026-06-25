@@ -9,6 +9,7 @@ import (
 
 	gamev1 "github.com/artcodefun/heat-expansion-server/contracts/game/grpc/v1"
 	"github.com/artcodefun/heat-expansion-server/internal/admin/application/cqrs/readmodels"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 )
 
 // GameClient implements ports.GamePrivateClient by calling the game module's
@@ -26,6 +27,7 @@ func NewGameClient(addr, key string) (*GameClient, error) {
 	conn, err := grpc.NewClient(
 		addr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithStatsHandler(otelgrpc.NewClientHandler()),
 		grpc.WithUnaryInterceptor(keyInterceptor(key)),
 	)
 	if err != nil {
