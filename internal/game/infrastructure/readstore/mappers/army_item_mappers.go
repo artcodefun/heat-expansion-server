@@ -93,10 +93,20 @@ func ArmyItemPresentFromAllRow(r gen.ListPresentArmyItemsAllRow) readmodels.Army
 }
 
 func NewArmyItemFromPrototype(p gen.ArmyItemPrototype) readmodels.ArmyItemNew {
-	proto := ArmyPrototypeFromModel(p)
-	return readmodels.ArmyItemNew{Prototype: proto}
+	return readmodels.ArmyItemNew{Prototype: ArmyPrototypeFromModel(p)}
 }
 
 func ArmyPrototypeFromModel(p gen.ArmyItemPrototype) readmodels.ArmyItemPrototype {
-	return armyPrototypeFromParts(p.ID, p.Name, p.Category, p.Faction, p.UnlockTechnologyID, p.ShortDescription, p.FullDescription, p.Price, p.ProductionTime, p.Space, p.ImageUrl, p.Attack, p.Defence, p.Capacity, p.Stealth, p.Speed)
+	proto := armyPrototypeFromParts(p.ID, p.Name, p.Category, p.Faction, p.UnlockTechnologyID, p.ShortDescription, p.FullDescription, p.Price, p.ProductionTime, p.Space, p.ImageUrl, p.Attack, p.Defence, p.Capacity, p.Stealth, p.Speed)
+	proto.CreationSources = creationSourcesFromJSON(p.CreationSources)
+	return proto
+}
+
+func ArmyPrototypesFromModels(rows []gen.ArmyItemPrototype) []*readmodels.ArmyItemPrototype {
+	out := make([]*readmodels.ArmyItemPrototype, len(rows))
+	for i, p := range rows {
+		v := ArmyPrototypeFromModel(p)
+		out[i] = &v
+	}
+	return out
 }

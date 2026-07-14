@@ -44,7 +44,18 @@ func NewBuildItemFromPrototype(p gen.BuildItemPrototype) readmodels.BuildItemNew
 }
 
 func BuildPrototypeFromModel(p gen.BuildItemPrototype) readmodels.BuildItemPrototype {
-	return buildPrototypeFromParts(p.ID, p.Name, p.Category, p.Faction, p.UnlockTechnologyID, p.ShortDescription, p.FullDescription, p.Price, p.ProductionTime, p.Space, p.ImageUrl, p.ControlData, p.ResourcesData, p.DefenseData, p.MilitaryData, p.IntelligenceData)
+	proto := buildPrototypeFromParts(p.ID, p.Name, p.Category, p.Faction, p.UnlockTechnologyID, p.ShortDescription, p.FullDescription, p.Price, p.ProductionTime, p.Space, p.ImageUrl, p.ControlData, p.ResourcesData, p.DefenseData, p.MilitaryData, p.IntelligenceData)
+	proto.CreationSources = creationSourcesFromJSON(p.CreationSources)
+	return proto
+}
+
+func BuildPrototypesFromModels(rows []gen.BuildItemPrototype) []*readmodels.BuildItemPrototype {
+	out := make([]*readmodels.BuildItemPrototype, len(rows))
+	for i, p := range rows {
+		v := BuildPrototypeFromModel(p)
+		out[i] = &v
+	}
+	return out
 }
 
 func BuildItemPendingFromRow(r gen.ListPendingBuildItemsRow) readmodels.BuildItemPending {

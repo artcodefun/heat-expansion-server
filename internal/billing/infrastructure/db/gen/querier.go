@@ -13,6 +13,7 @@ import (
 type Querier interface {
 	ClaimUnpublishedEvents(ctx context.Context, limit int32) ([]ClaimUnpublishedEventsRow, error)
 	ClaimUnpublishedIntegrationEvents(ctx context.Context, limit int32) ([]ClaimUnpublishedIntegrationEventsRow, error)
+	CreatePackage(ctx context.Context, arg CreatePackageParams) (CrystalPackage, error)
 	GetOrderByID(ctx context.Context, id uuid.UUID) (PurchaseOrder, error)
 	GetOrderByProviderOrderID(ctx context.Context, providerOrderID string) (PurchaseOrder, error)
 	GetOrderByProviderOrderIDForUpdate(ctx context.Context, providerOrderID string) (PurchaseOrder, error)
@@ -27,6 +28,7 @@ type Querier interface {
 	SaveIntegrationEvent(ctx context.Context, arg SaveIntegrationEventParams) error
 	SaveOutboxEvent(ctx context.Context, arg SaveOutboxEventParams) error
 	UpdateOrder(ctx context.Context, arg UpdateOrderParams) error
+	UpdatePackage(ctx context.Context, arg UpdatePackageParams) (CrystalPackage, error)
 	UpsertUser(ctx context.Context, arg UpsertUserParams) error
 }
 

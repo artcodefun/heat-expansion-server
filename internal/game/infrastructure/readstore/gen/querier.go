@@ -13,12 +13,14 @@ import (
 type Querier interface {
 	CountUnreadAlertsByUser(ctx context.Context, arg CountUnreadAlertsByUserParams) (int64, error)
 	CountUnreadDiplomaticMessagesByUser(ctx context.Context, receiverUserID uuid.UUID) (int64, error)
+	GetArmyPrototypeByID(ctx context.Context, id int64) (ArmyItemPrototype, error)
 	// Base stats only (read repository no longer hydrates full overview)
 	GetBase(ctx context.Context, id int64) (GetBaseRow, error)
 	// Base owner lookup by sector coordinates
 	GetBaseOwnerByCoordinates(ctx context.Context, arg GetBaseOwnerByCoordinatesParams) (GetBaseOwnerByCoordinatesRow, error)
 	// Base stats only (read repository no longer hydrates full overview)
 	GetBaseStats(ctx context.Context, id int64) (GetBaseStatsRow, error)
+	GetBuildPrototypeByID(ctx context.Context, id int64) (BuildItemPrototype, error)
 	GetDiplomaticRelationship(ctx context.Context, arg GetDiplomaticRelationshipParams) (GetDiplomaticRelationshipRow, error)
 	GetDiplomaticRequest(ctx context.Context, id uuid.UUID) (GetDiplomaticRequestRow, error)
 	GetLatestScanBefore(ctx context.Context, arg GetLatestScanBeforeParams) (ScanReport, error)
@@ -30,6 +32,8 @@ type Querier interface {
 	GetScanReportByOperationUUID(ctx context.Context, sourceID uuid.NullUUID) (ScanReport, error)
 	// Sector scan report queries
 	GetScansNear(ctx context.Context, arg GetScansNearParams) ([]ScanReport, error)
+	GetStoragePrototypeByID(ctx context.Context, id int64) (StorageItemPrototype, error)
+	GetTechPrototypeByID(ctx context.Context, id int64) (TechItemPrototype, error)
 	// Trade operation read queries
 	GetTradeOperation(ctx context.Context, id int64) (TradeOperation, error)
 	// Readstore user profile queries

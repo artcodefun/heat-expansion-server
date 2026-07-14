@@ -1,0 +1,412 @@
+syntax = "proto3";
+
+package game.grpc.v1;
+
+option go_package = "github.com/artcodefun/heat-expansion-server/contracts/game/grpc/v1;gamev1";
+
+// This file defines the private gRPC API exposed by the game module for
+// internal use. It is reached over loopback and guarded by a static module key
+// in request metadata. There is one service per resource and one handler type
+// per service. RPC and message names are resource-qualified because all
+// services share this proto package and names must stay globally unique.
+
+// ============================================================================
+// Shared messages
+// ============================================================================
+
+// PriceModel mirrors domain.PriceModel: resource costs in integer minor units.
+message PriceModel {
+  int64 credits = 1;
+  int64 iron = 2;
+  int64 titanium = 3;
+  int64 antimatter = 4;
+}
+
+// ============================================================================
+// Army prototypes
+// ============================================================================
+
+service ArmyPrototypeService {
+  rpc ListArmyPrototypes(ListArmyPrototypesRequest) returns (ListArmyPrototypesResponse);
+  rpc GetArmyPrototype(GetArmyPrototypeRequest) returns (GetArmyPrototypeResponse);
+  rpc CreateArmyPrototype(CreateArmyPrototypeRequest) returns (CreateArmyPrototypeResponse);
+  rpc UpdateArmyPrototype(UpdateArmyPrototypeRequest) returns (UpdateArmyPrototypeResponse);
+}
+
+// ArmyPrototype is the wire shape of domain.ArmyItemPrototype.
+//
+// Enum-like fields (category, faction, creation_sources) are carried as strings
+// rather than proto enums: the domain stores them as free string constants and
+// the DB is the source of truth, so a parallel proto enum would be a second
+// definition that could silently drift. unlock_technology_id is optional
+// (absent = available by default).
+message ArmyPrototype {
+  int64 id = 1;
+  string name = 2;
+  string category = 3;
+  repeated string creation_sources = 4;
+  string faction = 5;
+  optional int64 unlock_technology_id = 6;
+  string short_description = 7;
+  string full_description = 8;
+  PriceModel price = 9;
+  int64 production_time = 10;
+  int32 space = 11;
+  string image_url = 12;
+  int32 attack = 13;
+  int32 defence = 14;
+  int32 capacity = 15;
+  int32 stealth = 16;
+  int32 speed = 17;
+}
+
+message ListArmyPrototypesRequest {}
+
+message ListArmyPrototypesResponse {
+  repeated ArmyPrototype prototypes = 1;
+}
+
+message GetArmyPrototypeRequest {
+  int64 id = 1;
+}
+
+message GetArmyPrototypeResponse {
+  ArmyPrototype prototype = 1;
+}
+
+// CreateArmyPrototypeRequest carries the prototype to insert. The caller MUST set
+// a positive id: prototypes are ordered and each type occupies its own id range,
+// so the id is chosen by the caller rather than assigned by the server.
+message CreateArmyPrototypeRequest {
+  ArmyPrototype prototype = 1;
+}
+
+message CreateArmyPrototypeResponse {
+  ArmyPrototype prototype = 1;
+}
+
+// UpdateArmyPrototypeRequest overwrites the prototype identified by prototype.id.
+message UpdateArmyPrototypeRequest {
+  ArmyPrototype prototype = 1;
+}
+
+message UpdateArmyPrototypeResponse {
+  ArmyPrototype prototype = 1;
+}
+
+// ============================================================================
+// Build prototypes
+// ============================================================================
+
+service BuildPrototypeService {
+  rpc ListBuildPrototypes(ListBuildPrototypesRequest) returns (ListBuildPrototypesResponse);
+  rpc GetBuildPrototype(GetBuildPrototypeRequest) returns (GetBuildPrototypeResponse);
+  rpc CreateBuildPrototype(CreateBuildPrototypeRequest) returns (CreateBuildPrototypeResponse);
+  rpc UpdateBuildPrototype(UpdateBuildPrototypeRequest) returns (UpdateBuildPrototypeResponse);
+}
+
+// Category-specific payloads. A build prototype carries exactly the data block
+// that matches its category; the others are absent. Message presence (non-nil)
+// mirrors the nullable JSONB columns / nil domain pointers.
+
+message BuildControlData {
+  string subtype = 1;
+}
+
+message BuildResourcesData {
+  double credits_production = 1;
+  double iron_production = 2;
+  double titanium_production = 3;
+  double antimatter_production = 4;
+  int32 credits_capacity = 5;
+  int32 iron_capacity = 6;
+  int32 titanium_capacity = 7;
+  int32 antimatter_capacity = 8;
+}
+
+message BuildDefenseData {
+  int32 defence_bonus = 1;
+}
+
+message BuildMilitaryData {
+  string unlock_army_category = 1;
+}
+
+message BuildIntelligenceData {
+  string subtype = 1;
+  int32 stealth_strength = 2;
+  int32 scan_range = 3;
+  int64 scan_cooldown = 4;
+}
+
+// BuildPrototype is the wire shape of domain.BuildItemPrototype. Like
+// ArmyPrototype, enum-like fields (category, faction, creation_sources, and the
+// subtype/unlock_army_category fields inside the data blocks) are carried as
+// strings because the DB is the source of truth. unlock_technology_id is
+// optional (absent = available by default).
+//
+// category_data is a oneof: exactly one block is present and it must match the
+// category string. The mutual-exclusivity constraint is encoded in the schema
+// rather than relying solely on application-layer validation.
+message BuildPrototype {
+  int64 id = 1;
+  string name = 2;
+  string category = 3;
+  repeated string creation_sources = 4;
+  string faction = 5;
+  optional int64 unlock_technology_id = 6;
+  string short_description = 7;
+  string full_description = 8;
+  PriceModel price = 9;
+  int64 production_time = 10;
+  int32 space = 11;
+  string image_url = 12;
+  oneof category_data {
+    BuildControlData control_data = 13;
+    BuildResourcesData resources_data = 14;
+    BuildDefenseData defense_data = 15;
+    BuildMilitaryData military_data = 16;
+    BuildIntelligenceData intelligence_data = 17;
+  }
+}
+
+message ListBuildPrototypesRequest {}
+
+message ListBuildPrototypesResponse {
+  repeated BuildPrototype prototypes = 1;
+}
+
+message GetBuildPrototypeRequest {
+  int64 id = 1;
+}
+
+message GetBuildPrototypeResponse {
+  BuildPrototype prototype = 1;
+}
+
+// CreateBuildPrototypeRequest carries the prototype to insert. The caller MUST set
+// a positive id: prototypes are ordered and each type occupies its own id range,
+// so the id is chosen by the caller rather than assigned by the server.
+message CreateBuildPrototypeRequest {
+  BuildPrototype prototype = 1;
+}
+
+message CreateBuildPrototypeResponse {
+  BuildPrototype prototype = 1;
+}
+
+// UpdateBuildPrototypeRequest overwrites the prototype identified by prototype.id.
+message UpdateBuildPrototypeRequest {
+  BuildPrototype prototype = 1;
+}
+
+message UpdateBuildPrototypeResponse {
+  BuildPrototype prototype = 1;
+}
+
+// ============================================================================
+// Storage prototypes
+// ============================================================================
+
+service StoragePrototypeService {
+  rpc ListStoragePrototypes(ListStoragePrototypesRequest) returns (ListStoragePrototypesResponse);
+  rpc GetStoragePrototype(GetStoragePrototypeRequest) returns (GetStoragePrototypeResponse);
+  rpc CreateStoragePrototype(CreateStoragePrototypeRequest) returns (CreateStoragePrototypeResponse);
+  rpc UpdateStoragePrototype(UpdateStoragePrototypeRequest) returns (UpdateStoragePrototypeResponse);
+}
+
+// Category-specific payloads. A storage prototype carries exactly the data
+// block that matches its category; the others are absent.
+
+message StorageBuffData {
+  string type = 1;
+  float value = 2;
+  int64 duration_seconds = 3;
+}
+
+message StorageIntelData {
+  string type = 1;
+  int64 decryption_seconds = 2;
+}
+
+// StorageDamagedData describes how to restore a damaged army unit.
+// original_unit_id references the ArmyItemPrototype the item restores into.
+message StorageDamagedData {
+  PriceModel restore_price = 1;
+  int64 restoration_seconds = 2;
+  int64 original_unit_id = 3;
+}
+
+message StorageArtifactData {
+  string type = 1;
+  float value = 2;
+}
+
+message StorageConsumableData {
+  string type = 1;
+  repeated string box_contents = 2;
+  int32 box_size = 3;
+}
+
+// StoragePrototype is the wire shape of domain.StorageItemPrototype. Like the
+// other prototype types, enum-like fields (category, creation_sources, and the
+// type fields inside data blocks) are carried as strings because the DB is the
+// source of truth. estimated_worth is a rough credit value used in trading.
+//
+// category_data is a oneof: exactly one block is present and it must match the
+// category string.
+message StoragePrototype {
+  int64 id = 1;
+  string name = 2;
+  string category = 3;
+  repeated string creation_sources = 4;
+  int32 estimated_worth = 5;
+  string short_description = 6;
+  string full_description = 7;
+  string image_url = 8;
+  oneof category_data {
+    StorageBuffData buff_data = 9;
+    StorageIntelData intel_data = 10;
+    StorageDamagedData damaged_data = 11;
+    StorageArtifactData artifact_data = 12;
+    StorageConsumableData consumable_data = 13;
+  }
+}
+
+message ListStoragePrototypesRequest {}
+
+message ListStoragePrototypesResponse {
+  repeated StoragePrototype prototypes = 1;
+}
+
+message GetStoragePrototypeRequest {
+  int64 id = 1;
+}
+
+message GetStoragePrototypeResponse {
+  StoragePrototype prototype = 1;
+}
+
+// CreateStoragePrototypeRequest carries the prototype to insert. The caller MUST
+// set a positive id: prototypes are ordered and each type occupies its own id range,
+// so the id is chosen by the caller rather than assigned by the server.
+message CreateStoragePrototypeRequest {
+  StoragePrototype prototype = 1;
+}
+
+message CreateStoragePrototypeResponse {
+  StoragePrototype prototype = 1;
+}
+
+// UpdateStoragePrototypeRequest overwrites the prototype identified by prototype.id.
+message UpdateStoragePrototypeRequest {
+  StoragePrototype prototype = 1;
+}
+
+message UpdateStoragePrototypeResponse {
+  StoragePrototype prototype = 1;
+}
+
+// ============================================================================
+// TechPrototypeService
+// ============================================================================
+
+service TechPrototypeService {
+  rpc ListTechPrototypes(ListTechPrototypesRequest) returns (ListTechPrototypesResponse);
+  rpc GetTechPrototype(GetTechPrototypeRequest) returns (GetTechPrototypeResponse);
+  rpc CreateTechPrototype(CreateTechPrototypeRequest) returns (CreateTechPrototypeResponse);
+  rpc UpdateTechPrototype(UpdateTechPrototypeRequest) returns (UpdateTechPrototypeResponse);
+}
+
+// TechPrototype is the wire shape of domain.TechItemPrototype.
+// Enum-like fields (category, improvement.type) are strings; the DB is the
+// source of truth. unlock_technology_id is 0 when absent (proto3 default).
+// improvement is an optional message; omit the field entirely when no
+// improvement is present.
+message TechPrototype {
+  int64 id = 1;
+  string name = 2;
+  string category = 3;
+  int64 unlock_technology_id = 4;  // 0 means "no prerequisite"
+  string short_description = 5;
+  string full_description = 6;
+  PriceModel price = 7;
+  int64 research_time = 8;
+  string image_url = 9;
+  TechImprovementModel improvement = 10;  // optional; omit if no improvement
+}
+
+// TechImprovementModel carries the optional numeric benefit that scales with
+// technology level. max_level of 0 means infinite (no cap).
+message TechImprovementModel {
+  string type = 1;
+  int32 value = 2;
+  int32 max_level = 3;  // 0 = no cap (infinite)
+}
+
+message ListTechPrototypesRequest {}
+
+message ListTechPrototypesResponse {
+  repeated TechPrototype prototypes = 1;
+}
+
+message GetTechPrototypeRequest {
+  int64 id = 1;
+}
+
+message GetTechPrototypeResponse {
+  TechPrototype prototype = 1;
+}
+
+// CreateTechPrototypeRequest carries the prototype to insert. The caller MUST
+// set a positive id: prototypes are ordered and each type occupies its own id range,
+// so the id is chosen by the caller rather than assigned by the server.
+message CreateTechPrototypeRequest {
+  TechPrototype prototype = 1;
+}
+
+message CreateTechPrototypeResponse {
+  TechPrototype prototype = 1;
+}
+
+// UpdateTechPrototypeRequest overwrites the prototype identified by prototype.id.
+message UpdateTechPrototypeRequest {
+  TechPrototype prototype = 1;
+}
+
+message UpdateTechPrototypeResponse {
+  TechPrototype prototype = 1;
+}
+
+// ============================================================================
+// TranslationService
+// ============================================================================
+
+service TranslationService {
+  rpc UpsertTranslation(UpsertTranslationRequest) returns (UpsertTranslationResponse);
+  rpc ListTranslations(ListTranslationsRequest) returns (ListTranslationsResponse);
+}
+
+// TranslationEntry is the wire shape of a single localised string row.
+// locale must be one of the supported codes ("en", "ru").
+message TranslationEntry {
+  string key = 1;
+  string locale = 2;
+  string value = 3;
+}
+
+// UpsertTranslationRequest inserts or overwrites a single translation row.
+// Both key and locale are required; value may be empty (clears the string).
+message UpsertTranslationRequest {
+  TranslationEntry entry = 1;
+}
+
+message UpsertTranslationResponse {
+  TranslationEntry entry = 1;
+}
+
+message ListTranslationsRequest {}
+
+message ListTranslationsResponse {
+  repeated TranslationEntry entries = 1;
+}

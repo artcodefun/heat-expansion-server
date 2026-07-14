@@ -21,6 +21,8 @@ type PurchaseOrderRepository interface {
 
 type CrystalPackageRepository interface {
 	FindByID(ctx context.Context, id uuid.UUID) (*domain.CrystalPackage, error)
+	Create(ctx context.Context, pkg *domain.CrystalPackage) (*domain.CrystalPackage, error)
+	Update(ctx context.Context, pkg *domain.CrystalPackage) (*domain.CrystalPackage, error)
 }
 
 // UserRepository persists the local projection of auth accounts. Upsert is

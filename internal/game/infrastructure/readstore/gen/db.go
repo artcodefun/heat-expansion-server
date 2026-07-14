@@ -30,6 +30,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.countUnreadDiplomaticMessagesByUserStmt, err = db.PrepareContext(ctx, countUnreadDiplomaticMessagesByUser); err != nil {
 		return nil, fmt.Errorf("error preparing query CountUnreadDiplomaticMessagesByUser: %w", err)
 	}
+	if q.getArmyPrototypeByIDStmt, err = db.PrepareContext(ctx, getArmyPrototypeByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetArmyPrototypeByID: %w", err)
+	}
 	if q.getBaseStmt, err = db.PrepareContext(ctx, getBase); err != nil {
 		return nil, fmt.Errorf("error preparing query GetBase: %w", err)
 	}
@@ -38,6 +41,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.getBaseStatsStmt, err = db.PrepareContext(ctx, getBaseStats); err != nil {
 		return nil, fmt.Errorf("error preparing query GetBaseStats: %w", err)
+	}
+	if q.getBuildPrototypeByIDStmt, err = db.PrepareContext(ctx, getBuildPrototypeByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetBuildPrototypeByID: %w", err)
 	}
 	if q.getDiplomaticRelationshipStmt, err = db.PrepareContext(ctx, getDiplomaticRelationship); err != nil {
 		return nil, fmt.Errorf("error preparing query GetDiplomaticRelationship: %w", err)
@@ -65,6 +71,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.getScansNearStmt, err = db.PrepareContext(ctx, getScansNear); err != nil {
 		return nil, fmt.Errorf("error preparing query GetScansNear: %w", err)
+	}
+	if q.getStoragePrototypeByIDStmt, err = db.PrepareContext(ctx, getStoragePrototypeByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetStoragePrototypeByID: %w", err)
+	}
+	if q.getTechPrototypeByIDStmt, err = db.PrepareContext(ctx, getTechPrototypeByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTechPrototypeByID: %w", err)
 	}
 	if q.getTradeOperationStmt, err = db.PrepareContext(ctx, getTradeOperation); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTradeOperation: %w", err)
@@ -213,6 +225,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing countUnreadDiplomaticMessagesByUserStmt: %w", cerr)
 		}
 	}
+	if q.getArmyPrototypeByIDStmt != nil {
+		if cerr := q.getArmyPrototypeByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getArmyPrototypeByIDStmt: %w", cerr)
+		}
+	}
 	if q.getBaseStmt != nil {
 		if cerr := q.getBaseStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getBaseStmt: %w", cerr)
@@ -226,6 +243,11 @@ func (q *Queries) Close() error {
 	if q.getBaseStatsStmt != nil {
 		if cerr := q.getBaseStatsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getBaseStatsStmt: %w", cerr)
+		}
+	}
+	if q.getBuildPrototypeByIDStmt != nil {
+		if cerr := q.getBuildPrototypeByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getBuildPrototypeByIDStmt: %w", cerr)
 		}
 	}
 	if q.getDiplomaticRelationshipStmt != nil {
@@ -271,6 +293,16 @@ func (q *Queries) Close() error {
 	if q.getScansNearStmt != nil {
 		if cerr := q.getScansNearStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getScansNearStmt: %w", cerr)
+		}
+	}
+	if q.getStoragePrototypeByIDStmt != nil {
+		if cerr := q.getStoragePrototypeByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getStoragePrototypeByIDStmt: %w", cerr)
+		}
+	}
+	if q.getTechPrototypeByIDStmt != nil {
+		if cerr := q.getTechPrototypeByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTechPrototypeByIDStmt: %w", cerr)
 		}
 	}
 	if q.getTradeOperationStmt != nil {
@@ -534,9 +566,11 @@ type Queries struct {
 	tx                                      *sql.Tx
 	countUnreadAlertsByUserStmt             *sql.Stmt
 	countUnreadDiplomaticMessagesByUserStmt *sql.Stmt
+	getArmyPrototypeByIDStmt                *sql.Stmt
 	getBaseStmt                             *sql.Stmt
 	getBaseOwnerByCoordinatesStmt           *sql.Stmt
 	getBaseStatsStmt                        *sql.Stmt
+	getBuildPrototypeByIDStmt               *sql.Stmt
 	getDiplomaticRelationshipStmt           *sql.Stmt
 	getDiplomaticRequestStmt                *sql.Stmt
 	getLatestScanBeforeStmt                 *sql.Stmt
@@ -546,6 +580,8 @@ type Queries struct {
 	getScanReportByIDStmt                   *sql.Stmt
 	getScanReportByOperationUUIDStmt        *sql.Stmt
 	getScansNearStmt                        *sql.Stmt
+	getStoragePrototypeByIDStmt             *sql.Stmt
+	getTechPrototypeByIDStmt                *sql.Stmt
 	getTradeOperationStmt                   *sql.Stmt
 	getUserProfileStmt                      *sql.Stmt
 	listActiveBlackMarketArmyOffersStmt     *sql.Stmt
@@ -598,9 +634,11 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		tx:                                      tx,
 		countUnreadAlertsByUserStmt:             q.countUnreadAlertsByUserStmt,
 		countUnreadDiplomaticMessagesByUserStmt: q.countUnreadDiplomaticMessagesByUserStmt,
+		getArmyPrototypeByIDStmt:                q.getArmyPrototypeByIDStmt,
 		getBaseStmt:                             q.getBaseStmt,
 		getBaseOwnerByCoordinatesStmt:           q.getBaseOwnerByCoordinatesStmt,
 		getBaseStatsStmt:                        q.getBaseStatsStmt,
+		getBuildPrototypeByIDStmt:               q.getBuildPrototypeByIDStmt,
 		getDiplomaticRelationshipStmt:           q.getDiplomaticRelationshipStmt,
 		getDiplomaticRequestStmt:                q.getDiplomaticRequestStmt,
 		getLatestScanBeforeStmt:                 q.getLatestScanBeforeStmt,
@@ -610,6 +648,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getScanReportByIDStmt:                   q.getScanReportByIDStmt,
 		getScanReportByOperationUUIDStmt:        q.getScanReportByOperationUUIDStmt,
 		getScansNearStmt:                        q.getScansNearStmt,
+		getStoragePrototypeByIDStmt:             q.getStoragePrototypeByIDStmt,
+		getTechPrototypeByIDStmt:                q.getTechPrototypeByIDStmt,
 		getTradeOperationStmt:                   q.getTradeOperationStmt,
 		getUserProfileStmt:                      q.getUserProfileStmt,
 		listActiveBlackMarketArmyOffersStmt:     q.listActiveBlackMarketArmyOffersStmt,

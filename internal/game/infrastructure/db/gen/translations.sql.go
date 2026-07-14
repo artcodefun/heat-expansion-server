@@ -35,3 +35,29 @@ func (q *Queries) GetAllTranslations(ctx context.Context) ([]Translation, error)
 	}
 	return items, nil
 }
+
+const notifyTranslationsChanged = `-- name: NotifyTranslationsChanged :exec
+NOTIFY game_translations_changed
+`
+
+func (q *Queries) NotifyTranslationsChanged(ctx context.Context) error {
+	_, err := q.exec(ctx, q.notifyTranslationsChangedStmt, notifyTranslationsChanged)
+	return err
+}
+
+const upsertTranslation = `-- name: UpsertTranslation :exec
+INSERT INTO game.translations (key, locale, value)
+VALUES ($1, $2, $3)
+ON CONFLICT (key, locale) DO UPDATE SET value = EXCLUDED.value
+`
+
+type UpsertTranslationParams struct {
+	Key    string `json:"key"`
+	Locale string `json:"locale"`
+	Value  string `json:"value"`
+}
+
+func (q *Queries) UpsertTranslation(ctx context.Context, arg UpsertTranslationParams) error {
+	_, err := q.exec(ctx, q.upsertTranslationStmt, upsertTranslation, arg.Key, arg.Locale, arg.Value)
+	return err
+}

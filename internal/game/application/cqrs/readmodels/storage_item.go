@@ -18,6 +18,7 @@ type StorageItemPrototype struct {
 	ID               int
 	Name             domain.TranslationKey
 	Category         StorageCategory
+	CreationSources  []CreationSource
 	EstimatedWorth   int // Rough worth in credits
 	ShortDescription domain.TranslationKey
 	FullDescription  domain.TranslationKey

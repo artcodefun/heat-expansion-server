@@ -100,6 +100,30 @@ type ArmyReadRepository interface {
 	ListPresentArmyItemsAll(ctx context.Context, baseID int) ([]*readmodels.ArmyItemPresent, error)
 }
 
+// ArmyPrototypeReadRepository provides read-only access to the army prototype catalog.
+type ArmyPrototypeReadRepository interface {
+	ListArmyPrototypes(ctx context.Context) ([]*readmodels.ArmyItemPrototype, error)
+	GetArmyPrototype(ctx context.Context, id int) (*readmodels.ArmyItemPrototype, error)
+}
+
+// BuildPrototypeReadRepository provides read-only access to the build prototype catalog.
+type BuildPrototypeReadRepository interface {
+	ListBuildPrototypes(ctx context.Context) ([]*readmodels.BuildItemPrototype, error)
+	GetBuildPrototype(ctx context.Context, id int) (*readmodels.BuildItemPrototype, error)
+}
+
+// StoragePrototypeReadRepository provides read-only access to the storage prototype catalog.
+type StoragePrototypeReadRepository interface {
+	ListStoragePrototypes(ctx context.Context) ([]*readmodels.StorageItemPrototype, error)
+	GetStoragePrototype(ctx context.Context, id int) (*readmodels.StorageItemPrototype, error)
+}
+
+// TechPrototypeReadRepository provides read-only access to the tech prototype catalog.
+type TechPrototypeReadRepository interface {
+	ListTechPrototypes(ctx context.Context) ([]*readmodels.TechItemPrototype, error)
+	GetTechPrototype(ctx context.Context, id int) (*readmodels.TechItemPrototype, error)
+}
+
 // RadarReadRepository provides read-only access to radar threats.
 type RadarReadRepository interface {
 	GetRadarThreat(ctx context.Context, id uuid.UUID) (*readmodels.RadarThreat, error)

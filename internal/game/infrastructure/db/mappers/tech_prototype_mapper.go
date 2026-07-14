@@ -43,3 +43,37 @@ func TechPrototypesFromDB(src []gen.TechItemPrototype) []*domain.TechItemPrototy
 	}
 	return dst
 }
+
+// TechPrototypeToCreateParams maps a domain prototype to the sqlc insert params.
+// improvement is serialized via its DTO shape; a nil pointer becomes SQL NULL.
+func TechPrototypeToCreateParams(p *domain.TechItemPrototype) gen.CreateTechPrototypeParams {
+	return gen.CreateTechPrototypeParams{
+		ID:                 int64(p.ID),
+		Name:               string(p.Name),
+		Category:           string(p.Category),
+		UnlockTechnologyID: nullableBaseID(p.UnlockTechnologyID),
+		ShortDescription:   stringToNullString(string(p.ShortDescription)),
+		FullDescription:    stringToNullString(string(p.FullDescription)),
+		Price:              priceToJSON(p.Price),
+		ResearchTime:       p.ResearchTime,
+		ImageUrl:           stringToNullString(p.ImageURL),
+		Improvement:        toNullRawMessage(dtos.TechImprovementDTOFromDomain(p.Improvement)),
+	}
+}
+
+// TechPrototypeToUpdateParams maps a domain prototype to the sqlc update params,
+// keyed by p.ID.
+func TechPrototypeToUpdateParams(p *domain.TechItemPrototype) gen.UpdateTechPrototypeParams {
+	return gen.UpdateTechPrototypeParams{
+		ID:                 int64(p.ID),
+		Name:               string(p.Name),
+		Category:           string(p.Category),
+		UnlockTechnologyID: nullableBaseID(p.UnlockTechnologyID),
+		ShortDescription:   stringToNullString(string(p.ShortDescription)),
+		FullDescription:    stringToNullString(string(p.FullDescription)),
+		Price:              priceToJSON(p.Price),
+		ResearchTime:       p.ResearchTime,
+		ImageUrl:           stringToNullString(p.ImageURL),
+		Improvement:        toNullRawMessage(dtos.TechImprovementDTOFromDomain(p.Improvement)),
+	}
+}

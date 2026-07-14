@@ -73,3 +73,52 @@ func BuildPrototypesFromDB(src []gen.BuildItemPrototype) []*domain.BuildItemProt
 	}
 	return dst
 }
+
+// BuildPrototypeToCreateParams maps a domain prototype to the sqlc insert params.
+// The category-specific data blocks are serialized via their DTO shapes; a nil
+// pointer becomes SQL NULL.
+func BuildPrototypeToCreateParams(p *domain.BuildItemPrototype) gen.CreateBuildPrototypeParams {
+	return gen.CreateBuildPrototypeParams{
+		ID:                 int64(p.ID),
+		Name:               string(p.Name),
+		Category:           string(p.Category),
+		Faction:            string(p.Faction),
+		UnlockTechnologyID: nullableBaseID(p.UnlockTechnologyID),
+		ShortDescription:   stringToNullString(string(p.ShortDescription)),
+		FullDescription:    stringToNullString(string(p.FullDescription)),
+		Price:              priceToJSON(p.Price),
+		ProductionTime:     p.ProductionTime,
+		Space:              int32(p.Space),
+		ImageUrl:           stringToNullString(p.ImageURL),
+		ControlData:        toNullRawMessage(dtos.ControlBuildingDataDTOFromDomain(p.ControlData)),
+		ResourcesData:      toNullRawMessage(dtos.ResourcesBuildingDataDTOFromDomain(p.ResourcesData)),
+		DefenseData:        toNullRawMessage(dtos.DefenseBuildingDataDTOFromDomain(p.DefenseData)),
+		MilitaryData:       toNullRawMessage(dtos.MilitaryBuildingDataDTOFromDomain(p.MilitaryData)),
+		IntelligenceData:   toNullRawMessage(dtos.IntelligenceBuildingDataDTOFromDomain(p.IntelligenceData)),
+		CreationSources:    creationSourcesToJSON(p.CreationSources),
+	}
+}
+
+// BuildPrototypeToUpdateParams maps a domain prototype to the sqlc update params,
+// keyed by p.ID.
+func BuildPrototypeToUpdateParams(p *domain.BuildItemPrototype) gen.UpdateBuildPrototypeParams {
+	return gen.UpdateBuildPrototypeParams{
+		ID:                 int64(p.ID),
+		Name:               string(p.Name),
+		Category:           string(p.Category),
+		Faction:            string(p.Faction),
+		UnlockTechnologyID: nullableBaseID(p.UnlockTechnologyID),
+		ShortDescription:   stringToNullString(string(p.ShortDescription)),
+		FullDescription:    stringToNullString(string(p.FullDescription)),
+		Price:              priceToJSON(p.Price),
+		ProductionTime:     p.ProductionTime,
+		Space:              int32(p.Space),
+		ImageUrl:           stringToNullString(p.ImageURL),
+		ControlData:        toNullRawMessage(dtos.ControlBuildingDataDTOFromDomain(p.ControlData)),
+		ResourcesData:      toNullRawMessage(dtos.ResourcesBuildingDataDTOFromDomain(p.ResourcesData)),
+		DefenseData:        toNullRawMessage(dtos.DefenseBuildingDataDTOFromDomain(p.DefenseData)),
+		MilitaryData:       toNullRawMessage(dtos.MilitaryBuildingDataDTOFromDomain(p.MilitaryData)),
+		IntelligenceData:   toNullRawMessage(dtos.IntelligenceBuildingDataDTOFromDomain(p.IntelligenceData)),
+		CreationSources:    creationSourcesToJSON(p.CreationSources),
+	}
+}

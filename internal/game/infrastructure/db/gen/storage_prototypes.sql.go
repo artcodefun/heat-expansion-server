@@ -7,7 +7,60 @@ package gen
 
 import (
 	"context"
+	"database/sql"
+	"encoding/json"
+
+	"github.com/sqlc-dev/pqtype"
 )
+
+const createStoragePrototype = `-- name: CreateStoragePrototype :exec
+INSERT INTO game.storage_item_prototypes (
+    id, name, category, estimated_worth,
+    short_description, full_description, image_url,
+    buff_data, intel_data, damaged_data, artifact_data, consumable_data,
+    creation_sources
+) VALUES (
+    $1, $2, $3, $4,
+    $5, $6, $7,
+    $8, $9, $10, $11, $12,
+    $13
+)
+`
+
+type CreateStoragePrototypeParams struct {
+	ID               int64                 `json:"id"`
+	Name             string                `json:"name"`
+	Category         string                `json:"category"`
+	EstimatedWorth   int32                 `json:"estimated_worth"`
+	ShortDescription sql.NullString        `json:"short_description"`
+	FullDescription  sql.NullString        `json:"full_description"`
+	ImageUrl         sql.NullString        `json:"image_url"`
+	BuffData         pqtype.NullRawMessage `json:"buff_data"`
+	IntelData        pqtype.NullRawMessage `json:"intel_data"`
+	DamagedData      pqtype.NullRawMessage `json:"damaged_data"`
+	ArtifactData     pqtype.NullRawMessage `json:"artifact_data"`
+	ConsumableData   pqtype.NullRawMessage `json:"consumable_data"`
+	CreationSources  json.RawMessage       `json:"creation_sources"`
+}
+
+func (q *Queries) CreateStoragePrototype(ctx context.Context, arg CreateStoragePrototypeParams) error {
+	_, err := q.exec(ctx, q.createStoragePrototypeStmt, createStoragePrototype,
+		arg.ID,
+		arg.Name,
+		arg.Category,
+		arg.EstimatedWorth,
+		arg.ShortDescription,
+		arg.FullDescription,
+		arg.ImageUrl,
+		arg.BuffData,
+		arg.IntelData,
+		arg.DamagedData,
+		arg.ArtifactData,
+		arg.ConsumableData,
+		arg.CreationSources,
+	)
+	return err
+}
 
 const getStoragePrototypeByID = `-- name: GetStoragePrototypeByID :one
 
@@ -79,4 +132,73 @@ func (q *Queries) ListStoragePrototypes(ctx context.Context) ([]StorageItemProto
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateStoragePrototype = `-- name: UpdateStoragePrototype :one
+UPDATE game.storage_item_prototypes SET
+    name               = $1,
+    category           = $2,
+    estimated_worth    = $3,
+    short_description  = $4,
+    full_description   = $5,
+    image_url          = $6,
+    buff_data          = $7,
+    intel_data         = $8,
+    damaged_data       = $9,
+    artifact_data      = $10,
+    consumable_data    = $11,
+    creation_sources   = $12
+WHERE id = $13
+RETURNING id, name, category, estimated_worth, short_description, full_description, image_url, buff_data, intel_data, damaged_data, artifact_data, consumable_data, creation_sources
+`
+
+type UpdateStoragePrototypeParams struct {
+	Name             string                `json:"name"`
+	Category         string                `json:"category"`
+	EstimatedWorth   int32                 `json:"estimated_worth"`
+	ShortDescription sql.NullString        `json:"short_description"`
+	FullDescription  sql.NullString        `json:"full_description"`
+	ImageUrl         sql.NullString        `json:"image_url"`
+	BuffData         pqtype.NullRawMessage `json:"buff_data"`
+	IntelData        pqtype.NullRawMessage `json:"intel_data"`
+	DamagedData      pqtype.NullRawMessage `json:"damaged_data"`
+	ArtifactData     pqtype.NullRawMessage `json:"artifact_data"`
+	ConsumableData   pqtype.NullRawMessage `json:"consumable_data"`
+	CreationSources  json.RawMessage       `json:"creation_sources"`
+	ID               int64                 `json:"id"`
+}
+
+func (q *Queries) UpdateStoragePrototype(ctx context.Context, arg UpdateStoragePrototypeParams) (StorageItemPrototype, error) {
+	row := q.queryRow(ctx, q.updateStoragePrototypeStmt, updateStoragePrototype,
+		arg.Name,
+		arg.Category,
+		arg.EstimatedWorth,
+		arg.ShortDescription,
+		arg.FullDescription,
+		arg.ImageUrl,
+		arg.BuffData,
+		arg.IntelData,
+		arg.DamagedData,
+		arg.ArtifactData,
+		arg.ConsumableData,
+		arg.CreationSources,
+		arg.ID,
+	)
+	var i StorageItemPrototype
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Category,
+		&i.EstimatedWorth,
+		&i.ShortDescription,
+		&i.FullDescription,
+		&i.ImageUrl,
+		&i.BuffData,
+		&i.IntelData,
+		&i.DamagedData,
+		&i.ArtifactData,
+		&i.ConsumableData,
+		&i.CreationSources,
+	)
+	return i, err
 }

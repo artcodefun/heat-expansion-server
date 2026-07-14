@@ -17,6 +17,9 @@ This repository is structured as a **modular monolith**: multiple services live 
 - **Billing**: crystal package purchases and YooKassa payment processing.
   - Docs: [internal/billing/README.md](internal/billing/README.md)
 
+- **Admin**: back-office API for game content and billing configuration. Self-contained session-based auth (no JWT).
+  - Docs: [internal/admin/README.md](internal/admin/README.md)
+
 - **Platform** (`internal/platform/`): shared infrastructure adapters used across services.
   - Docs: [internal/platform/README.md](internal/platform/README.md)
 
@@ -25,6 +28,9 @@ This repository is structured as a **modular monolith**: multiple services live 
 - Auth HTTP contract: `contracts/auth/http/v1/openapi.yaml`
 - Game HTTP contract: `contracts/game/http/v1/openapi.yaml`
 - Billing HTTP contract: `contracts/billing/http/v1/openapi.yaml`
+- Admin HTTP contract: `contracts/admin/http/v1/openapi.yaml`
+- Game private gRPC contract: `contracts/game/grpc/v1/admin.proto`
+- Billing private gRPC contract: `contracts/billing/grpc/v1/admin.proto`
 - Integration event envelope: `contracts/events/envelope.go`
 - Auth event payloads: `contracts/auth/events/v1/`
 - Billing event payloads: `contracts/billing/events/v1/`
@@ -43,7 +49,7 @@ Alternatively, use Docker Compose:
 docker-compose up --build
 ```
 
-The Game Server listens on `GAME_PORT` (default `8080`), the Auth Server on `AUTH_PORT` (default `8081`), and the Billing Server on `BILLING_PORT` (default `8082`).
+The Game Server listens on `GAME_PORT` (default `8080`), the Auth Server on `AUTH_PORT` (default `8081`), the Billing Server on `BILLING_PORT` (default `8082`), and the Admin Server on `ADMIN_PORT` (default `8083`).
 
 ## Observability
 

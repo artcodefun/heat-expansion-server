@@ -62,6 +62,7 @@ services:
       - "127.0.0.1:8080:8080"
       - "127.0.0.1:8081:8081"
       - "127.0.0.1:8082:8082"
+      - "127.0.0.1:8083:8083"
     env_file:
       - .env
     environment:
@@ -69,6 +70,7 @@ services:
       - GAME_PORT=8080
       - GAME_DB_URL=postgres://heatuser:heatpassword@db:5432/heatdb?sslmode=disable
       - GAME_MIGRATIONS_TABLE=game_schema_migrations
+      - GAME_GRPC_PORT=9080
       - AUTH_PORT=8081
       - AUTH_DB_URL=postgres://heatuser:heatpassword@db:5432/heatdb?sslmode=disable
       - AUTH_MIGRATIONS_TABLE=auth_schema_migrations
@@ -77,6 +79,12 @@ services:
       - BILLING_DB_URL=postgres://heatuser:heatpassword@db:5432/heatdb?sslmode=disable
       - BILLING_MIGRATIONS_TABLE=billing_schema_migrations
       - BILLING_INTEGRATION_EXCHANGE=billing.integration
+      - BILLING_GRPC_PORT=9082
+      - ADMIN_PORT=8083
+      - ADMIN_DB_URL=postgres://heatuser:heatpassword@db:5432/heatdb?sslmode=disable
+      - ADMIN_MIGRATIONS_TABLE=admin_schema_migrations
+      - GAME_GRPC_ADDR=127.0.0.1:9080
+      - BILLING_GRPC_ADDR=127.0.0.1:9082
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
       - OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4317
       - OTEL_SERVICE_NAME=heat-expansion

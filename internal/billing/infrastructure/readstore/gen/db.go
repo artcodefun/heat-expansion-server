@@ -27,8 +27,14 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getOrderByIDStmt, err = db.PrepareContext(ctx, getOrderByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetOrderByID: %w", err)
 	}
+	if q.getPackageByIDStmt, err = db.PrepareContext(ctx, getPackageByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetPackageByID: %w", err)
+	}
 	if q.listActivePackagesStmt, err = db.PrepareContext(ctx, listActivePackages); err != nil {
 		return nil, fmt.Errorf("error preparing query ListActivePackages: %w", err)
+	}
+	if q.listAllPackagesStmt, err = db.PrepareContext(ctx, listAllPackages); err != nil {
+		return nil, fmt.Errorf("error preparing query ListAllPackages: %w", err)
 	}
 	return &q, nil
 }
@@ -40,9 +46,19 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getOrderByIDStmt: %w", cerr)
 		}
 	}
+	if q.getPackageByIDStmt != nil {
+		if cerr := q.getPackageByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getPackageByIDStmt: %w", cerr)
+		}
+	}
 	if q.listActivePackagesStmt != nil {
 		if cerr := q.listActivePackagesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listActivePackagesStmt: %w", cerr)
+		}
+	}
+	if q.listAllPackagesStmt != nil {
+		if cerr := q.listAllPackagesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listAllPackagesStmt: %w", cerr)
 		}
 	}
 	return err
@@ -85,7 +101,9 @@ type Queries struct {
 	db                     DBTX
 	tx                     *sql.Tx
 	getOrderByIDStmt       *sql.Stmt
+	getPackageByIDStmt     *sql.Stmt
 	listActivePackagesStmt *sql.Stmt
+	listAllPackagesStmt    *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
@@ -93,6 +111,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		db:                     tx,
 		tx:                     tx,
 		getOrderByIDStmt:       q.getOrderByIDStmt,
+		getPackageByIDStmt:     q.getPackageByIDStmt,
 		listActivePackagesStmt: q.listActivePackagesStmt,
+		listAllPackagesStmt:    q.listAllPackagesStmt,
 	}
 }

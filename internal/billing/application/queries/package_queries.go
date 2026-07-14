@@ -5,6 +5,7 @@ import (
 
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/cqrs/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/ports"
+	"github.com/google/uuid"
 )
 
 type PackageQueries struct {
@@ -17,4 +18,12 @@ func NewPackageQueries(packages ports.PackageReadRepository) *PackageQueries {
 
 func (q *PackageQueries) ListPackages(ctx context.Context) ([]*readmodels.CrystalPackage, error) {
 	return q.Packages.ListActive(ctx)
+}
+
+func (q *PackageQueries) ListAllCrystalPackages(ctx context.Context) ([]*readmodels.CrystalPackage, error) {
+	return q.Packages.ListAll(ctx)
+}
+
+func (q *PackageQueries) GetCrystalPackage(ctx context.Context, id uuid.UUID) (*readmodels.CrystalPackage, error) {
+	return q.Packages.GetByID(ctx, id)
 }

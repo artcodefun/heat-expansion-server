@@ -14,6 +14,7 @@ func StoragePrototypeFromModel(r gen.StorageItemPrototype) readmodels.StorageIte
 		ID:               int(r.ID),
 		Name:             r.Name,
 		Category:         readmodels.StorageCategory(r.Category),
+		CreationSources:  creationSourcesFromJSON(r.CreationSources),
 		EstimatedWorth:   int(r.EstimatedWorth),
 		ShortDescription: nullString(r.ShortDescription),
 		FullDescription:  nullString(r.FullDescription),
@@ -24,6 +25,15 @@ func StoragePrototypeFromModel(r gen.StorageItemPrototype) readmodels.StorageIte
 		ArtifactData:     artifactStorageDataFromJSON(r.ArtifactData),
 		ConsumableData:   consumableStorageDataFromJSON(r.ConsumableData),
 	}
+}
+
+func StoragePrototypesFromModels(rows []gen.StorageItemPrototype) []*readmodels.StorageItemPrototype {
+	out := make([]*readmodels.StorageItemPrototype, len(rows))
+	for i, r := range rows {
+		v := StoragePrototypeFromModel(r)
+		out[i] = &v
+	}
+	return out
 }
 
 func StoragePrototypeFromPresentRow(r gen.ListPresentStorageItemsRow) readmodels.StorageItemPrototype {

@@ -18,6 +18,7 @@ type Queries struct {
 	BlackMarket *queries.BlackMarketQueries
 	Alert       *queries.AlertQueries
 	Diplomacy   *queries.DiplomacyQueries
+	Prototype   *queries.PrototypeQueries
 }
 
 // NewQueries builds query facades using read repositories and shared services.
@@ -37,5 +38,7 @@ func NewQueries(a *Adapters, as *AppServices) *Queries {
 		User:        queries.NewUserQueries(a.UserRead),
 		BlackMarket: queries.NewBlackMarketQueries(a.BlackMarketRead, as.Access),
 		Alert:       queries.NewAlertQueries(a.AlertRead),
-		Diplomacy:   queries.NewDiplomacyQueries(a.DiplomacyRead)}
+		Diplomacy:   queries.NewDiplomacyQueries(a.DiplomacyRead),
+		Prototype:   queries.NewPrototypeQueries(a.ArmyPrototypeRead, a.BuildPrototypeRead, a.StoragePrototypeRead, a.TechPrototypeRead),
+	}
 }

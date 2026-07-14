@@ -5,15 +5,15 @@ import (
 	"database/sql"
 
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 	contentgen "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/content"
 	dbgen "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/gen"
 	repo "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/db/repo"
-	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
-	platformevents "github.com/artcodefun/heat-expansion-server/internal/platform/events"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/i18n"
 	jobs "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/jobs"
 	readgen "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/gen"
 	readrepo "github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/repo"
+	platformevents "github.com/artcodefun/heat-expansion-server/internal/platform/events"
 	"github.com/artcodefun/heat-expansion-server/internal/platform/security"
 )
 
@@ -43,20 +43,24 @@ type Adapters struct {
 	DiplomaticRequests      ports.DiplomaticRequestRepository
 
 	// Read Repositories (read-store / projections)
-	BaseRead           ports.BaseReadRepository
-	BuildingRead       ports.BuildingReadRepository
-	ArmyRead           ports.ArmyReadRepository
-	StorageRead        ports.StorageReadRepository
-	TechRead           ports.TechReadRepository
-	OperationRead      ports.OperationReadRepository
-	TradeOperationRead ports.TradeOperationReadRepository
-	BlackMarketRead    ports.BlackMarketReadRepository
-	ActivityRead       ports.ActivityReadRepository
-	SectorRead         ports.SectorReadRepository
-	RadarRead          ports.RadarReadRepository
-	UserRead           ports.UserReadRepository
-	AlertRead          ports.AlertReadRepository
-	DiplomacyRead      ports.DiplomacyReadRepository
+	BaseRead             ports.BaseReadRepository
+	BuildingRead         ports.BuildingReadRepository
+	ArmyRead             ports.ArmyReadRepository
+	ArmyPrototypeRead    ports.ArmyPrototypeReadRepository
+	BuildPrototypeRead   ports.BuildPrototypeReadRepository
+	StoragePrototypeRead ports.StoragePrototypeReadRepository
+	TechPrototypeRead    ports.TechPrototypeReadRepository
+	StorageRead          ports.StorageReadRepository
+	TechRead             ports.TechReadRepository
+	OperationRead        ports.OperationReadRepository
+	TradeOperationRead   ports.TradeOperationReadRepository
+	BlackMarketRead      ports.BlackMarketReadRepository
+	ActivityRead         ports.ActivityReadRepository
+	SectorRead           ports.SectorReadRepository
+	RadarRead            ports.RadarReadRepository
+	UserRead             ports.UserReadRepository
+	AlertRead            ports.AlertReadRepository
+	DiplomacyRead        ports.DiplomacyReadRepository
 
 	// Infra
 	TxMgr      ports.TransactionManager
@@ -137,20 +141,24 @@ func NewAdapters(db *sql.DB, staticBaseURL string, jwtPublicKeyPEM string) (*Ada
 		DiplomaticRequests:      repo.NewDiplomaticRequestRepo(q),
 
 		// Read side
-		BaseRead:           baseRead,
-		BuildingRead:       readrepo.NewBuildReadRepo(rq),
-		ArmyRead:           readrepo.NewArmyReadRepo(rq),
-		StorageRead:        readrepo.NewStorageReadRepo(rq),
-		TechRead:           readrepo.NewTechReadRepo(rq),
-		OperationRead:      opRead,
-		TradeOperationRead: tradeOpRead,
-		BlackMarketRead:    readrepo.NewBlackMarketReadRepo(rq),
-		ActivityRead:       readrepo.NewActivityReadRepo(rq, opRead, tradeOpRead, sectorRead, radarRead),
-		SectorRead:         sectorRead,
-		RadarRead:          radarRead,
-		UserRead:           readrepo.NewUserReadRepo(rq),
-		AlertRead:          readrepo.NewAlertReadRepository(rq),
-		DiplomacyRead:      readrepo.NewDiplomacyReadRepo(rq, baseRead),
+		BaseRead:             baseRead,
+		BuildingRead:         readrepo.NewBuildReadRepo(rq),
+		ArmyRead:             readrepo.NewArmyReadRepo(rq),
+		ArmyPrototypeRead:    readrepo.NewPrototypeReadRepo(rq),
+		BuildPrototypeRead:   readrepo.NewPrototypeReadRepo(rq),
+		StoragePrototypeRead: readrepo.NewPrototypeReadRepo(rq),
+		TechPrototypeRead:    readrepo.NewPrototypeReadRepo(rq),
+		StorageRead:          readrepo.NewStorageReadRepo(rq),
+		TechRead:             readrepo.NewTechReadRepo(rq),
+		OperationRead:        opRead,
+		TradeOperationRead:   tradeOpRead,
+		BlackMarketRead:      readrepo.NewBlackMarketReadRepo(rq),
+		ActivityRead:         readrepo.NewActivityReadRepo(rq, opRead, tradeOpRead, sectorRead, radarRead),
+		SectorRead:           sectorRead,
+		RadarRead:            radarRead,
+		UserRead:             readrepo.NewUserReadRepo(rq),
+		AlertRead:            readrepo.NewAlertReadRepository(rq),
+		DiplomacyRead:        readrepo.NewDiplomacyReadRepo(rq, baseRead),
 
 		// Infra
 		TxMgr:      txMgr,

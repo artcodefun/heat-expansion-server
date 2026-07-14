@@ -9,6 +9,8 @@ import (
 
 type PackageReadRepository interface {
 	ListActive(ctx context.Context) ([]*readmodels.CrystalPackage, error)
+	ListAll(ctx context.Context) ([]*readmodels.CrystalPackage, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*readmodels.CrystalPackage, error)
 }
 
 type OrderReadRepository interface {

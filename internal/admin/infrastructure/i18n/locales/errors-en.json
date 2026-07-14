@@ -1,0 +1,12 @@
+{
+    "error.application.not_found": "Resource not found",
+    "error.application.invalid_input": "Invalid input",
+    "error.application.forbidden": "Permission denied",
+    "error.application.internal_server_error": "Internal server error",
+    "error.application.admin.invalid_invite_token": "Invalid invite token",
+    "error.application.admin.invalid_credentials": "Invalid username or password",
+    "error.domain.admin.already_registered": "Admin is already registered",
+    "error.domain.admin.not_active": "Admin account is inactive",
+    "error.domain.admin.invalid_invite_token": "Invalid invite token",
+    "error.domain.admin.invalid_credentials": "Invalid username or password"
+}

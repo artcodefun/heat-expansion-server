@@ -16,10 +16,14 @@ type Querier interface {
 	ClaimUnpublishedOutboxEvents(ctx context.Context, limit int32) ([]DomainEvent, error)
 	CountDangerousLocationsInRange(ctx context.Context, arg CountDangerousLocationsInRangeParams) (int64, error)
 	CountResourcefulLocationsInRange(ctx context.Context, arg CountResourcefulLocationsInRangeParams) (int64, error)
+	CreateArmyPrototype(ctx context.Context, arg CreateArmyPrototypeParams) error
 	// User bases queries
 	CreateBase(ctx context.Context, arg CreateBaseParams) (UserBase, error)
+	CreateBuildPrototype(ctx context.Context, arg CreateBuildPrototypeParams) error
 	// Sector queries
 	CreateSector(ctx context.Context, arg CreateSectorParams) (Sector, error)
+	CreateStoragePrototype(ctx context.Context, arg CreateStoragePrototypeParams) error
+	CreateTechPrototype(ctx context.Context, arg CreateTechPrototypeParams) error
 	CrystalCreditExists(ctx context.Context, orderID uuid.UUID) (bool, error)
 	DeleteActivitiesByBase(ctx context.Context, baseID int64) error
 	// Note: above RETURNING still lists sector_id; fix below to sector_x, sector_y
@@ -145,10 +149,13 @@ type Querier interface {
 	MarkOutboxEventPublished(ctx context.Context, arg MarkOutboxEventPublishedParams) error
 	MarkScheduledJobDispatched(ctx context.Context, arg MarkScheduledJobDispatchedParams) error
 	NotifyOutboxEvent(ctx context.Context) error
+	NotifyTranslationsChanged(ctx context.Context) error
 	RadarThreatExists(ctx context.Context, arg RadarThreatExistsParams) (bool, error)
 	RecentReportExistsByScanner(ctx context.Context, arg RecentReportExistsByScannerParams) (bool, error)
+	UpdateArmyPrototype(ctx context.Context, arg UpdateArmyPrototypeParams) (ArmyItemPrototype, error)
 	UpdateBase(ctx context.Context, arg UpdateBaseParams) (UserBase, error)
 	UpdateBlackMarketOffer(ctx context.Context, arg UpdateBlackMarketOfferParams) (BlackMarketOffer, error)
+	UpdateBuildPrototype(ctx context.Context, arg UpdateBuildPrototypeParams) (BuildItemPrototype, error)
 	UpdateDangerousLocation(ctx context.Context, arg UpdateDangerousLocationParams) error
 	UpdateDiplomaticRelationship(ctx context.Context, arg UpdateDiplomaticRelationshipParams) error
 	UpdateDiplomaticRequest(ctx context.Context, arg UpdateDiplomaticRequestParams) error
@@ -156,8 +163,11 @@ type Querier interface {
 	UpdateRadarThreat(ctx context.Context, arg UpdateRadarThreatParams) (RadarThreat, error)
 	UpdateResourceLocation(ctx context.Context, arg UpdateResourceLocationParams) error
 	UpdateSector(ctx context.Context, arg UpdateSectorParams) (Sector, error)
+	UpdateStoragePrototype(ctx context.Context, arg UpdateStoragePrototypeParams) (StorageItemPrototype, error)
+	UpdateTechPrototype(ctx context.Context, arg UpdateTechPrototypeParams) (TechItemPrototype, error)
 	UpdateTradeOperation(ctx context.Context, arg UpdateTradeOperationParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
+	UpsertTranslation(ctx context.Context, arg UpsertTranslationParams) error
 }
 
 var _ Querier = (*Queries)(nil)

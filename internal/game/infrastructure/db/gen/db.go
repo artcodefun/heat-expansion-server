@@ -36,11 +36,23 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.countResourcefulLocationsInRangeStmt, err = db.PrepareContext(ctx, countResourcefulLocationsInRange); err != nil {
 		return nil, fmt.Errorf("error preparing query CountResourcefulLocationsInRange: %w", err)
 	}
+	if q.createArmyPrototypeStmt, err = db.PrepareContext(ctx, createArmyPrototype); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateArmyPrototype: %w", err)
+	}
 	if q.createBaseStmt, err = db.PrepareContext(ctx, createBase); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateBase: %w", err)
 	}
+	if q.createBuildPrototypeStmt, err = db.PrepareContext(ctx, createBuildPrototype); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateBuildPrototype: %w", err)
+	}
 	if q.createSectorStmt, err = db.PrepareContext(ctx, createSector); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateSector: %w", err)
+	}
+	if q.createStoragePrototypeStmt, err = db.PrepareContext(ctx, createStoragePrototype); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateStoragePrototype: %w", err)
+	}
+	if q.createTechPrototypeStmt, err = db.PrepareContext(ctx, createTechPrototype); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateTechPrototype: %w", err)
 	}
 	if q.crystalCreditExistsStmt, err = db.PrepareContext(ctx, crystalCreditExists); err != nil {
 		return nil, fmt.Errorf("error preparing query CrystalCreditExists: %w", err)
@@ -357,17 +369,26 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.notifyOutboxEventStmt, err = db.PrepareContext(ctx, notifyOutboxEvent); err != nil {
 		return nil, fmt.Errorf("error preparing query NotifyOutboxEvent: %w", err)
 	}
+	if q.notifyTranslationsChangedStmt, err = db.PrepareContext(ctx, notifyTranslationsChanged); err != nil {
+		return nil, fmt.Errorf("error preparing query NotifyTranslationsChanged: %w", err)
+	}
 	if q.radarThreatExistsStmt, err = db.PrepareContext(ctx, radarThreatExists); err != nil {
 		return nil, fmt.Errorf("error preparing query RadarThreatExists: %w", err)
 	}
 	if q.recentReportExistsByScannerStmt, err = db.PrepareContext(ctx, recentReportExistsByScanner); err != nil {
 		return nil, fmt.Errorf("error preparing query RecentReportExistsByScanner: %w", err)
 	}
+	if q.updateArmyPrototypeStmt, err = db.PrepareContext(ctx, updateArmyPrototype); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateArmyPrototype: %w", err)
+	}
 	if q.updateBaseStmt, err = db.PrepareContext(ctx, updateBase); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateBase: %w", err)
 	}
 	if q.updateBlackMarketOfferStmt, err = db.PrepareContext(ctx, updateBlackMarketOffer); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateBlackMarketOffer: %w", err)
+	}
+	if q.updateBuildPrototypeStmt, err = db.PrepareContext(ctx, updateBuildPrototype); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateBuildPrototype: %w", err)
 	}
 	if q.updateDangerousLocationStmt, err = db.PrepareContext(ctx, updateDangerousLocation); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateDangerousLocation: %w", err)
@@ -390,11 +411,20 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateSectorStmt, err = db.PrepareContext(ctx, updateSector); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateSector: %w", err)
 	}
+	if q.updateStoragePrototypeStmt, err = db.PrepareContext(ctx, updateStoragePrototype); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateStoragePrototype: %w", err)
+	}
+	if q.updateTechPrototypeStmt, err = db.PrepareContext(ctx, updateTechPrototype); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateTechPrototype: %w", err)
+	}
 	if q.updateTradeOperationStmt, err = db.PrepareContext(ctx, updateTradeOperation); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateTradeOperation: %w", err)
 	}
 	if q.updateUserStmt, err = db.PrepareContext(ctx, updateUser); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateUser: %w", err)
+	}
+	if q.upsertTranslationStmt, err = db.PrepareContext(ctx, upsertTranslation); err != nil {
+		return nil, fmt.Errorf("error preparing query UpsertTranslation: %w", err)
 	}
 	return &q, nil
 }
@@ -421,14 +451,34 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing countResourcefulLocationsInRangeStmt: %w", cerr)
 		}
 	}
+	if q.createArmyPrototypeStmt != nil {
+		if cerr := q.createArmyPrototypeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createArmyPrototypeStmt: %w", cerr)
+		}
+	}
 	if q.createBaseStmt != nil {
 		if cerr := q.createBaseStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createBaseStmt: %w", cerr)
 		}
 	}
+	if q.createBuildPrototypeStmt != nil {
+		if cerr := q.createBuildPrototypeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createBuildPrototypeStmt: %w", cerr)
+		}
+	}
 	if q.createSectorStmt != nil {
 		if cerr := q.createSectorStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createSectorStmt: %w", cerr)
+		}
+	}
+	if q.createStoragePrototypeStmt != nil {
+		if cerr := q.createStoragePrototypeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createStoragePrototypeStmt: %w", cerr)
+		}
+	}
+	if q.createTechPrototypeStmt != nil {
+		if cerr := q.createTechPrototypeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createTechPrototypeStmt: %w", cerr)
 		}
 	}
 	if q.crystalCreditExistsStmt != nil {
@@ -956,6 +1006,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing notifyOutboxEventStmt: %w", cerr)
 		}
 	}
+	if q.notifyTranslationsChangedStmt != nil {
+		if cerr := q.notifyTranslationsChangedStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing notifyTranslationsChangedStmt: %w", cerr)
+		}
+	}
 	if q.radarThreatExistsStmt != nil {
 		if cerr := q.radarThreatExistsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing radarThreatExistsStmt: %w", cerr)
@@ -966,6 +1021,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing recentReportExistsByScannerStmt: %w", cerr)
 		}
 	}
+	if q.updateArmyPrototypeStmt != nil {
+		if cerr := q.updateArmyPrototypeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateArmyPrototypeStmt: %w", cerr)
+		}
+	}
 	if q.updateBaseStmt != nil {
 		if cerr := q.updateBaseStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateBaseStmt: %w", cerr)
@@ -974,6 +1034,11 @@ func (q *Queries) Close() error {
 	if q.updateBlackMarketOfferStmt != nil {
 		if cerr := q.updateBlackMarketOfferStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateBlackMarketOfferStmt: %w", cerr)
+		}
+	}
+	if q.updateBuildPrototypeStmt != nil {
+		if cerr := q.updateBuildPrototypeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateBuildPrototypeStmt: %w", cerr)
 		}
 	}
 	if q.updateDangerousLocationStmt != nil {
@@ -1011,6 +1076,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateSectorStmt: %w", cerr)
 		}
 	}
+	if q.updateStoragePrototypeStmt != nil {
+		if cerr := q.updateStoragePrototypeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateStoragePrototypeStmt: %w", cerr)
+		}
+	}
+	if q.updateTechPrototypeStmt != nil {
+		if cerr := q.updateTechPrototypeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateTechPrototypeStmt: %w", cerr)
+		}
+	}
 	if q.updateTradeOperationStmt != nil {
 		if cerr := q.updateTradeOperationStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateTradeOperationStmt: %w", cerr)
@@ -1019,6 +1094,11 @@ func (q *Queries) Close() error {
 	if q.updateUserStmt != nil {
 		if cerr := q.updateUserStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateUserStmt: %w", cerr)
+		}
+	}
+	if q.upsertTranslationStmt != nil {
+		if cerr := q.upsertTranslationStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing upsertTranslationStmt: %w", cerr)
 		}
 	}
 	return err
@@ -1064,8 +1144,12 @@ type Queries struct {
 	claimUnpublishedOutboxEventsStmt               *sql.Stmt
 	countDangerousLocationsInRangeStmt             *sql.Stmt
 	countResourcefulLocationsInRangeStmt           *sql.Stmt
+	createArmyPrototypeStmt                        *sql.Stmt
 	createBaseStmt                                 *sql.Stmt
+	createBuildPrototypeStmt                       *sql.Stmt
 	createSectorStmt                               *sql.Stmt
+	createStoragePrototypeStmt                     *sql.Stmt
+	createTechPrototypeStmt                        *sql.Stmt
 	crystalCreditExistsStmt                        *sql.Stmt
 	deleteActivitiesByBaseStmt                     *sql.Stmt
 	deleteBaseStmt                                 *sql.Stmt
@@ -1171,10 +1255,13 @@ type Queries struct {
 	markOutboxEventPublishedStmt                   *sql.Stmt
 	markScheduledJobDispatchedStmt                 *sql.Stmt
 	notifyOutboxEventStmt                          *sql.Stmt
+	notifyTranslationsChangedStmt                  *sql.Stmt
 	radarThreatExistsStmt                          *sql.Stmt
 	recentReportExistsByScannerStmt                *sql.Stmt
+	updateArmyPrototypeStmt                        *sql.Stmt
 	updateBaseStmt                                 *sql.Stmt
 	updateBlackMarketOfferStmt                     *sql.Stmt
+	updateBuildPrototypeStmt                       *sql.Stmt
 	updateDangerousLocationStmt                    *sql.Stmt
 	updateDiplomaticRelationshipStmt               *sql.Stmt
 	updateDiplomaticRequestStmt                    *sql.Stmt
@@ -1182,8 +1269,11 @@ type Queries struct {
 	updateRadarThreatStmt                          *sql.Stmt
 	updateResourceLocationStmt                     *sql.Stmt
 	updateSectorStmt                               *sql.Stmt
+	updateStoragePrototypeStmt                     *sql.Stmt
+	updateTechPrototypeStmt                        *sql.Stmt
 	updateTradeOperationStmt                       *sql.Stmt
 	updateUserStmt                                 *sql.Stmt
+	upsertTranslationStmt                          *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
@@ -1194,8 +1284,12 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		claimUnpublishedOutboxEventsStmt:               q.claimUnpublishedOutboxEventsStmt,
 		countDangerousLocationsInRangeStmt:             q.countDangerousLocationsInRangeStmt,
 		countResourcefulLocationsInRangeStmt:           q.countResourcefulLocationsInRangeStmt,
+		createArmyPrototypeStmt:                        q.createArmyPrototypeStmt,
 		createBaseStmt:                                 q.createBaseStmt,
+		createBuildPrototypeStmt:                       q.createBuildPrototypeStmt,
 		createSectorStmt:                               q.createSectorStmt,
+		createStoragePrototypeStmt:                     q.createStoragePrototypeStmt,
+		createTechPrototypeStmt:                        q.createTechPrototypeStmt,
 		crystalCreditExistsStmt:                        q.crystalCreditExistsStmt,
 		deleteActivitiesByBaseStmt:                     q.deleteActivitiesByBaseStmt,
 		deleteBaseStmt:                                 q.deleteBaseStmt,
@@ -1301,10 +1395,13 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		markOutboxEventPublishedStmt:                   q.markOutboxEventPublishedStmt,
 		markScheduledJobDispatchedStmt:                 q.markScheduledJobDispatchedStmt,
 		notifyOutboxEventStmt:                          q.notifyOutboxEventStmt,
+		notifyTranslationsChangedStmt:                  q.notifyTranslationsChangedStmt,
 		radarThreatExistsStmt:                          q.radarThreatExistsStmt,
 		recentReportExistsByScannerStmt:                q.recentReportExistsByScannerStmt,
+		updateArmyPrototypeStmt:                        q.updateArmyPrototypeStmt,
 		updateBaseStmt:                                 q.updateBaseStmt,
 		updateBlackMarketOfferStmt:                     q.updateBlackMarketOfferStmt,
+		updateBuildPrototypeStmt:                       q.updateBuildPrototypeStmt,
 		updateDangerousLocationStmt:                    q.updateDangerousLocationStmt,
 		updateDiplomaticRelationshipStmt:               q.updateDiplomaticRelationshipStmt,
 		updateDiplomaticRequestStmt:                    q.updateDiplomaticRequestStmt,
@@ -1312,7 +1409,10 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		updateRadarThreatStmt:                          q.updateRadarThreatStmt,
 		updateResourceLocationStmt:                     q.updateResourceLocationStmt,
 		updateSectorStmt:                               q.updateSectorStmt,
+		updateStoragePrototypeStmt:                     q.updateStoragePrototypeStmt,
+		updateTechPrototypeStmt:                        q.updateTechPrototypeStmt,
 		updateTradeOperationStmt:                       q.updateTradeOperationStmt,
 		updateUserStmt:                                 q.updateUserStmt,
+		upsertTranslationStmt:                          q.upsertTranslationStmt,
 	}
 }

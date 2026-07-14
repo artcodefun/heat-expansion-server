@@ -11,6 +11,37 @@ import (
 	"github.com/google/uuid"
 )
 
+const getPackageByID = `-- name: GetPackageByID :one
+SELECT id, name, crystals, price_minor_units, currency, image_url, is_active
+FROM billing.crystal_packages
+WHERE id = $1
+`
+
+type GetPackageByIDRow struct {
+	ID              uuid.UUID `json:"id"`
+	Name            string    `json:"name"`
+	Crystals        int32     `json:"crystals"`
+	PriceMinorUnits int64     `json:"price_minor_units"`
+	Currency        string    `json:"currency"`
+	ImageUrl        string    `json:"image_url"`
+	IsActive        bool      `json:"is_active"`
+}
+
+func (q *Queries) GetPackageByID(ctx context.Context, id uuid.UUID) (GetPackageByIDRow, error) {
+	row := q.queryRow(ctx, q.getPackageByIDStmt, getPackageByID, id)
+	var i GetPackageByIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Crystals,
+		&i.PriceMinorUnits,
+		&i.Currency,
+		&i.ImageUrl,
+		&i.IsActive,
+	)
+	return i, err
+}
+
 const listActivePackages = `-- name: ListActivePackages :many
 SELECT id, crystals, price_minor_units, currency, image_url
 FROM billing.crystal_packages
@@ -41,6 +72,53 @@ func (q *Queries) ListActivePackages(ctx context.Context) ([]ListActivePackagesR
 			&i.PriceMinorUnits,
 			&i.Currency,
 			&i.ImageUrl,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAllPackages = `-- name: ListAllPackages :many
+SELECT id, name, crystals, price_minor_units, currency, image_url, is_active
+FROM billing.crystal_packages
+ORDER BY price_minor_units ASC
+`
+
+type ListAllPackagesRow struct {
+	ID              uuid.UUID `json:"id"`
+	Name            string    `json:"name"`
+	Crystals        int32     `json:"crystals"`
+	PriceMinorUnits int64     `json:"price_minor_units"`
+	Currency        string    `json:"currency"`
+	ImageUrl        string    `json:"image_url"`
+	IsActive        bool      `json:"is_active"`
+}
+
+func (q *Queries) ListAllPackages(ctx context.Context) ([]ListAllPackagesRow, error) {
+	rows, err := q.query(ctx, q.listAllPackagesStmt, listAllPackages)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListAllPackagesRow{}
+	for rows.Next() {
+		var i ListAllPackagesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Crystals,
+			&i.PriceMinorUnits,
+			&i.Currency,
+			&i.ImageUrl,
+			&i.IsActive,
 		); err != nil {
 			return nil, err
 		}

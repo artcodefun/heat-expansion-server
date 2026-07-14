@@ -38,7 +38,7 @@ func StoragePrototypeFromDB(p gen.StorageItemPrototype) *domain.StorageItemProto
 		cons = dtos.ConsumableStorageDataFromDTO(&dto)
 	}
 
-	proto := &domain.StorageItemPrototype{
+	return &domain.StorageItemPrototype{
 		ID:               int(p.ID),
 		Name:             p.Name,
 		Category:         domain.StorageCategory(p.Category),
@@ -53,7 +53,6 @@ func StoragePrototypeFromDB(p gen.StorageItemPrototype) *domain.StorageItemProto
 		ArtifactData:     art,
 		ConsumableData:   cons,
 	}
-	return proto
 }
 
 func StoragePrototypesFromDB(src []gen.StorageItemPrototype) []*domain.StorageItemPrototype {
@@ -62,4 +61,45 @@ func StoragePrototypesFromDB(src []gen.StorageItemPrototype) []*domain.StorageIt
 		dst[i] = StoragePrototypeFromDB(p)
 	}
 	return dst
+}
+
+// StoragePrototypeToCreateParams maps a domain prototype to the sqlc insert params.
+// The category-specific data blocks are serialized via their DTO shapes; a nil
+// pointer becomes SQL NULL.
+func StoragePrototypeToCreateParams(p *domain.StorageItemPrototype) gen.CreateStoragePrototypeParams {
+	return gen.CreateStoragePrototypeParams{
+		ID:               int64(p.ID),
+		Name:             string(p.Name),
+		Category:         string(p.Category),
+		EstimatedWorth:   int32(p.EstimatedWorth),
+		ShortDescription: stringToNullString(string(p.ShortDescription)),
+		FullDescription:  stringToNullString(string(p.FullDescription)),
+		ImageUrl:         stringToNullString(p.ImageURL),
+		BuffData:         toNullRawMessage(dtos.BuffStorageDataDTOFromDomain(p.BuffData)),
+		IntelData:        toNullRawMessage(dtos.IntelStorageDataDTOFromDomain(p.IntelData)),
+		DamagedData:      toNullRawMessage(dtos.DamagedStorageDataDTOFromDomain(p.DamagedData)),
+		ArtifactData:     toNullRawMessage(dtos.ArtifactStorageDataDTOFromDomain(p.ArtifactData)),
+		ConsumableData:   toNullRawMessage(dtos.ConsumableStorageDataDTOFromDomain(p.ConsumableData)),
+		CreationSources:  creationSourcesToJSON(p.CreationSources),
+	}
+}
+
+// StoragePrototypeToUpdateParams maps a domain prototype to the sqlc update params,
+// keyed by p.ID.
+func StoragePrototypeToUpdateParams(p *domain.StorageItemPrototype) gen.UpdateStoragePrototypeParams {
+	return gen.UpdateStoragePrototypeParams{
+		ID:               int64(p.ID),
+		Name:             string(p.Name),
+		Category:         string(p.Category),
+		EstimatedWorth:   int32(p.EstimatedWorth),
+		ShortDescription: stringToNullString(string(p.ShortDescription)),
+		FullDescription:  stringToNullString(string(p.FullDescription)),
+		ImageUrl:         stringToNullString(p.ImageURL),
+		BuffData:         toNullRawMessage(dtos.BuffStorageDataDTOFromDomain(p.BuffData)),
+		IntelData:        toNullRawMessage(dtos.IntelStorageDataDTOFromDomain(p.IntelData)),
+		DamagedData:      toNullRawMessage(dtos.DamagedStorageDataDTOFromDomain(p.DamagedData)),
+		ArtifactData:     toNullRawMessage(dtos.ArtifactStorageDataDTOFromDomain(p.ArtifactData)),
+		ConsumableData:   toNullRawMessage(dtos.ConsumableStorageDataDTOFromDomain(p.ConsumableData)),
+		CreationSources:  creationSourcesToJSON(p.CreationSources),
+	}
 }

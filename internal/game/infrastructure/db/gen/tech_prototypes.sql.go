@@ -7,7 +7,50 @@ package gen
 
 import (
 	"context"
+	"database/sql"
+	"encoding/json"
+
+	"github.com/sqlc-dev/pqtype"
 )
+
+const createTechPrototype = `-- name: CreateTechPrototype :exec
+INSERT INTO game.tech_item_prototypes (
+    id, name, category, unlock_technology_id, short_description, full_description,
+    price, research_time, image_url, improvement
+) VALUES (
+    $1, $2, $3, $4, $5, $6,
+    $7, $8, $9, $10
+)
+`
+
+type CreateTechPrototypeParams struct {
+	ID                 int64                 `json:"id"`
+	Name               string                `json:"name"`
+	Category           string                `json:"category"`
+	UnlockTechnologyID sql.NullInt64         `json:"unlock_technology_id"`
+	ShortDescription   sql.NullString        `json:"short_description"`
+	FullDescription    sql.NullString        `json:"full_description"`
+	Price              json.RawMessage       `json:"price"`
+	ResearchTime       int64                 `json:"research_time"`
+	ImageUrl           sql.NullString        `json:"image_url"`
+	Improvement        pqtype.NullRawMessage `json:"improvement"`
+}
+
+func (q *Queries) CreateTechPrototype(ctx context.Context, arg CreateTechPrototypeParams) error {
+	_, err := q.exec(ctx, q.createTechPrototypeStmt, createTechPrototype,
+		arg.ID,
+		arg.Name,
+		arg.Category,
+		arg.UnlockTechnologyID,
+		arg.ShortDescription,
+		arg.FullDescription,
+		arg.Price,
+		arg.ResearchTime,
+		arg.ImageUrl,
+		arg.Improvement,
+	)
+	return err
+}
 
 const getTechPrototypeByID = `-- name: GetTechPrototypeByID :one
 
@@ -77,4 +120,61 @@ func (q *Queries) ListTechPrototypes(ctx context.Context) ([]TechItemPrototype, 
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateTechPrototype = `-- name: UpdateTechPrototype :one
+UPDATE game.tech_item_prototypes SET
+    name                 = $1,
+    category             = $2,
+    unlock_technology_id = $3,
+    short_description    = $4,
+    full_description     = $5,
+    price                = $6,
+    research_time        = $7,
+    image_url            = $8,
+    improvement          = $9
+WHERE id = $10
+RETURNING id, name, category, unlock_technology_id, short_description, full_description, price, research_time, image_url, improvement
+`
+
+type UpdateTechPrototypeParams struct {
+	Name               string                `json:"name"`
+	Category           string                `json:"category"`
+	UnlockTechnologyID sql.NullInt64         `json:"unlock_technology_id"`
+	ShortDescription   sql.NullString        `json:"short_description"`
+	FullDescription    sql.NullString        `json:"full_description"`
+	Price              json.RawMessage       `json:"price"`
+	ResearchTime       int64                 `json:"research_time"`
+	ImageUrl           sql.NullString        `json:"image_url"`
+	Improvement        pqtype.NullRawMessage `json:"improvement"`
+	ID                 int64                 `json:"id"`
+}
+
+func (q *Queries) UpdateTechPrototype(ctx context.Context, arg UpdateTechPrototypeParams) (TechItemPrototype, error) {
+	row := q.queryRow(ctx, q.updateTechPrototypeStmt, updateTechPrototype,
+		arg.Name,
+		arg.Category,
+		arg.UnlockTechnologyID,
+		arg.ShortDescription,
+		arg.FullDescription,
+		arg.Price,
+		arg.ResearchTime,
+		arg.ImageUrl,
+		arg.Improvement,
+		arg.ID,
+	)
+	var i TechItemPrototype
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Category,
+		&i.UnlockTechnologyID,
+		&i.ShortDescription,
+		&i.FullDescription,
+		&i.Price,
+		&i.ResearchTime,
+		&i.ImageUrl,
+		&i.Improvement,
+	)
+	return i, err
 }

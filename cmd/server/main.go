@@ -10,6 +10,7 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
+	adminBootstrap "github.com/artcodefun/heat-expansion-server/internal/admin/bootstrap"
 	authBootstrap "github.com/artcodefun/heat-expansion-server/internal/auth/bootstrap"
 	billingBootstrap "github.com/artcodefun/heat-expansion-server/internal/billing/bootstrap"
 	gameBootstrap "github.com/artcodefun/heat-expansion-server/internal/game/bootstrap"
@@ -28,11 +29,12 @@ func main() {
 	// Construction is pure wiring: env validation and dependency graphs only.
 	// All infrastructure I/O (DB pings, broker connections, content loads)
 	// happens inside each module's Run under the cancellable signal context.
+	adminModule := adminBootstrap.NewModule()
 	authModule := authBootstrap.NewModule()
 	billingModule := billingBootstrap.NewModule()
 	gameModule := gameBootstrap.NewModule()
 
-	runErr := runModules(ctx, authModule, billingModule, gameModule)
+	runErr := runModules(ctx, adminModule, authModule, billingModule, gameModule)
 	if runErr != nil {
 		slog.ErrorContext(ctx, "server stopped with error", "error", runErr)
 	} else {

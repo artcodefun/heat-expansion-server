@@ -22,3 +22,31 @@ func PackageReadModelsFromRows(rows []dbgen.ListActivePackagesRow) []*readmodels
 	}
 	return out
 }
+
+func PackageAllReadModelsFromRows(rows []dbgen.ListAllPackagesRow) []*readmodels.CrystalPackage {
+	out := make([]*readmodels.CrystalPackage, len(rows))
+	for i, row := range rows {
+		out[i] = &readmodels.CrystalPackage{
+			ID:              row.ID,
+			Name:            row.Name,
+			Crystals:        int(row.Crystals),
+			PriceMinorUnits: row.PriceMinorUnits,
+			Currency:        row.Currency,
+			ImageURL:        row.ImageUrl,
+			IsActive:        row.IsActive,
+		}
+	}
+	return out
+}
+
+func PackageFromGetRow(row dbgen.GetPackageByIDRow) *readmodels.CrystalPackage {
+	return &readmodels.CrystalPackage{
+		ID:              row.ID,
+		Name:            row.Name,
+		Crystals:        int(row.Crystals),
+		PriceMinorUnits: row.PriceMinorUnits,
+		Currency:        row.Currency,
+		ImageURL:        row.ImageUrl,
+		IsActive:        row.IsActive,
+	}
+}
