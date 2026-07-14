@@ -7,7 +7,7 @@ import (
 
 // GetPackageURI binds the :id parameter for package endpoints.
 type GetPackageURI struct {
-	ID uuid.UUID `uri:"id" binding:"required"`
+	ID UuidStr `uri:"id" binding:"required,uuid"`
 }
 
 // CrystalPackageResponse is the JSON representation of a crystal package.

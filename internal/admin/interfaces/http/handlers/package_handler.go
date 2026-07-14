@@ -39,7 +39,7 @@ func (h *PackageHandler) GetPackage(c *gin.Context) {
 	if !bindURI(c, &uri) {
 		return
 	}
-	p, err := h.queries.GetCrystalPackage(c.Request.Context(), actor(c), uri.ID)
+	p, err := h.queries.GetCrystalPackage(c.Request.Context(), actor(c), uri.ID.Uuid())
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
@@ -69,7 +69,7 @@ func (h *PackageHandler) UpdatePackage(c *gin.Context) {
 	if !bindRequest(c, &req) {
 		return
 	}
-	p, err := h.commands.UpdateCrystalPackage(c.Request.Context(), actor(c), req.ToModel(uri.ID))
+	p, err := h.commands.UpdateCrystalPackage(c.Request.Context(), actor(c), req.ToModel(uri.ID.Uuid()))
 	if handleCoreErr(c, h.translator, err) {
 		return
 	}
