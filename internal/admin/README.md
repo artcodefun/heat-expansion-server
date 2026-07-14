@@ -2,8 +2,6 @@
 
 This directory contains the **administration** service inside the Heat Expansion modular monolith. It provides a back-office API for operators to manage game content and billing configuration across the other modules.
 
-> Status: module initialization. Only self-contained admin identity (registration, login, session management) is implemented. The outbound interactions with the `game` and `billing` modules (private gRPC clients, prototype/translation/crystal-package administration) are planned for future commits.
-
 ## Domain Overview
 
 At a high level, the Admin service models operator identity and access. It is **self-contained**: it does not depend on the auth service or JWTs.
@@ -21,13 +19,14 @@ This service uses Hexagonal Architecture (Ports and Adapters), DDD (Domain-drive
 - **Domain**: `internal/admin/domain`
   - Business rules, the `Admin` aggregate, the `Session` record, and translatable domain errors.
 - **Application**: `internal/admin/application`
-  - `commands/`: Write-side command handlers for registration, login, and logout.
-  - `queries/`: Read-side query handlers (e.g. current admin profile).
+  - `commands/`: Write-side command handlers for registration, login, logout, and CRUD operations for prototypes, translations, and crystal packages.
+  - `queries/`: Read-side query handlers (admin profile, prototypes, translations, crystal packages).
   - `cqrs/`: CQRS contract definitions and read models.
-  - `ports/`: Interfaces for repositories, read repositories, password hasher, session token generator, session validator, transaction manager, and translator.
+  - `ports/`: Interfaces for repositories, read repositories, password hasher, session token generator, session validator, transaction manager, translator, and outbound gRPC clients (`GamePrivateClient`, `BillingPrivateClient`).
 - **Infrastructure**: `internal/admin/infrastructure`
   - `db/`: Write-side persistence using sqlc (`migrations/`, `queries/`, `gen/`, `repo/`).
   - `readstore/`: Read-side projections using a separate sqlc generation (`queries/`, `gen/`, `repo/`, `mappers/`).
+  - `grpcclient/`: Outbound gRPC clients for game and billing private APIs (lazy-dial with static key authentication).
   - `security/`: Session token generation (bcrypt password hashing is shared via `internal/platform/security`) & validation.
   - `i18n/`: Embedded translator for systemic admin strings (errors).
 - **Interfaces**: `internal/admin/interfaces/http`
@@ -39,7 +38,12 @@ This service uses Hexagonal Architecture (Ports and Adapters), DDD (Domain-drive
 
 Full OpenAPI spec: [`contracts/admin/http/v1/openapi.yaml`](../../contracts/admin/http/v1/openapi.yaml)
 
-Identity endpoints are grouped under `/api/v1/auth` (e.g. `POST /api/v1/auth/login`, `GET /api/v1/auth/me`). The spec is also served at runtime at `/api/v1/openapi.yaml` with Swagger UI at `/api/v1/docs/`.
+- **Identity** (`/api/v1/auth`): `POST /register`, `POST /login`, `POST /logout`, `GET /me`
+- **Prototypes** (`/api/v1/game/prototypes/{kind}`): CRUD for army, build, storage, and tech prototypes
+- **Translations** (`/api/v1/game/translations`): list and upsert translation entries
+- **Crystal Packages** (`/api/v1/billing/packages`): CRUD for purchasable crystal packages
+
+The spec is served at runtime at `/api/v1/openapi.yaml` with Swagger UI at `/api/v1/docs/`.
 
 ## Development
 
