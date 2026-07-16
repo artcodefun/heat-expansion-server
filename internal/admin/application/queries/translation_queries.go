@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/artcodefun/heat-expansion-server/internal/admin/application/cqrs"
-	"github.com/artcodefun/heat-expansion-server/internal/admin/application/cqrs/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/admin/application/ports"
 )
 
@@ -17,7 +16,7 @@ func NewTranslationQueries(game ports.GamePrivateClient) *TranslationQueries {
 	return &TranslationQueries{game: game}
 }
 
-func (q *TranslationQueries) ListTranslations(ctx context.Context, _ cqrs.Actor) ([]*readmodels.Translation, error) {
+func (q *TranslationQueries) ListTranslations(ctx context.Context, _ cqrs.Actor) ([]*ports.Translation, error) {
 	list, err := q.game.ListTranslations(ctx)
 	return list, clientErr(err)
 }

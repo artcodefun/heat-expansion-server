@@ -1,6 +1,6 @@
-package readmodels
+package ports
 
-// PriceModel mirrors the game domain PriceModel for use in admin read models.
+// PriceModel is the resource price used by game prototypes.
 type PriceModel struct {
 	Credits    int64 `json:"credits"`
 	Iron       int64 `json:"iron"`
@@ -8,7 +8,7 @@ type PriceModel struct {
 	Antimatter int64 `json:"antimatter"`
 }
 
-// ArmyPrototype is the admin read model for an army item prototype.
+// ArmyPrototype is the admin model for an army item prototype.
 type ArmyPrototype struct {
 	ID                 int64      `json:"id"`
 	Name               string     `json:"name"`
@@ -64,7 +64,7 @@ type BuildIntelligenceData struct {
 	ScanCooldown    int64  `json:"scan_cooldown"`
 }
 
-// BuildPrototype is the admin read model for a build item prototype.
+// BuildPrototype is the admin model for a build item prototype.
 // Exactly one of the category data fields is non-nil.
 type BuildPrototype struct {
 	ID                 int64      `json:"id"`
@@ -120,7 +120,7 @@ type StorageConsumableData struct {
 	BoxSize     int32    `json:"box_size"`
 }
 
-// StoragePrototype is the admin read model for a storage item prototype.
+// StoragePrototype is the admin model for a storage item prototype.
 // Exactly one of the category data fields is non-nil.
 type StoragePrototype struct {
 	ID               int64    `json:"id"`
@@ -146,7 +146,7 @@ type TechImprovement struct {
 	MaxLevel int32  `json:"max_level"` // 0 = no cap
 }
 
-// TechPrototype is the admin read model for a tech item prototype.
+// TechPrototype is the admin model for a tech item prototype.
 type TechPrototype struct {
 	ID                 int64            `json:"id"`
 	Name               string           `json:"name"`
@@ -158,4 +158,11 @@ type TechPrototype struct {
 	ResearchTime       int64            `json:"research_time"`
 	ImageURL           string           `json:"image_url"`
 	Improvement        *TechImprovement `json:"improvement,omitempty"`
+}
+
+// Translation is the admin model for a single localised string entry.
+type Translation struct {
+	Key    string `json:"key"`
+	Locale string `json:"locale"`
+	Value  string `json:"value"`
 }

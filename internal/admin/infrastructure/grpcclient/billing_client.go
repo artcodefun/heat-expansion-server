@@ -7,7 +7,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 
 	billingv1 "github.com/artcodefun/heat-expansion-server/contracts/billing/grpc/v1"
-	"github.com/artcodefun/heat-expansion-server/internal/admin/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/admin/application/ports"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 )
@@ -32,19 +32,19 @@ func NewBillingClient(addr, key string) (*BillingClient, error) {
 	return &BillingClient{pkg: billingv1.NewCrystalPackageServiceClient(conn)}, nil
 }
 
-func (c *BillingClient) ListCrystalPackages(ctx context.Context) ([]*readmodels.CrystalPackage, error) {
+func (c *BillingClient) ListCrystalPackages(ctx context.Context) ([]*ports.CrystalPackage, error) {
 	resp, err := c.pkg.ListCrystalPackages(ctx, &billingv1.ListCrystalPackagesRequest{})
 	if err != nil {
 		return nil, grpcErrToSentinel(err)
 	}
-	out := make([]*readmodels.CrystalPackage, len(resp.Packages))
+	out := make([]*ports.CrystalPackage, len(resp.Packages))
 	for i, p := range resp.Packages {
 		out[i] = packageFromProto(p)
 	}
 	return out, nil
 }
 
-func (c *BillingClient) GetCrystalPackage(ctx context.Context, id uuid.UUID) (*readmodels.CrystalPackage, error) {
+func (c *BillingClient) GetCrystalPackage(ctx context.Context, id uuid.UUID) (*ports.CrystalPackage, error) {
 	resp, err := c.pkg.GetCrystalPackage(ctx, &billingv1.GetCrystalPackageRequest{Id: id.String()})
 	if err != nil {
 		return nil, grpcErrToSentinel(err)
@@ -52,7 +52,7 @@ func (c *BillingClient) GetCrystalPackage(ctx context.Context, id uuid.UUID) (*r
 	return packageFromProto(resp.Package), nil
 }
 
-func (c *BillingClient) CreateCrystalPackage(ctx context.Context, p *readmodels.CrystalPackage) (*readmodels.CrystalPackage, error) {
+func (c *BillingClient) CreateCrystalPackage(ctx context.Context, p *ports.CrystalPackage) (*ports.CrystalPackage, error) {
 	resp, err := c.pkg.CreateCrystalPackage(ctx, &billingv1.CreateCrystalPackageRequest{
 		Name:            p.Name,
 		Crystals:        p.Crystals,
@@ -67,7 +67,7 @@ func (c *BillingClient) CreateCrystalPackage(ctx context.Context, p *readmodels.
 	return packageFromProto(resp.Package), nil
 }
 
-func (c *BillingClient) UpdateCrystalPackage(ctx context.Context, p *readmodels.CrystalPackage) (*readmodels.CrystalPackage, error) {
+func (c *BillingClient) UpdateCrystalPackage(ctx context.Context, p *ports.CrystalPackage) (*ports.CrystalPackage, error) {
 	resp, err := c.pkg.UpdateCrystalPackage(ctx, &billingv1.UpdateCrystalPackageRequest{
 		Id:              p.ID.String(),
 		Name:            p.Name,
@@ -85,12 +85,12 @@ func (c *BillingClient) UpdateCrystalPackage(ctx context.Context, p *readmodels.
 
 // ── Mapping helpers ───────────────────────────────────────────────────────────
 
-func packageFromProto(p *billingv1.CrystalPackage) *readmodels.CrystalPackage {
+func packageFromProto(p *billingv1.CrystalPackage) *ports.CrystalPackage {
 	if p == nil {
 		return nil
 	}
 	id, _ := uuid.Parse(p.Id)
-	return &readmodels.CrystalPackage{
+	return &ports.CrystalPackage{
 		ID:              id,
 		Name:            p.Name,
 		Crystals:        p.Crystals,

@@ -1,6 +1,6 @@
 package dtos
 
-import "github.com/artcodefun/heat-expansion-server/internal/admin/application/cqrs/readmodels"
+import "github.com/artcodefun/heat-expansion-server/internal/admin/application/ports"
 
 // UpsertTranslationRequest is the body for PUT /api/v1/game/translations.
 type UpsertTranslationRequest struct {
@@ -16,6 +16,6 @@ type TranslationResponse struct {
 	Value  string `json:"value"`
 }
 
-func TranslationResponseFromModel(m *readmodels.Translation) TranslationResponse {
+func TranslationResponseFromModel(m *ports.Translation) TranslationResponse {
 	return TranslationResponse{Key: m.Key, Locale: m.Locale, Value: m.Value}
 }

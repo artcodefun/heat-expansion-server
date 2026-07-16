@@ -3,7 +3,7 @@ package cqrs
 import (
 	"context"
 
-	"github.com/artcodefun/heat-expansion-server/internal/admin/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/admin/application/ports"
 )
 
 // AdminCommands encapsulates admin authentication mutations.
@@ -19,28 +19,28 @@ type AdminCommands interface {
 
 // PackageCommands encapsulates privileged writes to the billing crystal package catalog.
 type PackageCommands interface {
-	CreateCrystalPackage(ctx context.Context, actor Actor, p *readmodels.CrystalPackage) (*readmodels.CrystalPackage, error)
-	UpdateCrystalPackage(ctx context.Context, actor Actor, p *readmodels.CrystalPackage) (*readmodels.CrystalPackage, error)
+	CreateCrystalPackage(ctx context.Context, actor Actor, p *ports.CrystalPackage) (*ports.CrystalPackage, error)
+	UpdateCrystalPackage(ctx context.Context, actor Actor, p *ports.CrystalPackage) (*ports.CrystalPackage, error)
 }
 
 // PrototypeCommands encapsulates privileged writes to game prototype catalogs.
 // Calls are pre-authorized by the private gRPC key; Actor is carried for
 // auditability but not used for access control.
 type PrototypeCommands interface {
-	CreateArmyPrototype(ctx context.Context, actor Actor, p *readmodels.ArmyPrototype) (*readmodels.ArmyPrototype, error)
-	UpdateArmyPrototype(ctx context.Context, actor Actor, p *readmodels.ArmyPrototype) (*readmodels.ArmyPrototype, error)
+	CreateArmyPrototype(ctx context.Context, actor Actor, p *ports.ArmyPrototype) (*ports.ArmyPrototype, error)
+	UpdateArmyPrototype(ctx context.Context, actor Actor, p *ports.ArmyPrototype) (*ports.ArmyPrototype, error)
 
-	CreateBuildPrototype(ctx context.Context, actor Actor, p *readmodels.BuildPrototype) (*readmodels.BuildPrototype, error)
-	UpdateBuildPrototype(ctx context.Context, actor Actor, p *readmodels.BuildPrototype) (*readmodels.BuildPrototype, error)
+	CreateBuildPrototype(ctx context.Context, actor Actor, p *ports.BuildPrototype) (*ports.BuildPrototype, error)
+	UpdateBuildPrototype(ctx context.Context, actor Actor, p *ports.BuildPrototype) (*ports.BuildPrototype, error)
 
-	CreateStoragePrototype(ctx context.Context, actor Actor, p *readmodels.StoragePrototype) (*readmodels.StoragePrototype, error)
-	UpdateStoragePrototype(ctx context.Context, actor Actor, p *readmodels.StoragePrototype) (*readmodels.StoragePrototype, error)
+	CreateStoragePrototype(ctx context.Context, actor Actor, p *ports.StoragePrototype) (*ports.StoragePrototype, error)
+	UpdateStoragePrototype(ctx context.Context, actor Actor, p *ports.StoragePrototype) (*ports.StoragePrototype, error)
 
-	CreateTechPrototype(ctx context.Context, actor Actor, p *readmodels.TechPrototype) (*readmodels.TechPrototype, error)
-	UpdateTechPrototype(ctx context.Context, actor Actor, p *readmodels.TechPrototype) (*readmodels.TechPrototype, error)
+	CreateTechPrototype(ctx context.Context, actor Actor, p *ports.TechPrototype) (*ports.TechPrototype, error)
+	UpdateTechPrototype(ctx context.Context, actor Actor, p *ports.TechPrototype) (*ports.TechPrototype, error)
 }
 
 // TranslationCommands encapsulates privileged writes to the game translation catalog.
 type TranslationCommands interface {
-	UpsertTranslation(ctx context.Context, actor Actor, locale, key, value string) (*readmodels.Translation, error)
+	UpsertTranslation(ctx context.Context, actor Actor, locale, key, value string) (*ports.Translation, error)
 }

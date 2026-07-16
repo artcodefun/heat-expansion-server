@@ -1,6 +1,6 @@
 package dtos
 
-import "github.com/artcodefun/heat-expansion-server/internal/admin/application/cqrs/readmodels"
+import "github.com/artcodefun/heat-expansion-server/internal/admin/application/ports"
 
 // GetPrototypeURI binds the :id parameter for prototype endpoints.
 type GetPrototypeURI struct {
@@ -15,12 +15,12 @@ type PriceModelDTO struct {
 	Antimatter int64 `json:"antimatter"`
 }
 
-func priceToDTO(p readmodels.PriceModel) PriceModelDTO {
+func priceToDTO(p ports.PriceModel) PriceModelDTO {
 	return PriceModelDTO{Credits: p.Credits, Iron: p.Iron, Titanium: p.Titanium, Antimatter: p.Antimatter}
 }
 
-func priceFromDTO(d PriceModelDTO) readmodels.PriceModel {
-	return readmodels.PriceModel{Credits: d.Credits, Iron: d.Iron, Titanium: d.Titanium, Antimatter: d.Antimatter}
+func priceFromDTO(d PriceModelDTO) ports.PriceModel {
+	return ports.PriceModel{Credits: d.Credits, Iron: d.Iron, Titanium: d.Titanium, Antimatter: d.Antimatter}
 }
 
 // ── Army ──────────────────────────────────────────────────────────────────────
@@ -45,7 +45,7 @@ type ArmyPrototypeDTO struct {
 	Speed              int32         `json:"speed"`
 }
 
-func ArmyPrototypeDTOFromModel(m *readmodels.ArmyPrototype) ArmyPrototypeDTO {
+func ArmyPrototypeDTOFromModel(m *ports.ArmyPrototype) ArmyPrototypeDTO {
 	return ArmyPrototypeDTO{
 		ID:                 m.ID,
 		Name:               m.Name,
@@ -67,8 +67,8 @@ func ArmyPrototypeDTOFromModel(m *readmodels.ArmyPrototype) ArmyPrototypeDTO {
 	}
 }
 
-func ArmyPrototypeDTOToModel(d ArmyPrototypeDTO) *readmodels.ArmyPrototype {
-	return &readmodels.ArmyPrototype{
+func ArmyPrototypeDTOToModel(d ArmyPrototypeDTO) *ports.ArmyPrototype {
+	return &ports.ArmyPrototype{
 		ID:                 d.ID,
 		Name:               d.Name,
 		Category:           d.Category,
@@ -141,7 +141,7 @@ type BuildPrototypeDTO struct {
 	IntelligenceData   *BuildIntelligenceDataDTO `json:"intelligence_data,omitempty"`
 }
 
-func BuildPrototypeDTOFromModel(m *readmodels.BuildPrototype) BuildPrototypeDTO {
+func BuildPrototypeDTOFromModel(m *ports.BuildPrototype) BuildPrototypeDTO {
 	d := BuildPrototypeDTO{
 		ID:                 m.ID,
 		Name:               m.Name,
@@ -181,8 +181,8 @@ func BuildPrototypeDTOFromModel(m *readmodels.BuildPrototype) BuildPrototypeDTO 
 	return d
 }
 
-func BuildPrototypeDTOToModel(d BuildPrototypeDTO) *readmodels.BuildPrototype {
-	m := &readmodels.BuildPrototype{
+func BuildPrototypeDTOToModel(d BuildPrototypeDTO) *ports.BuildPrototype {
+	m := &ports.BuildPrototype{
 		ID:                 d.ID,
 		Name:               d.Name,
 		Category:           d.Category,
@@ -197,11 +197,11 @@ func BuildPrototypeDTOToModel(d BuildPrototypeDTO) *readmodels.BuildPrototype {
 		ImageURL:           d.ImageURL,
 	}
 	if d.ControlData != nil {
-		m.ControlData = &readmodels.BuildControlData{Subtype: d.ControlData.Subtype}
+		m.ControlData = &ports.BuildControlData{Subtype: d.ControlData.Subtype}
 	}
 	if d.ResourcesData != nil {
 		r := d.ResourcesData
-		m.ResourcesData = &readmodels.BuildResourcesData{
+		m.ResourcesData = &ports.BuildResourcesData{
 			CreditsProduction: r.CreditsProduction, IronProduction: r.IronProduction,
 			TitaniumProduction: r.TitaniumProduction, AntimatterProduction: r.AntimatterProduction,
 			CreditsCapacity: r.CreditsCapacity, IronCapacity: r.IronCapacity,
@@ -209,14 +209,14 @@ func BuildPrototypeDTOToModel(d BuildPrototypeDTO) *readmodels.BuildPrototype {
 		}
 	}
 	if d.DefenseData != nil {
-		m.DefenseData = &readmodels.BuildDefenseData{DefenceBonus: d.DefenseData.DefenceBonus}
+		m.DefenseData = &ports.BuildDefenseData{DefenceBonus: d.DefenseData.DefenceBonus}
 	}
 	if d.MilitaryData != nil {
-		m.MilitaryData = &readmodels.BuildMilitaryData{UnlockArmyCategory: d.MilitaryData.UnlockArmyCategory}
+		m.MilitaryData = &ports.BuildMilitaryData{UnlockArmyCategory: d.MilitaryData.UnlockArmyCategory}
 	}
 	if d.IntelligenceData != nil {
 		i := d.IntelligenceData
-		m.IntelligenceData = &readmodels.BuildIntelligenceData{Subtype: i.Subtype, StealthStrength: i.StealthStrength, ScanRange: i.ScanRange, ScanCooldown: i.ScanCooldown}
+		m.IntelligenceData = &ports.BuildIntelligenceData{Subtype: i.Subtype, StealthStrength: i.StealthStrength, ScanRange: i.ScanRange, ScanCooldown: i.ScanCooldown}
 	}
 	return m
 }
@@ -267,7 +267,7 @@ type StoragePrototypeDTO struct {
 	ConsumableData   *StorageConsumableDataDTO `json:"consumable_data,omitempty"`
 }
 
-func StoragePrototypeDTOFromModel(m *readmodels.StoragePrototype) StoragePrototypeDTO {
+func StoragePrototypeDTOFromModel(m *ports.StoragePrototype) StoragePrototypeDTO {
 	d := StoragePrototypeDTO{
 		ID: m.ID, Name: m.Name, Category: m.Category, CreationSources: m.CreationSources,
 		EstimatedWorth: m.EstimatedWorth, ShortDescription: m.ShortDescription,
@@ -291,26 +291,26 @@ func StoragePrototypeDTOFromModel(m *readmodels.StoragePrototype) StoragePrototy
 	return d
 }
 
-func StoragePrototypeDTOToModel(d StoragePrototypeDTO) *readmodels.StoragePrototype {
-	m := &readmodels.StoragePrototype{
+func StoragePrototypeDTOToModel(d StoragePrototypeDTO) *ports.StoragePrototype {
+	m := &ports.StoragePrototype{
 		ID: d.ID, Name: d.Name, Category: d.Category, CreationSources: d.CreationSources,
 		EstimatedWorth: d.EstimatedWorth, ShortDescription: d.ShortDescription,
 		FullDescription: d.FullDescription, ImageURL: d.ImageURL,
 	}
 	if d.BuffData != nil {
-		m.BuffData = &readmodels.StorageBuffData{Type: d.BuffData.Type, Value: d.BuffData.Value, DurationSeconds: d.BuffData.DurationSeconds}
+		m.BuffData = &ports.StorageBuffData{Type: d.BuffData.Type, Value: d.BuffData.Value, DurationSeconds: d.BuffData.DurationSeconds}
 	}
 	if d.IntelData != nil {
-		m.IntelData = &readmodels.StorageIntelData{Type: d.IntelData.Type, DecryptionSeconds: d.IntelData.DecryptionSeconds}
+		m.IntelData = &ports.StorageIntelData{Type: d.IntelData.Type, DecryptionSeconds: d.IntelData.DecryptionSeconds}
 	}
 	if d.DamagedData != nil {
-		m.DamagedData = &readmodels.StorageDamagedData{RestorePrice: priceFromDTO(d.DamagedData.RestorePrice), RestorationSeconds: d.DamagedData.RestorationSeconds, OriginalUnitID: d.DamagedData.OriginalUnitID}
+		m.DamagedData = &ports.StorageDamagedData{RestorePrice: priceFromDTO(d.DamagedData.RestorePrice), RestorationSeconds: d.DamagedData.RestorationSeconds, OriginalUnitID: d.DamagedData.OriginalUnitID}
 	}
 	if d.ArtifactData != nil {
-		m.ArtifactData = &readmodels.StorageArtifactData{Type: d.ArtifactData.Type, Value: d.ArtifactData.Value}
+		m.ArtifactData = &ports.StorageArtifactData{Type: d.ArtifactData.Type, Value: d.ArtifactData.Value}
 	}
 	if d.ConsumableData != nil {
-		m.ConsumableData = &readmodels.StorageConsumableData{Type: d.ConsumableData.Type, BoxContents: d.ConsumableData.BoxContents, BoxSize: d.ConsumableData.BoxSize}
+		m.ConsumableData = &ports.StorageConsumableData{Type: d.ConsumableData.Type, BoxContents: d.ConsumableData.BoxContents, BoxSize: d.ConsumableData.BoxSize}
 	}
 	return m
 }
@@ -336,7 +336,7 @@ type TechPrototypeDTO struct {
 	Improvement        *TechImprovementDTO `json:"improvement,omitempty"`
 }
 
-func TechPrototypeDTOFromModel(m *readmodels.TechPrototype) TechPrototypeDTO {
+func TechPrototypeDTOFromModel(m *ports.TechPrototype) TechPrototypeDTO {
 	d := TechPrototypeDTO{
 		ID: m.ID, Name: m.Name, Category: m.Category, UnlockTechnologyID: m.UnlockTechnologyID,
 		ShortDescription: m.ShortDescription, FullDescription: m.FullDescription,
@@ -348,14 +348,14 @@ func TechPrototypeDTOFromModel(m *readmodels.TechPrototype) TechPrototypeDTO {
 	return d
 }
 
-func TechPrototypeDTOToModel(d TechPrototypeDTO) *readmodels.TechPrototype {
-	m := &readmodels.TechPrototype{
+func TechPrototypeDTOToModel(d TechPrototypeDTO) *ports.TechPrototype {
+	m := &ports.TechPrototype{
 		ID: d.ID, Name: d.Name, Category: d.Category, UnlockTechnologyID: d.UnlockTechnologyID,
 		ShortDescription: d.ShortDescription, FullDescription: d.FullDescription,
 		Price: priceFromDTO(d.Price), ResearchTime: d.ResearchTime, ImageURL: d.ImageURL,
 	}
 	if d.Improvement != nil {
-		m.Improvement = &readmodels.TechImprovement{Type: d.Improvement.Type, Value: d.Improvement.Value, MaxLevel: d.Improvement.MaxLevel}
+		m.Improvement = &ports.TechImprovement{Type: d.Improvement.Type, Value: d.Improvement.Value, MaxLevel: d.Improvement.MaxLevel}
 	}
 	return m
 }

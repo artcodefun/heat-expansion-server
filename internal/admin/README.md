@@ -22,7 +22,7 @@ This service uses Hexagonal Architecture (Ports and Adapters), DDD (Domain-drive
   - `commands/`: Write-side command handlers for registration, login, logout, and CRUD operations for prototypes, translations, and crystal packages.
   - `queries/`: Read-side query handlers (admin profile, prototypes, translations, crystal packages).
   - `cqrs/`: CQRS contract definitions and read models.
-  - `ports/`: Interfaces for repositories, read repositories, password hasher, session token generator, session validator, transaction manager, translator, and outbound gRPC clients (`GamePrivateClient`, `BillingPrivateClient`).
+  - `ports/`: Interfaces for repositories, read repositories, password hasher, session token generator, session validator, transaction manager, translator, outbound gRPC clients (`GamePrivateClient`, `BillingPrivateClient`), and their associated data types.
 - **Infrastructure**: `internal/admin/infrastructure`
   - `db/`: Write-side persistence using sqlc (`migrations/`, `queries/`, `gen/`, `repo/`).
   - `readstore/`: Read-side projections using a separate sqlc generation (`queries/`, `gen/`, `repo/`, `mappers/`).
