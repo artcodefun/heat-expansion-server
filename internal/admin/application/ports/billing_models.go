@@ -1,8 +1,8 @@
-package readmodels
+package ports
 
 import "github.com/google/uuid"
 
-// CrystalPackage is the admin read model for a billing crystal package.
+// CrystalPackage is the admin model for a billing crystal package.
 type CrystalPackage struct {
 	ID              uuid.UUID `json:"id"`
 	Name            string    `json:"name"`

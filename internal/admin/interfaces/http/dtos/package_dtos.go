@@ -1,7 +1,7 @@
 package dtos
 
 import (
-	"github.com/artcodefun/heat-expansion-server/internal/admin/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/admin/application/ports"
 	"github.com/google/uuid"
 )
 
@@ -31,9 +31,9 @@ type CreateCrystalPackageRequest struct {
 	IsActive        bool   `json:"is_active"`
 }
 
-// ToModel converts the create request to a readmodel for the command layer.
-func (r CreateCrystalPackageRequest) ToModel() *readmodels.CrystalPackage {
-	return &readmodels.CrystalPackage{
+// ToModel converts the create request to a port model for the command layer.
+func (r CreateCrystalPackageRequest) ToModel() *ports.CrystalPackage {
+	return &ports.CrystalPackage{
 		Name:            r.Name,
 		Crystals:        r.Crystals,
 		PriceMinorUnits: r.PriceMinorUnits,
@@ -53,9 +53,9 @@ type UpdateCrystalPackageRequest struct {
 	IsActive        bool   `json:"is_active"`
 }
 
-// ToModel converts the update request to a readmodel for the command layer.
-func (r UpdateCrystalPackageRequest) ToModel(id uuid.UUID) *readmodels.CrystalPackage {
-	return &readmodels.CrystalPackage{
+// ToModel converts the update request to a port model for the command layer.
+func (r UpdateCrystalPackageRequest) ToModel(id uuid.UUID) *ports.CrystalPackage {
+	return &ports.CrystalPackage{
 		ID:              id,
 		Name:            r.Name,
 		Crystals:        r.Crystals,
@@ -66,7 +66,7 @@ func (r UpdateCrystalPackageRequest) ToModel(id uuid.UUID) *readmodels.CrystalPa
 	}
 }
 
-func CrystalPackageResponseFromModel(m *readmodels.CrystalPackage) CrystalPackageResponse {
+func CrystalPackageResponseFromModel(m *ports.CrystalPackage) CrystalPackageResponse {
 	return CrystalPackageResponse{
 		ID:              m.ID,
 		Name:            m.Name,
