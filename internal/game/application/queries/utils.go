@@ -3,7 +3,7 @@ package queries
 import (
 	"errors"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 )
 
@@ -12,7 +12,7 @@ func repoErr(err error) error {
 		return nil
 	}
 	if errors.Is(err, ports.ErrNotFound) {
-		return cqrs.ErrNotFound
+		return application.ErrNotFound
 	}
 	return err
 }

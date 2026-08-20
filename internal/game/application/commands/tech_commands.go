@@ -3,7 +3,7 @@ package commands
 import (
 	"context"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
@@ -25,7 +25,7 @@ func NewTechCommands(baseRepo ports.UserBaseRepository, techRepo ports.TechProto
 	return &TechCommands{BaseRepo: baseRepo, TechRepo: techRepo, UserRepo: userRepo, crystalService: domain.NewCrystalSpendingService(), Outbox: outbox, Scheduler: scheduler, TxMgr: txMgr, Access: access}
 }
 
-func (c *TechCommands) StartTechResearch(ctx context.Context, actor cqrs.Actor, baseID int, prototypeID int) error {
+func (c *TechCommands) StartTechResearch(ctx context.Context, actor application.Actor, baseID int, prototypeID int) error {
 	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func (c *TechCommands) StartTechResearch(ctx context.Context, actor cqrs.Actor, 
 	return err
 }
 
-func (c *TechCommands) SpeedUpTechResearchWithCrystals(ctx context.Context, actor cqrs.Actor, baseID int, techItemID uuid.UUID) error {
+func (c *TechCommands) SpeedUpTechResearchWithCrystals(ctx context.Context, actor application.Actor, baseID int, techItemID uuid.UUID) error {
 	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}

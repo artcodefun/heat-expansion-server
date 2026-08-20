@@ -3,19 +3,19 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
 )
 
 type AlertHandler struct {
-	queries    cqrs.AlertQueries
-	commands   cqrs.AlertCommands
+	queries    application.AlertQueries
+	commands   application.AlertCommands
 	translator ports.Translator
 }
 
-func NewAlertHandler(queries cqrs.AlertQueries, commands cqrs.AlertCommands, translator ports.Translator) *AlertHandler {
+func NewAlertHandler(queries application.AlertQueries, commands application.AlertCommands, translator ports.Translator) *AlertHandler {
 	return &AlertHandler{
 		queries:    queries,
 		commands:   commands,

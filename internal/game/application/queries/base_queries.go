@@ -3,9 +3,9 @@ package queries
 import (
 	"context"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
 )
 
@@ -18,7 +18,7 @@ func NewBaseQueries(repo ports.BaseReadRepository, access *services.AccessContro
 	return &BaseQueries{Repo: repo, Access: access}
 }
 
-func (q *BaseQueries) GetBaseStats(ctx context.Context, actor cqrs.Actor, baseID int) (*readmodels.UserBaseStats, error) {
+func (q *BaseQueries) GetBaseStats(ctx context.Context, actor application.Actor, baseID int) (*readmodels.UserBaseStats, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}
@@ -27,7 +27,7 @@ func (q *BaseQueries) GetBaseStats(ctx context.Context, actor cqrs.Actor, baseID
 }
 
 // ListUserBases returns basic info for bases owned by the authenticated user.
-func (q *BaseQueries) ListUserBases(ctx context.Context, actor cqrs.Actor) ([]*readmodels.UserBaseModel, error) {
+func (q *BaseQueries) ListUserBases(ctx context.Context, actor application.Actor) ([]*readmodels.UserBaseModel, error) {
 	// Only allow requesting own bases for now; later add roles/tenant etc.
 	bases, err := q.Repo.ListUserBases(ctx, actor.UserID)
 	return bases, repoErr(err)

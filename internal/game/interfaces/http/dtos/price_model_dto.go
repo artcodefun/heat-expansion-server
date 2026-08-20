@@ -1,6 +1,6 @@
 package dtos
 
-import "github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+import "github.com/artcodefun/heat-expansion-server/internal/game/application/readmodels"
 
 type PriceModelDTO struct {
 	Credits    int `json:"credits"`

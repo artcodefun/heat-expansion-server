@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
@@ -58,7 +58,7 @@ func NewStorageCommands(
 	}
 }
 
-func (c *StorageCommands) DeletePresentStorageItem(ctx context.Context, actor cqrs.Actor, baseID int, itemID uuid.UUID) error {
+func (c *StorageCommands) DeletePresentStorageItem(ctx context.Context, actor application.Actor, baseID int, itemID uuid.UUID) error {
 	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}
@@ -82,7 +82,7 @@ func (c *StorageCommands) DeletePresentStorageItem(ctx context.Context, actor cq
 	return err
 }
 
-func (c *StorageCommands) ActivateBuff(ctx context.Context, actor cqrs.Actor, baseID int, itemID uuid.UUID) error {
+func (c *StorageCommands) ActivateBuff(ctx context.Context, actor application.Actor, baseID int, itemID uuid.UUID) error {
 	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}
@@ -106,7 +106,7 @@ func (c *StorageCommands) ActivateBuff(ctx context.Context, actor cqrs.Actor, ba
 	return err
 }
 
-func (c *StorageCommands) StartIntelDecryption(ctx context.Context, actor cqrs.Actor, baseID int, itemID uuid.UUID) error {
+func (c *StorageCommands) StartIntelDecryption(ctx context.Context, actor application.Actor, baseID int, itemID uuid.UUID) error {
 	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}
@@ -130,7 +130,7 @@ func (c *StorageCommands) StartIntelDecryption(ctx context.Context, actor cqrs.A
 	return err
 }
 
-func (c *StorageCommands) StartDamagedItemRestoration(ctx context.Context, actor cqrs.Actor, baseID int, itemID uuid.UUID) error {
+func (c *StorageCommands) StartDamagedItemRestoration(ctx context.Context, actor application.Actor, baseID int, itemID uuid.UUID) error {
 	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}
@@ -158,7 +158,7 @@ func (c *StorageCommands) StartDamagedItemRestoration(ctx context.Context, actor
 	return err
 }
 
-func (c *StorageCommands) ActivateArtifact(ctx context.Context, actor cqrs.Actor, baseID int, itemID uuid.UUID) error {
+func (c *StorageCommands) ActivateArtifact(ctx context.Context, actor application.Actor, baseID int, itemID uuid.UUID) error {
 	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}
@@ -182,7 +182,7 @@ func (c *StorageCommands) ActivateArtifact(ctx context.Context, actor cqrs.Actor
 	return err
 }
 
-func (c *StorageCommands) DeactivateArtifact(ctx context.Context, actor cqrs.Actor, baseID int, itemID uuid.UUID) error {
+func (c *StorageCommands) DeactivateArtifact(ctx context.Context, actor application.Actor, baseID int, itemID uuid.UUID) error {
 	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}
@@ -206,7 +206,7 @@ func (c *StorageCommands) DeactivateArtifact(ctx context.Context, actor cqrs.Act
 	return err
 }
 
-func (c *StorageCommands) OpenConsumableBox(ctx context.Context, actor cqrs.Actor, baseID int, itemID uuid.UUID) error {
+func (c *StorageCommands) OpenConsumableBox(ctx context.Context, actor application.Actor, baseID int, itemID uuid.UUID) error {
 	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	gamev1 "github.com/artcodefun/heat-expansion-server/contracts/game/grpc/v1"
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/grpc/dtos"
 )
@@ -12,12 +12,12 @@ import (
 // ArmyPrototypeHandler implements gamev1.ArmyPrototypeServiceServer.
 type ArmyPrototypeHandler struct {
 	gamev1.UnimplementedArmyPrototypeServiceServer
-	commands   cqrs.ArmyPrototypeCommands
-	queries    cqrs.ArmyPrototypeQueries
+	commands   application.ArmyPrototypeCommands
+	queries    application.ArmyPrototypeQueries
 	translator ports.Translator
 }
 
-func NewArmyPrototypeHandler(commands cqrs.ArmyPrototypeCommands, queries cqrs.ArmyPrototypeQueries, translator ports.Translator) *ArmyPrototypeHandler {
+func NewArmyPrototypeHandler(commands application.ArmyPrototypeCommands, queries application.ArmyPrototypeQueries, translator ports.Translator) *ArmyPrototypeHandler {
 	return &ArmyPrototypeHandler{commands: commands, queries: queries, translator: translator}
 }
 

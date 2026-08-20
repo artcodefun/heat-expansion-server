@@ -4,7 +4,7 @@ import (
 	"google.golang.org/grpc"
 
 	billingv1 "github.com/artcodefun/heat-expansion-server/contracts/billing/grpc/v1"
-	"github.com/artcodefun/heat-expansion-server/internal/billing/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/billing/application"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/interfaces/grpc/handlers"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/interfaces/grpc/interceptor"
@@ -13,12 +13,12 @@ import (
 
 // Commands groups CQRS command interfaces needed by gRPC handlers.
 type Commands struct {
-	Package cqrs.CrystalPackageCommands
+	Package application.CrystalPackageCommands
 }
 
 // Queries groups CQRS query interfaces needed by gRPC handlers.
 type Queries struct {
-	Package cqrs.CrystalPackageQueries
+	Package application.CrystalPackageQueries
 }
 
 type Router struct {

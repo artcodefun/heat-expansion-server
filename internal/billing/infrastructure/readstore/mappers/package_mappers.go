@@ -1,7 +1,7 @@
 package mappers
 
 import (
-	"github.com/artcodefun/heat-expansion-server/internal/billing/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/billing/application/readmodels"
 	dbgen "github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/readstore/gen"
 )
 

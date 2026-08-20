@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/artcodefun/heat-expansion-server/internal/admin/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/admin/application"
 	"github.com/artcodefun/heat-expansion-server/internal/admin/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/admin/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
@@ -12,12 +12,12 @@ import (
 
 // AdminHandler handles admin authentication endpoints.
 type AdminHandler struct {
-	commands   cqrs.AdminCommands
-	queries    cqrs.AdminQueries
+	commands   application.AdminCommands
+	queries    application.AdminQueries
 	translator ports.Translator
 }
 
-func NewAdminHandler(commands cqrs.AdminCommands, queries cqrs.AdminQueries, translator ports.Translator) *AdminHandler {
+func NewAdminHandler(commands application.AdminCommands, queries application.AdminQueries, translator ports.Translator) *AdminHandler {
 	return &AdminHandler{commands: commands, queries: queries, translator: translator}
 }
 

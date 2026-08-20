@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http/dtos"
@@ -11,12 +11,12 @@ import (
 )
 
 type TradeHandler struct {
-	commands   cqrs.TradeCommands
-	queries    cqrs.TradeQueries
+	commands   application.TradeCommands
+	queries    application.TradeQueries
 	translator ports.Translator
 }
 
-func NewTradeHandler(commands cqrs.TradeCommands, queries cqrs.TradeQueries, translator ports.Translator) *TradeHandler {
+func NewTradeHandler(commands application.TradeCommands, queries application.TradeQueries, translator ports.Translator) *TradeHandler {
 	return &TradeHandler{commands: commands, queries: queries, translator: translator}
 }
 

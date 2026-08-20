@@ -3,7 +3,7 @@ package commands
 import (
 	"errors"
 
-	"github.com/artcodefun/heat-expansion-server/internal/admin/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/admin/application"
 	"github.com/artcodefun/heat-expansion-server/internal/admin/application/ports"
 )
 
@@ -16,11 +16,11 @@ func clientErr(err error) error {
 	}
 	switch {
 	case errors.Is(err, ports.ErrClientNotFound):
-		return cqrs.ErrNotFound
+		return application.ErrNotFound
 	case errors.Is(err, ports.ErrClientInvalidInput):
-		return cqrs.ErrInvalidInput
+		return application.ErrInvalidInput
 	case errors.Is(err, ports.ErrClientForbidden):
-		return cqrs.ErrForbidden
+		return application.ErrForbidden
 	default:
 		return err
 	}
@@ -32,7 +32,7 @@ func repoErr(err error) error {
 		return nil
 	}
 	if errors.Is(err, ports.ErrNotFound) {
-		return cqrs.ErrNotFound
+		return application.ErrNotFound
 	}
 	return err
 }

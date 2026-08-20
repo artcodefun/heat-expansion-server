@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/artcodefun/heat-expansion-server/internal/billing/application/cqrs/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/ports"
+	"github.com/artcodefun/heat-expansion-server/internal/billing/application/readmodels"
 	dbgen "github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/readstore/gen"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/infrastructure/readstore/mappers"
 	"github.com/google/uuid"

@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
@@ -11,12 +11,12 @@ import (
 )
 
 type UserHandler struct {
-	commands   cqrs.UserCommands
-	queries    cqrs.UserQueries
+	commands   application.UserCommands
+	queries    application.UserQueries
 	translator ports.Translator
 }
 
-func NewUserHandler(commands cqrs.UserCommands, queries cqrs.UserQueries, translator ports.Translator) *UserHandler {
+func NewUserHandler(commands application.UserCommands, queries application.UserQueries, translator ports.Translator) *UserHandler {
 	return &UserHandler{commands: commands, queries: queries, translator: translator}
 }
 

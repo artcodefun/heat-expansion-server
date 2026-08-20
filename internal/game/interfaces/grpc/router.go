@@ -4,7 +4,7 @@ import (
 	"google.golang.org/grpc"
 
 	gamev1 "github.com/artcodefun/heat-expansion-server/contracts/game/grpc/v1"
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/grpc/handlers"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/grpc/interceptor"
@@ -13,18 +13,18 @@ import (
 
 // Commands groups CQRS command interfaces needed by gRPC handlers.
 type Commands struct {
-	ArmyPrototype    cqrs.ArmyPrototypeCommands
-	BuildPrototype   cqrs.BuildPrototypeCommands
-	StoragePrototype cqrs.StoragePrototypeCommands
-	TechPrototype    cqrs.TechPrototypeCommands
+	ArmyPrototype    application.ArmyPrototypeCommands
+	BuildPrototype   application.BuildPrototypeCommands
+	StoragePrototype application.StoragePrototypeCommands
+	TechPrototype    application.TechPrototypeCommands
 }
 
 // Queries groups CQRS query interfaces needed by gRPC handlers.
 type Queries struct {
-	ArmyPrototype    cqrs.ArmyPrototypeQueries
-	BuildPrototype   cqrs.BuildPrototypeQueries
-	StoragePrototype cqrs.StoragePrototypeQueries
-	TechPrototype    cqrs.TechPrototypeQueries
+	ArmyPrototype    application.ArmyPrototypeQueries
+	BuildPrototype   application.BuildPrototypeQueries
+	StoragePrototype application.StoragePrototypeQueries
+	TechPrototype    application.TechPrototypeQueries
 }
 
 type Router struct {

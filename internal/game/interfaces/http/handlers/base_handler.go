@@ -3,19 +3,19 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
 )
 
 type BaseHandler struct {
-	queries    cqrs.BaseQueries
-	commands   cqrs.BaseCommands
+	queries    application.BaseQueries
+	commands   application.BaseCommands
 	translator ports.Translator
 }
 
-func NewBaseHandler(queries cqrs.BaseQueries, commands cqrs.BaseCommands, translator ports.Translator) *BaseHandler {
+func NewBaseHandler(queries application.BaseQueries, commands application.BaseCommands, translator ports.Translator) *BaseHandler {
 	return &BaseHandler{queries: queries, commands: commands, translator: translator}
 }
 

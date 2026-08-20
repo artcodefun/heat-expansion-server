@@ -7,7 +7,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	billingv1 "github.com/artcodefun/heat-expansion-server/contracts/billing/grpc/v1"
-	"github.com/artcodefun/heat-expansion-server/internal/billing/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/billing/application"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/interfaces/grpc/dtos"
 	"github.com/google/uuid"
@@ -16,12 +16,12 @@ import (
 // PackageHandler implements billingv1.CrystalPackageServiceServer.
 type PackageHandler struct {
 	billingv1.UnimplementedCrystalPackageServiceServer
-	cmd cqrs.CrystalPackageCommands
-	qry cqrs.CrystalPackageQueries
+	cmd application.CrystalPackageCommands
+	qry application.CrystalPackageQueries
 	tr  ports.Translator
 }
 
-func NewPackageHandler(cmd cqrs.CrystalPackageCommands, qry cqrs.CrystalPackageQueries, tr ports.Translator) *PackageHandler {
+func NewPackageHandler(cmd application.CrystalPackageCommands, qry application.CrystalPackageQueries, tr ports.Translator) *PackageHandler {
 	return &PackageHandler{cmd: cmd, qry: qry, tr: tr}
 }
 

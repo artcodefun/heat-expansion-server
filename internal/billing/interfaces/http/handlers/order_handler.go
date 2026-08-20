@@ -3,19 +3,19 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/artcodefun/heat-expansion-server/internal/billing/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/billing/application"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
 )
 
 type OrderHandler struct {
-	commands   cqrs.OrderCommands
-	queries    cqrs.OrderQueries
+	commands   application.OrderCommands
+	queries    application.OrderQueries
 	translator ports.Translator
 }
 
-func NewOrderHandler(commands cqrs.OrderCommands, queries cqrs.OrderQueries, translator ports.Translator) *OrderHandler {
+func NewOrderHandler(commands application.OrderCommands, queries application.OrderQueries, translator ports.Translator) *OrderHandler {
 	return &OrderHandler{commands: commands, queries: queries, translator: translator}
 }
 

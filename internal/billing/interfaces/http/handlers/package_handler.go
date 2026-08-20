@@ -3,18 +3,18 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/artcodefun/heat-expansion-server/internal/billing/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/billing/application"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
 )
 
 type PackageHandler struct {
-	queries    cqrs.PackageQueries
+	queries    application.PackageQueries
 	translator ports.Translator
 }
 
-func NewPackageHandler(queries cqrs.PackageQueries, translator ports.Translator) *PackageHandler {
+func NewPackageHandler(queries application.PackageQueries, translator ports.Translator) *PackageHandler {
 	return &PackageHandler{queries: queries, translator: translator}
 }
 

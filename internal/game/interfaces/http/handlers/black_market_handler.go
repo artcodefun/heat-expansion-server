@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
@@ -11,12 +11,12 @@ import (
 
 type BlackMarketHandler struct {
 	translator ports.Translator
-	commands   cqrs.BlackMarketCommands
-	queries    cqrs.BlackMarketQueries
+	commands   application.BlackMarketCommands
+	queries    application.BlackMarketQueries
 }
 
 // NewBlackMarketHandler constructs a handler for Black Market endpoints.
-func NewBlackMarketHandler(commands cqrs.BlackMarketCommands, queries cqrs.BlackMarketQueries, translator ports.Translator) *BlackMarketHandler {
+func NewBlackMarketHandler(commands application.BlackMarketCommands, queries application.BlackMarketQueries, translator ports.Translator) *BlackMarketHandler {
 	return &BlackMarketHandler{commands: commands, queries: queries, translator: translator}
 }
 

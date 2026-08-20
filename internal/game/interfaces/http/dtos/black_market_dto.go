@@ -1,8 +1,8 @@
 package dtos
 
 import (
-	readmodels "github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+	readmodels "github.com/artcodefun/heat-expansion-server/internal/game/application/readmodels"
 )
 
 type ResourceType string

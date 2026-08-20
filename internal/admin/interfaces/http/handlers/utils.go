@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/artcodefun/heat-expansion-server/internal/admin/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/admin/application"
 	"github.com/artcodefun/heat-expansion-server/internal/admin/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/admin/domain"
 	"github.com/gin-gonic/gin"
@@ -15,13 +15,13 @@ import (
 
 // actor extracts the authenticated admin from the gin context.
 // Unauthenticated handlers (Register, Login) receive a zero-value Actor.
-func actor(c *gin.Context) cqrs.Actor {
+func actor(c *gin.Context) application.Actor {
 	if v, ok := c.Get("adminID"); ok {
 		if id, ok2 := v.(uuid.UUID); ok2 {
-			return cqrs.Actor{AdminID: id}
+			return application.Actor{AdminID: id}
 		}
 	}
-	return cqrs.Actor{AdminID: uuid.Nil}
+	return application.Actor{AdminID: uuid.Nil}
 }
 
 func getLocale(c *gin.Context) string {
@@ -41,17 +41,17 @@ func handleCoreErr(c *gin.Context, tr ports.Translator, err error) bool {
 
 	locale := getLocale(c)
 
-	var appErr cqrs.AppError
+	var appErr application.AppError
 	if errors.As(err, &appErr) {
 		status := http.StatusInternalServerError
 		switch appErr.Kind {
-		case cqrs.KindNotFound:
+		case application.KindNotFound:
 			status = http.StatusNotFound
-		case cqrs.KindForbidden:
+		case application.KindForbidden:
 			status = http.StatusForbidden
-		case cqrs.KindConflict:
+		case application.KindConflict:
 			status = http.StatusConflict
-		case cqrs.KindInvalidInput:
+		case application.KindInvalidInput:
 			status = http.StatusUnprocessableEntity
 		}
 		c.JSON(status, gin.H{"error": tr.T(locale, appErr.Code, appErr.Params)})

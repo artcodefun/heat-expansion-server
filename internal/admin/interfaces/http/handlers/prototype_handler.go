@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/artcodefun/heat-expansion-server/internal/admin/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/admin/application"
 	"github.com/artcodefun/heat-expansion-server/internal/admin/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/admin/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
@@ -11,12 +11,12 @@ import (
 
 // PrototypeHandler handles CRUD endpoints for all four prototype types.
 type PrototypeHandler struct {
-	commands   cqrs.PrototypeCommands
-	queries    cqrs.PrototypeQueries
+	commands   application.PrototypeCommands
+	queries    application.PrototypeQueries
 	translator ports.Translator
 }
 
-func NewPrototypeHandler(commands cqrs.PrototypeCommands, queries cqrs.PrototypeQueries, translator ports.Translator) *PrototypeHandler {
+func NewPrototypeHandler(commands application.PrototypeCommands, queries application.PrototypeQueries, translator ports.Translator) *PrototypeHandler {
 	return &PrototypeHandler{commands: commands, queries: queries, translator: translator}
 }
 

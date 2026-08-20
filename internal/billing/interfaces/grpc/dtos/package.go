@@ -2,7 +2,7 @@ package dtos
 
 import (
 	billingv1 "github.com/artcodefun/heat-expansion-server/contracts/billing/grpc/v1"
-	"github.com/artcodefun/heat-expansion-server/internal/billing/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/billing/application/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/domain"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"

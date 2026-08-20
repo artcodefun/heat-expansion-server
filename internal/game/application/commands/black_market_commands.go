@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
@@ -58,7 +58,7 @@ func NewBlackMarketCommands(
 	}
 }
 
-func (c *BlackMarketCommands) PurchaseResources(ctx context.Context, actor cqrs.Actor, baseID int, resourceType domain.ResourceType, crystals int) error {
+func (c *BlackMarketCommands) PurchaseResources(ctx context.Context, actor application.Actor, baseID int, resourceType domain.ResourceType, crystals int) error {
 	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}
@@ -92,7 +92,7 @@ func (c *BlackMarketCommands) PurchaseResources(ctx context.Context, actor cqrs.
 	})
 }
 
-func (c *BlackMarketCommands) PurchaseOffer(ctx context.Context, actor cqrs.Actor, baseID int, offerID int64, quantity int) error {
+func (c *BlackMarketCommands) PurchaseOffer(ctx context.Context, actor application.Actor, baseID int, offerID int64, quantity int) error {
 	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}
@@ -141,7 +141,7 @@ func (c *BlackMarketCommands) PurchaseOffer(ctx context.Context, actor cqrs.Acto
 				return err
 			}
 		default:
-			return cqrs.NewAppErrorWithParams(cqrs.KindInvalidInput, "error.application.black_market.offer_kind_invalid", map[string]any{"kind": offer.Kind})
+			return application.NewAppErrorWithParams(application.KindInvalidInput, "error.application.black_market.offer_kind_invalid", map[string]any{"kind": offer.Kind})
 		}
 
 		if err := uRepo.Update(ctx, user); err != nil {

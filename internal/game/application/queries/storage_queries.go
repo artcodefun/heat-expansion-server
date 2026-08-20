@@ -3,9 +3,9 @@ package queries
 import (
 	"context"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
 )
 
@@ -18,7 +18,7 @@ func NewStorageQueries(repo ports.StorageReadRepository, access *services.Access
 	return &StorageQueries{Repo: repo, Access: access}
 }
 
-func (q *StorageQueries) ListPresentStorageItems(ctx context.Context, actor cqrs.Actor, baseID int, category readmodels.StorageCategory) ([]*readmodels.StorageItemPresent, error) {
+func (q *StorageQueries) ListPresentStorageItems(ctx context.Context, actor application.Actor, baseID int, category readmodels.StorageCategory) ([]*readmodels.StorageItemPresent, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}

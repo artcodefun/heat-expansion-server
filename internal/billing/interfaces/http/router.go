@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	contract "github.com/artcodefun/heat-expansion-server/contracts/billing/http/v1"
-	"github.com/artcodefun/heat-expansion-server/internal/billing/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/billing/application"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/interfaces/http/handlers"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/interfaces/http/middleware"
@@ -16,13 +16,13 @@ import (
 
 // Commands groups CQRS command interfaces needed by HTTP handlers.
 type Commands struct {
-	Order cqrs.OrderCommands
+	Order application.OrderCommands
 }
 
 // Queries groups CQRS query interfaces needed by HTTP handlers.
 type Queries struct {
-	Package cqrs.PackageQueries
-	Order   cqrs.OrderQueries
+	Package application.PackageQueries
+	Order   application.OrderQueries
 }
 
 // NewRouter constructs the Gin engine, registers middleware and routes.

@@ -5,9 +5,9 @@ import (
 	"errors"
 	"time"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
 	"github.com/google/uuid"
 )
@@ -42,7 +42,7 @@ func NewTradeQueries(
 	}
 }
 
-func (q *TradeQueries) GetTradeInfo(ctx context.Context, actor cqrs.Actor, targetX, targetY int) (*readmodels.TradeInfo, error) {
+func (q *TradeQueries) GetTradeInfo(ctx context.Context, actor application.Actor, targetX, targetY int) (*readmodels.TradeInfo, error) {
 	targetBase, err := q.BaseRepo.FindByCoordinates(ctx, targetX, targetY)
 	if err != nil {
 		return nil, repoErr(err)
@@ -75,7 +75,7 @@ func (q *TradeQueries) GetTradeInfo(ctx context.Context, actor cqrs.Actor, targe
 	}, nil
 }
 
-func (q *TradeQueries) GetTradeOperation(ctx context.Context, actor cqrs.Actor, baseID int, operationID int) (*readmodels.TradeOperation, error) {
+func (q *TradeQueries) GetTradeOperation(ctx context.Context, actor application.Actor, baseID int, operationID int) (*readmodels.TradeOperation, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}
@@ -84,12 +84,12 @@ func (q *TradeQueries) GetTradeOperation(ctx context.Context, actor cqrs.Actor, 
 		return nil, repoErr(err)
 	}
 	if op.SenderBaseID != baseID && op.ReceiverBaseID != baseID {
-		return nil, cqrs.ErrForbidden
+		return nil, application.ErrForbidden
 	}
 	return op, nil
 }
 
-func (q *TradeQueries) ListActiveTradeOperations(ctx context.Context, actor cqrs.Actor, baseID int) ([]*readmodels.TradeOperation, error) {
+func (q *TradeQueries) ListActiveTradeOperations(ctx context.Context, actor application.Actor, baseID int) ([]*readmodels.TradeOperation, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}
@@ -99,13 +99,13 @@ func (q *TradeQueries) ListActiveTradeOperations(ctx context.Context, actor cqrs
 
 func (q *TradeQueries) ensureTradeInventoryReadAccess(ctx context.Context, actorUserID uuid.UUID, baseID int) error {
 	if actorUserID == uuid.Nil {
-		return cqrs.ErrForbidden
+		return application.ErrForbidden
 	}
 
 	ownerUserID, err := q.BaseRepo.GetOwnerID(ctx, baseID)
 	if err != nil {
 		if errors.Is(err, ports.ErrNotFound) {
-			return cqrs.ErrNotFound
+			return application.ErrNotFound
 		}
 		return err
 	}
@@ -117,13 +117,13 @@ func (q *TradeQueries) ensureTradeInventoryReadAccess(ctx context.Context, actor
 	rel, err := q.DiplomacyRepo.GetRelationship(ctx, actorUserID, ownerUserID)
 	if err != nil {
 		if errors.Is(err, ports.ErrNotFound) {
-			return cqrs.ErrForbidden
+			return application.ErrForbidden
 		}
 		return err
 	}
 
 	if rel.Status != readmodels.DiplomaticStatusAllied {
-		return cqrs.ErrForbidden
+		return application.ErrForbidden
 	}
 
 	return nil

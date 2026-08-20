@@ -7,7 +7,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	gamev1 "github.com/artcodefun/heat-expansion-server/contracts/game/grpc/v1"
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/grpc/dtos"
 )
@@ -15,14 +15,14 @@ import (
 // StoragePrototypeHandler implements gamev1.StoragePrototypeServiceServer.
 type StoragePrototypeHandler struct {
 	gamev1.UnimplementedStoragePrototypeServiceServer
-	commands   cqrs.StoragePrototypeCommands
-	queries    cqrs.StoragePrototypeQueries
+	commands   application.StoragePrototypeCommands
+	queries    application.StoragePrototypeQueries
 	translator ports.Translator
 }
 
 func NewStoragePrototypeHandler(
-	commands cqrs.StoragePrototypeCommands,
-	queries cqrs.StoragePrototypeQueries,
+	commands application.StoragePrototypeCommands,
+	queries application.StoragePrototypeQueries,
 	translator ports.Translator,
 ) *StoragePrototypeHandler {
 	return &StoragePrototypeHandler{commands: commands, queries: queries, translator: translator}

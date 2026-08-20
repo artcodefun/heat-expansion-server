@@ -4,17 +4,17 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/artcodefun/heat-expansion-server/internal/billing/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/billing/application"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/ports"
 	"github.com/gin-gonic/gin"
 )
 
 type WebhookHandler struct {
-	commands   cqrs.OrderCommands
+	commands   application.OrderCommands
 	translator ports.Translator
 }
 
-func NewWebhookHandler(commands cqrs.OrderCommands, translator ports.Translator) *WebhookHandler {
+func NewWebhookHandler(commands application.OrderCommands, translator ports.Translator) *WebhookHandler {
 	return &WebhookHandler{commands: commands, translator: translator}
 }
 

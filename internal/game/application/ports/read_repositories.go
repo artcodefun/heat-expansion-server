@@ -3,7 +3,7 @@ package ports
 import (
 	"context"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/readmodels"
 	"github.com/google/uuid"
 )
 

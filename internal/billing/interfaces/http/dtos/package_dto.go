@@ -1,7 +1,7 @@
 package dtos
 
 import (
-	"github.com/artcodefun/heat-expansion-server/internal/billing/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/billing/application/readmodels"
 	"github.com/google/uuid"
 )
 

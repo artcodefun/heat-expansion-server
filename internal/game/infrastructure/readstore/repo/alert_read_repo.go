@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/gen"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/mappers"
 	"github.com/google/uuid"

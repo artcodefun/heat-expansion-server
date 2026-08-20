@@ -1,7 +1,7 @@
 package mappers
 
 import (
-	readmodels "github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	readmodels "github.com/artcodefun/heat-expansion-server/internal/game/application/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/game/infrastructure/readstore/gen"
 )
 

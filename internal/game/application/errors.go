@@ -1,4 +1,4 @@
-package cqrs
+package application
 
 import (
 	"fmt"
@@ -33,10 +33,6 @@ func NewAppErrorWithParams(kind ErrorKind, code string, params map[string]any) A
 }
 
 var (
-	ErrNotFound           = NewAppError(KindNotFound, "error.application.not_found")
-	ErrForbidden          = NewAppError(KindForbidden, "error.application.forbidden")
-	ErrEmailAlreadyInUse  = NewAppError(KindConflict, "error.application.auth.email_taken")
-	ErrInvalidCredentials = NewAppError(KindInvalidInput, "error.application.auth.invalid_creds")
-	ErrInvalidResetToken  = NewAppError(KindInvalidInput, "error.application.auth.invalid_reset_token")
-	ErrAccountNotFound    = NewAppError(KindNotFound, "error.application.auth.account_not_found")
+	ErrNotFound  = NewAppError(KindNotFound, "error.application.not_found")
+	ErrForbidden = NewAppError(KindForbidden, "error.application.forbidden")
 )

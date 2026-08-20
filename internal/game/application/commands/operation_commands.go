@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
@@ -49,7 +49,7 @@ func NewOperationCommands(userBaseRepo ports.UserBaseRepository, userRepo ports.
 	}
 }
 
-func (c *OperationCommands) CreateMilitaryOperation(ctx context.Context, actor cqrs.Actor, opType domain.MilitaryOperationType, sourceBaseID int, targetX int, targetY int, deployments []domain.ArmyDeploymentRequest) (*domain.MilitaryOperation, error) {
+func (c *OperationCommands) CreateMilitaryOperation(ctx context.Context, actor application.Actor, opType domain.MilitaryOperationType, sourceBaseID int, targetX int, targetY int, deployments []domain.ArmyDeploymentRequest) (*domain.MilitaryOperation, error) {
 	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, sourceBaseID); err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func (c *OperationCommands) CreateMilitaryOperation(ctx context.Context, actor c
 	return createdOp, nil
 }
 
-func (c *OperationCommands) CancelMilitaryOperation(ctx context.Context, actor cqrs.Actor, operationID int) error {
+func (c *OperationCommands) CancelMilitaryOperation(ctx context.Context, actor application.Actor, operationID int) error {
 	err := c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		oRepo := c.OperationRepo.Tx(tx)
 		op, err := oRepo.FindByIDForUpdate(ctx, operationID)
@@ -133,7 +133,7 @@ func (c *OperationCommands) CancelMilitaryOperation(ctx context.Context, actor c
 
 // SpeedUpOperationWithCrystals allows a user to spend crystals to fast-forward
 // an in-flight military operation (outbound or returning) to its arrival.
-func (c *OperationCommands) SpeedUpOperationWithCrystals(ctx context.Context, actor cqrs.Actor, operationID int) error {
+func (c *OperationCommands) SpeedUpOperationWithCrystals(ctx context.Context, actor application.Actor, operationID int) error {
 	err := c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		oRepo := c.OperationRepo.Tx(tx)
 		uRepo := c.UserRepo.Tx(tx)
