@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 	"github.com/google/uuid"
@@ -26,7 +26,7 @@ func NewAlertCommands(repo ports.AlertRepository, tradeRepo ports.TradeOperation
 
 func (c *AlertCommands) MarkAllAsRead(ctx context.Context, userID uuid.UUID) error {
 	if userID == uuid.Nil {
-		return cqrs.ErrForbidden
+		return application.ErrForbidden
 	}
 	return c.AlertRepo.MarkAllAsRead(ctx, userID)
 }

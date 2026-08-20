@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/google/uuid"
 )
@@ -25,17 +25,17 @@ func NewAccessControlService(bases ports.UserBaseRepository) *AccessControlServi
 // mismatch owner -> ErrForbidden
 func (s *AccessControlService) EnsureBaseOwnership(ctx context.Context, userID uuid.UUID, baseID int) error {
 	if userID == uuid.Nil {
-		return cqrs.ErrForbidden
+		return application.ErrForbidden
 	}
 	ownerID, err := s.Bases.GetOwnerID(ctx, baseID)
 	if err != nil {
 		if errors.Is(err, ports.ErrNotFound) {
-			return cqrs.ErrNotFound
+			return application.ErrNotFound
 		}
 		return err
 	}
 	if ownerID != userID {
-		return cqrs.ErrForbidden
+		return application.ErrForbidden
 	}
 	return nil
 }

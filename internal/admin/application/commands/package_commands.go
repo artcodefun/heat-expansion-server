@@ -3,7 +3,7 @@ package commands
 import (
 	"context"
 
-	"github.com/artcodefun/heat-expansion-server/internal/admin/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/admin/application"
 	"github.com/artcodefun/heat-expansion-server/internal/admin/application/ports"
 )
 
@@ -16,12 +16,12 @@ func NewPackageCommands(billing ports.BillingPrivateClient) *PackageCommands {
 	return &PackageCommands{billing: billing}
 }
 
-func (c *PackageCommands) CreateCrystalPackage(ctx context.Context, _ cqrs.Actor, p *ports.CrystalPackage) (*ports.CrystalPackage, error) {
+func (c *PackageCommands) CreateCrystalPackage(ctx context.Context, _ application.Actor, p *ports.CrystalPackage) (*ports.CrystalPackage, error) {
 	created, err := c.billing.CreateCrystalPackage(ctx, p)
 	return created, clientErr(err)
 }
 
-func (c *PackageCommands) UpdateCrystalPackage(ctx context.Context, _ cqrs.Actor, p *ports.CrystalPackage) (*ports.CrystalPackage, error) {
+func (c *PackageCommands) UpdateCrystalPackage(ctx context.Context, _ application.Actor, p *ports.CrystalPackage) (*ports.CrystalPackage, error) {
 	updated, err := c.billing.UpdateCrystalPackage(ctx, p)
 	return updated, clientErr(err)
 }

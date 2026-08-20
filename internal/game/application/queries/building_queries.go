@@ -3,9 +3,9 @@ package queries
 import (
 	"context"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
 )
 
@@ -20,7 +20,7 @@ func NewBuildingQueries(repo ports.BuildingReadRepository, protoRepo ports.Build
 	return &BuildingQueries{Repo: repo, ProtoRepo: protoRepo, BaseRepo: baseRepo, Access: access}
 }
 
-func (q *BuildingQueries) ListNewBuildItems(ctx context.Context, actor cqrs.Actor, baseID int, category readmodels.BuildCategory) ([]*readmodels.BuildItemNew, error) {
+func (q *BuildingQueries) ListNewBuildItems(ctx context.Context, actor application.Actor, baseID int, category readmodels.BuildCategory) ([]*readmodels.BuildItemNew, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}
@@ -43,21 +43,21 @@ func (q *BuildingQueries) ListNewBuildItems(ctx context.Context, actor cqrs.Acto
 	items, err := q.Repo.ListNewBuildItemsByPrototypeIDs(ctx, ids)
 	return items, repoErr(err)
 }
-func (q *BuildingQueries) ListPendingBuildItems(ctx context.Context, actor cqrs.Actor, baseID int, category readmodels.BuildCategory) ([]*readmodels.BuildItemPending, error) {
+func (q *BuildingQueries) ListPendingBuildItems(ctx context.Context, actor application.Actor, baseID int, category readmodels.BuildCategory) ([]*readmodels.BuildItemPending, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}
 	items, err := q.Repo.ListPendingBuildItems(ctx, baseID, category)
 	return items, repoErr(err)
 }
-func (q *BuildingQueries) ListInProductionBuildItems(ctx context.Context, actor cqrs.Actor, baseID int, category readmodels.BuildCategory) ([]*readmodels.BuildItemInProduction, error) {
+func (q *BuildingQueries) ListInProductionBuildItems(ctx context.Context, actor application.Actor, baseID int, category readmodels.BuildCategory) ([]*readmodels.BuildItemInProduction, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}
 	items, err := q.Repo.ListInProductionBuildItems(ctx, baseID, category)
 	return items, repoErr(err)
 }
-func (q *BuildingQueries) ListPresentBuildItems(ctx context.Context, actor cqrs.Actor, baseID int, category readmodels.BuildCategory) ([]*readmodels.BuildItemPresent, error) {
+func (q *BuildingQueries) ListPresentBuildItems(ctx context.Context, actor application.Actor, baseID int, category readmodels.BuildCategory) ([]*readmodels.BuildItemPresent, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}

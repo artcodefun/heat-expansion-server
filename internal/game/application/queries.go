@@ -1,9 +1,9 @@
-package cqrs
+package application
 
 import (
 	"context"
 
-	readmodels "github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	readmodels "github.com/artcodefun/heat-expansion-server/internal/game/application/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 	"github.com/google/uuid"
 )

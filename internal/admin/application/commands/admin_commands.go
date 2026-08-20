@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 
-	"github.com/artcodefun/heat-expansion-server/internal/admin/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/admin/application"
 	"github.com/artcodefun/heat-expansion-server/internal/admin/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/admin/domain"
 )
 
-// AdminCommands implements cqrs.AdminCommands.
+// AdminCommands implements application.AdminCommands.
 type AdminCommands struct {
 	admins   ports.AdminRepository
 	sessions ports.SessionRepository
@@ -35,14 +35,14 @@ func NewAdminCommands(
 }
 
 // Register completes first-time setup for an unregistered admin and issues a session.
-func (c *AdminCommands) Register(ctx context.Context, actor cqrs.Actor, username, inviteToken, newPassword string) (string, error) {
+func (c *AdminCommands) Register(ctx context.Context, actor application.Actor, username, inviteToken, newPassword string) (string, error) {
 	_ = actor
 
 	admin, err := c.admins.FindByUsername(ctx, username)
 	if err != nil {
 		if errors.Is(err, ports.ErrNotFound) {
 			// Do not reveal whether the username exists.
-			return "", cqrs.NewAppError(cqrs.KindForbidden, "error.application.admin.invalid_invite_token")
+			return "", application.NewAppError(application.KindForbidden, "error.application.admin.invalid_invite_token")
 		}
 		return "", err
 	}
@@ -77,13 +77,13 @@ func (c *AdminCommands) Register(ctx context.Context, actor cqrs.Actor, username
 }
 
 // Login verifies admin credentials and issues a new session.
-func (c *AdminCommands) Login(ctx context.Context, actor cqrs.Actor, username, password string) (string, error) {
+func (c *AdminCommands) Login(ctx context.Context, actor application.Actor, username, password string) (string, error) {
 	_ = actor
 
 	admin, err := c.admins.FindByUsername(ctx, username)
 	if err != nil {
 		if errors.Is(err, ports.ErrNotFound) {
-			return "", cqrs.NewAppError(cqrs.KindInvalidInput, "error.application.admin.invalid_credentials")
+			return "", application.NewAppError(application.KindInvalidInput, "error.application.admin.invalid_credentials")
 		}
 		return "", err
 	}
@@ -93,7 +93,7 @@ func (c *AdminCommands) Login(ctx context.Context, actor cqrs.Actor, username, p
 	}
 
 	if !c.hasher.Verify(password, *admin.PasswordHash) {
-		return "", cqrs.NewAppError(cqrs.KindInvalidInput, "error.application.admin.invalid_credentials")
+		return "", application.NewAppError(application.KindInvalidInput, "error.application.admin.invalid_credentials")
 	}
 
 	sessionToken, err := c.tokenGen.Generate()
@@ -109,7 +109,7 @@ func (c *AdminCommands) Login(ctx context.Context, actor cqrs.Actor, username, p
 }
 
 // Logout revokes the session identified by the bearer token.
-func (c *AdminCommands) Logout(ctx context.Context, actor cqrs.Actor, token string) error {
+func (c *AdminCommands) Logout(ctx context.Context, actor application.Actor, token string) error {
 	_ = actor
 
 	if err := c.sessions.Delete(ctx, token); err != nil && !errors.Is(err, ports.ErrNotFound) {
@@ -118,4 +118,4 @@ func (c *AdminCommands) Logout(ctx context.Context, actor cqrs.Actor, token stri
 	return nil
 }
 
-var _ cqrs.AdminCommands = (*AdminCommands)(nil)
+var _ application.AdminCommands = (*AdminCommands)(nil)

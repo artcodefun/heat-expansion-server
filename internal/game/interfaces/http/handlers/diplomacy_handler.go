@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http/dtos"
@@ -11,12 +11,12 @@ import (
 )
 
 type DiplomacyHandler struct {
-	queries    cqrs.DiplomacyQueries
-	commands   cqrs.DiplomacyCommands
+	queries    application.DiplomacyQueries
+	commands   application.DiplomacyCommands
 	translator ports.Translator
 }
 
-func NewDiplomacyHandler(queries cqrs.DiplomacyQueries, commands cqrs.DiplomacyCommands, translator ports.Translator) *DiplomacyHandler {
+func NewDiplomacyHandler(queries application.DiplomacyQueries, commands application.DiplomacyCommands, translator ports.Translator) *DiplomacyHandler {
 	return &DiplomacyHandler{queries: queries, commands: commands, translator: translator}
 }
 

@@ -7,7 +7,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	gamev1 "github.com/artcodefun/heat-expansion-server/contracts/game/grpc/v1"
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/grpc/dtos"
 )
@@ -15,14 +15,14 @@ import (
 // TechPrototypeHandler implements gamev1.TechPrototypeServiceServer.
 type TechPrototypeHandler struct {
 	gamev1.UnimplementedTechPrototypeServiceServer
-	commands   cqrs.TechPrototypeCommands
-	queries    cqrs.TechPrototypeQueries
+	commands   application.TechPrototypeCommands
+	queries    application.TechPrototypeQueries
 	translator ports.Translator
 }
 
 func NewTechPrototypeHandler(
-	commands cqrs.TechPrototypeCommands,
-	queries cqrs.TechPrototypeQueries,
+	commands application.TechPrototypeCommands,
+	queries application.TechPrototypeQueries,
 	translator ports.Translator,
 ) *TechPrototypeHandler {
 	return &TechPrototypeHandler{commands: commands, queries: queries, translator: translator}

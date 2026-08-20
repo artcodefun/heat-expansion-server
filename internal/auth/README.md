@@ -22,7 +22,7 @@ This service uses Hexagonal Architecture (Ports and Adapters), DDD (Domain-drive
   - Business rules, `Account` aggregate, `PasswordResetToken` value object, and domain events (e.g., `AccountRegisteredEvent`).
 - **Application**: `internal/auth/application`
   - `commands/`: Write-side command handlers for registration, login, and password reset.
-  - `cqrs/`: CQRS contract definitions.
+  - Root package: Application contracts and error types exposed to adapters.
   - `ports/`: Interfaces for repositories, token providers, password hashers, and email sender.
   - `services/`: App-level services like the outbox loop.
 - **Infrastructure**: `internal/auth/infrastructure`

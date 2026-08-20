@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	contract "github.com/artcodefun/heat-expansion-server/contracts/game/http/v1"
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http/dtos"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http/handlers"
@@ -19,35 +19,35 @@ import (
 
 // Commands groups CQRS command interfaces needed by HTTP handlers.
 type Commands struct {
-	User        cqrs.UserCommands
-	BlackMarket cqrs.BlackMarketCommands
-	Base        cqrs.BaseCommands
-	Building    cqrs.BuildingCommands
-	Army        cqrs.ArmyCommands
-	Tech        cqrs.TechCommands
-	Storage     cqrs.StorageCommands
-	Operation   cqrs.OperationCommands
-	Trade       cqrs.TradeCommands
-	Alert       cqrs.AlertCommands
-	Diplomacy   cqrs.DiplomacyCommands
+	User        application.UserCommands
+	BlackMarket application.BlackMarketCommands
+	Base        application.BaseCommands
+	Building    application.BuildingCommands
+	Army        application.ArmyCommands
+	Tech        application.TechCommands
+	Storage     application.StorageCommands
+	Operation   application.OperationCommands
+	Trade       application.TradeCommands
+	Alert       application.AlertCommands
+	Diplomacy   application.DiplomacyCommands
 }
 
 // Queries groups CQRS query interfaces needed by HTTP handlers.
 type Queries struct {
-	User        cqrs.UserQueries
-	BlackMarket cqrs.BlackMarketQueries
-	Base        cqrs.BaseQueries
-	Building    cqrs.BuildingQueries
-	Army        cqrs.ArmyQueries
-	Tech        cqrs.TechQueries
-	Storage     cqrs.StorageQueries
-	Trade       cqrs.TradeQueries
-	Sector      cqrs.SectorQueries
-	Radar       cqrs.RadarQueries
-	Operation   cqrs.OperationQueries
-	Activity    cqrs.ActivityQueries
-	Alert       cqrs.AlertQueries
-	Diplomacy   cqrs.DiplomacyQueries
+	User        application.UserQueries
+	BlackMarket application.BlackMarketQueries
+	Base        application.BaseQueries
+	Building    application.BuildingQueries
+	Army        application.ArmyQueries
+	Tech        application.TechQueries
+	Storage     application.StorageQueries
+	Trade       application.TradeQueries
+	Sector      application.SectorQueries
+	Radar       application.RadarQueries
+	Operation   application.OperationQueries
+	Activity    application.ActivityQueries
+	Alert       application.AlertQueries
+	Diplomacy   application.DiplomacyQueries
 }
 
 // NewRouter constructs the Gin engine, registers middleware and routes.

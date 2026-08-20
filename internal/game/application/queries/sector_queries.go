@@ -3,9 +3,9 @@ package queries
 import (
 	"context"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
 )
 
@@ -17,7 +17,7 @@ type SectorQueries struct {
 func NewSectorQueries(repo ports.SectorReadRepository, access *services.AccessControlService) *SectorQueries {
 	return &SectorQueries{Repo: repo, Access: access}
 }
-func (q *SectorQueries) GetScansNear(ctx context.Context, actor cqrs.Actor, baseID int, centerX, centerY, radius int) ([]*readmodels.SectorScanReport, error) {
+func (q *SectorQueries) GetScansNear(ctx context.Context, actor application.Actor, baseID int, centerX, centerY, radius int) ([]*readmodels.SectorScanReport, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}
@@ -25,7 +25,7 @@ func (q *SectorQueries) GetScansNear(ctx context.Context, actor cqrs.Actor, base
 	return reports, repoErr(err)
 }
 
-func (q *SectorQueries) GetScanReportByID(ctx context.Context, actor cqrs.Actor, baseID, id int) (*readmodels.SectorScanReport, error) {
+func (q *SectorQueries) GetScanReportByID(ctx context.Context, actor application.Actor, baseID, id int) (*readmodels.SectorScanReport, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}
@@ -36,7 +36,7 @@ func (q *SectorQueries) GetScanReportByID(ctx context.Context, actor cqrs.Actor,
 	return report, nil
 }
 
-func (q *SectorQueries) GetLatestScanBefore(ctx context.Context, actor cqrs.Actor, baseID, x, y int, before int64) (*readmodels.SectorScanReport, error) {
+func (q *SectorQueries) GetLatestScanBefore(ctx context.Context, actor application.Actor, baseID, x, y int, before int64) (*readmodels.SectorScanReport, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}

@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/artcodefun/heat-expansion-server/internal/admin/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/admin/application"
 	"github.com/artcodefun/heat-expansion-server/internal/admin/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/admin/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
@@ -11,12 +11,12 @@ import (
 
 // PackageHandler handles CRUD endpoints for billing crystal packages.
 type PackageHandler struct {
-	commands   cqrs.PackageCommands
-	queries    cqrs.PackageQueries
+	commands   application.PackageCommands
+	queries    application.PackageQueries
 	translator ports.Translator
 }
 
-func NewPackageHandler(commands cqrs.PackageCommands, queries cqrs.PackageQueries, translator ports.Translator) *PackageHandler {
+func NewPackageHandler(commands application.PackageCommands, queries application.PackageQueries, translator ports.Translator) *PackageHandler {
 	return &PackageHandler{commands: commands, queries: queries, translator: translator}
 }
 

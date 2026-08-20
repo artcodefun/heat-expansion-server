@@ -5,7 +5,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	gamev1 "github.com/artcodefun/heat-expansion-server/contracts/game/grpc/v1"
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 )
 

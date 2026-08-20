@@ -3,9 +3,9 @@ package queries
 import (
 	"context"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
 )
 
@@ -20,7 +20,7 @@ func NewTechQueries(repo ports.TechReadRepository, protoRepo ports.TechPrototype
 	return &TechQueries{Repo: repo, ProtoRepo: protoRepo, BaseRepo: baseRepo, Access: access}
 }
 
-func (q *TechQueries) ListNewTechItems(ctx context.Context, actor cqrs.Actor, baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemNew, error) {
+func (q *TechQueries) ListNewTechItems(ctx context.Context, actor application.Actor, baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemNew, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}
@@ -42,14 +42,14 @@ func (q *TechQueries) ListNewTechItems(ctx context.Context, actor cqrs.Actor, ba
 	items, err := q.Repo.ListNewTechItemsByPrototypeIDs(ctx, baseID, ids)
 	return items, repoErr(err)
 }
-func (q *TechQueries) ListInResearchTechItems(ctx context.Context, actor cqrs.Actor, baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemInProgress, error) {
+func (q *TechQueries) ListInResearchTechItems(ctx context.Context, actor application.Actor, baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemInProgress, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}
 	items, err := q.Repo.ListInResearchTechItems(ctx, baseID, category)
 	return items, repoErr(err)
 }
-func (q *TechQueries) ListDoneTechItems(ctx context.Context, actor cqrs.Actor, baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemDone, error) {
+func (q *TechQueries) ListDoneTechItems(ctx context.Context, actor application.Actor, baseID int, category readmodels.TechCategory) ([]*readmodels.TechItemDone, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}

@@ -3,18 +3,18 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
 )
 
 type ActivityHandler struct {
-	queries    cqrs.ActivityQueries
+	queries    application.ActivityQueries
 	translator ports.Translator
 }
 
-func NewActivityHandler(queries cqrs.ActivityQueries, translator ports.Translator) *ActivityHandler {
+func NewActivityHandler(queries application.ActivityQueries, translator ports.Translator) *ActivityHandler {
 	return &ActivityHandler{
 		queries:    queries,
 		translator: translator,

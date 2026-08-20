@@ -3,9 +3,9 @@ package queries
 import (
 	"context"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/readmodels"
 	"github.com/google/uuid"
 )
 
@@ -19,16 +19,16 @@ func NewAlertQueries(readRepo ports.AlertReadRepository) *AlertQueries {
 	}
 }
 
-func (q *AlertQueries) ListActiveAlerts(ctx context.Context, actor cqrs.Actor) ([]*readmodels.AlertItem, error) {
+func (q *AlertQueries) ListActiveAlerts(ctx context.Context, actor application.Actor) ([]*readmodels.AlertItem, error) {
 	if actor.UserID == uuid.Nil {
-		return nil, cqrs.ErrForbidden
+		return nil, application.ErrForbidden
 	}
 	return q.AlertReadRepo.ListActiveAlerts(ctx, actor.UserID)
 }
 
-func (q *AlertQueries) GetUnreadAlertsCount(ctx context.Context, actor cqrs.Actor) (int, error) {
+func (q *AlertQueries) GetUnreadAlertsCount(ctx context.Context, actor application.Actor) (int, error) {
 	if actor.UserID == uuid.Nil {
-		return 0, cqrs.ErrForbidden
+		return 0, application.ErrForbidden
 	}
 	return q.AlertReadRepo.GetUnreadAlertsCount(ctx, actor.UserID)
 }

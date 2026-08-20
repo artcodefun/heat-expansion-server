@@ -8,10 +8,10 @@ This repo is a **modular monolith**: each service lives under `internal/<service
 
 **Game service (primary):** `internal/game`
 - `domain/`: Aggregates and domain logic (e.g. `UserBase`, `MilitaryOperation`, events, value objects).
-- `application/`: CQRS + ports + application services
+- `application/`: application contracts, CQRS handlers, ports, and services
   - `commands/`: Write-side command handlers.
   - `queries/`: Read-side query handlers.
-  - `cqrs/`: CQRS contract definitions and readmodels.
+  - `readmodels/`: Query-side models returned by application queries.
   - `ports/`: Interfaces for repositories, schedulers, token providers, event publishing, transactions, etc.
   - `services/`: App-level services (access control, provisioning, outbox loop, ...).
 - `infrastructure/`: Secondary adapters (DB/sqlc, readstore, jobs, events, security, content, ...).
@@ -91,7 +91,7 @@ The patterns below apply to the **Game** service (`internal/game`) unless stated
 - **Content locales**: Service-specific content (e.g. prototype names, descriptions) is stored in the database and loaded at startup.
 - **Key parity requirement**: Whenever a new translation key is introduced, add its translations immediately in both English and Russian locale files in the same change.
 - **Domain errors**: Use `domain.NewError(key, params)` in domain logic. Never use `fmt.Errorf` with hardcoded English strings.
-- **Application errors**: Use `cqrs.NewAppError(kind, key)` or `cqrs.NewAppErrorWithParams` for high-level application failures.
+- **Application errors**: Use `application.NewAppError(kind, key)` or `application.NewAppErrorWithParams` for high-level application failures.
 - **Presentation layer**: DTO mappers and HTTP handlers must use `ports.Translator` to resolve keys into final strings using the `locale` from the `Accept-Language` header.
 
 ## Workflows

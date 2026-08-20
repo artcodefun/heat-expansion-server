@@ -3,9 +3,9 @@ package queries
 import (
 	"context"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
 )
 
@@ -18,7 +18,7 @@ func NewRadarQueries(repo ports.RadarReadRepository, access *services.AccessCont
 	return &RadarQueries{Repo: repo, Access: access}
 }
 
-func (q *RadarQueries) ListIncomingThreats(ctx context.Context, actor cqrs.Actor, baseID int) ([]*readmodels.RadarThreat, error) {
+func (q *RadarQueries) ListIncomingThreats(ctx context.Context, actor application.Actor, baseID int) ([]*readmodels.RadarThreat, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}

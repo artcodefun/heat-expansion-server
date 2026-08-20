@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http/dtos"
@@ -12,12 +12,12 @@ import (
 )
 
 type OperationHandler struct {
-	queries    cqrs.OperationQueries
-	commands   cqrs.OperationCommands
+	queries    application.OperationQueries
+	commands   application.OperationCommands
 	translator ports.Translator
 }
 
-func NewOperationHandler(queries cqrs.OperationQueries, commands cqrs.OperationCommands, translator ports.Translator) *OperationHandler {
+func NewOperationHandler(queries application.OperationQueries, commands application.OperationCommands, translator ports.Translator) *OperationHandler {
 	return &OperationHandler{
 		queries:    queries,
 		commands:   commands,

@@ -1,10 +1,10 @@
-package cqrs
+package application
 
 import (
 	"context"
 
-	"github.com/artcodefun/heat-expansion-server/internal/admin/application/cqrs/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/admin/application/ports"
+	"github.com/artcodefun/heat-expansion-server/internal/admin/application/readmodels"
 	"github.com/google/uuid"
 )
 

@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/artcodefun/heat-expansion-server/internal/auth/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/auth/application"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/domain"
 )
@@ -47,7 +47,7 @@ func NewAccountCommands(
 	}
 }
 
-func (c *AccountCommands) RegisterAccount(ctx context.Context, actor cqrs.Actor, name, email, password string) error {
+func (c *AccountCommands) RegisterAccount(ctx context.Context, actor application.Actor, name, email, password string) error {
 	_ = actor
 
 	hash, err := c.hasher.Hash(password)
@@ -65,7 +65,7 @@ func (c *AccountCommands) RegisterAccount(ctx context.Context, actor cqrs.Actor,
 		_, err := repo.FindByEmail(ctx, email)
 		if err == nil {
 			slog.WarnContext(ctx, "registration rejected; email already in use", "email_fingerprint", emailFingerprint(email))
-			return cqrs.ErrEmailAlreadyInUse
+			return application.ErrEmailAlreadyInUse
 		}
 		if !errors.Is(err, ports.ErrNotFound) {
 			return err
@@ -85,21 +85,21 @@ func (c *AccountCommands) RegisterAccount(ctx context.Context, actor cqrs.Actor,
 	return nil
 }
 
-func (c *AccountCommands) Login(ctx context.Context, actor cqrs.Actor, email, password string) (string, error) {
+func (c *AccountCommands) Login(ctx context.Context, actor application.Actor, email, password string) (string, error) {
 	_ = actor
 
 	acc, err := c.repo.FindByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, ports.ErrNotFound) {
 			slog.WarnContext(ctx, "login rejected; account not found", "email_fingerprint", emailFingerprint(email))
-			return "", cqrs.ErrInvalidCredentials
+			return "", application.ErrInvalidCredentials
 		}
 		return "", err
 	}
 
 	if !c.hasher.Verify(password, acc.PasswordHash) {
 		slog.WarnContext(ctx, "login rejected; invalid password", "account_id", acc.ID.String())
-		return "", cqrs.ErrInvalidCredentials
+		return "", application.ErrInvalidCredentials
 	}
 
 	token, err := c.tokenProvider.Generate(acc.ID)
@@ -111,14 +111,14 @@ func (c *AccountCommands) Login(ctx context.Context, actor cqrs.Actor, email, pa
 	return token, nil
 }
 
-func (c *AccountCommands) RequestPasswordReset(ctx context.Context, actor cqrs.Actor, email string) error {
+func (c *AccountCommands) RequestPasswordReset(ctx context.Context, actor application.Actor, email string) error {
 	_ = actor
 
 	acc, err := c.repo.FindByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, ports.ErrNotFound) {
 			slog.WarnContext(ctx, "password reset request rejected; account not found", "email_fingerprint", emailFingerprint(email))
-			return cqrs.ErrAccountNotFound
+			return application.ErrAccountNotFound
 		}
 		return err
 	}
@@ -148,14 +148,14 @@ func (c *AccountCommands) RequestPasswordReset(ctx context.Context, actor cqrs.A
 	return nil
 }
 
-func (c *AccountCommands) ResetPassword(ctx context.Context, actor cqrs.Actor, email, rawToken, newPassword string) error {
+func (c *AccountCommands) ResetPassword(ctx context.Context, actor application.Actor, email, rawToken, newPassword string) error {
 	_ = actor
 
 	acc, err := c.repo.FindByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, ports.ErrNotFound) {
 			slog.WarnContext(ctx, "password reset rejected; account not found", "email_fingerprint", emailFingerprint(email))
-			return cqrs.ErrAccountNotFound
+			return application.ErrAccountNotFound
 		}
 		return err
 	}
@@ -166,13 +166,13 @@ func (c *AccountCommands) ResetPassword(ctx context.Context, actor cqrs.Actor, e
 	if err != nil {
 		if errors.Is(err, ports.ErrNotFound) {
 			slog.WarnContext(ctx, "password reset rejected; invalid token", "account_id", acc.ID.String())
-			return cqrs.ErrInvalidResetToken
+			return application.ErrInvalidResetToken
 		}
 		return err
 	}
 	if resetToken.IsExpired() || resetToken.IsUsed() {
 		slog.WarnContext(ctx, "password reset rejected; invalid token", "account_id", acc.ID.String())
-		return cqrs.ErrInvalidResetToken
+		return application.ErrInvalidResetToken
 	}
 
 	newHash, err := c.hasher.Hash(newPassword)

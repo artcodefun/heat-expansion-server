@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	contract "github.com/artcodefun/heat-expansion-server/contracts/auth/http/v1"
-	"github.com/artcodefun/heat-expansion-server/internal/auth/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/auth/application"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/interfaces/http/handlers"
 	"github.com/gin-gonic/gin"
@@ -15,12 +15,12 @@ import (
 
 // Commands groups CQRS command interfaces needed by HTTP handlers.
 type Commands struct {
-	Account cqrs.AccountCommands
+	Account application.AccountCommands
 }
 
 // Queries groups CQRS query interfaces needed by HTTP handlers.
 type Queries struct {
-	Account cqrs.AccountQueries
+	Account application.AccountQueries
 }
 
 func NewRouter(cmd Commands, qry Queries, tr ports.Translator) *gin.Engine {

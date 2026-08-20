@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
-	"github.com/artcodefun/heat-expansion-server/internal/billing/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/billing/application"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/ports"
 )
 
@@ -36,7 +36,7 @@ func StatusFromError(ctx context.Context, tr ports.Translator, err error) error 
 	}
 	locale := LocaleFromContext(ctx)
 
-	var appErr cqrs.AppError
+	var appErr application.AppError
 	if errors.As(err, &appErr) {
 		return status.Error(codeForKind(appErr.Kind), tr.T(locale, appErr.Code, appErr.Params))
 	}
@@ -45,17 +45,17 @@ func StatusFromError(ctx context.Context, tr ports.Translator, err error) error 
 	return status.Error(codes.Internal, tr.T(locale, "error.application.internal_server_error", nil))
 }
 
-func codeForKind(kind cqrs.ErrorKind) codes.Code {
+func codeForKind(kind application.ErrorKind) codes.Code {
 	switch kind {
-	case cqrs.KindNotFound:
+	case application.KindNotFound:
 		return codes.NotFound
-	case cqrs.KindForbidden:
+	case application.KindForbidden:
 		return codes.PermissionDenied
-	case cqrs.KindConflict:
+	case application.KindConflict:
 		return codes.AlreadyExists
-	case cqrs.KindInvalidInput:
+	case application.KindInvalidInput:
 		return codes.InvalidArgument
-	case cqrs.KindUnavailable:
+	case application.KindUnavailable:
 		return codes.Unavailable
 	default:
 		return codes.Internal

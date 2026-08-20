@@ -21,7 +21,8 @@ This service uses Hexagonal Architecture (Ports and Adapters), DDD, and CQRS —
 - **Application**: `internal/billing/application`
   - `commands/`: `CreateOrderCommand`, `ConfirmPaymentCommand` (idempotent — no-op if already `PAID`).
   - `queries/`: `ListPackagesQuery`, `GetOrderQuery` (ownership-checked).
-  - `cqrs/`: CQRS contract definitions, read models, error kinds.
+  - Root package: Application contracts and error kinds exposed to adapters.
+  - `readmodels/`: Query-side models.
   - `ports/`: Interfaces for repositories, payment gateway, outbox, transaction manager, token validator.
   - `services/`: Outbox loop, integration outbox loop, integration producer.
 - **Infrastructure**: `internal/billing/infrastructure`

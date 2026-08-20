@@ -1,9 +1,9 @@
-package cqrs
+package application
 
 import (
 	"context"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/readmodels"
 )
 
 // ArmyPrototypeQueries exposes raw army prototype catalog reads, without per-base availability filtering.

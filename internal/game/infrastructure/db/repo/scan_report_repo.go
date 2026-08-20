@@ -69,4 +69,3 @@ func (r *ScanReportRepo) FindByBaseAndCoordinates(ctx context.Context, baseID in
 func (r *ScanReportRepo) Delete(ctx context.Context, id int) error {
 	return r.q.DeleteScanReport(ctx, int64(id))
 }
-

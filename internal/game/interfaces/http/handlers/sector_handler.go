@@ -3,18 +3,18 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
 )
 
 type SectorHandler struct {
-	queries    cqrs.SectorQueries
+	queries    application.SectorQueries
 	translator ports.Translator
 }
 
-func NewSectorHandler(queries cqrs.SectorQueries, translator ports.Translator) *SectorHandler {
+func NewSectorHandler(queries application.SectorQueries, translator ports.Translator) *SectorHandler {
 	return &SectorHandler{
 		queries:    queries,
 		translator: translator,

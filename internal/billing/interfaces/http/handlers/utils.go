@@ -6,20 +6,20 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/artcodefun/heat-expansion-server/internal/billing/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/billing/application"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/domain"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
-func actor(c *gin.Context) cqrs.Actor {
+func actor(c *gin.Context) application.Actor {
 	if v, ok := c.Get("userID"); ok {
 		if id, ok2 := v.(uuid.UUID); ok2 {
-			return cqrs.Actor{UserID: id}
+			return application.Actor{UserID: id}
 		}
 	}
-	return cqrs.Actor{UserID: uuid.Nil}
+	return application.Actor{UserID: uuid.Nil}
 }
 
 func getLocale(c *gin.Context) string {
@@ -35,19 +35,19 @@ func handleCoreErr(c *gin.Context, tr ports.Translator, err error) bool {
 		return false
 	}
 	locale := getLocale(c)
-	var appErr cqrs.AppError
+	var appErr application.AppError
 	if errors.As(err, &appErr) {
 		status := http.StatusInternalServerError
 		switch appErr.Kind {
-		case cqrs.KindNotFound:
+		case application.KindNotFound:
 			status = http.StatusNotFound
-		case cqrs.KindForbidden:
+		case application.KindForbidden:
 			status = http.StatusForbidden
-		case cqrs.KindConflict:
+		case application.KindConflict:
 			status = http.StatusConflict
-		case cqrs.KindInvalidInput:
+		case application.KindInvalidInput:
 			status = http.StatusUnprocessableEntity
-		case cqrs.KindUnavailable:
+		case application.KindUnavailable:
 			status = http.StatusServiceUnavailable
 		}
 		c.JSON(status, gin.H{"error": tr.T(locale, appErr.Code, appErr.Params)})

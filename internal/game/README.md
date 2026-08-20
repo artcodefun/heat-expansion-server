@@ -32,7 +32,8 @@ This service uses Hexagonal Architecture (Ports and Adapters), DDD (Domain-drive
 - **Application**: `internal/game/application`
   - `commands/`: Write-side command handlers that wrap domain aggregates and enforce access control.
   - `queries/`: Read-side query handlers that work against read-store projections.
-  - `cqrs/`: CQRS contract definitions and readmodels.
+  - Root package: Application contracts and error types exposed to adapters.
+  - `readmodels/`: Query-side models.
   - `ports/`: Interfaces for repositories, schedulers, and secondary adapters.
   - `services/`: App-level services like access control, provisioning, and the outbox loop.
 - **Infrastructure**: `internal/game/infrastructure`

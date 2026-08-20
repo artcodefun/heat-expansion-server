@@ -3,19 +3,19 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
 )
 
 type StorageHandler struct {
-	queries    cqrs.StorageQueries
-	commands   cqrs.StorageCommands
+	queries    application.StorageQueries
+	commands   application.StorageCommands
 	translator ports.Translator
 }
 
-func NewStorageHandler(queries cqrs.StorageQueries, commands cqrs.StorageCommands, translator ports.Translator) *StorageHandler {
+func NewStorageHandler(queries application.StorageQueries, commands application.StorageCommands, translator ports.Translator) *StorageHandler {
 	return &StorageHandler{
 		queries:    queries,
 		commands:   commands,

@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/artcodefun/heat-expansion-server/internal/admin/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/admin/application"
 	"github.com/artcodefun/heat-expansion-server/internal/admin/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/admin/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
@@ -11,12 +11,12 @@ import (
 
 // TranslationHandler handles CRUD endpoints for game translations.
 type TranslationHandler struct {
-	commands   cqrs.TranslationCommands
-	queries    cqrs.TranslationQueries
+	commands   application.TranslationCommands
+	queries    application.TranslationQueries
 	translator ports.Translator
 }
 
-func NewTranslationHandler(commands cqrs.TranslationCommands, queries cqrs.TranslationQueries, translator ports.Translator) *TranslationHandler {
+func NewTranslationHandler(commands application.TranslationCommands, queries application.TranslationQueries, translator ports.Translator) *TranslationHandler {
 	return &TranslationHandler{commands: commands, queries: queries, translator: translator}
 }
 

@@ -3,7 +3,7 @@ package commands
 import (
 	"context"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
@@ -25,7 +25,7 @@ func NewBuildingCommands(baseRepo ports.UserBaseRepository, buildingRepo ports.B
 	return &BuildingCommands{BaseRepo: baseRepo, BuildingRepo: buildingRepo, UserRepo: userRepo, crystalService: domain.NewCrystalSpendingService(), Outbox: outbox, Scheduler: scheduler, TxMgr: txMgr, Access: access}
 }
 
-func (c *BuildingCommands) QueueBuilding(ctx context.Context, actor cqrs.Actor, baseID int, prototypeID int) error {
+func (c *BuildingCommands) QueueBuilding(ctx context.Context, actor application.Actor, baseID int, prototypeID int) error {
 	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func (c *BuildingCommands) QueueBuilding(ctx context.Context, actor cqrs.Actor, 
 	return err
 }
 
-func (c *BuildingCommands) CancelPendingBuilding(ctx context.Context, actor cqrs.Actor, baseID int, itemID uuid.UUID) error {
+func (c *BuildingCommands) CancelPendingBuilding(ctx context.Context, actor application.Actor, baseID int, itemID uuid.UUID) error {
 	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}
@@ -78,7 +78,7 @@ func (c *BuildingCommands) CancelPendingBuilding(ctx context.Context, actor cqrs
 	return err
 }
 
-func (c *BuildingCommands) SpeedUpProductionWithCrystals(ctx context.Context, actor cqrs.Actor, baseID int, buildingItemID uuid.UUID) error {
+func (c *BuildingCommands) SpeedUpProductionWithCrystals(ctx context.Context, actor application.Actor, baseID int, buildingItemID uuid.UUID) error {
 	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}
@@ -113,7 +113,7 @@ func (c *BuildingCommands) SpeedUpProductionWithCrystals(ctx context.Context, ac
 	return err
 }
 
-func (c *BuildingCommands) DeletePresentBuilding(ctx context.Context, actor cqrs.Actor, baseID int, itemID uuid.UUID) error {
+func (c *BuildingCommands) DeletePresentBuilding(ctx context.Context, actor application.Actor, baseID int, itemID uuid.UUID) error {
 	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}

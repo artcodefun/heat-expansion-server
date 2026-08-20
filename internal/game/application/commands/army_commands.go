@@ -3,7 +3,7 @@ package commands
 import (
 	"context"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
@@ -25,7 +25,7 @@ func NewArmyCommands(baseRepo ports.UserBaseRepository, armyRepo ports.ArmyProto
 	return &ArmyCommands{BaseRepo: baseRepo, ArmyRepo: armyRepo, UserRepo: userRepo, crystalService: domain.NewCrystalSpendingService(), Outbox: outbox, Scheduler: scheduler, TxMgr: txMgr, Access: access}
 }
 
-func (c *ArmyCommands) QueueArmy(ctx context.Context, actor cqrs.Actor, baseID int, prototypeID int, count int) error {
+func (c *ArmyCommands) QueueArmy(ctx context.Context, actor application.Actor, baseID int, prototypeID int, count int) error {
 	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func (c *ArmyCommands) QueueArmy(ctx context.Context, actor cqrs.Actor, baseID i
 	return err
 }
 
-func (c *ArmyCommands) CancelPendingArmy(ctx context.Context, actor cqrs.Actor, baseID int, itemID uuid.UUID, count int) error {
+func (c *ArmyCommands) CancelPendingArmy(ctx context.Context, actor application.Actor, baseID int, itemID uuid.UUID, count int) error {
 	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}
@@ -78,7 +78,7 @@ func (c *ArmyCommands) CancelPendingArmy(ctx context.Context, actor cqrs.Actor, 
 	return err
 }
 
-func (c *ArmyCommands) SpeedUpArmyProductionWithCrystals(ctx context.Context, actor cqrs.Actor, baseID int, armyItemID uuid.UUID) error {
+func (c *ArmyCommands) SpeedUpArmyProductionWithCrystals(ctx context.Context, actor application.Actor, baseID int, armyItemID uuid.UUID) error {
 	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}
@@ -113,7 +113,7 @@ func (c *ArmyCommands) SpeedUpArmyProductionWithCrystals(ctx context.Context, ac
 	return err
 }
 
-func (c *ArmyCommands) DeletePresentArmy(ctx context.Context, actor cqrs.Actor, baseID int, itemID uuid.UUID, count int) error {
+func (c *ArmyCommands) DeletePresentArmy(ctx context.Context, actor application.Actor, baseID int, itemID uuid.UUID, count int) error {
 	if err := c.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return err
 	}

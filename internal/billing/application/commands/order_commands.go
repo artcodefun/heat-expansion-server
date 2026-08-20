@@ -5,7 +5,7 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/artcodefun/heat-expansion-server/internal/billing/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/billing/application"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/billing/domain"
 	"github.com/google/uuid"
@@ -38,16 +38,16 @@ func NewOrderCommands(
 	}
 }
 
-func (c *OrderCommands) CreateOrder(ctx context.Context, actor cqrs.Actor, packageID uuid.UUID, returnURL string) (uuid.UUID, string, error) {
+func (c *OrderCommands) CreateOrder(ctx context.Context, actor application.Actor, packageID uuid.UUID, returnURL string) (uuid.UUID, string, error) {
 	pkg, err := c.PackageRepo.FindByID(ctx, packageID)
 	if err != nil {
 		if errors.Is(err, ports.ErrNotFound) {
-			return uuid.Nil, "", cqrs.ErrPackageNotFound
+			return uuid.Nil, "", application.ErrPackageNotFound
 		}
 		return uuid.Nil, "", err
 	}
 	if !pkg.IsActive {
-		return uuid.Nil, "", cqrs.ErrPackageNotFound
+		return uuid.Nil, "", application.ErrPackageNotFound
 	}
 
 	// The fiscal receipt (54-FZ) must be issued to the buyer's email, which we
@@ -57,13 +57,13 @@ func (c *OrderCommands) CreateOrder(ctx context.Context, actor cqrs.Actor, packa
 	if err != nil {
 		if errors.Is(err, ports.ErrNotFound) {
 			slog.WarnContext(ctx, "cannot create order: buyer email not yet projected", "user_id", actor.UserID.String())
-			return uuid.Nil, "", cqrs.ErrCustomerEmailUnavailable
+			return uuid.Nil, "", application.ErrCustomerEmailUnavailable
 		}
 		return uuid.Nil, "", err
 	}
 	if user.Email == "" {
 		slog.WarnContext(ctx, "cannot create order: buyer email is empty", "user_id", actor.UserID.String())
-		return uuid.Nil, "", cqrs.ErrCustomerEmailUnavailable
+		return uuid.Nil, "", application.ErrCustomerEmailUnavailable
 	}
 
 	order := domain.NewPendingOrder(
@@ -89,7 +89,7 @@ func (c *OrderCommands) CreateOrder(ctx context.Context, actor cqrs.Actor, packa
 	providerOrderID, confirmationURL, err := c.Gateway.CreatePayment(ctx, order, pkg, user.Email, returnURL)
 	if err != nil {
 		slog.ErrorContext(ctx, "payment gateway failed to create payment", "error", err)
-		return uuid.Nil, "", cqrs.ErrPaymentGatewayFailed
+		return uuid.Nil, "", application.ErrPaymentGatewayFailed
 	}
 
 	order.AttachProviderData(providerOrderID, confirmationURL)
@@ -115,12 +115,12 @@ func (c *OrderCommands) ConfirmPayment(ctx context.Context, rawBody []byte) erro
 	providerOrderID, paid, err := c.Gateway.VerifyWebhook(ctx, rawBody)
 	if err != nil {
 		if errors.Is(err, ports.ErrMalformedWebhook) {
-			return cqrs.ErrInvalidWebhookPayload
+			return application.ErrInvalidWebhookPayload
 		}
 		// Transient failure (e.g. re-query to the provider failed): surface as
 		// internal so the provider retries delivery rather than giving up.
 		slog.ErrorContext(ctx, "failed to verify payment webhook", "error", err)
-		return cqrs.ErrPaymentGatewayFailed
+		return application.ErrPaymentGatewayFailed
 	}
 
 	var confirmed *domain.PurchaseOrder

@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	contract "github.com/artcodefun/heat-expansion-server/contracts/admin/http/v1"
-	"github.com/artcodefun/heat-expansion-server/internal/admin/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/admin/application"
 	"github.com/artcodefun/heat-expansion-server/internal/admin/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/admin/interfaces/http/handlers"
 	"github.com/artcodefun/heat-expansion-server/internal/admin/interfaces/http/middleware"
@@ -16,18 +16,18 @@ import (
 
 // Commands groups CQRS command interfaces needed by HTTP handlers.
 type Commands struct {
-	Admin       cqrs.AdminCommands
-	Prototype   cqrs.PrototypeCommands
-	Translation cqrs.TranslationCommands
-	Package     cqrs.PackageCommands
+	Admin       application.AdminCommands
+	Prototype   application.PrototypeCommands
+	Translation application.TranslationCommands
+	Package     application.PackageCommands
 }
 
 // Queries groups CQRS query interfaces needed by HTTP handlers.
 type Queries struct {
-	Admin       cqrs.AdminQueries
-	Prototype   cqrs.PrototypeQueries
-	Translation cqrs.TranslationQueries
-	Package     cqrs.PackageQueries
+	Admin       application.AdminQueries
+	Prototype   application.PrototypeQueries
+	Translation application.TranslationQueries
+	Package     application.PackageQueries
 }
 
 // NewRouter constructs the Gin engine, registers middleware and routes.

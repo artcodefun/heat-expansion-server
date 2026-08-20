@@ -3,9 +3,9 @@ package queries
 import (
 	"context"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs/readmodels"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application/readmodels"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
 )
@@ -25,7 +25,7 @@ func NewBlackMarketQueries(
 	}
 }
 
-func (q *BlackMarketQueries) ListResourceRates(ctx context.Context, actor cqrs.Actor, baseID int) ([]*readmodels.BlackMarketResourceRate, error) {
+func (q *BlackMarketQueries) ListResourceRates(ctx context.Context, actor application.Actor, baseID int) ([]*readmodels.BlackMarketResourceRate, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}
@@ -34,7 +34,7 @@ func (q *BlackMarketQueries) ListResourceRates(ctx context.Context, actor cqrs.A
 	return readmodels.BlackMarketResourceRateListFromDomain(rates), nil
 }
 
-func (q *BlackMarketQueries) ListActiveOffers(ctx context.Context, actor cqrs.Actor, baseID int, kind *domain.BlackMarketOfferKind, limited *bool) ([]*readmodels.BlackMarketOffer, error) {
+func (q *BlackMarketQueries) ListActiveOffers(ctx context.Context, actor application.Actor, baseID int, kind *domain.BlackMarketOfferKind, limited *bool) ([]*readmodels.BlackMarketOffer, error) {
 	if err := q.Access.EnsureBaseOwnership(ctx, actor.UserID, baseID); err != nil {
 		return nil, err
 	}

@@ -3,19 +3,19 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/artcodefun/heat-expansion-server/internal/auth/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/auth/application"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/auth/interfaces/http/dtos"
 	"github.com/gin-gonic/gin"
 )
 
 type AccountHandler struct {
-	commands   cqrs.AccountCommands
-	queries    cqrs.AccountQueries
+	commands   application.AccountCommands
+	queries    application.AccountQueries
 	translator ports.Translator
 }
 
-func NewAccountHandler(commands cqrs.AccountCommands, queries cqrs.AccountQueries, translator ports.Translator) *AccountHandler {
+func NewAccountHandler(commands application.AccountCommands, queries application.AccountQueries, translator ports.Translator) *AccountHandler {
 	return &AccountHandler{commands: commands, queries: queries, translator: translator}
 }
 

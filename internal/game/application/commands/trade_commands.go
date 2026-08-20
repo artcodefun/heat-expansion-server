@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/artcodefun/heat-expansion-server/internal/game/application/cqrs"
+	"github.com/artcodefun/heat-expansion-server/internal/game/application"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/ports"
 	"github.com/artcodefun/heat-expansion-server/internal/game/application/services"
 	"github.com/artcodefun/heat-expansion-server/internal/game/domain"
@@ -48,7 +48,7 @@ func NewTradeCommands(
 
 func (c *TradeCommands) CreateTradeOperation(
 	ctx context.Context,
-	actor cqrs.Actor,
+	actor application.Actor,
 	senderBaseID int,
 	targetX, targetY int,
 	offeredResources domain.PriceModel,
@@ -134,7 +134,7 @@ func (c *TradeCommands) CreateTradeOperation(
 // AcceptTradeOperation transitions a PENDING trade operation to OUTBOUND by committing
 // the receiver side atomically: validating the requested payload, deducting resources,
 // removing storage items, and deploying army units into the trade operation.
-func (c *TradeCommands) AcceptTradeOperation(ctx context.Context, actor cqrs.Actor, operationID int) error {
+func (c *TradeCommands) AcceptTradeOperation(ctx context.Context, actor application.Actor, operationID int) error {
 	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		bRepo := c.UserBaseRepo.Tx(tx)
 		tRepo := c.TradeRepo.Tx(tx)
@@ -178,7 +178,7 @@ func (c *TradeCommands) AcceptTradeOperation(ctx context.Context, actor cqrs.Act
 // DeclineTradeOperation transitions a PENDING trade operation to COMPLETED/DECLINED.
 // Sender-side restoration is driven by the TradeOperationReturnArrivedEvent emitted here
 // and handled by HandleTradeOperationReturnArrivedEvent in a follow-up transaction.
-func (c *TradeCommands) DeclineTradeOperation(ctx context.Context, actor cqrs.Actor, operationID int) error {
+func (c *TradeCommands) DeclineTradeOperation(ctx context.Context, actor application.Actor, operationID int) error {
 	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		tRepo := c.TradeRepo.Tx(tx)
 
@@ -208,7 +208,7 @@ func (c *TradeCommands) DeclineTradeOperation(ctx context.Context, actor cqrs.Ac
 // CancelTradeOperationByInitiator cancels a trade in PENDING or OUTBOUND phase at the
 // sender's request. In OUTBOUND, receiver commitments are released in the same transaction;
 // sender commitments are released when the convoy returns via TradeOperationReturnArrivedEvent.
-func (c *TradeCommands) CancelTradeOperationByInitiator(ctx context.Context, actor cqrs.Actor, operationID int) error {
+func (c *TradeCommands) CancelTradeOperationByInitiator(ctx context.Context, actor application.Actor, operationID int) error {
 	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		bRepo := c.UserBaseRepo.Tx(tx)
 		tRepo := c.TradeRepo.Tx(tx)
@@ -379,7 +379,7 @@ func (c *TradeCommands) HandleUpdateTradeOperationJob(ctx context.Context, cmd p
 
 // SpeedUpTradeOperationWithCrystals allows the sender to spend crystals to fast-forward
 // an in-flight trade operation (outbound or returning) to its arrival.
-func (c *TradeCommands) SpeedUpTradeOperationWithCrystals(ctx context.Context, actor cqrs.Actor, operationID int) error {
+func (c *TradeCommands) SpeedUpTradeOperationWithCrystals(ctx context.Context, actor application.Actor, operationID int) error {
 	return c.TxMgr.WithTx(ctx, func(tx ports.Transaction) error {
 		tRepo := c.TradeRepo.Tx(tx)
 		uRepo := c.UserRepo.Tx(tx)
